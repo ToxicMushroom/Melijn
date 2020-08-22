@@ -40,7 +40,7 @@ suspend fun Throwable.sendInGuildSuspend(
 ) {
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 
-    val channelId = Container.instance.settings.exceptionChannel
+    val channelId = Container.instance.settings.botInfo.exceptionChannel
     val textChannel = MelijnBot.shardManager.getTextChannelById(channelId) ?: return
 
     val caseId = Base58.encode(

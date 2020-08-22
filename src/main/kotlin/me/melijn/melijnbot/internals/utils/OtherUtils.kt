@@ -345,7 +345,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
 
 suspend fun isPremiumUser(context: CommandContext, user: User = context.author): Boolean {
     return context.daoManager.supporterWrapper.getUsers().contains(user.idLong) ||
-        context.container.settings.developerIds.contains(user.idLong)
+        context.container.settings.botInfo.developerIds.contains(user.idLong)
 }
 
 suspend fun isPremiumGuild(context: CommandContext): Boolean {

@@ -618,7 +618,7 @@ object LogUtils {
         val extraMel = if (credits - 100 > 0) {
             "100 + ${credits - 100}"
         } else "100"
-        val embedder = Embedder(container.daoManager, -1, userId, container.settings.embedColor)
+        val embedder = Embedder(container.daoManager, -1, userId, container.settings.botInfo.embedColor)
             .setTitle("Vote Received")
             .setDescription("Thanks for voting, you received **$extraMel** mel. Your new balance is **$newBalance** mel")
             .addField("Current Streak", "$streak (${credits - 100} mel)", true)
@@ -634,7 +634,7 @@ object LogUtils {
 
         val streak = daoManager.voteWrapper.getUserVote(userId)?.streak ?: 0
 
-        val embedder = Embedder(daoManager, -1, userId, Container.instance.settings.embedColor)
+        val embedder = Embedder(daoManager, -1, userId, Container.instance.settings.botInfo.embedColor)
             .setTitle("Your vote is ready (o゜▽゜)o☆", "https://top.gg/bot/melijn/vote")
             .setDescription("This is a reminder that you can [vote](https://top.gg/bot/melijn/vote) again.\nIn 24 hours from receiving this message your streak will otherwise be lost :c")
             .addField("Current Streak", "$streak", true)

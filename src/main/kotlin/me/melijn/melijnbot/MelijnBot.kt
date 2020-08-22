@@ -36,7 +36,7 @@ class MelijnBot {
 
         val container = Container()
 
-        val nodeMap = mutableMapOf<String, Array<Settings.Lavalink.Node>>()
+        val nodeMap = mutableMapOf<String, Array<Settings.Lavalink.LLNode>>()
         nodeMap["normal"] = container.settings.lavalink.verified_nodes
         nodeMap["http"] = container.settings.lavalink.http_nodes
 
@@ -60,9 +60,9 @@ class MelijnBot {
                 GatewayIntent.GUILD_MESSAGE_REACTIONS,
                 GatewayIntent.GUILD_VOICE_STATES
             )
-            .setShardsTotal(container.settings.shardCount)
+            .setShardsTotal(container.settings.botInfo.shardCount)
             .setToken(container.settings.tokens.discord)
-            .setActivity(Activity.listening("commands | ${container.settings.prefix}help"))
+            .setActivity(Activity.listening("commands | ${container.settings.botInfo.prefix}help"))
             .setAutoReconnect(true)
             .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY)
             .setChunkingFilter(ChunkingFilter.NONE)
@@ -96,11 +96,11 @@ class MelijnBot {
         }
     }
 
-    private suspend fun generateJdaLinkFromNodes(container: Container, nodeMap: Map<String, Array<Settings.Lavalink.Node>>): JDALavalink? {
+    private suspend fun generateJdaLinkFromNodes(container: Container, nodeMap: Map<String, Array<Settings.Lavalink.LLNode>>): JDALavalink? {
         return if (container.settings.lavalink.enabled) {
             val linkBuilder = JDALavalink(
-                container.settings.id,
-                container.settings.shardCount
+                container.settings.botInfo.id,
+                container.settings.botInfo.shardCount
             ) { id ->
                 shardManager.getShardById(id)
             }

@@ -13,7 +13,7 @@ import kotlin.coroutines.suspendCoroutine
 class WeebshApi(val settings: Settings) {
 
     private val weebApi: WeebApi = WeebApiBuilder(TokenType.WOLKETOKENS)
-        .setBotInfo(settings.name, settings.version, settings.environment.toLCC())
+        .setBotInfo("Melijn", "latest", settings.environment.toLCC())
         .setToken(settings.tokens.weebSh)
         .build()
 

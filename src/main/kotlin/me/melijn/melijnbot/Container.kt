@@ -17,7 +17,6 @@ import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.File
 
 val objectMapper = jacksonObjectMapper()
 
@@ -50,7 +49,7 @@ class Container {
 
     var startTime = System.currentTimeMillis()
 
-    var settings: Settings = objectMapper.readValue(File("${System.getenv("CONFIG_NAME") ?: "config"}.json"), Settings::class.java)
+    var settings: Settings = Settings.initSettings()
 
     //Used by events
     val daoManager = DaoManager(settings.database, settings.redis)

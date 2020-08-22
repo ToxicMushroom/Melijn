@@ -5,15 +5,11 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
-import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.*
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageChannel
-import net.dv8tion.jda.api.entities.PrivateChannel
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.internal.entities.DataMessage
 
 suspend fun sendSyntax(context: CommandContext, translationPath: String = context.commandOrder.last().syntax) {
@@ -372,9 +368,9 @@ suspend fun sendFeatureRequiresGuildPremiumMessage(context: CommandContext, feat
     sendRsp(context, baseMsg)
 }
 
-fun getNicerUsedPrefix(settings: Settings, prefix: String): String {
-    return if (prefix.contains(settings.id.toString()) && USER_MENTION.matches(prefix)) {
-        "@${settings.name} "
+fun getNicerUsedPrefix(selfUser: User, prefix: String): String {
+    return if (prefix.contains(selfUser.id) && USER_MENTION.matches(prefix)) {
+        "@${selfUser.name} "
     } else {
         prefix
     }

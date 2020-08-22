@@ -233,7 +233,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             track == null -> {
                 val title = i18n.getTranslation(language, "message.music.searchmenu")
                 val desc = i18n.getTranslation(language, "message.music.search.cancelled.description")
-                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong, container.settings.embedColor)
+                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong, container.settings.botInfo.embedColor)
                     .setTitle(title)
                     .setDescription(desc)
                 message.editMessage(eb.build()).queue()
@@ -252,7 +252,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                     .withVariable("duration", getDurationString(track.duration))
                     .withVariable("url", track.info.uri)
 
-                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong, container.settings.embedColor)
+                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong, container.settings.botInfo.embedColor)
                 eb.setTitle(title)
                 eb.setDescription(description)
                 message.editMessage(eb.build()).queue()

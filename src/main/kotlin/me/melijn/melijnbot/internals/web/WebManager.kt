@@ -2,7 +2,7 @@ package me.melijn.melijnbot.internals.web
 
 
 import com.apollographql.apollo.ApolloClient
-import io.ktor.client.HttpClient
+import io.ktor.client.*
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.web.bins.BinApis
 import me.melijn.melijnbot.internals.web.botlist.BotListApi
@@ -33,8 +33,8 @@ class WebManager(val settings: Settings) {
     val weebshApi: WeebshApi = WeebshApi(settings)
 
     init {
-        if (settings.spotify.clientId.isNotBlank() && settings.spotify.password.isNotBlank()) {
-            spotifyApi = MySpotifyApi(settings.spotify)
+        if (settings.api.spotify.clientId.isNotBlank() && settings.api.spotify.password.isNotBlank()) {
+            spotifyApi = MySpotifyApi(settings.api.spotify)
         }
     }
 }

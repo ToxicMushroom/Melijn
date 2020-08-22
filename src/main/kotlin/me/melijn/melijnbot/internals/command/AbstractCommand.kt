@@ -235,8 +235,9 @@ suspend fun hasPermission(container: Container, event: MessageReceivedEvent, per
     val guild = member.guild
     val guildId = guild.idLong
     val authorId = member.idLong
+
     // Gives me better ability to help
-    if (container.settings.developerIds.contains(authorId)) return true
+    if (container.settings.botInfo.developerIds.contains(authorId)) return true
 
     val channelId = event.textChannel.idLong
     val userMap = container.daoManager.userPermissionWrapper.getPermMap(guildId, authorId)

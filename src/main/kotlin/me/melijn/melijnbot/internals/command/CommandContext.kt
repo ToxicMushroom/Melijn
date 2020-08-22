@@ -44,19 +44,19 @@ class CommandContext(
 
     private fun getNicerUsedPrefix(): String {
         val prefix = commandParts[0]
-        return if (prefix.contains(container.settings.id.toString()) && USER_MENTION.matches(prefix)) {
-            "@${container.settings.name} "
+        return if (prefix.contains(jda.selfUser.id) && USER_MENTION.matches(prefix)) {
+            "@${jda.selfUser.name} "
         } else {
             prefix
         }
     }
 
-    val embedColor: Int = container.settings.embedColor
-    val prefix: String = container.settings.prefix
+    val embedColor: Int = container.settings.botInfo.embedColor
+    val prefix: String = container.settings.botInfo.prefix
     var commandOrder: List<AbstractCommand> = emptyList()
     var args: List<String> = emptyList()
     var oldArgs: List<String> = emptyList()
-    val botDevIds: LongArray = container.settings.developerIds
+    val botDevIds: LongArray = container.settings.botInfo.developerIds
     val daoManager = container.daoManager
     var rawArg: String = ""
     val contextTime = System.currentTimeMillis()

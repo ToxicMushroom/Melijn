@@ -28,7 +28,7 @@ class AlpacaCommand : AbstractCommand("command.alpaca") {
     }
 
     private suspend fun getRandomAlpacaUrl(webManager: WebManager): String {
-        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://apis.duncte123.me/alpaca")
+        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://apis.duncte123.me/animal/alpaca")
             ?: return MISSING_IMAGE_URL
         return reply.getObject("data").getString("file")
     }
