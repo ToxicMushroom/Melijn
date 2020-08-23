@@ -5,7 +5,9 @@ import com.zaxxer.hikari.HikariDataSource
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
 import io.lettuce.core.api.StatefulRedisConnection
+import kotlinx.coroutines.delay
 import me.melijn.melijnbot.internals.Settings
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import org.slf4j.LoggerFactory
 import java.sql.Connection
@@ -28,8 +30,8 @@ class DriverManager(
     private val logger = LoggerFactory.getLogger(DriverManager::class.java.name)
     private val postgresqlPattern = "(\\d+\\.\\d+).*".toRegex()
 
-    var redisClient: RedisClient
-    var redisConnection: StatefulRedisConnection<String, String?>
+    var redisClient: RedisClient? = null
+    var redisConnection: StatefulRedisConnection<String, String?>? = null
 
     init {
         // HIKARI
@@ -46,17 +48,41 @@ class DriverManager(
 
         this.dataSource = HikariDataSource(config)
 
+        if (redisSettings.enabled) {
+            logger.info("Connecting to redis..")
+            connectRedis(redisSettings.host, redisSettings.port)
 
-        logger.info("Connecting to redis..")
-        // REDIS
+        }
+    }
+
+    private fun connectRedis(host: String, port: Int) {
         val uri = RedisURI.builder()
-            .withHost(redisSettings.host)
-            .withPort(redisSettings.port)
+            .withHost(host)
+            .withPort(port)
             .build()
 
-        redisClient = RedisClient.create(uri)
-        redisConnection = redisClient.connect()
-        logger.info("Connected to redis")
+        val redisClient = RedisClient.create(uri)
+        this.redisClient = redisClient
+
+        try {
+            redisConnection = redisClient.connect()
+            logger.info("Connected to redis")
+        } catch (e: Throwable) {
+            TaskManager.async {
+                logger.warn("Retrying to connect to redis..")
+                recursiveConnectRedis(host, port)
+                logger.warn("Retrying to connect to redis has succeeded!")
+            }
+        }
+    }
+
+    private suspend fun recursiveConnectRedis(host: String, port: Int) {
+        try {
+            redisConnection = redisClient?.connect()
+        } catch (e: Throwable) {
+            delay(5_000)
+            recursiveConnectRedis(host, port)
+        }
     }
 
     fun getUsableConnection(connection: (Connection) -> Unit) {

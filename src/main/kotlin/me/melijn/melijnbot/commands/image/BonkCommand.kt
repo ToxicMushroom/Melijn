@@ -39,9 +39,9 @@ class BonkCommand : AbstractCommand("command.bonk") {
         val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
         val rediCon = context.daoManager.driverManager.redisConnection
-        val avatar = rediCon.async()
-            .get("avatar:${user.id}")
-            .await()
+        val avatar = rediCon?.async()
+            ?.get("avatar:${user.id}")
+            ?.await()
 
         val inputImg = if (avatar == null) {
             ImageIO.read(URL(user.effectiveAvatarUrl.replace(".gif", ".png") + "?size=512"))
@@ -80,8 +80,8 @@ class BonkCommand : AbstractCommand("command.bonk") {
         val baos = ByteArrayOutputStream()
         ImageIO.write(inputImg, "png", baos);
 
-        rediCon.async()
-            .set("avatar:${user.id}", Base64.encode(baos.toByteArray()), SetArgs().ex(600))
+        rediCon?.async()
+            ?.set("avatar:${user.id}", Base64.encode(baos.toByteArray()), SetArgs().ex(600))
     }
 }
 

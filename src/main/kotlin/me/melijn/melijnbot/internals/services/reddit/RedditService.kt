@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.internals.services.reddit
 
-import io.ktor.client.HttpClient
+import io.ktor.client.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.commands.utility.MemeCommand
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 class RedditService(httpClient: HttpClient, driverManager: DriverManager) : Service("Reddit", 10, 1, TimeUnit.MINUTES) {
     override val service: RunnableTask = RunnableTask {
         for (subreddit in MemeCommand.subreddits) {
-            if ((driverManager.redisConnection.async().ttl("reddit:posts:hot:$subreddit").await() ?: 0) < 500) {
+            if ((driverManager.redisConnection?.async()?.ttl("reddit:posts:hot:$subreddit")?.await() ?: 0) < 500) {
                 RedditCommand.requestPostsAndStore(httpClient, driverManager, subreddit, "hot", "day")
                 delay(1000)
             }
@@ -24,7 +24,7 @@ class RedditService(httpClient: HttpClient, driverManager: DriverManager) : Serv
 class RedditAboutService(httpClient: HttpClient, driverManager: DriverManager) : Service("RedditAbout", 30, 2, TimeUnit.MINUTES) {
     override val service: RunnableTask = RunnableTask {
         for (subreddit in MemeCommand.subreddits) {
-            if ((driverManager.redisConnection.async().ttl("reddit:posts:hot:$subreddit").await() ?: 0) < 1700) {
+            if ((driverManager.redisConnection?.async()?.ttl("reddit:posts:hot:$subreddit")?.await() ?: 0) < 1700) {
                 RedditCommand.requestAboutAndStore(httpClient, driverManager, subreddit)
                 delay(1000)
             }
