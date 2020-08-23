@@ -12,4 +12,4 @@ blocks:
       jobs:
         - name: Deploy to server
           commands:
-            - ssh ${SSH_USER}@${SSH_HOST}:${SSH_PORT} docker-compose pull
+            - ssh ${SSH_USER}@${SSH_HOST} -p ${SSH_PORT} docker-compose pull
