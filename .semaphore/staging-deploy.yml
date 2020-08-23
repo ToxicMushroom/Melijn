@@ -12,5 +12,5 @@ blocks:
       jobs:
         - name: Deploy to server
           commands:
-            - ssh-keyscan -H ${SSH_HOST} >> /home/semaphore/.ssh/known_hosts
+            - ssh-keyscan -p ${SSH_PORT} -H ${SSH_HOST} >> /home/semaphore/.ssh/known_hosts
             - ssh ${SSH_USER}@${SSH_HOST} -p ${SSH_PORT} docker-compose pull
