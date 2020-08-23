@@ -93,7 +93,8 @@ data class Settings(
 
     data class Redis(
         val host: String,
-        val port: Int
+        val port: Int,
+        val enabled: Boolean
     )
 
     companion object {
@@ -182,7 +183,8 @@ data class Settings(
                 ),
                 Redis(
                     get("redis.host"),
-                    getInt("redis.port")
+                    getInt("redis.port"),
+                    getBoolean("redis.enabled")
                 ),
                 get("unloggedThreads").splitIETEL(",").toTypedArray()
             )

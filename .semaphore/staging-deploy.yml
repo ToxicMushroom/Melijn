@@ -1,0 +1,15 @@
+version: v1.0
+name: Deploy to staging
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: Deploy
+    task:
+      secrets:
+        - name: deploy-details
+      jobs:
+        - name: Deploy to server
+          commands:
+            - ssh ${SSH_USER}@${SSH_HOST}:${SSH_PORT} docker-compose pull

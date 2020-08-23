@@ -74,9 +74,9 @@ class RedditCommand : AbstractCommand("command.reddit") {
 
     companion object {
         suspend fun getRandomRedditResultNMessage(context: CommandContext, subreddit: String, arg: String, time: String): RedditResult? {
-            val about = context.daoManager.driverManager.redisConnection.async()
-                .get("reddit:about:$subreddit")
-                .await()
+            val about = context.daoManager.driverManager.redisConnection?.async()
+                ?.get("reddit:about:$subreddit")
+                ?.await()
                 ?.let {
                     objectMapper.readValue<RedditAbout>(it)
                 } ?: requestAboutAndStore(context.webManager.httpClient, context.daoManager.driverManager, subreddit)
@@ -92,9 +92,9 @@ class RedditCommand : AbstractCommand("command.reddit") {
             val timePart = if (arg == "top") {
                 ":$time"
             } else ""
-            val posts = context.daoManager.driverManager.redisConnection.async()
-                .get("reddit:posts:$arg$timePart:$subreddit")
-                .await()
+            val posts = context.daoManager.driverManager.redisConnection?.async()
+                ?.get("reddit:posts:$arg$timePart:$subreddit")
+                ?.await()
                 ?.let {
                     objectMapper.readValue<List<RedditResult>>(it)
                 }
@@ -137,8 +137,8 @@ class RedditCommand : AbstractCommand("command.reddit") {
             val timePart = if (arg == "top") {
                 ":${time}"
             } else ""
-            driverManager.redisConnection.async()
-                .set("reddit:posts:${arg}$timePart:$subreddit", objectMapper.writeValueAsString(posts), SetArgs().ex(600))
+            driverManager.redisConnection?.async()
+                ?.set("reddit:posts:${arg}$timePart:$subreddit", objectMapper.writeValueAsString(posts), SetArgs().ex(600))
             return posts
         }
 
@@ -148,8 +148,8 @@ class RedditCommand : AbstractCommand("command.reddit") {
             ).getObject("data")
 
             val about = RedditAbout(data.getBoolean("over18"))
-            driverManager.redisConnection.async()
-                .set("reddit:about:$subreddit", objectMapper.writeValueAsString(about), SetArgs().ex(1800))
+            driverManager.redisConnection?.async()
+                ?.set("reddit:about:$subreddit", objectMapper.writeValueAsString(about), SetArgs().ex(1800))
             return about
         }
     }
