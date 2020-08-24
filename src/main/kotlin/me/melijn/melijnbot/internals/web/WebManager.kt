@@ -15,9 +15,7 @@ import okhttp3.OkHttpClient
 
 class WebManager(val settings: Settings) {
 
-
     val httpClient = HttpClient()
-
 
     val aniListApolloClient: ApolloClient = ApolloClient.builder()
         .serverUrl("https://graphql.anilist.co")

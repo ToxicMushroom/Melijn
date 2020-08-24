@@ -101,7 +101,7 @@ class BanCommand : AbstractCommand("command.ban") {
         val bannedMessageLc = getBanMessage(language, zoneId, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
 
         val msg = try {
-            context.guild.ban(targetUser, 7).async { daoManager.banWrapper.setBan(ban) }
+            context.guild.ban(targetUser, 7).reason(ban.reason).async { daoManager.banWrapper.setBan(ban) }
             banningMessage?.editMessage(
                 bannedMessageDm
             )?.override(true)?.queue()

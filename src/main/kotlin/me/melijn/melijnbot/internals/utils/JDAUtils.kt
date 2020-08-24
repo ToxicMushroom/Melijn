@@ -30,7 +30,7 @@ val TextChannel.asTag: String
     get() = "#${this.name}"
 
 suspend fun <T> Task<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
-    onSuccess { success ->
+    onSuccess { success: T ->
         it.resume(success)
     }
 
