@@ -22,6 +22,7 @@ import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
+import java.awt.Color
 import java.lang.management.ManagementFactory
 import java.util.*
 import java.util.concurrent.ThreadPoolExecutor
@@ -381,8 +382,9 @@ class RestServer(container: Container) {
                 })
 
                 jobs.add(TaskManager.async {
-                    val ec = daoManager.embedColorWrapper.getColor(idLong)
-                    settings.put("embedColor", ec)
+                    var ec = daoManager.embedColorWrapper.getColor(idLong)
+                    if (ec == 0) ec = container.settings.botInfo.embedColor
+                    settings.put("embedColor", ec.toHexString())
                 })
 
                 jobs.add(TaskManager.async {
@@ -409,6 +411,96 @@ class RestServer(container: Container) {
                         .put("settings", settings)
                         .put("provided", provided)
                         .toString()
+                }
+            }
+
+            post("/postsettings/general/{guildId}") {
+                try {
+                    val guildId = call.parameters["guildId"]?.toLong() ?: return@post
+                    if (guildId < 0) return@post
+
+                    val guild = MelijnBot.shardManager.getGuildById(guildId)
+
+                    val body = call.receiveText()
+                    val jsonBody = DataObject.fromJson(body)
+                    val userId = jsonBody.getLong("userId")
+                    val member = guild?.retrieveMemberById(userId)?.awaitOrNull()
+                    if (member == null) {
+                        call.respondText(DataObject.empty()
+                            .put("error", "guild invalidated")
+                            .toString(), jsonType)
+                        return@post
+                    }
+
+                    val hasPerm = (member.hasPermission(Permission.ADMINISTRATOR) ||
+                        member.hasPermission(Permission.MANAGE_SERVER) ||
+                        member.isOwner)
+
+                    if (!hasPerm) {
+                        call.respondText(DataObject.empty()
+                            .put("error", "guild invalidated")
+                            .toString(), jsonType)
+                        return@post
+                    }
+
+                    val settings = jsonBody.getObject("settings")
+                    println(settings.toString())
+
+                    val jobs = mutableListOf<Job>()
+                    val daoManager = container.daoManager
+
+
+                    val prefixArray = settings.getArray("prefixes")
+                    val prefixes = mutableListOf<String>()
+                    for (i in 0 until prefixArray.length()) {
+                        prefixArray.getString(i)
+                            .takeIf { it != "%SPLIT%" }
+                            ?.let { prefixes.add(it) }
+                    }
+
+                    daoManager.guildPrefixWrapper.setPrefixes(guildId, prefixes)
+
+
+                    val allowSpacedPrefix = settings.getBoolean("allowSpacePrefix")
+                    daoManager.allowSpacedPrefixWrapper.setGuildState(guildId, allowSpacedPrefix)
+
+
+                    val color = Color.decode(settings.getString("embedColor"))
+                    if (container.settings.botInfo.embedColor != color.rgb) {
+                        daoManager.embedColorWrapper.setColor(guildId, color.rgb)
+                    } else {
+                        daoManager.embedColorWrapper.removeColor(guildId)
+                    }
+
+
+                    val timeZone = settings.getString("timeZone")
+                    if (TimeZone.getAvailableIDs().toList().contains(timeZone)) {
+                        val tz = TimeZone.getTimeZone(timeZone)
+                        if (tz == TimeZone.getTimeZone("UTC")) {
+                            daoManager.timeZoneWrapper.removeTimeZone(guildId)
+                        } else {
+                            daoManager.timeZoneWrapper.setTimeZone(guildId, tz)
+                        }
+                    }
+
+
+                    val embedsDisabled = settings.getBoolean("embedsDisabled")
+                    daoManager.embedDisabledWrapper.setDisabled(guildId, embedsDisabled)
+
+
+                    jobs.joinAll()
+
+                    call.respondText {
+                        DataObject.empty()
+                            .put("success", true)
+                            .toString()
+                    }
+                } catch(t: Throwable) {
+                    call.respondText {
+                        DataObject.empty()
+                            .put("success", false)
+                            .toString()
+                    }
                 }
             }
 
