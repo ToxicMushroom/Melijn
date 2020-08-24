@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.utils.getLongFromArgN
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import net.dv8tion.jda.api.Permission
 import java.awt.image.RenderedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -28,6 +29,7 @@ class BonkCommand : AbstractCommand("command.bonk") {
         id = 205
         name = "bonk"
         commandCategory = CommandCategory.IMAGE
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
     }
 
     override suspend fun execute(context: CommandContext) {
