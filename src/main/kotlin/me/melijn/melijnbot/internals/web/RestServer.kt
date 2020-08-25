@@ -125,6 +125,36 @@ class RestServer(container: Container) {
                 PostGeneralSettingsResponseHandler.handleGeneralSettingsPostResponse(RequestContext(call, container))
             }
 
+            get("/shutdown") {
+                val context = RequestContext(call, container)
+                val players = container.lavaManager.musicPlayerManager.getPlayers()
+                val wrapper = container.daoManager.tracksWrapper
+
+                if (call.request.header("Authorization") != context.restToken) {
+                    call.respondText(status = HttpStatusCode.Forbidden) { "bruh" }
+                    return@get
+                }
+
+                container.shuttingDown = true
+
+                for ((guildId, player) in HashMap(players)) {
+                    val guild = MelijnBot.shardManager.getGuildById(guildId) ?: continue
+                    val channel = context.lavaManager.getConnectedChannel(guild) ?: continue
+                    val trackManager = player.guildTrackManager
+                    val pTrack = trackManager.playingTrack ?: continue
+
+                    pTrack.position = trackManager.iPlayer.trackPosition
+
+                    wrapper.put(guildId, container.settings.botInfo.id, pTrack, trackManager.tracks)
+                    wrapper.addChannel(guildId, channel.idLong)
+
+                    trackManager.stopAndDestroy()
+                }
+
+                call.respondText { "Shutted down!" }
+                stop()
+            }
+
             //Has to be registered last to not override other paths
             get("*") {
                 call.respondText("blub")

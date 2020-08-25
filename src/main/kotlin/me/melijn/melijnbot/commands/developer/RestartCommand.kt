@@ -20,6 +20,7 @@ class RestartCommand : AbstractCommand("command.restart") {
     override suspend fun execute(context: CommandContext) {
         val players = context.lavaManager.musicPlayerManager.getPlayers()
         val wrapper = context.daoManager.tracksWrapper
+        wrapper.clear()
 
         sendRsp(context, "Are you sure you wanna restart ?")
 
@@ -28,6 +29,7 @@ class RestartCommand : AbstractCommand("command.restart") {
         }, {
             if (it.message.contentRaw == "yes") {
                 context.container.shuttingDown = true
+                context.container.restServer?.stop()
 
                 for ((guildId, player) in HashMap(players)) {
                     val guild = context.shardManager.getGuildById(guildId) ?: continue

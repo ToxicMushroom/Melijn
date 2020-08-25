@@ -17,8 +17,8 @@ blocks:
             - docker build -t ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest .
             - docker push ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest
 promotions:
-  - name: Staging deploy
-    pipeline_file: staging-deploy.yml
+  - name: Staging pull img & down bot
+    pipeline_file: staging-1-deploy.yml
     auto_promote_on:
       - result: passed
         branch:

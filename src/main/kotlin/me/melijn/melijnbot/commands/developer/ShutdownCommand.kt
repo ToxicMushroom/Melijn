@@ -26,6 +26,7 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
         }, {
             if (it.message.contentRaw == "yes") {
                 context.container.shuttingDown = true
+                context.container.restServer?.stop()
 
                 for ((guildId, player) in HashMap(players)) {
                     val guild = context.shardManager.getGuildById(guildId) ?: continue
