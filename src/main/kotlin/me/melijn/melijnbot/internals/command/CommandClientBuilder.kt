@@ -224,7 +224,10 @@ class CommandClientBuilder(private val container: Container) {
         MemeCommand(),
         BonkCommand(),
         OsuCommand(),
-        EmotesCommand()
+        EmotesCommand(),
+        IDInfoCommand(),
+        IAmCommand(),
+        IAmNotCommand()
     )
 
     fun build(): CommandClient {

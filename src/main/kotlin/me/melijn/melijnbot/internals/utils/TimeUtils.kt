@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss O")
+val dateTimeMillisFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss.SSS O")
 val simpleDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss")
 val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd O")
 val purgeTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("kk:mm:ss")
@@ -70,6 +71,11 @@ fun Long.asEpochMillisToDateTime(zoneId: ZoneId): String {
     return offsetDateTime.asLongLongGMTString()
 }
 
+fun Long.asEpochMillisToDateTimeMillis(zoneId: ZoneId): String {
+    val offsetDateTime = Instant.ofEpochMilli(this).atZone(zoneId)
+    return offsetDateTime.asLongLongLongGMTString()
+}
+
 fun OffsetDateTime.asEpochMillisToDate(zoneId: ZoneId): String {
     val offsetDateTime = this.atZoneSameInstant(zoneId) ?: throw IllegalArgumentException("ANGRY")
 
@@ -87,6 +93,7 @@ fun OffsetDateTime.asEpochMillisToDateTime(zoneId: ZoneId): String {
 
 fun OffsetDateTime.asLongLongGMTString(): String = this.format(dateTimeFormatter)
 fun OffsetDateTime.asLongDateGMTString(): String = this.format(dateFormatter)
+fun ZonedDateTime.asLongLongLongGMTString(): String = this.format(dateTimeMillisFormatter)
 fun ZonedDateTime.asLongLongGMTString(): String = this.format(dateTimeFormatter)
 fun ZonedDateTime.asLongDateGMTString(): String = this.format(dateFormatter)
 fun ZonedDateTime.asAsLongTimeAndInvisOffset(): String = this.format(purgeTimeFormatter)
