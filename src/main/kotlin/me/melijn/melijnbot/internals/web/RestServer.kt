@@ -12,6 +12,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.commands.administration.PREFIXES_LIMIT
+import me.melijn.melijnbot.commands.administration.PREMIUM_PREFIXES_LIMIT
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
@@ -362,10 +364,12 @@ class RestServer(container: Container) {
                     return@post
                 }
 
+                val premiumGuild = container.daoManager.supporterWrapper.getGuilds().contains(guild.idLong)
                 val guildData = DataObject.empty()
                     .put("id", id)
                     .put("name", guild.name)
                     .put("icon", guild.iconId)
+                    .put("premium", premiumGuild)
 
                 val jobs = mutableListOf<Job>()
                 val settings = DataObject.empty()
@@ -401,7 +405,8 @@ class RestServer(container: Container) {
                 settings.put("embedsDisabled", disabled)
 
                 val provided = DataObject.empty()
-                provided.put("timezones", DataArray.fromCollection(TimeZone.getAvailableIDs().toList()))
+                    .put("timezones", DataArray.fromCollection(TimeZone.getAvailableIDs().toList()))
+                    .put("prefixLimit", if (premiumGuild) PREMIUM_PREFIXES_LIMIT else PREFIXES_LIMIT)
 
                 jobs.joinAll()
 
