@@ -41,7 +41,6 @@ object PostGeneralSettingsResponseHandler {
             }
 
             val settings = jsonBody.getObject("settings")
-            println(settings.toString())
 
             val jobs = mutableListOf<Job>()
             val daoManager = context.daoManager

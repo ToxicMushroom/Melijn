@@ -18,7 +18,7 @@ class Task(private val func: suspend () -> Unit) : KTRunnable {
     }
 }
 
-class DeferredTask<T>(private val func: suspend () -> T?) : DeferredKTRunnable<T> {
+class DeferredNTask<T>(private val func: suspend () -> T?) : DeferredNKTRunnable<T> {
 
     override suspend fun run(): T? {
         return try {
@@ -28,6 +28,14 @@ class DeferredTask<T>(private val func: suspend () -> T?) : DeferredKTRunnable<T
             e.sendInGuild()
             null
         }
+    }
+}
+
+
+class DeferredTask<T>(private val func: suspend () -> T) : DeferredKTRunnable<T> {
+
+    override suspend fun run(): T {
+        return func()
     }
 }
 
@@ -151,6 +159,11 @@ interface KTRunnable {
 }
 
 @FunctionalInterface
-interface DeferredKTRunnable<T> {
+interface DeferredNKTRunnable<T> {
     suspend fun run(): T?
+}
+
+@FunctionalInterface
+interface DeferredKTRunnable<T> {
+    suspend fun run(): T
 }
