@@ -12,9 +12,9 @@ blocks:
       jobs:
         - name: Pull image & shutdown bot
           commands:
-            - "chmod 400 /home/semaphore/.ssh/id_rsa"
-            - "ssh-keyscan -p ${SSH_PORT} -H ${SSH_HOST} >> /home/semaphore/.ssh/known_hosts"
-            - "ssh ${SSH_USER}@${SSH_HOST} -p ${SSH_PORT} docker-compose pull && curl -H 'Authorization: ${REST_TOKEN}' http://${REST_HOST}:${REST_PORT}/shutdown"
+            - chmod 400 /home/semaphore/.ssh/id_rsa
+            - ssh-keyscan -p ${SSH_PORT} -H ${SSH_HOST} >> /home/semaphore/.ssh/known_hosts
+            - ssh ${SSH_USER}@${SSH_HOST} -p ${SSH_PORT} docker-compose pull && curl -H "Authorization: ${REST_TOKEN}" http://${REST_HOST}:${REST_PORT}/shutdown
 promotions:
   - name: Staging restart compose
     pipeline_file: staging-2-deploy.yml
