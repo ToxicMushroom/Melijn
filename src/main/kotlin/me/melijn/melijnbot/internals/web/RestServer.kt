@@ -130,8 +130,11 @@ class RestServer(container: Container) {
                 val players = container.lavaManager.musicPlayerManager.getPlayers()
                 val wrapper = container.daoManager.tracksWrapper
 
+                println(call.request.header("Authorization"))
+                println(context.restToken)
+
                 if (call.request.header("Authorization") != context.restToken) {
-                    call.respondText(status = HttpStatusCode.Forbidden) { "bruh" }
+                    call.respondText(status = HttpStatusCode.Forbidden) { "Invalid token\n" }
                     return@get
                 }
 
