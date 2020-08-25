@@ -109,10 +109,11 @@ class MelijnBot {
             linkBuilder.defaultGroupId = "normal"
 
             for ((groupId, nodeList) in nodeMap) {
-                for ((host, password) in nodeList) {
-                    linkBuilder.addNode(groupId, URI.create("ws://${host}"), password)
+                for ((_, host, pass) in nodeList) {
+                    linkBuilder.addNode(groupId, URI.create("ws://${host}"), pass)
                 }
             }
+
             linkBuilder
         } else {
             null
