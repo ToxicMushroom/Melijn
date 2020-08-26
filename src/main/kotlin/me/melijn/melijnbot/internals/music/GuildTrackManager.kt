@@ -257,7 +257,7 @@ class GuildTrackManager(
     fun removeAt(indexes: IntArray): Map<Int, AudioTrack> {
         val removed = HashMap<Int, AudioTrack>()
 
-        for (index in indexes) {
+        for (index in indexes.sortedBy { it }.reversed()) {
             removed[index] = tracks.removeAt(index)
         }
 

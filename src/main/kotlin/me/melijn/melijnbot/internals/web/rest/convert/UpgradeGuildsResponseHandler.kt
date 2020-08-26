@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.internals.web.rest.convert
 
-import io.ktor.application.*
 import io.ktor.request.*
-import io.ktor.response.*
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.web.RequestContext
 import me.melijn.melijnbot.internals.web.WebUtils.respondJson
