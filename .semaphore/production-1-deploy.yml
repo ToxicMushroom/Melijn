@@ -16,8 +16,8 @@ blocks:
             - ssh-keyscan -p ${SSH_PORT} -H ${SSH_HOST} >> /home/semaphore/.ssh/known_hosts
             - "ssh ${SSH_USER}@${SSH_HOST} -p ${SSH_PORT} sudo docker-compose pull && curl -H \"Authorization: ${REST_TOKEN}\" http://${REST_HOST}:${REST_PORT}/shutdown"
 promotions:
-  - name: Staging restart compose
-    pipeline_file: staging-2-deploy.yml
+  - name: Prod restart compose
+    pipeline_file: production-2-deploy.yml
     auto_promote_on:
       - result: passed
         branch:
