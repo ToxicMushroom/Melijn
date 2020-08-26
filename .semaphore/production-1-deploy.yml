@@ -20,8 +20,8 @@ blocks:
 promotions:
   - name: Prod restart compose
     pipeline_file: production-2-deploy.yml
-    auto_promote_on:
-      - result: passed
-        branch:
-          - staging
-          - master
+#    auto_promote_on:
+#      - result: passed
+#        branch:
+#          - staging
+#          - master
