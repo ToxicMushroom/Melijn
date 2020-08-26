@@ -23,5 +23,5 @@ promotions:
       - result: passed
         branch:
           - staging
-  - name: Production deploy
-    pipeline_file: production-deploy.yml
+  - name: Prod pull img & down bot
+    pipeline_file: production-1-deploy.yml
