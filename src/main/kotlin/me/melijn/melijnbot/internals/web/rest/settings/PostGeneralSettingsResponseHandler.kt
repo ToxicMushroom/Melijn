@@ -13,7 +13,7 @@ import java.awt.Color
 import java.util.*
 
 object PostGeneralSettingsResponseHandler {
-    suspend fun handleGeneralSettingsPostResponse(context: RequestContext) {
+    suspend fun handleGeneralSettingsPost(context: RequestContext) {
         try {
             val guildId = context.call.parameters["guildId"]?.toLongOrNull() ?: return
             if (guildId < 0) return

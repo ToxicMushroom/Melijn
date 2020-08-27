@@ -6,13 +6,13 @@ import java.util.*
 
 class TimeZoneWrapper(private val timeZoneDao: TimeZoneDao) {
 
-    suspend fun getTimeZone(guildId: Long): String {
-        val cached = timeZoneDao.getCacheEntry(guildId, HIGHER_CACHE)
+    suspend fun getTimeZone(id: Long): String {
+        val cached = timeZoneDao.getCacheEntry(id, HIGHER_CACHE)
 
         if (cached != null) return cached
 
-        val timezone = timeZoneDao.getZoneId(guildId)
-        timeZoneDao.setCacheEntry(guildId, timezone, NORMAL_CACHE)
+        val timezone = timeZoneDao.getZoneId(id)
+        timeZoneDao.setCacheEntry(id, timezone, NORMAL_CACHE)
         return timezone
     }
 
