@@ -2,6 +2,7 @@ package me.melijn.melijnbot.internals.web.rest.settings
 
 import io.ktor.request.*
 import me.melijn.melijnbot.internals.models.TriState
+import me.melijn.melijnbot.internals.utils.getBirthdayByArgsN
 import me.melijn.melijnbot.internals.web.RequestContext
 import me.melijn.melijnbot.internals.web.WebUtils.respondJson
 import net.dv8tion.jda.api.utils.data.DataObject
@@ -42,8 +43,18 @@ object PostUserSettingsResponseHandler {
                 }
             }
 
-            val allowSpacedPrefix = settings.getString("allowSpacePrefix")
-            daoManager.allowSpacedPrefixWrapper.setUserState(userId, TriState.valueOf(allowSpacedPrefix))
+            try {
+                TriState.valueOf(settings.getString("allowSpacePrefix"))
+            } catch (e: Exception) {
+                null
+            }?.let {
+                daoManager.allowSpacedPrefixWrapper.setUserState(userId, it)
+            }
+
+            val birthday = settings.getString("birthday")
+            getBirthdayByArgsN(birthday)?.let { (birthday, birthyear) ->
+                daoManager.birthdayWrapper.setBirthday(userId, birthday, birthyear)
+            }
 
             val timeZone = settings.getString("timeZone")
             if (TimeZone.getAvailableIDs().toList().contains(timeZone)) {
