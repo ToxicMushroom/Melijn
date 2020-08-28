@@ -228,7 +228,7 @@ class CommandClientBuilder(private val container: Container) {
         IDInfoCommand(),
         IAmCommand(),
         IAmNotCommand(),
-        PollCommand(),
+//        PollCommand(),
         ChannelInfoCommand()
     )
 
