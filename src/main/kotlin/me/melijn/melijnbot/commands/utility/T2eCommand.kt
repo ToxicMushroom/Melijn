@@ -87,7 +87,7 @@ class T2eCommand : AbstractCommand("command.t2e") {
         }
 
         private fun regional(input: String): String = ":regional_indicator_$input:"
-        private fun letter(input: String): String = ":$input:"
+        fun letter(input: String): String = ":$input:"
     }
 
 

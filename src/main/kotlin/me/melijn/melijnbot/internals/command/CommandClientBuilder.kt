@@ -227,7 +227,9 @@ class CommandClientBuilder(private val container: Container) {
         EmotesCommand(),
         IDInfoCommand(),
         IAmCommand(),
-        IAmNotCommand()
+        IAmNotCommand(),
+        PollCommand(),
+        ChannelInfoCommand()
     )
 
     fun build(): CommandClient {
