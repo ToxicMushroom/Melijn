@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
+import io.ktor.client.*
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
@@ -24,11 +25,11 @@ import kotlin.random.Random
 
 object JoinLeaveUtil {
 
-    suspend fun postWelcomeMessage(daoManager: DaoManager, member: Member, channelType: ChannelType, messageType: MessageType) {
-        postWelcomeMessage(daoManager, member.guild, member.user, channelType, messageType)
+    suspend fun postWelcomeMessage(daoManager: DaoManager, httpClient: HttpClient, member: Member, channelType: ChannelType, messageType: MessageType) {
+        postWelcomeMessage(daoManager, httpClient, member.guild, member.user, channelType, messageType)
     }
 
-    suspend fun postWelcomeMessage(daoManager: DaoManager, guild: Guild, user: User, channelType: ChannelType, messageType: MessageType) {
+    suspend fun postWelcomeMessage(daoManager: DaoManager, httpClient: HttpClient, guild: Guild, user: User, channelType: ChannelType, messageType: MessageType) {
         val guildId = guild.idLong
 
         val channel = guild.getAndVerifyChannelByType(daoManager, channelType, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ)
@@ -42,8 +43,8 @@ object JoinLeaveUtil {
 
         val message: Message? = modularMessage.toMessage()
         when {
-            message == null -> sendAttachments(channel, modularMessage.attachments)
-            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, message, modularMessage.attachments)
+            message == null -> sendAttachments(channel, httpClient, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, httpClient, message, modularMessage.attachments)
             else -> sendMsg(channel, message)
         }
     }

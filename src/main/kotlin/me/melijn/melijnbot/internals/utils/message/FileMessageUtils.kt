@@ -1,11 +1,13 @@
 package me.melijn.melijnbot.internals.utils.message
 
+import io.ktor.client.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.withVariable
@@ -249,10 +251,11 @@ suspend fun sendMsg(textChannel: TextChannel, listImages: List<BufferedImage>, e
     }
 }
 
-private fun attachmentsAction(textChannel: MessageChannel, urls: Map<String, String>): MessageAction? {
+private suspend fun attachmentsAction(textChannel: MessageChannel, httpClient: HttpClient, urls: Map<String, String>): MessageAction? {
     var messageAction: MessageAction? = null
+    val guild = if (textChannel is TextChannel) textChannel.guild else null
     for ((index, url) in urls.iterator().withIndex()) {
-        val stream = URL(url.key).openStream()
+        val stream = ImageUtils.downloadImage(httpClient, url.key, true, guild, null)
         messageAction = if (index == 0) {
             textChannel.sendFile(stream, url.value)
         } else {
@@ -262,11 +265,11 @@ private fun attachmentsAction(textChannel: MessageChannel, urls: Map<String, Str
     return messageAction
 }
 
-private fun msgWithAttachmentsAction(channel: MessageChannel, message: Message, attachments: Map<String, String>): MessageAction? {
+private suspend fun msgWithAttachmentsAction(channel: MessageChannel, httpClient: HttpClient, message: Message, attachments: Map<String, String>): MessageAction? {
     var messageAction: MessageAction? = null
-
+    val guild = if (channel is TextChannel) channel.guild else null
     for ((index, url) in attachments.iterator().withIndex()) {
-        val stream = URL(url.key).openStream()
+        val stream = ImageUtils.downloadImage(httpClient, url.key, true, guild, null)
         messageAction = if (index == 0) {
             var action = if (message.contentRaw.isNotBlank()) {
                 channel.sendMessage(message.contentRaw)
@@ -288,16 +291,16 @@ private fun msgWithAttachmentsAction(channel: MessageChannel, message: Message, 
 }
 
 
-suspend fun sendAttachmentsRspAwaitN(textChannel: TextChannel, daoManager: DaoManager, attachments: Map<String, String>): Message? {
-    val message = attachmentsAction(textChannel, attachments)?.awaitOrNull() ?: return null
+suspend fun sendAttachmentsRspAwaitN(textChannel: TextChannel, httpClient: HttpClient, daoManager: DaoManager, attachments: Map<String, String>): Message? {
+    val message = attachmentsAction(textChannel, httpClient, attachments)?.awaitOrNull() ?: return null
     TaskManager.async(textChannel) {
         handleRspDelete(daoManager, message)
     }
     return message
 }
 
-suspend fun sendRspWithAttachmentsAwaitN(textChannel: TextChannel, daoManager: DaoManager, message: Message, attachments: Map<String, String>): Message? {
-    val msg = msgWithAttachmentsAction(textChannel, message, attachments)?.awaitOrNull() ?: return null
+suspend fun sendRspWithAttachmentsAwaitN(textChannel: TextChannel, httpClient: HttpClient, daoManager: DaoManager, message: Message, attachments: Map<String, String>): Message? {
+    val msg = msgWithAttachmentsAction(textChannel, httpClient, message, attachments)?.awaitOrNull() ?: return null
     TaskManager.async(textChannel) {
         handleRspDelete(daoManager, msg)
     }
@@ -326,36 +329,36 @@ suspend fun sendRspAwaitN(channel: TextChannel, daoManager: DaoManager, msg: Mes
     return message
 }
 
-fun sendAttachments(textChannel: MessageChannel, urls: Map<String, String>) {
-    attachmentsAction(textChannel, urls)?.queue()
+suspend fun sendAttachments(textChannel: MessageChannel, httpClient: HttpClient, urls: Map<String, String>) {
+    attachmentsAction(textChannel, httpClient, urls)?.queue()
 }
 
-fun sendRspAttachments(daoManager: DaoManager, textChannel: TextChannel, urls: Map<String, String>) {
+fun sendRspAttachments(daoManager: DaoManager, httpClient: HttpClient, textChannel: TextChannel, urls: Map<String, String>) {
     TaskManager.async(textChannel) {
-        val message = attachmentsAction(textChannel, urls)?.awaitOrNull() ?: return@async
+        val message = attachmentsAction(textChannel, httpClient, urls)?.awaitOrNull() ?: return@async
 
         handleRspDelete(daoManager, message)
     }
 }
 
-fun sendRspWithAttachments(daoManager: DaoManager, textChannel: TextChannel, message: Message, attachments: Map<String, String>) {
+fun sendRspWithAttachments(daoManager: DaoManager, httpClient: HttpClient, textChannel: TextChannel, message: Message, attachments: Map<String, String>) {
     TaskManager.async(textChannel) {
-        val msg = msgWithAttachmentsAction(textChannel, message, attachments)?.awaitOrNull() ?: return@async
+        val msg = msgWithAttachmentsAction(textChannel, httpClient, message, attachments)?.awaitOrNull() ?: return@async
 
         handleRspDelete(daoManager, msg)
     }
 }
 
-fun sendMsgWithAttachments(channel: MessageChannel, message: Message, attachments: Map<String, String>) {
-    msgWithAttachmentsAction(channel, message, attachments)?.queue()
+suspend fun sendMsgWithAttachments(channel: MessageChannel, httpClient: HttpClient, message: Message, attachments: Map<String, String>) {
+    msgWithAttachmentsAction(channel, httpClient, message, attachments)?.queue()
 }
 
-suspend fun sendAttachmentsAwaitN(textChannel: MessageChannel, urls: Map<String, String>): Message? {
-    return attachmentsAction(textChannel, urls)?.awaitOrNull()
+suspend fun sendAttachmentsAwaitN(textChannel: MessageChannel, httpClient: HttpClient, urls: Map<String, String>): Message? {
+    return attachmentsAction(textChannel, httpClient, urls)?.awaitOrNull()
 }
 
-suspend fun sendMsgWithAttachmentsAwaitN(channel: MessageChannel, message: Message, attachments: Map<String, String>): Message? {
-    return msgWithAttachmentsAction(channel, message, attachments)?.awaitOrNull()
+suspend fun sendMsgWithAttachmentsAwaitN(channel: MessageChannel, httpClient: HttpClient, message: Message, attachments: Map<String, String>): Message? {
+    return msgWithAttachmentsAction(channel, httpClient, message, attachments)?.awaitOrNull()
 }
 
 suspend fun sendMsgAwaitEL(context: CommandContext, msg: String, bufferedImage: BufferedImage?, extension: String): List<Message> {
