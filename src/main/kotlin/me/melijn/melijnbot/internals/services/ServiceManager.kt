@@ -32,7 +32,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         slowServices.add(BanService(shardManager, daoManager))
         slowServices.add(MuteService(shardManager, daoManager))
         slowServices.add(StatsService(shardManager, webManager.botListApi))
-        slowServices.add(BirthdayService(shardManager, daoManager))
+        slowServices.add(BirthdayService(shardManager, webManager.proxiedHttpClient, daoManager))
         webManager.spotifyApi?.let { spotifyApi ->
             services.add(SpotifyService(spotifyApi))
         }

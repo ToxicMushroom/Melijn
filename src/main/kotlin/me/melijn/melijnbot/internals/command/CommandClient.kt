@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.command
 
+import io.ktor.client.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -209,7 +210,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
         if (ccsWithPrefixMatches.isNotEmpty()) {
-            runCustomCommandByChance(event, commandPartsGlobal, ccsWithPrefixMatches, true)
+            runCustomCommandByChance(event, container.webManager.proxiedHttpClient, commandPartsGlobal, ccsWithPrefixMatches, true)
             return
 
         } else {
@@ -232,13 +233,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
 
             if (ccsWithoutPrefixMatches.isNotEmpty()) {
-                runCustomCommandByChance(event, prefixLessCommandParts, ccsWithoutPrefixMatches, false)
+                runCustomCommandByChance(event, container.webManager.proxiedHttpClient, prefixLessCommandParts, ccsWithoutPrefixMatches, false)
                 return
             }
         }
     }
 
-    private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, commandParts: List<String>, ccs: List<CustomCommand>, hasPrefix: Boolean) {
+    private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, httpClient: HttpClient, commandParts: List<String>, ccs: List<CustomCommand>, hasPrefix: Boolean) {
         val cc: CustomCommand = if (ccs.size == 1) {
             ccs.first()
         } else {
@@ -249,14 +250,14 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         if (hasPermission(container, event, "cc.${cc.id}")) {
             val cParts = commandParts.toMutableList()
-            executeCC(cc, event, cParts, hasPrefix)
+            executeCC(cc, httpClient, event, cParts, hasPrefix)
         } else {
             val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
             sendMissingPermissionMessage(event.textChannel, container.daoManager, language, "cc.${cc.id}")
         }
     }
 
-    private suspend fun executeCC(cc: CustomCommand, event: MessageReceivedEvent, commandParts: List<String>, hasPrefix: Boolean) {
+    private suspend fun executeCC(cc: CustomCommand, httpClient: HttpClient, event: MessageReceivedEvent, commandParts: List<String>, hasPrefix: Boolean) {
         val member = event.member ?: return
         val channel = event.textChannel
         if (!channel.canTalk()) return
@@ -283,8 +284,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         val message: Message? = modularMessage.toMessage()
         when {
-            message == null -> sendAttachmentsAwaitN(channel, modularMessage.attachments)
-            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(channel, message, modularMessage.attachments)
+            message == null -> sendAttachmentsAwaitN(channel, httpClient, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(channel, httpClient, message, modularMessage.attachments)
             else -> sendMsgAwaitN(channel, message)
         }
     }

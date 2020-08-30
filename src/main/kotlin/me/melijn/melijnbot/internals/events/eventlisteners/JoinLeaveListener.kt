@@ -34,12 +34,12 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         JoinLeaveUtil.reAddMute(daoManager, event)
 
         if (guildHasNoVerification(event.guild)) {
-            JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, member.user, ChannelType.JOIN, MessageType.JOIN)
+            JoinLeaveUtil.postWelcomeMessage(daoManager, container.webManager.proxiedHttpClient, event.guild, member.user, ChannelType.JOIN, MessageType.JOIN)
             JoinLeaveUtil.forceRole(daoManager, member)
             joinRole(daoManager, member)
 
         } else {
-            VerificationUtils.addUnverified(member, daoManager)
+            VerificationUtils.addUnverified(member, container.webManager.proxiedHttpClient, daoManager)
 
         }
     }
@@ -53,6 +53,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         val daoManager = container.daoManager
         val user = event.user
 
+        val proxiedHttp = container.webManager.proxiedHttpClient
         if (!daoManager.unverifiedUsersWrapper.contains(event.guild.idLong, user.idLong)) {
             if (event.guild.selfMember.hasPermission(Permission.BAN_MEMBERS, Permission.VIEW_AUDIT_LOGS)) {
                 val stateAction: suspend () -> Boolean = { daoManager.bannedOrKickedTriggersLeaveWrapper.shouldTrigger(event.guild.idLong) }
@@ -66,7 +67,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
 
 
                     if (auditKick == null) {
-                        JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
+                        JoinLeaveUtil.postWelcomeMessage(daoManager, proxiedHttp, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
                     } else {
                         val now = OffsetDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.of("GMT"))
                         var kicked = false
@@ -80,27 +81,27 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
                         }
 
                         if (kicked) {
-                            JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.KICKED, MessageType.KICKED)
+                            JoinLeaveUtil.postWelcomeMessage(daoManager, proxiedHttp, event.guild, user, ChannelType.KICKED, MessageType.KICKED)
                             if (stateAction()) {
-                                JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
+                                JoinLeaveUtil.postWelcomeMessage(daoManager, proxiedHttp, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
                             }
                         } else {
-                            JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
+                            JoinLeaveUtil.postWelcomeMessage(daoManager, proxiedHttp, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
                         }
                     }
                 } else {
-                    JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.BANNED, MessageType.BANNED)
+                    JoinLeaveUtil.postWelcomeMessage(daoManager, proxiedHttp, event.guild, user, ChannelType.BANNED, MessageType.BANNED)
                     if (stateAction()) {
-                        JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
+                        JoinLeaveUtil.postWelcomeMessage(daoManager, proxiedHttp, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
                     }
                 }
             } else {
-                JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
+                JoinLeaveUtil.postWelcomeMessage(daoManager, proxiedHttp, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
 
             }
 
         } else if (!guildHasNoVerification(event.guild)) {
-            JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.PRE_VERIFICATION_LEAVE, MessageType.PRE_VERIFICATION_LEAVE_MESSAGE)
+            JoinLeaveUtil.postWelcomeMessage(daoManager, proxiedHttp, event.guild, user, ChannelType.PRE_VERIFICATION_LEAVE, MessageType.PRE_VERIFICATION_LEAVE_MESSAGE)
 
         }
     }

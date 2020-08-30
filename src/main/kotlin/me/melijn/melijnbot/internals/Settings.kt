@@ -10,6 +10,7 @@ data class Settings(
     val botInfo: BotInfo,
     val restServer: RestServer,
     val api: Api,
+    val proxy: Proxy,
     val environment: Environment,
     val lavalink: Lavalink,
     val tokens: Token,
@@ -57,6 +58,12 @@ data class Settings(
             var token: String
         )
     }
+
+    data class Proxy(
+        val enabled: Boolean,
+        val host: String,
+        val port: Int
+    )
 
 
     data class Lavalink(
@@ -153,6 +160,11 @@ data class Settings(
                     Api.ImgHoard(
                         get("api.imghoard.token")
                     )
+                ),
+                Proxy(
+                    getBoolean("proxy.enabled"),
+                    get("proxy.host"),
+                    getInt("proxy.port")
                 ),
                 Environment.valueOf(get("environment")),
                 Lavalink(

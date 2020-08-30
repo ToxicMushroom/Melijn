@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.utils.message
 
+import io.ktor.client.*
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
@@ -76,9 +77,9 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
 
 suspend fun sendRsp(textChannel: TextChannel, context: CommandContext, msg: ModularMessage) {
     if (canResponse(textChannel, context.daoManager.supporterWrapper)) {
-        sendRsp(textChannel, context.daoManager, msg)
+        sendRsp(textChannel, context.webManager.proxiedHttpClient, context.daoManager, msg)
     } else {
-        sendMsg(textChannel, msg)
+        sendMsg(textChannel, context.webManager.proxiedHttpClient, msg)
     }
 }
 
@@ -90,11 +91,11 @@ suspend fun sendRspOrMsg(textChannel: TextChannel, daoManager: DaoManager, msg: 
     }
 }
 
-fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: ModularMessage) {
+fun sendRsp(channel: TextChannel, httpClient: HttpClient, daoManager: DaoManager, msg: ModularMessage) {
     val message: Message? = msg.toMessage()
     when {
-        message == null -> sendRspAttachments(daoManager, channel, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendRspWithAttachments(daoManager, channel, message, msg.attachments)
+        message == null -> sendRspAttachments(daoManager, httpClient, channel, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendRspWithAttachments(daoManager, httpClient, channel, message, msg.attachments)
         else -> sendRsp(channel, daoManager, message)
     }
 }
@@ -122,38 +123,38 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, message: Message) {
     }
 }
 
-suspend fun sendMsgAwaitN(privateChannel: PrivateChannel, msg: ModularMessage): Message? {
+suspend fun sendMsgAwaitN(privateChannel: PrivateChannel, httpClient: HttpClient, msg: ModularMessage): Message? {
     val message: Message? = msg.toMessage()
     return when {
-        message == null -> sendAttachmentsAwaitN(privateChannel, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(privateChannel, message, msg.attachments)
+        message == null -> sendAttachmentsAwaitN(privateChannel, httpClient, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(privateChannel, httpClient, message, msg.attachments)
         else -> sendMsgAwaitN(privateChannel, message)
     }
 }
 
-suspend fun sendRspAwaitN(textChannel: TextChannel, daoManager: DaoManager, msg: ModularMessage): Message? {
+suspend fun sendRspAwaitN(textChannel: TextChannel, httpClient: HttpClient, daoManager: DaoManager, msg: ModularMessage): Message? {
     val message: Message? = msg.toMessage()
     return when {
-        message == null -> sendAttachmentsRspAwaitN(textChannel, daoManager, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendRspWithAttachmentsAwaitN(textChannel, daoManager, message, msg.attachments)
+        message == null -> sendAttachmentsRspAwaitN(textChannel, httpClient, daoManager, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendRspWithAttachmentsAwaitN(textChannel, httpClient, daoManager, message, msg.attachments)
         else -> sendRspAwaitN(textChannel, daoManager, message)
     }
 }
 
-suspend fun sendMsgAwaitN(textChannel: TextChannel, msg: ModularMessage): Message? {
+suspend fun sendMsgAwaitN(textChannel: TextChannel, httpClient: HttpClient, msg: ModularMessage): Message? {
     val message: Message? = msg.toMessage()
     return when {
-        message == null -> sendAttachmentsAwaitN(textChannel, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(textChannel, message, msg.attachments)
+        message == null -> sendAttachmentsAwaitN(textChannel, httpClient, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(textChannel, httpClient, message, msg.attachments)
         else -> sendMsgAwaitN(textChannel, message)
     }
 }
 
-fun sendMsg(textChannel: TextChannel, msg: ModularMessage) {
+suspend fun sendMsg(textChannel: TextChannel, httpClient: HttpClient, msg: ModularMessage) {
     val message: Message? = msg.toMessage()
     when {
-        message == null -> sendAttachments(textChannel, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendMsgWithAttachments(textChannel, message, msg.attachments)
+        message == null -> sendAttachments(textChannel, httpClient, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendMsgWithAttachments(textChannel, httpClient, message, msg.attachments)
         else -> sendMsg(textChannel, message)
     }
 }

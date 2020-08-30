@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.utils
 
+import io.ktor.client.*
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
@@ -49,7 +50,7 @@ object VerificationUtils {
         sendRspOrMsg(textChannel, daoManager, msg)
     }
 
-    suspend fun verify(daoManager: DaoManager, unverifiedRole: Role, author: User, member: Member): Boolean {
+    suspend fun verify(daoManager: DaoManager, httpClient: HttpClient, unverifiedRole: Role, author: User, member: Member): Boolean {
         if (hasHitThroughputLimit(daoManager, member)) {
             LogUtils.sendHitVerificationThroughputLimitLog(daoManager, member)
             return false
@@ -71,7 +72,7 @@ object VerificationUtils {
 
         daoManager.unverifiedUsersWrapper.remove(member.guild.idLong, member.idLong)
         LogUtils.sendVerifiedUserLog(daoManager, author, member)
-        JoinLeaveUtil.postWelcomeMessage(daoManager, member, ChannelType.JOIN, MessageType.JOIN)
+        JoinLeaveUtil.postWelcomeMessage(daoManager, httpClient, member, ChannelType.JOIN, MessageType.JOIN)
         JoinLeaveUtil.forceRole(daoManager, member)
         JoinLeaveUtil.joinRole(daoManager, member)
         return true
@@ -90,7 +91,7 @@ object VerificationUtils {
         val max = daoManager.verificationUserFlowRateWrapper.getFlowRate(guild.idLong)
         if (max == -1L) return false
         val lastMembers = memberJoinTimes
-            .getOrDefault(guild.idLong, emptyMap<Long, Long>())
+            .getOrDefault(guild.idLong, emptyMap())
 
         val lastHourJoinedMembersAmount = lastMembers.filter {
             (System.currentTimeMillis() - it.value) < 60_000
@@ -99,9 +100,9 @@ object VerificationUtils {
     }
 
 
-    suspend fun addUnverified(member: Member, daoManager: DaoManager) {
+    suspend fun addUnverified(member: Member, httpClient: HttpClient, daoManager: DaoManager) {
         val guild = member.guild
-        JoinLeaveUtil.postWelcomeMessage(daoManager, member, ChannelType.PRE_VERIFICATION_JOIN, MessageType.PRE_VERIFICATION_JOIN_MESSAGE)
+        JoinLeaveUtil.postWelcomeMessage(daoManager, httpClient, member, ChannelType.PRE_VERIFICATION_JOIN, MessageType.PRE_VERIFICATION_JOIN_MESSAGE)
 
         val role = guild.getAndVerifyRoleByType(daoManager, RoleType.UNVERIFIED, true) ?: return
 

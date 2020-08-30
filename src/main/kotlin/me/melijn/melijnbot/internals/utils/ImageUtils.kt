@@ -2,6 +2,7 @@ package me.melijn.melijnbot.internals.utils
 
 import com.madgag.gif.fmsware.GifDecoder
 import com.squareup.gifencoder.*
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -13,6 +14,7 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import java.awt.Color
 import java.awt.Graphics
@@ -124,16 +126,20 @@ object ImageUtils {
         return Triple(nonnullImage, url, arg)
     }
 
-    private suspend fun downloadImage(context: CommandContext, url: String, doChecks: Boolean = true): ByteArray {
+    suspend fun downloadImage(context: CommandContext, url: String, doChecks: Boolean = true): ByteArray {
+        return downloadImage(context.webManager.httpClient, url, doChecks, context.guildN, context)
+    }
+
+    suspend fun downloadImage(httpClient: HttpClient, url: String, doChecks: Boolean = true, guild: Guild? = null, context: CommandContext? = null): ByteArray {
         return if (doChecks) {
-            context.webManager.httpClient.get<HttpStatement>(url).execute {
+            httpClient.get<HttpStatement>(url).execute {
                 val channel = it.receive<ByteReadChannel>()
                 var running = true
 
 
                 ByteArrayOutputStream().use { baos ->
                     var totalBytes = 0L
-                    val toCompare = if (context.isFromGuild) context.guild.maxFileSize else (Message.MAX_FILE_SIZE.toLong())
+                    val toCompare = guild?.maxFileSize ?: Message.MAX_FILE_SIZE.toLong()
                     while (running) {
                         val read = channel.readRemaining(4096)
                         val readsize = read.remaining
@@ -141,9 +147,12 @@ object ImageUtils {
                         baos.writePacket(read)
                         if (totalBytes > toCompare) {
                             running = false
-                            val msg = context.getTranslation("message.filetobig")
-                                .withVariable("size", "100MB")
-                            sendRsp(context, msg)
+
+                            context?.let {
+                                val msg = it.getTranslation("message.filetobig")
+                                    .withVariable("size", "100MB")
+                                sendRsp(it, msg)
+                            }
 
                             channel.cancel()
                             throw SizeLimitExceededException("Size limit $toCompare")
@@ -156,7 +165,7 @@ object ImageUtils {
                 }
             }
         } else {
-            context.webManager.httpClient.get(url)
+            httpClient.get(url)
         }
     }
 
