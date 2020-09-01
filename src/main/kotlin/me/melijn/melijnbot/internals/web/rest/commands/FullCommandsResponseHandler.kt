@@ -1,5 +1,7 @@
 package me.melijn.melijnbot.internals.web.rest.commands
 
+import io.ktor.http.*
+import io.ktor.response.*
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.translation.i18n
@@ -9,20 +11,28 @@ import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 
 object FullCommandsResponseHandler {
+
+    var cmds = ""
+
+
     suspend fun handleFullCommandsResponse(context: RequestContext) {
-        val dataObject = DataObject.empty()
-        for ((_, root) in context.container.commandMap) {
-            if (root.commandCategory == CommandCategory.DEVELOPER) continue
-            val dataArray = if (dataObject.hasKey(root.commandCategory.toString())) {
-                dataObject.getArray(root.commandCategory.toString())
-            } else {
-                DataArray.empty()
+        if (cmds.isEmpty()) {
+            val dataObject = DataObject.empty()
+            for ((_, root) in context.container.commandMap) {
+                if (root.commandCategory == CommandCategory.DEVELOPER) continue
+                val dataArray = if (dataObject.hasKey(root.commandCategory.toString())) {
+                    dataObject.getArray(root.commandCategory.toString())
+                } else {
+                    DataArray.empty()
+                }
+                val darr = getDataArrayArrayFrom(arrayOf(root)).getArray(0)
+                dataArray.add(darr)
+                dataObject.put(root.commandCategory.toString(), dataArray)
             }
-            val darr = getDataArrayArrayFrom(arrayOf(root)).getArray(0)
-            dataArray.add(darr)
-            dataObject.put(root.commandCategory.toString(), dataArray)
+            cmds = dataObject.toString()
         }
-        context.call.respondJson(dataObject)
+
+        context.call.respondText(cmds, ContentType.Application.Json)
     }
 
     private fun getDataArrayArrayFrom(children: Array<AbstractCommand>): DataArray {

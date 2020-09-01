@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.services.birthday
 
+import io.ktor.client.*
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.RoleType
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeUnit
 
 class BirthdayService(
     val shardManager: ShardManager,
-
+    val httpClient: HttpClient,
     val daoManager: DaoManager
 ) : Service("Birthday", 2, 5, TimeUnit.MINUTES) {
 
@@ -84,7 +85,7 @@ class BirthdayService(
                     }
 
                     //send birthday message
-                    LogUtils.sendBirthdayMessage(daoManager,textChannel, member, info.birthYear)
+                    LogUtils.sendBirthdayMessage(daoManager,httpClient, textChannel, member, info.birthYear)
                 }
             }
 
@@ -132,7 +133,7 @@ class BirthdayService(
                 ) {
                     if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
 
-                    LogUtils.sendBirthdayMessage(daoManager, textChannel, member, info.birthYear)
+                    LogUtils.sendBirthdayMessage(daoManager, httpClient, textChannel, member, info.birthYear)
                     birthdayHistory.add(calendar.get(Calendar.YEAR), guildId, userId)
                 }
             }

@@ -297,7 +297,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                         (event.reactionEmote.isEmoji && event.reactionEmote.emoji == code) ||
                         (event.reactionEmote.isEmote && event.reactionEmote.emote.id == code)
                     ) {
-                        VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
+                        VerificationUtils.verify(dao, container.webManager.proxiedHttpClient,
+                            unverifiedRole, guild.selfMember.user, member)
                     } else {
                         VerificationUtils.failedVerification(dao, member)
                     }

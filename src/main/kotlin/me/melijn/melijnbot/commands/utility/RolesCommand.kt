@@ -32,7 +32,7 @@ class RolesCommand : AbstractCommand("command.roles") {
             context.guild
         }
 
-        val available = context.args.isEmpty() && context.args[context.args.size - 1] == "available"
+        val available = context.args.isNotEmpty() && context.args[context.args.size - 1] == "available"
 
         val title = context.getTranslation("$root.response1.title")
             .withVariable("serverName", guild.name)

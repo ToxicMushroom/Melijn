@@ -52,8 +52,8 @@ class BoostListener(container: Container) : AbstractListener(container) {
 
         val message: Message? = modularMessage.toMessage()
         when {
-            message == null -> sendAttachments(channel, modularMessage.attachments)
-            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, message, modularMessage.attachments)
+            message == null -> sendAttachments(channel, container.webManager.proxiedHttpClient, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, container.webManager.proxiedHttpClient, message, modularMessage.attachments)
             else -> sendMsg(channel, message)
         }
     }

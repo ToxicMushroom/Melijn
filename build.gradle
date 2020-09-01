@@ -50,7 +50,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_198') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_200') {
         exclude module: 'opus-java'
     }
 
@@ -104,6 +104,7 @@ dependencies {
 
     implementation group: 'io.ktor', name: 'ktor', version: '1.4.0'
     implementation group: 'io.ktor', name: 'ktor-client-cio', version: '1.4.0'
+    implementation group: 'io.ktor', name: 'ktor-client-okhttp', version: '1.4.0'
     implementation group: 'io.ktor', name: 'ktor-server-netty', version: '1.4.0'
 
 

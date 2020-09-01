@@ -228,7 +228,8 @@ class CommandClientBuilder(private val container: Container) {
         IDInfoCommand(),
         IAmCommand(),
         IAmNotCommand(),
-        TokenInfoCommand()
+        TokenInfoCommand(),
+        ChannelInfoCommand()
     )
 
     fun build(): CommandClient {

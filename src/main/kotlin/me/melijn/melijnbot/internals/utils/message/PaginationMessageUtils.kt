@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.utils.message
 
+import io.ktor.client.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
@@ -13,16 +14,16 @@ import net.dv8tion.jda.api.entities.TextChannel
 suspend fun sendPaginationModularRsp(context: CommandContext, modularMessages: List<ModularMessage>, index: Int) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
-        sendPaginationModularRsp(context.textChannel, context.authorId, context.daoManager, modularMessages, index)
+        sendPaginationModularRsp(context.textChannel, context.webManager.proxiedHttpClient, context.authorId, context.daoManager, modularMessages, index)
     } else {
         sendPaginationModularMsg(context, modularMessages, index)
     }
 }
 
-suspend fun sendPaginationModularRsp(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, modularMessages: List<ModularMessage>, index: Int) {
+suspend fun sendPaginationModularRsp(textChannel: TextChannel, httpClient: HttpClient, authorId: Long, daoManager: DaoManager, modularMessages: List<ModularMessage>, index: Int) {
     val msg = modularMessages[index]
 
-    val message = sendRspAwaitN(textChannel, daoManager, msg)
+    val message = sendRspAwaitN(textChannel, httpClient, daoManager, msg)
         ?: throw IllegalArgumentException("Couldn't send the message")
     registerPaginationModularMessage(textChannel, authorId, message, modularMessages, index)
 }
@@ -44,11 +45,11 @@ suspend fun sendPaginationModularMsg(context: CommandContext, msgList: List<Modu
     val msg = msgList[index]
 
     if (context.isFromGuild) {
-        val message = sendMsgAwaitN(context.textChannel, msg)
+        val message = sendMsgAwaitN(context.textChannel, context.webManager.proxiedHttpClient, msg)
             ?: throw IllegalArgumentException("Couldn't send the message")
         registerPaginationModularMessage(context.textChannel, context.authorId, message, msgList, index)
     } else {
-        val message = sendMsgAwaitN(context.privateChannel, msg)
+        val message = sendMsgAwaitN(context.privateChannel, context.webManager.proxiedHttpClient, msg)
             ?: throw IllegalArgumentException("Couldn't send the message")
         registerPaginationModularMessage(context.privateChannel, context.authorId, message, msgList, index)
     }
