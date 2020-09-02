@@ -251,7 +251,7 @@ suspend fun sendMsgAwaitEL(channel: TextChannel, msg: String): List<Message> {
 }
 
 fun sendMsg(channel: TextChannel, msg: String) {
-    require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
+    require(channel.canTalk()) { "Cannot talk in this channel #" + channel.name }
 
     if (msg.length <= 2000) {
         channel.sendMessage(msg).queue()

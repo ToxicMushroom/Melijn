@@ -38,7 +38,7 @@ class TokenInfoCommand : AbstractCommand("command.tokeninfo") {
             .setTitle("Token Info")
             .setDescription("**UserID** ${userId}\n" +
                 "**Creation Time** ${((created * 1000 + 1293840000) * 1000).asEpochMillisToDateTime(context.getTimeZoneId())}\n" +
-                "**Hmac** ${hmac}")
+                "**Hmac** $hmac")
         sendEmbedRsp(context, eb.build())
     }
 }

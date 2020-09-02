@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.sharding.ShardManager
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import net.dv8tion.jda.api.utils.concurrent.Task
 import java.awt.Color
 import java.util.*
@@ -238,6 +239,29 @@ suspend fun getRoleByArgsNMessage(
         }
     }
     return role
+}
+
+// Returns pair with boolean (true if place is used in args, false if attachments were provided)
+suspend fun getImageUrlFromArgsNMessage(
+    context: CommandContext,
+    index: Int
+): Pair<Boolean, String>? {
+    val attachments = context.message.attachments
+    if (attachments.size > 0) {
+        return Pair(false, attachments[0].url)
+    } else if (context.args.isNotEmpty()) {
+        val arg = context.args[index]
+        if (arg.matches(URL_PATTERN)) {
+            return Pair(true, arg)
+        } else {
+            val msg = "The text you provided `${MarkdownSanitizer.sanitize(arg)}` is not a valid url"
+            sendRsp(context, msg)
+        }
+    } else {
+        val msg = "No image was provided as an attachment or as a url"
+        sendRsp(context, msg)
+    }
+    return null
 }
 
 suspend fun getStringFromArgsNMessage(

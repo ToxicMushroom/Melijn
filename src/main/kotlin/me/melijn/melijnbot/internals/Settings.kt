@@ -37,8 +37,10 @@ data class Settings(
         val melijnCDN: MelijnCDN,
         val jikan: Jikan,
         val spotify: Spotify,
-        val imgHoard: ImgHoard
+        val imgHoard: ImgHoard,
+        val sauceNao: SauceNao
     ) {
+
         data class Spotify(
             var clientId: String,
             var password: String
@@ -55,6 +57,10 @@ data class Settings(
         )
 
         data class ImgHoard(
+            var token: String
+        )
+
+        data class SauceNao(
             var token: String
         )
     }
@@ -159,6 +165,9 @@ data class Settings(
                     ),
                     Api.ImgHoard(
                         get("api.imghoard.token")
+                    ),
+                    Api.SauceNao(
+                        get("api.saucenao.token")
                     )
                 ),
                 Proxy(
