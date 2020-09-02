@@ -5,6 +5,7 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.iharder.Base64
@@ -15,7 +16,7 @@ class TokenInfoCommand : AbstractCommand("command.tokeninfo") {
     init {
         id = 212
         name = "tokenInfo"
-        aliases = arrayOf("Ti")
+        aliases = arrayOf("ti", "token")
         commandCategory = CommandCategory.UTILITY
     }
 
@@ -30,15 +31,23 @@ class TokenInfoCommand : AbstractCommand("command.tokeninfo") {
             sendSyntax(context)
             return
         }
-        val userId = String(Base64.decode(split[0]))
-        val created = BigInteger(Base64.decode(split[1])).toLong()
+        val userId = String(Base64.decode(split[0])).toLongOrNull() ?: return
+        val bot = context.shardManager.retrieveUserById(userId).awaitOrNull()
+        val botCreated = (userId shr 22) + 1420070400000
+        val tokenCreated = BigInteger(Base64.decode(split[1])).toLong() * 1000 + 1_592_707_552_616
         val hmac = (split[2])
 
         val eb = Embedder(context)
-            .setTitle("Token Info")
-            .setDescription("**UserID** ${userId}\n" +
-                "**Creation Time** ${((created * 1000 + 1293840000) * 1000).asEpochMillisToDateTime(context.getTimeZoneId())}\n" +
-                "**Hmac** ${hmac}")
+            .setDescription("**BotID:** ${userId}\n" +
+                "**Bot Creation Time:** ${(botCreated).asEpochMillisToDateTime(context.getTimeZoneId())} | $botCreated\n" +
+                "**Token Creation Time:** ${(tokenCreated).asEpochMillisToDateTime(context.getTimeZoneId())} | $tokenCreated\n" +
+                "**Hmac:** $hmac")
+        if (bot != null) {
+            eb.setAuthor(bot.asTag, null, bot.effectiveAvatarUrl)
+        } else {
+            eb.setTitle("Token Info of unknown bot")
+        }
+
         sendEmbedRsp(context, eb.build())
     }
 }

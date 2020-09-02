@@ -15,7 +15,7 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
     init {
         id = 8
         name = "userInfo"
-        aliases = arrayOf("user", "memberInfo", "member")
+        aliases = arrayOf("ui", "user", "memberInfo", "member", "mi")
         commandCategory = CommandCategory.UTILITY
     }
 
