@@ -229,7 +229,8 @@ class CommandClientBuilder(private val container: Container) {
         IAmCommand(),
         IAmNotCommand(),
         TokenInfoCommand(),
-        ChannelInfoCommand()
+        ChannelInfoCommand(),
+        ReverseImageSearchCommand()
     )
 
     fun build(): CommandClient {
