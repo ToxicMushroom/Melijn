@@ -22,7 +22,7 @@ import java.util.*
 
 class MelijnBot {
 
-    val logger = LoggerFactory.getLogger(MelijnBot::class.java)
+    private val logger = LoggerFactory.getLogger(MelijnBot::class.java)
 
     companion object {
         lateinit var instance: MelijnBot
