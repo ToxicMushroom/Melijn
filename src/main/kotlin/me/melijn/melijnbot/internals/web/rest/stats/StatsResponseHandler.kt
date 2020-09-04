@@ -4,6 +4,7 @@ import com.sun.management.OperatingSystemMXBean
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.threading.TaskManager.scheduledExecutorService
 import me.melijn.melijnbot.internals.utils.OSValidator
 import me.melijn.melijnbot.internals.utils.getSystemUptime
 import me.melijn.melijnbot.internals.utils.getUnixRam
@@ -28,7 +29,7 @@ object StatsResponseHandler {
         val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
         val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
         val threadPoolExecutor = TaskManager.executorService as ThreadPoolExecutor
-        val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
+        scheduledExecutorService as ThreadPoolExecutor
 
         val dataObject = DataObject.empty()
         dataObject.put("bot", DataObject.empty()
