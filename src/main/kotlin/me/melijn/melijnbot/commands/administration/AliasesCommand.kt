@@ -178,6 +178,11 @@ class AliasesCommand : AbstractCommand("command.aliases") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            if (context.args.size < 2) {
+                sendSyntax(context)
+                return
+            }
+
             val pathInfo = getCommandPathInfo(context, 0) ?: return
             val alias = getStringFromArgsNMessage(context, 1, 1, 64,
                 cantContainChars = arrayOf(' '), cantContainWords = arrayOf("%SPLIT%")) ?: return
