@@ -5,6 +5,7 @@ import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.internals.utils.splitIETEL
+import me.melijn.melijnbot.objectMapper
 
 class PunishmentGroupWrapper(private val punishmentGroupDao: PunishmentGroupDao) {
 

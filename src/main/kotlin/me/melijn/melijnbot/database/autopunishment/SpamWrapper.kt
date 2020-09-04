@@ -6,10 +6,9 @@ import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.SpamType
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.loadingCacheFrom
+import me.melijn.melijnbot.objectMapper
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
-
-val objectMapper = jacksonObjectMapper()
 
 class SpamWrapper(private val spamDao: SpamDao) {
 

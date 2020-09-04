@@ -15,45 +15,6 @@ import java.lang.management.ManagementFactory
 import java.util.concurrent.ThreadPoolExecutor
 
 object StatsResponseHandler {
-    suspend fun handleShardsResponse(context: RequestContext) {
-        val shardManager = MelijnBot.shardManager
-        val dataArray = DataArray.empty()
-        val players = context.lavaManager.musicPlayerManager.getPlayers()
-
-
-        for (shard in shardManager.shardCache) {
-            var queuedTracks = 0
-            var musicPlayers = 0
-
-
-            for (player in players.values) {
-                if (shard.guildCache.getElementById(player.guildId) != null) {
-                    if (player.guildTrackManager.iPlayer.playingTrack != null) {
-                        musicPlayers++
-                    }
-                    queuedTracks += player.guildTrackManager.trackSize()
-                }
-            }
-
-
-            val dataObject = DataObject.empty()
-            dataObject
-                .put("guildCount", shard.guildCache.size())
-                .put("userCount", shard.userCache.size())
-                .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard))
-                .put("listeningVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard, true))
-                .put("ping", shard.gatewayPing)
-                .put("status", shard.status)
-                .put("queuedTracks", queuedTracks)
-                .put("musicPlayers", musicPlayers)
-                .put("responses", shard.responseTotal)
-                .put("id", shard.shardInfo.shardId)
-                .put("unavailable", shard.unavailableGuilds.size)
-
-            dataArray.add(dataObject)
-        }
-        context.call.respondJson(dataArray)
-    }
 
     suspend fun handleStatsResponse(context: RequestContext) {
         val bean: OperatingSystemMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
@@ -85,6 +46,43 @@ object StatsResponseHandler {
             .put("ramTotal", totalMem)
         )
 
+        val shardManager = MelijnBot.shardManager
+        val dataArray = DataArray.empty()
+        val players = context.lavaManager.musicPlayerManager.getPlayers()
+
+
+        for (shard in shardManager.shardCache) {
+            var queuedTracks = 0
+            var musicPlayers = 0
+
+
+            for (player in players.values) {
+                if (shard.guildCache.getElementById(player.guildId) != null) {
+                    if (player.guildTrackManager.iPlayer.playingTrack != null) {
+                        musicPlayers++
+                    }
+                    queuedTracks += player.guildTrackManager.trackSize()
+                }
+            }
+
+
+            dataArray.add(
+                DataObject.empty()
+                    .put("guildCount", shard.guildCache.size())
+                    .put("userCount", shard.userCache.size())
+                    .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard))
+                    .put("listeningVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard, true))
+                    .put("ping", shard.gatewayPing)
+                    .put("status", shard.status)
+                    .put("queuedTracks", queuedTracks)
+                    .put("musicPlayers", musicPlayers)
+                    .put("responses", shard.responseTotal)
+                    .put("id", shard.shardInfo.shardId)
+                    .put("unavailable", shard.unavailableGuilds.size)
+            )
+        }
+
+        dataObject.put("shards", dataArray)
         context.call.respondJson(dataObject)
     }
 }

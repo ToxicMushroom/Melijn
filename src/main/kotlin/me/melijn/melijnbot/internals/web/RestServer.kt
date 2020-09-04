@@ -47,10 +47,6 @@ class RestServer(container: Container) {
                 StatsResponseHandler.handleStatsResponse(RequestContext(call, container))
             }
 
-            get("/shards") {
-                StatsResponseHandler.handleShardsResponse(RequestContext(call, container))
-            }
-
 
             get("/guild/{id}") {
                 GetGuildResponseHandler.handeGuildGetResponse(RequestContext(call, container))
