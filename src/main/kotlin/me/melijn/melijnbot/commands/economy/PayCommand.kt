@@ -14,7 +14,7 @@ class PayCommand : AbstractCommand("command.pay") {
     init {
         id = 194
         name = "pay"
-        aliases= arrayOf("give")
+        aliases = arrayOf("give")
         commandCategory = CommandCategory.ECONOMY
     }
 

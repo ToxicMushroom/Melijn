@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import org.slf4j.LoggerFactory
 
 const val PLACEHOLDER_PREFIX = "prefix"
 
@@ -34,6 +35,8 @@ abstract class AbstractCommand(val root: String) {
     init {
         description = "$root.description"
     }
+
+    private val cmdlogger = LoggerFactory.getLogger("cmd")
 
     protected abstract suspend fun execute(context: CommandContext)
     suspend fun run(context: CommandContext) {
@@ -137,7 +140,9 @@ abstract class AbstractCommand(val root: String) {
                         message.delete().queue(null, { context.container.botDeletedMessageIds.remove(message.idLong) })
                     }
                 }
+                cmdlogger.info("${context.guildN?.name ?: ""}/${context.author.name}: ${context.message.contentRaw}")
             } catch (t: Throwable) {
+                cmdlogger.error("↱ ${context.guildN?.name ?: ""}/${context.author.name}: ${context.message.contentRaw}", t)
                 t.sendInGuild(context)
             }
             context.daoManager.commandUsageWrapper.addUse(context.commandOrder[0].id)
