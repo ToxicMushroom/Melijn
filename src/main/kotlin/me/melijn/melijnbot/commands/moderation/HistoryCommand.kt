@@ -158,7 +158,7 @@ class HistoryCommand : AbstractCommand("command.history") {
 
         init {
             name = "findByCaseId"
-            aliases = arrayOf("find")
+            aliases = arrayOf("find", "fbci")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -198,6 +198,10 @@ class HistoryCommand : AbstractCommand("command.history") {
             }
 
 
+            if (unorderedMap.isEmpty()) {
+                sendRsp(context, "No punishment found for `$id`")
+                return
+            }
             //Collected all punishments
             val msg = unorderedMap.values.joinToString("")
             sendRspCodeBlock(context, msg, "INI")
