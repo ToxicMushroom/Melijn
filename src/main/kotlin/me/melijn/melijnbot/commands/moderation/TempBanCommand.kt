@@ -101,7 +101,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
 
 
         try {
-            context.guild.ban(targetUser, 7).reason(ban.reason).async {daoManager.banWrapper.setBan(ban) }
+            context.guild.ban(targetUser, 7).reason("(tempBan) ${context.author.asTag}: " + ban.reason).async {daoManager.banWrapper.setBan(ban) }
             banningMessage?.editMessage(
                 bannedMessageDm
             )?.override(true)?.queue()

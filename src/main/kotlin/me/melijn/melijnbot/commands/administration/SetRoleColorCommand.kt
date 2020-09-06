@@ -49,7 +49,7 @@ class SetRoleColorCommand : AbstractCommand("command.setrolecolor") {
         val oldColor = role.color
 
         if (context.args[1] == "null") {
-            role.manager.setColor(null).reason("setRoleColor command").queue()
+            role.manager.setColor(null).reason("(setRoleColor) ${context.author.asTag}").queue()
 
             val msg = context.getTranslation("$root.unset")
                 .withVariable("role", role.name)
@@ -57,7 +57,7 @@ class SetRoleColorCommand : AbstractCommand("command.setrolecolor") {
             sendRsp(context, msg)
         } else {
             val color = getColorFromArgNMessage(context, 1) ?: return
-            role.manager.setColor(color).reason("setRoleColor command").queue()
+            role.manager.setColor(color).reason("(setRoleColor) ${context.author.asTag}").queue()
             val plane = ImageUtils.createPlane(100, color.rgb)
 
             val msg = context.getTranslation("$root.set")

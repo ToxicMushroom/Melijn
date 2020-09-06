@@ -66,7 +66,11 @@ class UnbanCommand : AbstractCommand("command.unban") {
         try {
             guild.retrieveBan(targetUser).await()
             try {
-                guild.unban(targetUser).await()
+                guild
+                    .unban(targetUser)
+                    .reason("(unban) ${context.author.asTag}: " + unbanReason)
+                    .await()
+
                 daoManager.banWrapper.setBan(ban)
                 val zoneId = getZoneId(daoManager, guild.idLong)
 
@@ -195,7 +199,7 @@ fun getUnbanMessage(
         .withVariable(PLACEHOLDER_USER, unbanAuthor.asTag)
         .withVariable("spaces", " ".repeat(45).substring(0, 45 - unbanAuthor.name.length) + "\u200B")
 
-    return  EmbedBuilder()
+    return EmbedBuilder()
         .setAuthor(author, null, unbanAuthor.effectiveAvatarUrl)
         .setDescription(description)
         .setThumbnail(bannedUser.effectiveAvatarUrl)

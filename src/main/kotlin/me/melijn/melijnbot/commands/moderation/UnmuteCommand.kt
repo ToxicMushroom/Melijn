@@ -89,7 +89,10 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
             }
 
 
-            val exception = guild.removeRoleFromMember(targetMember, muteRole).reason("unmuted").awaitEX()
+            val exception = guild.removeRoleFromMember(targetMember, muteRole)
+                .reason("(unmute) ${context.author.asTag}: " + unmuteReason)
+                .awaitEX()
+
             if (exception == null) {
                 sendUnmuteLogs(context, targetUser, muteAuthor, mute, unmuteReason)
             } else {

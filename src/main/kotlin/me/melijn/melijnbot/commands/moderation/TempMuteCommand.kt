@@ -78,6 +78,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
                     .setMentionable(false)
                     .setHoisted(false)
                     .setPermissions(Permission.MESSAGE_READ)
+                    .reason("Missing mute role, creating one")
                     .await()
 
                 roleWrapper.setRole(context.guildId, RoleType.MUTE, muteRole.idLong)
@@ -143,8 +144,9 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
 
         try {
             guild.addRoleToMember(targetMember, muteRole)
-                .reason("muted")
+                .reason("(tempMute) ${context.author.asTag}: " + mute.reason)
                 .async { daoManager.muteWrapper.setMute(mute) }
+
             death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)
 
         } catch (t: Throwable) {

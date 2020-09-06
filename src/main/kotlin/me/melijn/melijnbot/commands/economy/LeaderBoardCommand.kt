@@ -27,7 +27,7 @@ class LeaderBoardCommand : AbstractCommand("command.leaderboard") {
 
         if (userMap.isEmpty()) {
             val msg = context.getTranslation("$root.empty")
-                .withVariable("page", page)
+                .withVariable("page", page + 1)
             sendRsp(context, msg)
             return
         }

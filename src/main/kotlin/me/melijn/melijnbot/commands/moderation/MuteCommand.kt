@@ -75,7 +75,9 @@ class MuteCommand : AbstractCommand("command.mute") {
                     .setMentionable(false)
                     .setHoisted(false)
                     .setPermissions(Permission.MESSAGE_READ)
+                    .reason("mute role was unset, creating one")
                     .await()
+
                 muteRoleAquired(context, targetUser, reason, role)
             } catch (t: Throwable) {
                 val msgFailed = context.getTranslation("message.creatingmuterole.failed")
@@ -112,6 +114,7 @@ class MuteCommand : AbstractCommand("command.mute") {
         } else {
             null
         }
+
         val message: Message? = privateChannel?.let {
             sendMsgAwaitEL(it, muting)
         }?.firstOrNull()
@@ -133,7 +136,11 @@ class MuteCommand : AbstractCommand("command.mute") {
         val targetMember = guild.retrieveMember(targetUser).awaitOrNull() ?: return
 
         val msg = try {
-            guild.addRoleToMember(targetMember, muteRole).reason("muted").await()
+            guild
+                .addRoleToMember(targetMember, muteRole)
+                .reason("(mute) ${context.author.asTag}: " + mute.reason)
+                .await()
+
             mutingMessage?.editMessage(
                 mutedMessageDm
             )?.override(true)?.async { context.daoManager.muteWrapper.setMute(mute) }

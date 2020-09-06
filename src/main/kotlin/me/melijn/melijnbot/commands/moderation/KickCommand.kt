@@ -87,8 +87,8 @@ class KickCommand : AbstractCommand("command.kick") {
         context.daoManager.kickWrapper.addKick(kick)
         val msg = try {
             context.guild
-                .kick(targetMember, kick.reason)
-                .reason(kick.reason)
+                .kick(targetMember)
+                .reason("(kick) " + context.author.asTag + ": " + kick.reason)
                 .await()
 
             kickingMessage?.editMessage(
