@@ -20,7 +20,7 @@ class InviteCommand : AbstractCommand("command.invite") {
         val botId = context.jda.selfUser.idLong
         val baseUrl = "https://discordapp.com/oauth2/authorize?client_id=$botId&scope=bot"
         val title = context.getTranslation("$root.title")
-            .withVariable("botName", context.selfMember.user.name)
+            .withVariable("botName", context.selfUser.name)
         val msg = context.getTranslation("$root.desc")
             .withVariable("urlWithPerm", "$baseUrl&permissions=322268358")
             .withVariable("urlWithoutPerm", baseUrl)
