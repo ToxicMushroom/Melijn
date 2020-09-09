@@ -20,7 +20,9 @@ import java.net.Proxy
 
 class WebManager(val settings: Settings) {
 
-    val httpClient = HttpClient()
+    val httpClient = HttpClient() {
+        expectSuccess = false
+    }
     val proxiedHttpClient = HttpClient(OkHttp) {
         this.engine {
             val cb = OkHttpClient.Builder()

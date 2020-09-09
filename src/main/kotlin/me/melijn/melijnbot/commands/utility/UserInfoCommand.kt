@@ -56,7 +56,6 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
         .withVariable("isOwner", if (member.isOwner) yes else no)
         .withVariable("joinTime", member.timeJoined.asLongLongGMTString())
         .withVariable("boostTime", member.timeBoosted?.asLongLongGMTString() ?: "/")
-        .withVariable("onlineStatus", member.onlineStatus.toUCSC())
         .withVariable("voiceStatus", getVoiceStatus(member))
         .withVariable("canMelijnInteract", if (member.guild.selfMember.canInteract(member)) yes else no)
 

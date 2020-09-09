@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.lettuce.core.SetArgs
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DriverManager
@@ -81,6 +82,20 @@ class RedditCommand : AbstractCommand("command.reddit") {
                     objectMapper.readValue<RedditAbout>(it)
                 } ?: requestAboutAndStore(context.webManager.httpClient, context.daoManager.driverManager, subreddit)
 
+            if (about.private) {
+                val unknownReddit = context.getTranslation("command.reddit.private")
+                    .withVariable("subreddit", subreddit)
+                sendRsp(context, unknownReddit)
+                return null
+            }
+
+            if (!about.exists) {
+                val unknownReddit = context.getTranslation("command.reddit.unknown")
+                    .withVariable("subreddit", subreddit)
+                sendRsp(context, unknownReddit)
+                return null
+            }
+
             if (about.over18 && context.isFromGuild && !context.textChannel.isNSFW) {
                 // send stinky nsfw warning
                 val msg = context.getTranslation("command.reddit.subnsfw")
@@ -104,6 +119,11 @@ class RedditCommand : AbstractCommand("command.reddit") {
             if (filteredPosts.isEmpty() && posts.isNotEmpty()) {
                 val msg = context.getTranslation("command.reddit.allpostsnsfw")
                     .withVariable("amount", posts.size - filteredPosts.size)
+                sendRsp(context, msg)
+                return null
+            } else if (posts.isEmpty()) {
+                val msg = context.getTranslation("command.reddit.empty")
+                    .withVariable("subreddit", subreddit)
                 sendRsp(context, msg)
                 return null
             }
@@ -143,11 +163,15 @@ class RedditCommand : AbstractCommand("command.reddit") {
         }
 
         suspend fun requestAboutAndStore(httpClient: HttpClient, driverManager: DriverManager, subreddit: String): RedditAbout {
-            val data = DataObject.fromJson(
-                httpClient.get<String>("https://api.reddit.com/r/$subreddit/about")
-            ).getObject("data")
-
-            val about = RedditAbout(data.getBoolean("over18"))
+            val res = DataObject.fromJson(
+                httpClient.get<HttpResponse>("https://api.reddit.com/r/$subreddit/about").readText()
+            )
+            val about = if (res.hasKey("error") && res.getInt("error") == 403 && res.getString("reason") == "private") {
+                RedditAbout(exists = true, private = true, over18 = false)
+            } else {
+                val data = res.getObject("data")
+                RedditAbout(data.hasKey("over18"), false, data.getBoolean("over18", false))
+            }
             driverManager.redisConnection?.async()
                 ?.set("reddit:about:$subreddit", objectMapper.writeValueAsString(about), SetArgs().ex(1800))
             return about
@@ -167,6 +191,8 @@ class RedditCommand : AbstractCommand("command.reddit") {
     )
 
     data class RedditAbout(
+        val exists: Boolean,
+        val private: Boolean,
         val over18: Boolean
     )
 }
