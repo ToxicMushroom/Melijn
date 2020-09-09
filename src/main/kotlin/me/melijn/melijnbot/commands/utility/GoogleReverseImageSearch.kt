@@ -24,7 +24,7 @@ class GoogleReverseImageSearch : AbstractCommand("command.googlereverseimagesear
                 MarkdownSanitizer.escape(attachment)
                     .replace(")", "%29")
                     .replace("(", "%28")
-            }")
+            })")
         sendEmbedRsp(context, eb.build())
     }
 }

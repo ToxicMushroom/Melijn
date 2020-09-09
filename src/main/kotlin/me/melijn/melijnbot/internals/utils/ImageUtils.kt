@@ -85,6 +85,14 @@ object ImageUtils {
                     if (ImageIO.read(bis) == null) img = null
                 }
 
+            } else if (EMOTE_MENTION.matches(args[0])) {
+                arg = true
+
+                val emoteType = if (args[0].startsWith("<a")) "gif" else "png"
+                val emoteId = EMOTE_MENTION.find(args[0])?.groupValues?.get(2)
+
+                url = "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1"
+                img = downloadImage(context, url)
             } else {
                 arg = true
                 url = args[0]
@@ -148,10 +156,10 @@ object ImageUtils {
                         if (totalBytes > toCompare) {
                             running = false
 
-                            context?.let {
-                                val msg = it.getTranslation("message.filetobig")
+                            context?.let { ctx ->
+                                val msg = ctx.getTranslation("message.filetobig")
                                     .withVariable("size", "100MB")
-                                sendRsp(it, msg)
+                                sendRsp(ctx, msg)
                             }
 
                             channel.cancel()

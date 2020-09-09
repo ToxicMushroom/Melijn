@@ -254,12 +254,9 @@ suspend fun getImageUrlFromArgsNMessage(
         if (arg.matches(URL_PATTERN)) {
             return Pair(true, arg)
         } else if (EMOTE_MENTION.matches(arg)) {
-            val emote = getEmoteByArgsN(context, index, false)
-            if (emote == null) {
-                val msg = "The emote you provided `${MarkdownSanitizer.sanitize(arg)}` is broken"
-                sendRsp(context, msg)
-            }
-            emote?.imageUrl
+            val emoteType = if (arg.startsWith("<a")) "gif" else "png"
+            val emoteId = EMOTE_MENTION.find(arg)?.groupValues?.get(2)
+            return Pair(true, "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1")
         } else {
             val msg = "The text you provided `${MarkdownSanitizer.sanitize(arg)}` is not a valid url"
             sendRsp(context, msg)
