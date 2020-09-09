@@ -168,6 +168,8 @@ class RedditCommand : AbstractCommand("command.reddit") {
             )
             val about = if (res.hasKey("error") && res.getInt("error") == 403 && res.getString("reason") == "private") {
                 RedditAbout(exists = true, private = true, over18 = false)
+            } else if (res.hasKey("error") && res.getInt("error") == 404) {
+                RedditAbout(exists = false, false, false)
             } else {
                 val data = res.getObject("data")
                 RedditAbout(data.hasKey("over18"), false, data.getBoolean("over18", false))
