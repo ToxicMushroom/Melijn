@@ -112,7 +112,7 @@ dependencies {
     implementation group: 'com.github.ToxicMushroom', name: 'animated-gif-lib-for-java', version: '03e397e311'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.4.0'
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.4.10'
 
     // https://github.com/GSculerlor/JikanKt/releases
     implementation group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.3.1'
