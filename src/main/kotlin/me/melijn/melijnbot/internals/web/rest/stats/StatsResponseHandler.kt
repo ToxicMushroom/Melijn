@@ -2,6 +2,7 @@ package me.melijn.melijnbot.internals.web.rest.stats
 
 import com.sun.management.OperatingSystemMXBean
 import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.internals.events.EventManager
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.threading.TaskManager.scheduledExecutorService
@@ -10,12 +11,15 @@ import me.melijn.melijnbot.internals.utils.getSystemUptime
 import me.melijn.melijnbot.internals.utils.getUnixRam
 import me.melijn.melijnbot.internals.web.RequestContext
 import me.melijn.melijnbot.internals.web.WebUtils.respondJson
+import me.melijn.melijnbot.objectMapper
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.lang.management.ManagementFactory
 import java.util.concurrent.ThreadPoolExecutor
 
 object StatsResponseHandler {
+
+    var lastRequest = System.currentTimeMillis()
 
     suspend fun handleStatsResponse(context: RequestContext) {
         val bean: OperatingSystemMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
@@ -46,6 +50,15 @@ object StatsResponseHandler {
             .put("ramUsage", usedMem)
             .put("ramTotal", totalMem)
         )
+
+
+
+        dataObject.put("events", objectMapper.writeValueAsString(EventManager.eventCountMap))
+        dataObject.put("lastPoint", lastRequest)
+
+        for (event in EventManager.eventCountMap.keys) {
+            EventManager.eventCountMap[event] = 0
+        }
 
         val shardManager = MelijnBot.shardManager
         val dataArray = DataArray.empty()
@@ -85,5 +98,6 @@ object StatsResponseHandler {
 
         dataObject.put("shards", dataArray)
         context.call.respondJson(dataObject)
+        lastRequest = System.currentTimeMillis()
     }
 }

@@ -45,6 +45,8 @@ object ImageUtils {
 
     //ByteArray (imageData)
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
+    val discordSize = "?size=2048"
+
     suspend fun getImageBytesNMessage(context: CommandContext, reqFormat: String? = null): Triple<ByteArray, String, Boolean>? {
         val args = context.args
         val attachments = context.message.attachments
@@ -52,10 +54,11 @@ object ImageUtils {
         val arg: Boolean
         var img: ByteArray?
         val url: String
+
         if (attachments.isNotEmpty()) {
             try {
                 arg = false
-                url = attachments[0].url + "?size=2048"
+                url = attachments[0].url + discordSize
 
                 if (!checkFormat(context, attachments[0].url, reqFormat)) return null
 
@@ -77,7 +80,7 @@ object ImageUtils {
             val user = retrieveUserByArgsN(context, 0)
             if (user != null) {
                 arg = true
-                url = user.effectiveAvatarUrl + "?size=2048"
+                url = user.effectiveAvatarUrl + discordSize
                 if (!checkFormat(context, user.effectiveAvatarUrl, reqFormat)) return null
 
                 img = downloadImage(context, url)
@@ -118,7 +121,7 @@ object ImageUtils {
             }
         } else {
             arg = false
-            url = context.author.effectiveAvatarUrl + "?size=2048"
+            url = context.author.effectiveAvatarUrl + discordSize
             if (!checkFormat(context, context.author.effectiveAvatarUrl, reqFormat)) return null
             img = downloadImage(context, url, false)
         }
@@ -263,7 +266,7 @@ object ImageUtils {
                     if (isZip) {
                         // One of the arguments is a zip file
                         val zip = withContext(Dispatchers.IO) {
-                            context.webManager.httpClient.get<HttpResponse>(url).readBytes()
+                            context.webManager.proxiedHttpClient.get<HttpResponse>(url1).readBytes()
                         }
                         zip.inputStream().use { bais ->
                             ZipInputStream(bais).use { zis ->
@@ -292,7 +295,7 @@ object ImageUtils {
                         if (!checkFormat(context, url1, reqFormat)) return null
 
                         val img = withContext(Dispatchers.IO) {
-                            context.webManager.httpClient.get<HttpResponse>(url).readBytes()
+                            context.webManager.proxiedHttpClient.get<HttpResponse>(url1).readBytes()
                         }
 
                         ByteArrayInputStream(img).use { bais ->
@@ -308,7 +311,7 @@ object ImageUtils {
                 }
             } catch (e: Throwable) {
                 val msg = context.getTranslation("message.attachmentnotanimage")
-                    .withVariable(PLACEHOLDER_ARG, attachments[0].url)
+                    .withVariable(PLACEHOLDER_ARG, args[0])
                 sendRsp(context, msg)
                 return null
             }

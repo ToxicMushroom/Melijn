@@ -71,9 +71,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val message = event.message
         if (message.contentRaw.isBlank()) return
 
-        if (event.channelType == ChannelType.TEXT) {
-            if (!event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_WRITE)) return
-        }
+        if (event.channelType == ChannelType.TEXT && !event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_WRITE)) return
 
         val prefixes = getPrefixes(event)
 

@@ -230,13 +230,11 @@ suspend fun getRoleByArgsNMessage(
             .withVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
 
-    } else if (canInteract) {
-        if (!context.guild.selfMember.canInteract(role)) {
-            val msg = context.getTranslation(MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
-                .withVariable(PLACEHOLDER_ROLE, context.args[index])
-            sendRsp(context, msg)
-            return null
-        }
+    } else if (canInteract && !context.guild.selfMember.canInteract(role)) {
+        val msg = context.getTranslation(MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
+            .withVariable(PLACEHOLDER_ROLE, context.args[index])
+        sendRsp(context, msg)
+        return null
     }
     return role
 }
@@ -589,11 +587,8 @@ suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: Gui
 
 fun notEnoughPermissions(member: Member, channel: GuildChannel, perms: Collection<Permission>): Pair<List<Permission>, List<Permission>> {
     val missingPerms = mutableListOf<Permission>()
-    //val missingParentPerms = mutableListOf<Permission>()
-    //val parent = channel.parent
     for (perm in perms) {
         if (!member.hasPermission(channel, perm)) missingPerms.add(perm)
-        //  if (parent != null && checkParent && !member.hasPermission(parent, perm)) missingParentPerms.add(perm)
     }
     return Pair(missingPerms, emptyList())
 }
@@ -665,7 +660,6 @@ fun getTimespanFromArgNMessage(context: CommandContext, beginIndex: Int): Pair<L
             Pair(0, context.contextTime)
         }
         else -> {
-            //val timeStamps = timeStamp.split(">".toRegex())
             Pair(0, context.contextTime)
         }
     }

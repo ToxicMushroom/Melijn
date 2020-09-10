@@ -19,6 +19,7 @@ class GoogleReverseImageSearch : AbstractCommand("command.googlereverseimagesear
 
     override suspend fun execute(context: CommandContext) {
         val attachment = (getImageUrlFromArgsNMessage(context, 0) ?: return).second
+
         val eb = Embedder(context)
             .setDescription("[view result](https://www.google.com/searchbyimage?image_url=${
                 MarkdownSanitizer.escape(attachment)
