@@ -1,11 +1,18 @@
 package me.melijn.melijnbot.commands.utility
 
+import me.melijn.melijnbot.enums.Alignment
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.models.Cell
 import me.melijn.melijnbot.internals.utils.TableBuilder
-import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import java.text.NumberFormat
+import java.util.*
+import javax.swing.text.NumberFormatter
 
+val bigNumberFormatter = NumberFormatter(NumberFormat.getInstance(Locale.UK))
 
 class ShardsCommand : AbstractCommand("command.shards") {
 
@@ -18,8 +25,16 @@ class ShardsCommand : AbstractCommand("command.shards") {
 
     override suspend fun execute(context: CommandContext) {
         val shardManager = context.shardManager
-        val tableBuilder = TableBuilder(true)
-            .setColumns("Shard ID", "Ping", "Users", "Guilds", "VCs")
+        val tableBuilder = TableBuilder().apply {
+            this.setColumns(
+                Cell("Shard ID"),
+                Cell("Ping", Alignment.RIGHT),
+                Cell("Users", Alignment.RIGHT),
+                Cell("Guilds", Alignment.RIGHT),
+                Cell("VCs", Alignment.RIGHT)
+            )
+            this.footerTopSeperator = "═"
+        }
 
         var averagePing = 0L
         var totalVCs = 0L
@@ -27,7 +42,7 @@ class ShardsCommand : AbstractCommand("command.shards") {
             shard?.let { jda ->
                 val shardId = jda.shardInfo.shardId
                 val shardInfo = if (context.jda.shardInfo.shardId == shardId) {
-                    " (current)"
+                    " ←"
                 } else {
                     ""
                 }
@@ -38,11 +53,11 @@ class ShardsCommand : AbstractCommand("command.shards") {
                 averagePing += jda.gatewayPing
                 totalVCs += vcs
                 tableBuilder.addRow(
-                    shardId.toString() + shardInfo,
-                    jda.gatewayPing.toString(),
-                    jda.userCache.size().toString(),
-                    jda.guildCache.size().toString(),
-                    vcs.toString()
+                    Cell("$shardId.$shardInfo"),
+                    Cell(bigNumberFormatter.valueToString(jda.gatewayPing), Alignment.RIGHT),
+                    Cell(bigNumberFormatter.valueToString(jda.userCache.size()), Alignment.RIGHT),
+                    Cell(bigNumberFormatter.valueToString(jda.guildCache.size()), Alignment.RIGHT),
+                    Cell(bigNumberFormatter.valueToString(vcs), Alignment.RIGHT)
                 )
             }
 
@@ -50,15 +65,17 @@ class ShardsCommand : AbstractCommand("command.shards") {
         averagePing /= shardManager.shardsTotal
 
         tableBuilder.setFooterRow(
-            "Sum/Avg",
-            averagePing.toString(),
-            shardManager.userCache.size().toString(),
-            shardManager.guildCache.size().toString(),
-            totalVCs.toString()
+            Cell("Sum/Avg"),
+            Cell(averagePing.toString(), Alignment.RIGHT),
+            Cell(shardManager.userCache.size().toString(), Alignment.RIGHT),
+            Cell(shardManager.guildCache.size().toString(), Alignment.RIGHT),
+            Cell(totalVCs.toString(), Alignment.RIGHT)
         )
 
-        for (part in tableBuilder.build()) {
-            sendRsp(context, part)
+        for (part in tableBuilder.build(true)) {
+            val eb = Embedder(context)
+                .setDescription(part)
+            sendEmbedRsp(context, eb.build())
         }
     }
 }

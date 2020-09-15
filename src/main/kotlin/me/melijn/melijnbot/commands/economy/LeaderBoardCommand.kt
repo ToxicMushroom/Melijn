@@ -1,11 +1,16 @@
 package me.melijn.melijnbot.commands.economy
 
+import me.melijn.melijnbot.commands.utility.bigNumberFormatter
+import me.melijn.melijnbot.enums.Alignment
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.models.Cell
 import me.melijn.melijnbot.internals.utils.TableBuilder
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.withVariable
 import kotlin.math.ceil
@@ -32,17 +37,33 @@ class LeaderBoardCommand : AbstractCommand("command.leaderboard") {
             return
         }
 
-        val tableBuilder = TableBuilder(true)
-        tableBuilder.setColumns("Rank", "Mel", "User")
+        val tableBuilder = TableBuilder().apply {
+            this.setColumns(
+                Cell("#"),
+                Cell("Mel", Alignment.RIGHT),
+                Cell("User")
+            )
+            this.seperatorOverrides[0] = " "
+        }
+
+
         for ((index, pair) in userMap.toList().withIndex()) {
             val user = context.shardManager.retrieveUserById(pair.first).await()
-            tableBuilder.addRow("${index + 1 + (10 * page)}", "${pair.second}", user.asTag)
+            tableBuilder.addRow(
+                Cell("${index + 1 + (10 * page)}."),
+                Cell(bigNumberFormatter.valueToString(pair.second), Alignment.RIGHT),
+                Cell(user.asTag)
+            )
         }
-        val msgs = tableBuilder.build()
+        val msgs = tableBuilder.build(true)
 
         val totalPageCount = ceil(wrapper.getRowCount() / 10.0).toLong()
+
+        val eb = Embedder(context)
         for (msg in msgs) {
-            sendRsp(context, msg + "Page ${page + 1}/$totalPageCount")
+            eb.setDescription(msg)
+            eb.setFooter("Page ${page + 1}/$totalPageCount")
+            sendEmbedRsp(context, eb.build())
         }
     }
 }
