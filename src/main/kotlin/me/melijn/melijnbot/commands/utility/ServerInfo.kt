@@ -48,13 +48,17 @@ class ServerInfo : AbstractCommand("command.serverinfo") {
         if (value3.isEmpty()) value3 = "/"
 
         val eb = Embedder(context)
-            .addField(title1, value1, false)
-            .addField(title2, value2, false)
-            .addField(title3, value3, false)
-
-        if (guild.iconUrl != null) {
-            eb.setThumbnail(guild.iconUrl)
-        }
+            .setThumbnail(guild.iconUrl)
+            .setDescription("""
+                |```INI
+                |[${title1}]```$value1
+                |
+                |```INI
+                |[${title2}]```$value2
+                |                                
+                |```INI
+                |[${title3}]```$value3
+            """.trimMargin())
 
         sendEmbedRsp(context, eb.build())
     }

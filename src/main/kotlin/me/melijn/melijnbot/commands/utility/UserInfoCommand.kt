@@ -5,8 +5,11 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER_ID
-import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.asLongLongGMTString
+import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 
@@ -38,13 +41,21 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
 
         val eb = Embedder(context)
             .setThumbnail(user.effectiveAvatarUrl)
-            .addField(title1, value1, false)
+            .setDescription("""
+                |```INI
+                |[${title1}]```$value1
+            """.trimMargin())
 
         if (context.isFromGuild && member != null) {
             val title2 = context.getTranslation("$root.response1.field2.title")
             val unReplacedValue2 = context.getTranslation("$root.response1.field2.value")
             val value2 = replaceMemberVar(unReplacedValue2, member, yes, no)
-            eb.addField(title2, value2, false)
+            eb.appendDescription("""
+                |
+                |
+                |```INI
+                |[${title2}]```$value2
+            """.trimMargin())
         }
 
         sendEmbedRsp(context, eb.build())
