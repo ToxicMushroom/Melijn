@@ -155,7 +155,7 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
                     val id = (USER_MENTION.find(arg) ?: return null).groupValues[1]
                     context.shardManager.retrieveUserById(id).awaitOrNull()
                 }
-                else -> context.guild.retrieveMembersByPrefix(arg, 1).awaitOrNull()?.firstOrNull()?.user
+                else -> context.guildN?.retrieveMembersByPrefix(arg, 1)?.awaitOrNull()?.firstOrNull()?.user
             }
         }
         else -> null
@@ -384,11 +384,11 @@ suspend fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsCont
         emote = context.shardManager.getEmoteById(id)
 
     } else {
-        var emotes: List<Emote>? = context.guild.getEmotesByName(arg, false)
+        var emotes: List<Emote>? = context.guildN?.getEmotesByName(arg, false)
         if (emotes?.isNotEmpty() == true) emote = emotes[0]
 
-        emotes = context.guild.getEmotesByName(arg, true)
-        if (emotes.isNotEmpty() && emote == null) emote = emotes[0]
+        emotes = context.guildN?.getEmotesByName(arg, true)
+        if (emotes != null && emotes.isNotEmpty() && emote == null) emote = emotes[0]
 
         emotes = context.shardManager.getEmotesByName(arg, false)
         if (emotes.isNotEmpty() && emote == null) emote = emotes[0]

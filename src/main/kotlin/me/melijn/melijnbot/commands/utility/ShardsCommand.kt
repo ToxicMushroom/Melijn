@@ -27,7 +27,7 @@ class ShardsCommand : AbstractCommand("command.shards") {
         val shardManager = context.shardManager
         val tableBuilder = TableBuilder().apply {
             this.setColumns(
-                Cell("Shard ID"),
+                Cell("Shard"),
                 Cell("Ping", Alignment.RIGHT),
                 Cell("Users", Alignment.RIGHT),
                 Cell("Guilds", Alignment.RIGHT),

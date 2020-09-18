@@ -8,6 +8,7 @@ import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.jagtag.WelcomeJagTagParser
 import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendAttachments
 import me.melijn.melijnbot.internals.utils.message.sendMsg
@@ -31,9 +32,12 @@ class BoostListener(container: Container) : AbstractListener(container) {
     }
 
     private suspend fun onBoost(event: GuildUpdateBoostCountEvent) {
-        val boosted = event.guild.boosters.maxByOrNull {
-            it.timeBoosted?.toInstant()?.toEpochMilli() ?: 0
-        } ?: return
+        val boosted = event.guild
+            .findMembers { it.timeBoosted != null }
+            .await()
+            .maxByOrNull {
+                it.timeBoosted?.toInstant()?.toEpochMilli() ?: 0
+            } ?: return
 
         val guild = event.guild
         val daoManager = container.daoManager

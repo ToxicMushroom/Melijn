@@ -39,6 +39,8 @@ class RedditCommand : AbstractCommand("command.reddit") {
             sendSyntax(context)
             return
         }
+
+
         val subreddit = getStringFromArgsNMessage(context, 0, 1, 1000, mustMatch = Regex("(?:r/)?[a-zA-Z0-9_]+"))
             ?.removePrefix("r/") ?: return
 
