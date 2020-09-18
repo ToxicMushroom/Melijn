@@ -232,7 +232,8 @@ class CommandClientBuilder(private val container: Container) {
         ChannelInfoCommand(),
         ReverseImageSearchCommand(),
         GoogleReverseImageSearch(),
-        BoostersCommand()
+        BoostersCommand(),
+        ClearCacheCommand()
     )
 
     fun build(): CommandClient {

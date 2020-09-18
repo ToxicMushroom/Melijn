@@ -1,5 +1,13 @@
 package me.melijn.melijnbot.database.autopunishment
 
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.PunishmentType
@@ -65,6 +73,23 @@ class PunishmentDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 data class Punishment(
     val name: String,
     val punishmentType: PunishmentType,
+    @JsonDeserialize(using = DataObjectDeserializer::class)
+    @JsonSerialize(using = DataObjectSerializer::class)
     var extraMap: DataObject,
     var reason: String
 )
+
+class DataObjectSerializer : StdSerializer<DataObject>(DataObject::class.java) {
+
+    override fun serialize(value: DataObject, gen: JsonGenerator, provider: SerializerProvider) {
+        gen.writeString(value.toString())
+    }
+
+}
+
+class DataObjectDeserializer : StdDeserializer<DataObject>(DataObject::class.java) {
+
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): DataObject {
+        return DataObject.fromJson(p.text)
+    }
+}
