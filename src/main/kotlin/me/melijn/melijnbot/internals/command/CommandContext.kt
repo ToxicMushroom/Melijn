@@ -63,6 +63,7 @@ class CommandContext(
     val lavaManager = container.lavaManager
     val musicPlayerManager = container.lavaManager.musicPlayerManager
     val audioLoader = container.lavaManager.musicPlayerManager.audioLoader
+    var fullArg: String = ""
 
     var calculatedRoot = ""
     var calculatedCommandPartsOffset = 1
@@ -110,6 +111,14 @@ class CommandContext(
             quotationIndexes.removeAt(quotationIndexes.size - 1)
         }
 
+        // Init fullArgs (rawarg without ")
+        val carr = rawArg.toCharArray()
+        for ((i, c) in carr.withIndex()) {
+            if (quotationIndexes.contains(i)) continue
+            fullArg += c
+        }
+
+
         val newCoolArgs = mutableListOf<String>()
 
         var lastIndex = 0
@@ -141,8 +150,11 @@ class CommandContext(
         } else {
             emptyList()
         }
+
+
         logger = LoggerFactory.getLogger(commandOrder.first().javaClass.name)
     }
+
 
     fun reply(something: Any) {
         require(!(isFromGuild && !selfMember.hasPermission(textChannel, Permission.MESSAGE_WRITE))) {
