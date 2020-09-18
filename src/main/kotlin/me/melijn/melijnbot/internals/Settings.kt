@@ -16,6 +16,7 @@ data class Settings(
     val tokens: Token,
     val database: Database,
     val redis: Redis,
+    val emote: Emote,
     val unLoggedThreads: Array<String>
 ) {
 
@@ -108,6 +109,10 @@ data class Settings(
         val host: String,
         val port: Int,
         val enabled: Boolean
+    )
+
+    data class Emote(
+        val slotId: Long
     )
 
     companion object {
@@ -206,6 +211,9 @@ data class Settings(
                     get("redis.host"),
                     getInt("redis.port"),
                     getBoolean("redis.enabled")
+                ),
+                Emote(
+                    getLong("emote.slotId")
                 ),
                 get("unloggedThreads").splitIETEL(",").toTypedArray()
             )

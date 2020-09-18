@@ -256,9 +256,9 @@ suspend fun getLongFromArgNMessage(
     }
     if (long != null) {
         if (min > long || long > max) {
-            val msg = context.getTranslation("message.number.notingrange")
-                .withVariable("min", min)
-                .withVariable("max", max)
+            val msg = context.getTranslation("message.number.notinrange")
+                .withVariable("start", min)
+                .withVariable("end", max)
                 .withVariable(PLACEHOLDER_ARG, arg)
             sendRsp(context, msg)
             return null
@@ -387,6 +387,28 @@ suspend fun isPremiumGuild(context: CommandContext): Boolean {
 
 suspend fun isPremiumGuild(daoManager: DaoManager, guildId: Long): Boolean {
     return daoManager.supporterWrapper.getGuilds().contains(guildId)
+}
+
+
+suspend fun getBalanceNMessage(context: CommandContext, index: Int): Long? {
+    if (argSizeCheckFailed(context, index)) return null
+    val bal = context.daoManager.balanceWrapper.getBalance(context.authorId)
+
+    val arg = context.args[index]
+    return if (arg.equals("all", true)) {
+        bal
+    } else {
+        val amount = getLongFromArgNMessage(context, index, 1) ?: return null
+        if (amount > bal) {
+            val msg = context.getTranslation("message.amounttoobig")
+                .withVariable("bal", bal)
+                .withVariable("amount", amount)
+
+            sendRsp(context, msg)
+            return null
+        }
+        amount
+    }
 }
 
 

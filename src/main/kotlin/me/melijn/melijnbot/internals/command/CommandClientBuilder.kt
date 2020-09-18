@@ -6,6 +6,8 @@ import me.melijn.melijnbot.commands.animal.*
 import me.melijn.melijnbot.commands.anime.*
 import me.melijn.melijnbot.commands.developer.*
 import me.melijn.melijnbot.commands.economy.*
+import me.melijn.melijnbot.commands.games.PokerCommand
+import me.melijn.melijnbot.commands.games.SlotsCommand
 import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.commands.music.*
@@ -233,7 +235,9 @@ class CommandClientBuilder(private val container: Container) {
         ReverseImageSearchCommand(),
         GoogleReverseImageSearch(),
         BoostersCommand(),
-        ClearCacheCommand()
+        ClearCacheCommand(),
+        SlotsCommand(),
+        PokerCommand()
     )
 
     fun build(): CommandClient {

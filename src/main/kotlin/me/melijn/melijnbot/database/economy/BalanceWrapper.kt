@@ -26,4 +26,47 @@ class BalanceWrapper(private val balanceDao: BalanceDao) {
     suspend fun getRowCount(): Long {
         return balanceDao.getRowCount()
     }
+
+    suspend fun addBalance(userId: Long, amount: Int) {
+        addBalance(userId, amount.toLong())
+    }
+
+    suspend fun addBalance(userId: Long, amount: Long) {
+        val cBal = getBalance(userId)
+        setBalance(userId, cBal + amount)
+    }
+
+    suspend fun removeBalance(userId: Long, amount: Int) {
+        removeBalance(userId, amount.toLong())
+    }
+
+    suspend fun removeBalance(userId: Long, amount: Long) {
+        val cBal = getBalance(userId)
+        setBalance(userId, cBal - amount)
+    }
+
+    suspend fun addBalanceAndGet(userId: Long, amount: Int): Long {
+        return addBalanceAndGet(userId, amount.toLong())
+    }
+
+    suspend fun addBalanceAndGet(userId: Long, amount: Long): Long {
+        val cBal = getBalance(userId)
+        setBalance(userId, cBal + amount)
+        return cBal + amount
+    }
+
+    suspend fun removeBalanceAndGet(userId: Long, amount: Int): Long {
+        return removeBalanceAndGet(userId, amount.toLong())
+    }
+
+    suspend fun removeBalanceAndGet(userId: Long, amount: Long): Long {
+        val cBal = getBalance(userId)
+        setBalance(userId, cBal - amount)
+        return cBal - amount
+    }
+
+
+    fun clear() {
+        balanceDao.clear()
+    }
 }

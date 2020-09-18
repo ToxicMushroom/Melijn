@@ -2,6 +2,7 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.commands.games.PokerCommand
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.VerificationType
@@ -118,6 +119,25 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         verificationHandler(event)
         searchMenuHandler(event)
         paginationHandler(event)
+        pokerHandler(event)
+    }
+
+    private fun pokerHandler(event: GuildMessageReactionAddEvent) {
+        if (event.reactionEmote.isEmote) return
+
+        val game = PokerCommand.ongoingPoker.firstOrNull { game ->
+            game.userId == event.userIdLong && game.msgId == event.messageIdLong
+        } ?: return
+
+        game.reactions = game.reactions + when (event.reactionEmote.emoji) {
+            "1️⃣" -> 1
+            "2️⃣" -> 2
+            "3️⃣" -> 3
+            "4️⃣" -> 4
+            "5️⃣" -> 5
+
+            else -> return
+        }
     }
 
     var lastCheck = System.nanoTime()
