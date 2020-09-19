@@ -210,4 +210,8 @@ class CommandContext(
 
 
     fun getGuildMusicPlayer() = musicPlayerManager.getGuildMusicPlayer(guild)
+    fun initCooldown() {
+        val idPath = commandOrder.first().id.toString() + commandOrder.drop(1).joinToString(".") { it.name }
+        daoManager.globalCooldownWrapper.setLastExecuted(authorId, idPath, System.currentTimeMillis())
+    }
 }

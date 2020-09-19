@@ -18,8 +18,7 @@ class PokerCommand : AbstractCommand("command.poker") {
     init {
         id = 218
         name = "poker"
-//        description = "Try to get good cards, use reactions to lock cards"
-//        syntax = "<silvers>"
+        cooldown = 4000
         commandCategory = CommandCategory.GAME
     }
 
@@ -49,6 +48,7 @@ class PokerCommand : AbstractCommand("command.poker") {
         val balanceWrapper = context.daoManager.balanceWrapper
         val amount = getBalanceNMessage(context, 0) ?: return
 
+        context.initCooldown()
         balanceWrapper.removeBalance(context.authorId, amount)
 
         try {

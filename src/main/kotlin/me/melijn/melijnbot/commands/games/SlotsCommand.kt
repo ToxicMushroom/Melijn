@@ -16,6 +16,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
     init {
         id = 217
         name = "slots"
+        cooldown = 3500
         commandCategory = CommandCategory.GAME
     }
 
@@ -48,6 +49,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
         val balanceWrapper = context.daoManager.balanceWrapper
         val amount = getBalanceNMessage(context, 0) ?: return
 
+        context.initCooldown()
         balanceWrapper.removeBalance(context.authorId, amount)
 
 

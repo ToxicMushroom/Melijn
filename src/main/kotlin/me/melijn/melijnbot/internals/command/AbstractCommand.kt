@@ -23,6 +23,7 @@ abstract class AbstractCommand(val root: String) {
     var help = "$root.help"
     var arguments = "$root.arguments"
     var examples = "$root.examples"
+    var cooldown: Long = 0
     var commandCategory: CommandCategory = CommandCategory.DEVELOPER
     var aliases: Array<String> = arrayOf()
     var discordChannelPermissions: Array<Permission> = arrayOf()
@@ -123,7 +124,8 @@ abstract class AbstractCommand(val root: String) {
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
             }
             try {
-                if (CommandClient.checksFailed(context.container, context.commandOrder.last(), context.event, true, context.commandParts)) return
+                val cmdId = context.commandOrder.first().id.toString() + context.commandOrder.drop(1).joinToString(".") { it.name }
+                if (CommandClient.checksFailed(context.container, context.commandOrder.last(), cmdId, context.event, true, context.commandParts)) return
                 execute(context)
                 if (context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)) {
                     TaskManager.async {

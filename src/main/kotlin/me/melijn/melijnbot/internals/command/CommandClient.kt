@@ -22,7 +22,6 @@ import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
@@ -202,7 +201,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             if (command != null) {
                 val finalCommand = command ?: return
-                if (checksFailed(container, finalCommand, event, false, commandParts)) return
+                if (checksFailed(container, finalCommand, finalCommand.id.toString(), event, false, commandParts)) return
                 finalCommand.run(CommandContext(event, commandParts, container, commandList, spaceMap, aliasesMap, searchedAliases))
                 return
             }
@@ -385,11 +384,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         suspend fun checksFailed(
             container: Container,
             command: AbstractCommand,
+            cmdId: String,
             event: MessageReceivedEvent,
             isSubCommand: Boolean,
             commandParts: List<String>
         ): Boolean {
-            val cmdId = command.id.toString()
             if (event.isFromGuild && commandIsDisabled(container.daoManager, cmdId, event)) {
                 return true
             }
@@ -427,7 +426,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     return true
                 }
 
-                if (commandIsOnCooldown(container.daoManager, cmdId, event)) {
+                if (commandIsOnCooldown(container.daoManager, cmdId, command.cooldown, event)) {
                     return true
                 }
             }
@@ -454,7 +453,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 return true
             }
 
-            if (commandIsOnCooldown(daoManager, cmdId, event)) {
+            if (commandIsOnCooldown(daoManager, cmdId, 0, event)) {
                 return true
             }
 
@@ -462,7 +461,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
 
-        private suspend fun commandIsOnCooldown(daoManager: DaoManager, id: String, event: MessageReceivedEvent): Boolean {
+        private suspend fun commandIsOnCooldown(daoManager: DaoManager, id: String, globalCooldown: Long, event: MessageReceivedEvent): Boolean {
             val guildId = event.guild.idLong
             val userId = event.author.idLong
             val channelId = event.channel.idLong
@@ -513,14 +512,16 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     bool = true
                 }
             }
-            val lastExecutionBiggest = if (lastExecution > lastExecutionChannel) {
-                lastExecution
-            } else {
-                lastExecutionChannel
+
+            val lastGlobalExecuted = daoManager.globalCooldownWrapper.getLastExecuted(userId, id)
+            if (globalCooldown != 0L && (System.currentTimeMillis() - globalCooldown) < lastGlobalExecuted) {
+                if (cooldownResult < globalCooldown) cooldownResult = globalCooldown
+                bool = true
             }
 
-            if (bool && cooldownResult != 0L) {
+            val lastExecutionBiggest = maxOf(lastExecution, lastExecutionChannel, lastGlobalExecuted)
 
+            if (bool && cooldownResult != 0L) {
                 val language = getLanguage(daoManager, userId, guildId)
                 val unReplacedCooldown = i18n.getTranslation(language, "message.cooldown")
                 val msg = unReplacedCooldown
