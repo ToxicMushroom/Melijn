@@ -27,7 +27,7 @@ class SelfRoleGroupWrapper(private val selfRoleGroupDao: SelfRoleGroupDao) {
 
         list.add(selfRoleGroup)
 
-        selfRoleGroupDao.set(guildId, selfRoleGroup.groupName, selfRoleGroup.messageIds.joinToString(), selfRoleGroup.channelId, selfRoleGroup.isEnabled, selfRoleGroup.pattern
+        selfRoleGroupDao.set(guildId, selfRoleGroup.groupName, selfRoleGroup.messageIds.joinToString("%SPLIT%"), selfRoleGroup.channelId, selfRoleGroup.isEnabled, selfRoleGroup.pattern
             ?: "", selfRoleGroup.isSelfRoleable)
         selfRoleGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
