@@ -32,13 +32,6 @@ class BoostListener(container: Container) : AbstractListener(container) {
     }
 
     private suspend fun onBoost(event: GuildUpdateBoostCountEvent) {
-        val boosted = event.guild
-            .findMembers { it.timeBoosted != null }
-            .await()
-            .maxByOrNull {
-                it.timeBoosted?.toInstant()?.toEpochMilli() ?: 0
-            } ?: return
-
         val guild = event.guild
         val daoManager = container.daoManager
         val channelType = ChannelType.BOOST
@@ -46,11 +39,22 @@ class BoostListener(container: Container) : AbstractListener(container) {
         val guildId = guild.idLong
 
         val channel = guild.getAndVerifyChannelByType(daoManager, channelType, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ)
-            ?: return
+                ?: return
 
         val messageWrapper = daoManager.messageWrapper
         var modularMessage = messageWrapper.getMessage(guildId, messageType) ?: return
         if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, messageWrapper)) return
+
+        val boosted = event.guild
+            .findMembers { it.timeBoosted != null }
+            .await()
+            .maxByOrNull {
+                it.timeBoosted?.toInstant()?.toEpochMilli() ?: 0
+            } ?: return
+
+
+
+
 
         modularMessage = replaceVariablesInBoostMessage(guild, boosted, modularMessage)
 
