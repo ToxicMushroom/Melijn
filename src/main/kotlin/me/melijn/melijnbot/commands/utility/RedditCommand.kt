@@ -117,6 +117,13 @@ class RedditCommand : AbstractCommand("command.reddit") {
                 }
                 ?: requestPostsAndStore(context.webManager.httpClient, context.daoManager.driverManager, subreddit, arg, time)
 
+            if (posts == null) {
+                val unknownReddit = context.getTranslation("command.reddit.down")
+                        .withVariable("subreddit", subreddit)
+                sendRsp(context, unknownReddit)
+                return null
+            }
+
             val filteredPosts = posts.filter { !it.nsfw || (it.nsfw && (!context.isFromGuild || context.textChannel.isNSFW)) }
             if (filteredPosts.isEmpty() && posts.isNotEmpty()) {
                 val msg = context.getTranslation("command.reddit.allpostsnsfw")
@@ -132,10 +139,14 @@ class RedditCommand : AbstractCommand("command.reddit") {
             return filteredPosts[Random.nextInt(filteredPosts.size)]
         }
 
-        suspend fun requestPostsAndStore(httpClient: HttpClient, driverManager: DriverManager, subreddit: String, arg: String, time: String): List<RedditResult> {
-            val data = DataObject.fromJson(
-                httpClient.get<String>("https://www.reddit.com/r/$subreddit.json?sort=${arg}&t=${time}&limit=100")
-            ).getObject("data")
+        suspend fun requestPostsAndStore(httpClient: HttpClient, driverManager: DriverManager, subreddit: String, arg: String, time: String): List<RedditResult>? {
+            val data = try {
+               DataObject.fromJson(
+                        httpClient.get<String>("https://www.reddit.com/r/$subreddit.json?sort=${arg}&t=${time}&limit=100")
+                ).getObject("data")
+            } catch (t: Throwable) {
+                return null
+            }
 
             val posts = mutableListOf<RedditResult>()
             val dataPosts = data.getArray("children")
