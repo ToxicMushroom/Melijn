@@ -47,7 +47,7 @@ class GuildTrackManager(
     var loopedTrack = false
     var loopedQueue = false
 
-    val tracks: LinkedList<AudioTrack> = LinkedList()
+    var tracks: LinkedList<AudioTrack> = LinkedList()
     fun trackSize() = tracks.size
 
 
@@ -122,7 +122,9 @@ class GuildTrackManager(
     }
 
     fun shuffle() {
-        tracks.shuffle()
+        val tempList = LinkedList(tracks)
+        tempList.shuffle()
+        tracks = tempList
     }
 
 
