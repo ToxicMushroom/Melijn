@@ -22,7 +22,7 @@ class InviteCommand : AbstractCommand("command.invite") {
         val title = context.getTranslation("$root.title")
             .withVariable("botName", context.selfUser.name)
         val msg = context.getTranslation("$root.desc")
-            .withVariable("urlWithPerm", "$baseUrl&permissions=322268358")
+            .withVariable("urlWithPerm", "https://melijn.com/invite")
             .withVariable("urlWithoutPerm", baseUrl)
 
         val eb = Embedder(context)
