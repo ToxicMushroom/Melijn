@@ -318,7 +318,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 .withVariable("cmdCount", commandList.size.toString())
 
             val eb = Embedder(context)
-                .setTitle(title, "https://v2.melijn.com/commands")
+                .setTitle(title, "https://melijn.com/commands")
                 .setFooter(commandAmount, null)
 
             categoryPathMap.forEach { entry ->

@@ -55,8 +55,8 @@ class InfoCommand : AbstractCommand("command.info") {
         .withVariable("ownerTag", context.jda.shardManager?.retrieveUserById(231459866630291459L)?.awaitOrNull()?.asTag
             ?: "ToxicMushroom#2610")
         .withVariable("invite", "https://discord.gg/tfQ9s7u")
-        .withVariable("botInvite", "https://v2.melijn.com/invite")
-        .withVariable("website", "https://v2.melijn.com")
+        .withVariable("botInvite", "https://melijn.com/invite")
+        .withVariable("website", "https://melijn.com")
         .withVariable("contact", "merlijn@melijn.me")
 
 }
