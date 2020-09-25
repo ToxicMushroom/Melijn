@@ -102,7 +102,7 @@ dependencies {
     implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
 
-    implementation group: 'io.ktor', name: 'ktor', version: '1.4.0'
+    implementation group: 'io.ktor', name: 'ktor', version: '1.4.1'
     implementation group: 'io.ktor', name: 'ktor-client-cio', version: '1.4.1'
     implementation group: 'io.ktor', name: 'ktor-client-okhttp', version: '1.4.0'
     implementation group: 'io.ktor', name: 'ktor-server-netty', version: '1.4.1'
