@@ -237,7 +237,8 @@ class CommandClientBuilder(private val container: Container) {
         BoostersCommand(),
         ClearCacheCommand(),
         SlotsCommand(),
-        PokerCommand()
+        PokerCommand(),
+        JailCommand()
     )
 
     fun build(): CommandClient {
