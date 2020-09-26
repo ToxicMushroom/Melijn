@@ -18,13 +18,10 @@ import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.*
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.ChannelType
-import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.utils.data.DataObject
-import net.dv8tion.jda.internal.JDAImpl
 import kotlin.random.Random
 
 val SPACE_REGEX = "\\s+".toRegex()
@@ -291,33 +288,15 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
     private suspend fun replaceVariablesInCCMessage(member: Member, rawArg: String, cc: CustomCommand): ModularMessage {
         val modularMessage = cc.content
-        val newMessage = ModularMessage()
         val ccArgs = CCJagTagParserArgs(member, rawArg, cc)
 
-        newMessage.messageContent = modularMessage.messageContent?.let {
-            CCJagTagParser.parseCCJagTag(ccArgs, it)
+        return modularMessage.mapAllStringFields {
+            if (it != null) {
+                CCJagTagParser.parseJagTag(ccArgs, it)
+            } else {
+                null
+            }
         }
-
-        val oldEmbedData = modularMessage.embed?.toData()
-            ?.put("type", EmbedType.RICH)
-        if (oldEmbedData != null) {
-            val newEmbedJSON = CCJagTagParser.parseCCJagTag(ccArgs, oldEmbedData.toString())
-            val newEmbedData = DataObject.fromJson(newEmbedJSON)
-            val newEmbed = (member.jda as JDAImpl).entityBuilder.createMessageEmbed(newEmbedData)
-            newMessage.embed = newEmbed
-        }
-
-
-        val newAttachments = mutableMapOf<String, String>()
-        modularMessage.attachments.forEach { (t, u) ->
-            val url = CCJagTagParser.parseCCJagTag(ccArgs, t)
-            val file = CCJagTagParser.parseCCJagTag(ccArgs, u)
-            newAttachments[url] = file
-        }
-        newMessage.attachments = newAttachments
-        newMessage.extra = modularMessage.extra
-        return newMessage
-
     }
 
     private fun getCustomCommandByChance(ccs: List<CustomCommand>): CustomCommand {

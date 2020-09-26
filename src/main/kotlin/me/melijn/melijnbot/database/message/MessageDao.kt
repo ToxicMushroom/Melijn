@@ -118,6 +118,53 @@ data class ModularMessage(
         }
     }
 
+    suspend fun mapAllStringFields(function: suspend (s: String?) -> String?): ModularMessage {
+        val mappedModularMsg = ModularMessage()
+        mappedModularMsg.messageContent = this.messageContent?.let { function(it) }
+
+        this.embed?.let { embed ->
+            val mappedEmbed = EmbedBuilder()
+            embed.title?.let {
+                mappedEmbed.setTitle(function(it), function(embed.url))
+            }
+            embed.description?.let {
+                mappedEmbed.setDescription(function(it))
+            }
+            embed.author?.let {
+                mappedEmbed.setAuthor(function(it.name), function(it.url), function(it.iconUrl))
+            }
+            embed.footer?.let {
+                mappedEmbed.setFooter(function(it.text), function(it.iconUrl))
+            }
+            embed.image?.let {
+                mappedEmbed.setImage(function(it.url))
+            }
+            embed.thumbnail?.let {
+                mappedEmbed.setThumbnail(function(it.url))
+            }
+            embed.fields.forEach { field ->
+                mappedEmbed.addField(function(field.name), function(field.value), field.isInline)
+            }
+            mappedEmbed.setColor(embed.color)
+            mappedEmbed.setTimestamp(embed.timestamp)
+
+            mappedModularMsg.embed = mappedEmbed.build()
+        }
+
+        val mappedAttachments = mutableMapOf<String, String>()
+        this.attachments.forEach { entry ->
+            function(entry.value)?.let { mappedValue ->
+                function(entry.key)?.let { mappedKey ->
+                    mappedAttachments[mappedKey] = mappedValue
+                }
+            }
+        }
+        mappedModularMsg.attachments = mappedAttachments
+        mappedModularMsg.extra = extra
+
+        return mappedModularMsg
+    }
+
     companion object {
         fun fromJSON(json: String): ModularMessage {
             try {

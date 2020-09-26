@@ -15,7 +15,7 @@ val CC_PARSER_SUPPLIER: Supplier<Parser> = Supplier {
 }
 
 object CCJagTagParser {
-    suspend fun parseCCJagTag(args: CCJagTagParserArgs, input: String): String {
+    suspend fun parseJagTag(args: CCJagTagParserArgs, input: String): String {
         val parser = CC_PARSER_SUPPLIER.get()
             .put("user", args.member.user)
             .put("member", args.member)

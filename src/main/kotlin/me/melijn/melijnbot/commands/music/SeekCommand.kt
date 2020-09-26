@@ -25,11 +25,17 @@ class SeekCommand : AbstractCommand("command.seek") {
         val trackDuration = track.duration
         var trackPosition = iPlayer.trackPosition
 
+        if (!track.isSeekable) {
+            val msg = context.getTranslation("$root.notseekable")
+            sendRsp(context, msg)
+            return
+        }
 
         val msg = if (context.args.isEmpty()) {
             context.getTranslation("$root.show")
         } else {
             trackPosition = getTimeFromArgsNMessage(context, 0, trackDuration) ?: return
+
             iPlayer.seekTo(trackPosition)
             context.getTranslation("$root.seeked")
 

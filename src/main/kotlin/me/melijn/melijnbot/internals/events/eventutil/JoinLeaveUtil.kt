@@ -17,10 +17,11 @@ import me.melijn.melijnbot.internals.utils.message.sendAttachments
 import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendMsgWithAttachments
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
-import net.dv8tion.jda.api.utils.data.DataObject
-import net.dv8tion.jda.internal.JDAImpl
 import kotlin.random.Random
 
 object JoinLeaveUtil {
@@ -50,32 +51,13 @@ object JoinLeaveUtil {
     }
 
     private suspend fun replaceVariablesInWelcomeMessage(guild: Guild, user: User, modularMessage: ModularMessage): ModularMessage {
-        val newMessage = ModularMessage()
-
-        newMessage.messageContent = modularMessage.messageContent?.let {
-            WelcomeJagTagParser.parseJagTag(guild, user, it)
+        return modularMessage.mapAllStringFields {
+            if (it != null) {
+                WelcomeJagTagParser.parseJagTag(guild, user, it)
+            } else {
+                null
+            }
         }
-
-        val oldEmbedData = modularMessage.embed?.toData()
-            ?.put("type", EmbedType.RICH)
-        if (oldEmbedData != null) {
-            val newEmbedJSON = WelcomeJagTagParser.parseJagTag(guild, user, oldEmbedData.toString())
-            val newEmbedData = DataObject.fromJson(newEmbedJSON)
-            val newEmbed = (user.jda as JDAImpl).entityBuilder.createMessageEmbed(newEmbedData)
-            newMessage.embed = newEmbed
-        }
-
-
-        val newAttachments = mutableMapOf<String, String>()
-        modularMessage.attachments.forEach { (t, u) ->
-            val url = WelcomeJagTagParser.parseJagTag(guild, user, t)
-            val file = WelcomeJagTagParser.parseJagTag(guild, user, u)
-            newAttachments[url] = file
-        }
-
-        newMessage.attachments = newAttachments
-        newMessage.extra = modularMessage.extra
-        return newMessage
     }
 
     suspend fun joinRole(daoManager: DaoManager, member: Member) {
