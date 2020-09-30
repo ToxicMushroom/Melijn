@@ -3,9 +3,11 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.message.handleRspDelete
+import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.withVariable
 
@@ -20,24 +22,31 @@ class PingCommand : AbstractCommand("command.ping") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val timeStamp1 = System.currentTimeMillis()
-
         val part1 = context.getTranslation("$root.response1.part1")
-            .withVariable("gatewayPing", context.jda.gatewayPing.toString())
+            .withVariable("gatewayPing", context.jda.gatewayPing)
 
         val part2 = context.getTranslation("$root.response1.part2")
         val part3 = context.getTranslation("$root.response1.part3")
 
-        val message = sendMsgAwaitEL(context, part1)
+        val eb = Embedder(context)
+            .setTitle("\uD83C\uDFD3 Ping!")
+
+        val timeStamp1 = System.currentTimeMillis()
+        eb.setDescription(part1)
+        val message = sendEmbedAwaitEL(context, eb.build())
         val timeStamp2 = System.currentTimeMillis()
+
         val msgPing = timeStamp2 - timeStamp1
         val restPing = context.jda.restPing.await()
 
-        val editedMessage = message[0].editMessage("${message[0].contentRaw}${replacePart2(part2, restPing, msgPing)}").await()
         val timeStamp3 = System.currentTimeMillis()
-        val eMsgPing = timeStamp3 - timeStamp2
+        eb.appendDescription(replacePart2(part2, restPing, msgPing))
+        val editedMessage = message[0].editMessage(eb.build()).await()
+        val timeStamp4 = System.currentTimeMillis()
+        val eMsgPing = timeStamp4 - timeStamp3
 
-        editedMessage.editMessage("${editedMessage.contentRaw}${replacePart3(part3, eMsgPing)}").queue { c ->
+        eb.appendDescription(replacePart3(part3, eMsgPing))
+        editedMessage.editMessage(eb.build()).queue { c ->
             TaskManager.async(context) {
                 handleRspDelete(context.daoManager, c)
             }

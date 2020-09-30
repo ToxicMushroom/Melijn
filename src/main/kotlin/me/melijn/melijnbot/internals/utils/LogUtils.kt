@@ -2,6 +2,7 @@ package me.melijn.melijnbot.internals.utils
 
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import io.ktor.client.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
@@ -484,7 +485,7 @@ object LogUtils {
         sendEmbed(daoManager.embedDisabledWrapper, lc, eb.build())
     }
 
-    suspend fun sendBirthdayMessage(daoManager: DaoManager, textChannel: TextChannel, member: Member, birthYear: Int?) {
+    suspend fun sendBirthdayMessage(daoManager: DaoManager, httpClient: HttpClient, textChannel: TextChannel, member: Member, birthYear: Int?) {
         val guildId = textChannel.guild.idLong
         val messageType = MessageType.BIRTHDAY
         val language = getLanguage(daoManager, guildId)
@@ -502,8 +503,8 @@ object LogUtils {
 
             val msg: Message? = message.toMessage()
             when {
-                msg == null -> sendAttachments(textChannel, message.attachments)
-                message.attachments.isNotEmpty() -> sendMsgWithAttachments(textChannel, msg, message.attachments)
+                msg == null -> sendAttachments(textChannel, httpClient, message.attachments)
+                message.attachments.isNotEmpty() -> sendMsgWithAttachments(textChannel, httpClient, msg, message.attachments)
                 else -> sendMsg(textChannel, msg, failed = { t -> t.printStackTrace() })
             }
         }

@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
+import io.ktor.client.*
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
@@ -16,19 +17,20 @@ import me.melijn.melijnbot.internals.utils.message.sendAttachments
 import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendMsgWithAttachments
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
-import net.dv8tion.jda.api.utils.data.DataObject
-import net.dv8tion.jda.internal.JDAImpl
 import kotlin.random.Random
 
 object JoinLeaveUtil {
 
-    suspend fun postWelcomeMessage(daoManager: DaoManager, member: Member, channelType: ChannelType, messageType: MessageType) {
-        postWelcomeMessage(daoManager, member.guild, member.user, channelType, messageType)
+    suspend fun postWelcomeMessage(daoManager: DaoManager, httpClient: HttpClient, member: Member, channelType: ChannelType, messageType: MessageType) {
+        postWelcomeMessage(daoManager, httpClient, member.guild, member.user, channelType, messageType)
     }
 
-    suspend fun postWelcomeMessage(daoManager: DaoManager, guild: Guild, user: User, channelType: ChannelType, messageType: MessageType) {
+    suspend fun postWelcomeMessage(daoManager: DaoManager, httpClient: HttpClient, guild: Guild, user: User, channelType: ChannelType, messageType: MessageType) {
         val guildId = guild.idLong
 
         val channel = guild.getAndVerifyChannelByType(daoManager, channelType, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ)
@@ -42,39 +44,20 @@ object JoinLeaveUtil {
 
         val message: Message? = modularMessage.toMessage()
         when {
-            message == null -> sendAttachments(channel, modularMessage.attachments)
-            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, message, modularMessage.attachments)
+            message == null -> sendAttachments(channel, httpClient, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, httpClient, message, modularMessage.attachments)
             else -> sendMsg(channel, message)
         }
     }
 
     private suspend fun replaceVariablesInWelcomeMessage(guild: Guild, user: User, modularMessage: ModularMessage): ModularMessage {
-        val newMessage = ModularMessage()
-
-        newMessage.messageContent = modularMessage.messageContent?.let {
-            WelcomeJagTagParser.parseJagTag(guild, user, it)
+        return modularMessage.mapAllStringFields {
+            if (it != null) {
+                WelcomeJagTagParser.parseJagTag(guild, user, it)
+            } else {
+                null
+            }
         }
-
-        val oldEmbedData = modularMessage.embed?.toData()
-            ?.put("type", EmbedType.RICH)
-        if (oldEmbedData != null) {
-            val newEmbedJSON = WelcomeJagTagParser.parseJagTag(guild, user, oldEmbedData.toString())
-            val newEmbedData = DataObject.fromJson(newEmbedJSON)
-            val newEmbed = (user.jda as JDAImpl).entityBuilder.createMessageEmbed(newEmbedData)
-            newMessage.embed = newEmbed
-        }
-
-
-        val newAttachments = mutableMapOf<String, String>()
-        modularMessage.attachments.forEach { (t, u) ->
-            val url = WelcomeJagTagParser.parseJagTag(guild, user, t)
-            val file = WelcomeJagTagParser.parseJagTag(guild, user, u)
-            newAttachments[url] = file
-        }
-
-        newMessage.attachments = newAttachments
-        newMessage.extra = modularMessage.extra
-        return newMessage
     }
 
     suspend fun joinRole(daoManager: DaoManager, member: Member) {

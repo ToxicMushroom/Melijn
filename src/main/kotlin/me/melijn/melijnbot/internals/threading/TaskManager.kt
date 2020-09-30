@@ -12,7 +12,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-
 object TaskManager {
 
     private val threadFactory = { name: String ->
@@ -29,8 +28,14 @@ object TaskManager {
         }.run()
     }
 
-    fun <T> taskValueAsync(block: suspend CoroutineScope.() -> T): Deferred<T?> = CoroutineScope(dispatcher).async {
+    fun <T> taskValueAsync(block: suspend CoroutineScope.() -> T): Deferred<T> = CoroutineScope(dispatcher).async {
         DeferredTask {
+            block.invoke(this)
+        }.run()
+    }
+
+    fun <T> taskValueNAsync(block: suspend CoroutineScope.() -> T?): Deferred<T?> = CoroutineScope(dispatcher).async {
+        DeferredNTask {
             block.invoke(this)
         }.run()
     }

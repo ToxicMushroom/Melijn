@@ -10,11 +10,13 @@ data class Settings(
     val botInfo: BotInfo,
     val restServer: RestServer,
     val api: Api,
+    val proxy: Proxy,
     val environment: Environment,
     val lavalink: Lavalink,
     val tokens: Token,
     val database: Database,
     val redis: Redis,
+    val emote: Emote,
     val unLoggedThreads: Array<String>
 ) {
 
@@ -36,8 +38,10 @@ data class Settings(
         val melijnCDN: MelijnCDN,
         val jikan: Jikan,
         val spotify: Spotify,
-        val imgHoard: ImgHoard
+        val imgHoard: ImgHoard,
+        val sauceNao: SauceNao
     ) {
+
         data class Spotify(
             var clientId: String,
             var password: String
@@ -56,7 +60,17 @@ data class Settings(
         data class ImgHoard(
             var token: String
         )
+
+        data class SauceNao(
+            var token: String
+        )
     }
+
+    data class Proxy(
+        val enabled: Boolean,
+        val host: String,
+        val port: Int
+    )
 
 
     data class Lavalink(
@@ -93,7 +107,12 @@ data class Settings(
 
     data class Redis(
         val host: String,
-        val port: Int
+        val port: Int,
+        val enabled: Boolean
+    )
+
+    data class Emote(
+        val slotId: Long
     )
 
     companion object {
@@ -151,7 +170,15 @@ data class Settings(
                     ),
                     Api.ImgHoard(
                         get("api.imghoard.token")
+                    ),
+                    Api.SauceNao(
+                        get("api.saucenao.token")
                     )
+                ),
+                Proxy(
+                    getBoolean("proxy.enabled"),
+                    get("proxy.host"),
+                    getInt("proxy.port")
                 ),
                 Environment.valueOf(get("environment")),
                 Lavalink(
@@ -182,7 +209,11 @@ data class Settings(
                 ),
                 Redis(
                     get("redis.host"),
-                    getInt("redis.port")
+                    getInt("redis.port"),
+                    getBoolean("redis.enabled")
+                ),
+                Emote(
+                    getLong("emote.slotId")
                 ),
                 get("unloggedThreads").splitIETEL(",").toTypedArray()
             )

@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.sharding.ShardManager
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import net.dv8tion.jda.api.utils.concurrent.Task
 import java.awt.Color
 import java.util.*
@@ -30,7 +31,7 @@ val TextChannel.asTag: String
     get() = "#${this.name}"
 
 suspend fun <T> Task<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
-    onSuccess { success ->
+    onSuccess { success: T ->
         it.resume(success)
     }
 
@@ -154,7 +155,7 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
                     val id = (USER_MENTION.find(arg) ?: return null).groupValues[1]
                     context.shardManager.retrieveUserById(id).awaitOrNull()
                 }
-                else -> context.guild.retrieveMembersByPrefix(arg, 1).awaitOrNull()?.firstOrNull()?.user
+                else -> context.guildN?.retrieveMembersByPrefix(arg, 1)?.awaitOrNull()?.firstOrNull()?.user
             }
         }
         else -> null
@@ -229,15 +230,40 @@ suspend fun getRoleByArgsNMessage(
             .withVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
 
-    } else if (canInteract) {
-        if (!context.guild.selfMember.canInteract(role)) {
-            val msg = context.getTranslation(MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
-                .withVariable(PLACEHOLDER_ROLE, context.args[index])
-            sendRsp(context, msg)
-            return null
-        }
+    } else if (canInteract && !context.guild.selfMember.canInteract(role)) {
+        val msg = context.getTranslation(MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
+            .withVariable(PLACEHOLDER_ROLE, context.args[index])
+        sendRsp(context, msg)
+        return null
     }
     return role
+}
+
+// Returns pair with boolean (true if place is used in args, false if attachments were provided)
+suspend fun getImageUrlFromArgsNMessage(
+    context: CommandContext,
+    index: Int
+): Pair<Boolean, String>? {
+    val attachments = context.message.attachments
+    if (attachments.size > 0) {
+        return Pair(false, attachments[0].url)
+    } else if (context.args.isNotEmpty()) {
+        val arg = context.args[index]
+        if (arg.matches(URL_PATTERN)) {
+            return Pair(true, arg)
+        } else if (EMOTE_MENTION.matches(arg)) {
+            val emoteType = if (arg.startsWith("<a")) "gif" else "png"
+            val emoteId = EMOTE_MENTION.find(arg)?.groupValues?.get(2)
+            return Pair(true, "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1")
+        } else {
+            val msg = "The text you provided `${MarkdownSanitizer.sanitize(arg)}` is not a valid url"
+            sendRsp(context, msg)
+        }
+    } else {
+        val msg = "No image was provided as an attachment or as a url"
+        sendRsp(context, msg)
+    }
+    return null
 }
 
 suspend fun getStringFromArgsNMessage(
@@ -254,7 +280,7 @@ suspend fun getStringFromArgsNMessage(
     val arg = context.args[index]
     if (arg.length < min) {
         val msg = context.getTranslation("message.string.minfailed")
-            .withVariable("arg", arg)
+            .withVariable("arg", MarkdownSanitizer.sanitize(arg))
             .withVariable("min", min)
             .withVariable("length", arg.length)
         sendRsp(context, msg)
@@ -262,7 +288,7 @@ suspend fun getStringFromArgsNMessage(
     }
     if (arg.length > max) {
         val msg = context.getTranslation("message.string.maxfailed")
-            .withVariable("arg", arg)
+            .withVariable("arg", MarkdownSanitizer.sanitize(arg))
             .withVariable("max", max)
             .withVariable("length", arg.length)
         sendRsp(context, msg)
@@ -270,7 +296,7 @@ suspend fun getStringFromArgsNMessage(
     }
     if (mustMatch != null && !mustMatch.matches(arg)) {
         val msg = context.getTranslation("message.string.matchfailed")
-            .withVariable("arg", arg)
+            .withVariable("arg", MarkdownSanitizer.sanitize(arg))
             .withVariable("pattern", mustMatch)
         sendRsp(context, msg)
         return null
@@ -278,7 +304,7 @@ suspend fun getStringFromArgsNMessage(
     for (char in cantContainChars) {
         if (arg.contains(char, ignoreCase)) {
             val msg = context.getTranslation("message.string.cantcontaincharfailed")
-                .withVariable("arg", arg)
+                .withVariable("arg", MarkdownSanitizer.sanitize(arg))
                 .withVariable("chars", cantContainChars)
                 .withVariable("char", char)
                 .withVariable("ignorecase", ignoreCase)
@@ -289,7 +315,7 @@ suspend fun getStringFromArgsNMessage(
     for (word in cantContainWords) {
         if (arg.contains(word, ignoreCase)) {
             val msg = context.getTranslation("message.string.cantcontainwordfailed")
-                .withVariable("arg", arg)
+                .withVariable("arg", MarkdownSanitizer.sanitize(arg))
                 .withVariable("words", cantContainWords)
                 .withVariable("word", word)
                 .withVariable("ignorecase", ignoreCase)
@@ -306,7 +332,7 @@ suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGu
     val emoteji = getEmotejiByArgsN(context, index, sameGuildAsContext)
     if (emoteji == null) {
         val msg = context.getTranslation("message.unknown.emojioremote")
-            .withVariable(PLACEHOLDER_ARG, context.args[index])
+            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(context.args[index]))
         sendRsp(context, msg)
     }
 
@@ -338,7 +364,7 @@ suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuil
     val emote = getEmoteByArgsN(context, index, sameGuildAsContext)
     if (emote == null) {
         val msg = context.getTranslation("message.unknown.emote")
-            .withVariable(PLACEHOLDER_ARG, context.args[index])
+            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(context.args[index]))
         sendRsp(context, msg)
     }
     return emote
@@ -358,11 +384,11 @@ suspend fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsCont
         emote = context.shardManager.getEmoteById(id)
 
     } else {
-        var emotes: List<Emote>? = context.guild.getEmotesByName(arg, false)
+        var emotes: List<Emote>? = context.guildN?.getEmotesByName(arg, false)
         if (emotes?.isNotEmpty() == true) emote = emotes[0]
 
-        emotes = context.guild.getEmotesByName(arg, true)
-        if (emotes.isNotEmpty() && emote == null) emote = emotes[0]
+        emotes = context.guildN?.getEmotesByName(arg, true)
+        if (emotes != null && emotes.isNotEmpty() && emote == null) emote = emotes[0]
 
         emotes = context.shardManager.getEmotesByName(arg, false)
         if (emotes.isNotEmpty() && emote == null) emote = emotes[0]
@@ -417,7 +443,7 @@ suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color?
     }
     if (color == null) {
         val msg = context.getTranslation("message.unknown.color")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(arg))
         sendRsp(context, msg)
     }
     return color
@@ -484,7 +510,7 @@ suspend fun getVoiceChannelByArgNMessage(context: CommandContext, index: Int, sa
     val voiceChannel = getVoiceChannelByArgsN(context, index, sameGuildAsContext)
     if (voiceChannel == null) {
         val msg = context.getTranslation("message.unknown.voicechannel")
-            .withVariable(PLACEHOLDER_ARG, context.args[index])
+            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(context.args[index]))
         sendRsp(context, msg)
     }
     return voiceChannel
@@ -508,21 +534,21 @@ suspend fun retrieveMemberByArgsNMessage(context: CommandContext, index: Int, in
 
     if (member == null) {
         val msg = context.getTranslation("message.unknown.member")
-            .withVariable(PLACEHOLDER_ARG, context.args[index])
+            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(context.args[index]))
         sendRsp(context, msg)
         return null
     }
 
     if (interactable && !member.guild.selfMember.canInteract(member)) {
         val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-            .withVariable(PLACEHOLDER_USER, member.asTag)
+            .withVariable(PLACEHOLDER_USER, MarkdownSanitizer.sanitize(member.asTag))
         sendRsp(context, msg)
         return null
     }
 
     if (!botAllowed && member.user.isBot) {
         val msg = context.getTranslation("message.interact.member.isbot")
-            .withVariable(PLACEHOLDER_USER, member.asTag)
+            .withVariable(PLACEHOLDER_USER, MarkdownSanitizer.sanitize(member.asTag))
         sendRsp(context, msg)
         return null
     }
@@ -561,11 +587,8 @@ suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: Gui
 
 fun notEnoughPermissions(member: Member, channel: GuildChannel, perms: Collection<Permission>): Pair<List<Permission>, List<Permission>> {
     val missingPerms = mutableListOf<Permission>()
-    //val missingParentPerms = mutableListOf<Permission>()
-    //val parent = channel.parent
     for (perm in perms) {
         if (!member.hasPermission(channel, perm)) missingPerms.add(perm)
-        //  if (parent != null && checkParent && !member.hasPermission(parent, perm)) missingParentPerms.add(perm)
     }
     return Pair(missingPerms, emptyList())
 }
@@ -637,7 +660,6 @@ fun getTimespanFromArgNMessage(context: CommandContext, beginIndex: Int): Pair<L
             Pair(0, context.contextTime)
         }
         else -> {
-            //val timeStamps = timeStamp.split(">".toRegex())
             Pair(0, context.contextTime)
         }
     }
@@ -677,13 +699,13 @@ suspend fun getTimeFromArgsNMessage(context: CommandContext, start: Long = Long.
             "message.unknown.number"
         }
         val msg = context.getTranslation(path)
-            .withVariable(PLACEHOLDER_ARG, workingPart)
+            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(workingPart))
         sendRsp(context, msg)
         return null
     }
     if (start > time || end < time) {
         val msg = context.getTranslation("command.seek.notinrange")
-            .withVariable(PLACEHOLDER_ARG, workingPart)
+            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(workingPart))
         sendRsp(context, msg)
         return null
     }

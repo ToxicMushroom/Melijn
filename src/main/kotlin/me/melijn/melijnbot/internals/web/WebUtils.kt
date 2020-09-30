@@ -1,8 +1,11 @@
 package me.melijn.melijnbot.internals.web
 
+import io.ktor.application.*
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
+import io.ktor.http.*
+import io.ktor.response.*
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import org.slf4j.Logger
@@ -25,7 +28,6 @@ object WebUtils {
                         entry.key + "=" + entry.value
                     })
             } else ""
-
 
 
         return try {
@@ -61,5 +63,13 @@ object WebUtils {
         val response = getResponseFromUrl(httpClient, url, params, headers) ?: return null
 
         return DataArray.fromJson(response)
+    }
+
+    suspend fun ApplicationCall.respondJson(obj: DataObject, statusCode: HttpStatusCode? = null) {
+        this.respondText(obj.toString(), ContentType.Application.Json, status = statusCode)
+    }
+
+    suspend fun ApplicationCall.respondJson(arr: DataArray, statusCode: HttpStatusCode? = null) {
+        this.respondText(arr.toString(), ContentType.Application.Json, status = statusCode)
     }
 }

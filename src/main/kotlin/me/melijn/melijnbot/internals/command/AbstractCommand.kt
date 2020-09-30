@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import org.slf4j.LoggerFactory
 
 const val PLACEHOLDER_PREFIX = "prefix"
 
@@ -22,6 +23,7 @@ abstract class AbstractCommand(val root: String) {
     var help = "$root.help"
     var arguments = "$root.arguments"
     var examples = "$root.examples"
+    var cooldown: Long = 0
     var commandCategory: CommandCategory = CommandCategory.DEVELOPER
     var aliases: Array<String> = arrayOf()
     var discordChannelPermissions: Array<Permission> = arrayOf()
@@ -34,6 +36,8 @@ abstract class AbstractCommand(val root: String) {
     init {
         description = "$root.description"
     }
+
+    private val cmdlogger = LoggerFactory.getLogger("cmd")
 
     protected abstract suspend fun execute(context: CommandContext)
     suspend fun run(context: CommandContext) {
@@ -120,7 +124,8 @@ abstract class AbstractCommand(val root: String) {
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
             }
             try {
-                if (CommandClient.checksFailed(context.container, context.commandOrder.last(), context.event, true, context.commandParts)) return
+                val cmdId = context.commandOrder.first().id.toString() + context.commandOrder.drop(1).joinToString(".") { it.name }
+                if (CommandClient.checksFailed(context.container, context.commandOrder.last(), cmdId, context.event, true, context.commandParts)) return
                 execute(context)
                 if (context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)) {
                     TaskManager.async {
@@ -137,7 +142,9 @@ abstract class AbstractCommand(val root: String) {
                         message.delete().queue(null, { context.container.botDeletedMessageIds.remove(message.idLong) })
                     }
                 }
+                cmdlogger.info("${context.guildN?.name ?: ""}/${context.author.name}: ${context.message.contentRaw}")
             } catch (t: Throwable) {
+                cmdlogger.error("↱ ${context.guildN?.name ?: ""}/${context.author.name}: ${context.message.contentRaw}", t)
                 t.sendInGuild(context)
             }
             context.daoManager.commandUsageWrapper.addUse(context.commandOrder[0].id)

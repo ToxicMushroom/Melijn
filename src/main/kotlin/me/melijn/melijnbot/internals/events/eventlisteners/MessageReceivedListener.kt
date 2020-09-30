@@ -105,7 +105,8 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             VerificationType.PASSWORD -> {
                 val password = dao.verificationPasswordWrapper.getPassword(guild.idLong)
                 if (event.message.contentRaw == password) {
-                    VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
+                    VerificationUtils.verify(dao, container.webManager.proxiedHttpClient,
+                        unverifiedRole, guild.selfMember.user, member)
                 } else {
                     VerificationUtils.failedVerification(dao, member)
                 }
@@ -114,7 +115,8 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             VerificationType.GOOGLE_RECAPTCHAV2 -> {
                 val code = dao.unverifiedUsersWrapper.getMoment(guild.idLong, member.idLong)
                 if (event.message.contentRaw == code.toString()) {
-                    VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
+                    VerificationUtils.verify(dao, container.webManager.proxiedHttpClient,
+                        unverifiedRole, guild.selfMember.user, member)
                 } else {
                     VerificationUtils.failedVerification(dao, member)
                 }
@@ -141,7 +143,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
 
     private suspend fun handleMessageReceivedStoring(event: GuildMessageReceivedEvent) {
         // TODO Add switch for bot logging 'premium feature
-//        if (event.author.isBot && event.author.idLong != container.settings.id) return
+        // if (event.author.isBot && event.author.idLong != container.settings.id) return
         val guildId = event.guild.idLong
         val logChannelWrapper = container.daoManager.logChannelWrapper
 

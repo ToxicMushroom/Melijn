@@ -41,9 +41,10 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             children = arrayOf(
                 BanArg(root),
                 MuteArg(root),
-                SoftBanArg(root),
-                AddRoleArg(root),
-                RemoveRoleArg(root)
+                SoftBanArg(root)
+//                ,
+//                AddRoleArg(root),
+//                RemoveRoleArg(root)
             )
         }
 
@@ -264,7 +265,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             }
 
             val wrapper = context.daoManager.punishmentWrapper
-            val reason = context.rawArg.removeFirst(name).trim()
+            val reason = context.fullArg.removeFirst(item.name).trim()
 
             item.reason = reason
             wrapper.put(context.guildId, item)
@@ -293,7 +294,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             val punishmentType = getEnumFromArgNMessage<PunishmentType>(context, 0, MESSAGE_UNKNOWN_PERMISSIONTYPE)
                 ?: return
             val name = context.args[1]
-            val reason = context.rawArg
+            val reason = context.fullArg
                 .removeFirst(context.args[0]).trim()
                 .removeFirst(context.args[1]).trim()
             val punishment = Punishment(name, punishmentType, DataObject.empty(), reason)

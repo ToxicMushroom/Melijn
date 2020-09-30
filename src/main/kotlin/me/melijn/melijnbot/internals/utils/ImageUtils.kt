@@ -2,6 +2,7 @@ package me.melijn.melijnbot.internals.utils
 
 import com.madgag.gif.fmsware.GifDecoder
 import com.squareup.gifencoder.*
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -13,6 +14,7 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import java.awt.Color
 import java.awt.Graphics
@@ -43,6 +45,8 @@ object ImageUtils {
 
     //ByteArray (imageData)
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
+    val discordSize = "?size=2048"
+
     suspend fun getImageBytesNMessage(context: CommandContext, reqFormat: String? = null): Triple<ByteArray, String, Boolean>? {
         val args = context.args
         val attachments = context.message.attachments
@@ -50,10 +54,11 @@ object ImageUtils {
         val arg: Boolean
         var img: ByteArray?
         val url: String
+
         if (attachments.isNotEmpty()) {
             try {
                 arg = false
-                url = attachments[0].url + "?size=2048"
+                url = attachments[0].url + discordSize
 
                 if (!checkFormat(context, attachments[0].url, reqFormat)) return null
 
@@ -75,7 +80,7 @@ object ImageUtils {
             val user = retrieveUserByArgsN(context, 0)
             if (user != null) {
                 arg = true
-                url = user.effectiveAvatarUrl + "?size=2048"
+                url = user.effectiveAvatarUrl + discordSize
                 if (!checkFormat(context, user.effectiveAvatarUrl, reqFormat)) return null
 
                 img = downloadImage(context, url)
@@ -83,6 +88,14 @@ object ImageUtils {
                     if (ImageIO.read(bis) == null) img = null
                 }
 
+            } else if (EMOTE_MENTION.matches(args[0])) {
+                arg = true
+
+                val emoteType = if (args[0].startsWith("<a")) "gif" else "png"
+                val emoteId = EMOTE_MENTION.find(args[0])?.groupValues?.get(2)
+
+                url = "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1"
+                img = downloadImage(context, url)
             } else {
                 arg = true
                 url = args[0]
@@ -108,7 +121,7 @@ object ImageUtils {
             }
         } else {
             arg = false
-            url = context.author.effectiveAvatarUrl + "?size=2048"
+            url = context.author.effectiveAvatarUrl + discordSize
             if (!checkFormat(context, context.author.effectiveAvatarUrl, reqFormat)) return null
             img = downloadImage(context, url, false)
         }
@@ -124,16 +137,20 @@ object ImageUtils {
         return Triple(nonnullImage, url, arg)
     }
 
-    private suspend fun downloadImage(context: CommandContext, url: String, doChecks: Boolean = true): ByteArray {
+    suspend fun downloadImage(context: CommandContext, url: String, doChecks: Boolean = true): ByteArray {
+        return downloadImage(context.webManager.httpClient, url, doChecks, context.guildN, context)
+    }
+
+    suspend fun downloadImage(httpClient: HttpClient, url: String, doChecks: Boolean = true, guild: Guild? = null, context: CommandContext? = null): ByteArray {
         return if (doChecks) {
-            context.webManager.httpClient.get<HttpStatement>(url).execute {
+            httpClient.get<HttpStatement>(url).execute {
                 val channel = it.receive<ByteReadChannel>()
                 var running = true
 
 
                 ByteArrayOutputStream().use { baos ->
                     var totalBytes = 0L
-                    val toCompare = if (context.isFromGuild) context.guild.maxFileSize else (Message.MAX_FILE_SIZE.toLong())
+                    val toCompare = guild?.maxFileSize ?: Message.MAX_FILE_SIZE.toLong()
                     while (running) {
                         val read = channel.readRemaining(4096)
                         val readsize = read.remaining
@@ -141,9 +158,12 @@ object ImageUtils {
                         baos.writePacket(read)
                         if (totalBytes > toCompare) {
                             running = false
-                            val msg = context.getTranslation("message.filetobig")
-                                .withVariable("size", "100MB")
-                            sendRsp(context, msg)
+
+                            context?.let { ctx ->
+                                val msg = ctx.getTranslation("message.filetobig")
+                                    .withVariable("size", "100MB")
+                                sendRsp(ctx, msg)
+                            }
 
                             channel.cancel()
                             throw SizeLimitExceededException("Size limit $toCompare")
@@ -156,7 +176,7 @@ object ImageUtils {
                 }
             }
         } else {
-            context.webManager.httpClient.get(url)
+            httpClient.get(url)
         }
     }
 
@@ -246,7 +266,7 @@ object ImageUtils {
                     if (isZip) {
                         // One of the arguments is a zip file
                         val zip = withContext(Dispatchers.IO) {
-                            context.webManager.httpClient.get<HttpResponse>(url).readBytes()
+                            context.webManager.proxiedHttpClient.get<HttpResponse>(url1).readBytes()
                         }
                         zip.inputStream().use { bais ->
                             ZipInputStream(bais).use { zis ->
@@ -275,7 +295,7 @@ object ImageUtils {
                         if (!checkFormat(context, url1, reqFormat)) return null
 
                         val img = withContext(Dispatchers.IO) {
-                            context.webManager.httpClient.get<HttpResponse>(url).readBytes()
+                            context.webManager.proxiedHttpClient.get<HttpResponse>(url1).readBytes()
                         }
 
                         ByteArrayInputStream(img).use { bais ->
@@ -291,7 +311,7 @@ object ImageUtils {
                 }
             } catch (e: Throwable) {
                 val msg = context.getTranslation("message.attachmentnotanimage")
-                    .withVariable(PLACEHOLDER_ARG, attachments[0].url)
+                    .withVariable(PLACEHOLDER_ARG, args[0])
                 sendRsp(context, msg)
                 return null
             }

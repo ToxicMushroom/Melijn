@@ -11,7 +11,7 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
 
-const val PREFIXES_LIMIT = 2
+const val PREFIXES_LIMIT = 3
 const val PREMIUM_PREFIXES_LIMIT = 10
 const val PREFIXES_LIMIT_PATH = "premium.feature.prefix.limit"
 

@@ -3,15 +3,15 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.apollographql.apollo:apollo-gradle-plugin:2.3.0'
+        classpath 'com.apollographql.apollo:apollo-gradle-plugin:2.4.0'
     }
 }
 
 plugins {
     id 'application'
     id 'com.github.johnrengelman.shadow' version '6.0.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.0'
-    id 'com.apollographql.apollo' version '2.3.0'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'com.apollographql.apollo' version '2.4.0'
 }
 
 group = 'me.melijn.melijnbot'
@@ -50,7 +50,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_196') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_207') {
         exclude module: 'opus-java'
     }
 
@@ -74,7 +74,7 @@ dependencies {
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.4.5'
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.15'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.16'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.9'
@@ -102,30 +102,31 @@ dependencies {
     implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
 
-    implementation group: 'io.ktor', name: 'ktor', version: '1.4.0'
-    implementation group: 'io.ktor', name: 'ktor-client-cio', version: '1.4.0'
-    implementation group: 'io.ktor', name: 'ktor-server-netty', version: '1.4.0'
+    implementation group: 'io.ktor', name: 'ktor', version: '1.4.1'
+    implementation group: 'io.ktor', name: 'ktor-client-cio', version: '1.4.1'
+    implementation group: 'io.ktor', name: 'ktor-client-okhttp', version: '1.4.1'
+    implementation group: 'io.ktor', name: 'ktor-server-netty', version: '1.4.1'
 
 
     implementation group: 'com.github.ToxicMushroom', name: 'gifencoder', version: '23b3128881'
     implementation group: 'com.github.ToxicMushroom', name: 'animated-gif-lib-for-java', version: '03e397e311'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.4.0'
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.4.10'
 
     // https://github.com/GSculerlor/JikanKt/releases
     implementation group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.3.1'
 
 
-    implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.3.0'
-    implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.3.0'
+    implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.4.0'
+    implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.4.0'
 
     // implementation group: 'com.github.husnjak', name: 'IGDB-API-JVM', version: '0.7'
-    implementation group: 'io.lettuce', name: 'lettuce-core', version: '5.3.3.RELEASE'
+    implementation group: 'io.lettuce', name: 'lettuce-core', version: '5.3.4.RELEASE'
 
-    implementation group: 'org.codehaus.groovy', name: 'groovy', version: '3.0.5'
+    implementation group: 'org.codehaus.groovy', name: 'groovy', version: '3.0.6'
 
-    implementation 'io.github.cdimascio:java-dotenv:5.2.1'
+    implementation 'io.github.cdimascio:java-dotenv:5.3.1'
 
 }
 

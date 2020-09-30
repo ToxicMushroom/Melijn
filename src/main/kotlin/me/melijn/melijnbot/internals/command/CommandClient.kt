@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.command
 
+import io.ktor.client.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,13 +18,10 @@ import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.*
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.ChannelType
-import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.utils.data.DataObject
-import net.dv8tion.jda.internal.JDAImpl
 import kotlin.random.Random
 
 val SPACE_REGEX = "\\s+".toRegex()
@@ -69,9 +67,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val message = event.message
         if (message.contentRaw.isBlank()) return
 
-        if (event.channelType == ChannelType.TEXT) {
-            if (!event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_WRITE)) return
-        }
+        if (event.channelType == ChannelType.TEXT && !event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_WRITE)) return
 
         val prefixes = getPrefixes(event)
 
@@ -202,14 +198,14 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             if (command != null) {
                 val finalCommand = command ?: return
-                if (checksFailed(container, finalCommand, event, false, commandParts)) return
+                if (checksFailed(container, finalCommand, finalCommand.id.toString(), event, false, commandParts)) return
                 finalCommand.run(CommandContext(event, commandParts, container, commandList, spaceMap, aliasesMap, searchedAliases))
                 return
             }
         }
 
         if (ccsWithPrefixMatches.isNotEmpty()) {
-            runCustomCommandByChance(event, commandPartsGlobal, ccsWithPrefixMatches, true)
+            runCustomCommandByChance(event, container.webManager.proxiedHttpClient, commandPartsGlobal, ccsWithPrefixMatches, true)
             return
 
         } else {
@@ -232,13 +228,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
 
             if (ccsWithoutPrefixMatches.isNotEmpty()) {
-                runCustomCommandByChance(event, prefixLessCommandParts, ccsWithoutPrefixMatches, false)
+                runCustomCommandByChance(event, container.webManager.proxiedHttpClient, prefixLessCommandParts, ccsWithoutPrefixMatches, false)
                 return
             }
         }
     }
 
-    private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, commandParts: List<String>, ccs: List<CustomCommand>, hasPrefix: Boolean) {
+    private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, httpClient: HttpClient, commandParts: List<String>, ccs: List<CustomCommand>, hasPrefix: Boolean) {
         val cc: CustomCommand = if (ccs.size == 1) {
             ccs.first()
         } else {
@@ -249,14 +245,14 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         if (hasPermission(container, event, "cc.${cc.id}")) {
             val cParts = commandParts.toMutableList()
-            executeCC(cc, event, cParts, hasPrefix)
+            executeCC(cc, httpClient, event, cParts, hasPrefix)
         } else {
             val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
             sendMissingPermissionMessage(event.textChannel, container.daoManager, language, "cc.${cc.id}")
         }
     }
 
-    private suspend fun executeCC(cc: CustomCommand, event: MessageReceivedEvent, commandParts: List<String>, hasPrefix: Boolean) {
+    private suspend fun executeCC(cc: CustomCommand, httpClient: HttpClient, event: MessageReceivedEvent, commandParts: List<String>, hasPrefix: Boolean) {
         val member = event.member ?: return
         val channel = event.textChannel
         if (!channel.canTalk()) return
@@ -283,8 +279,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         val message: Message? = modularMessage.toMessage()
         when {
-            message == null -> sendAttachmentsAwaitN(channel, modularMessage.attachments)
-            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(channel, message, modularMessage.attachments)
+            message == null -> sendAttachmentsAwaitN(channel, httpClient, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(channel, httpClient, message, modularMessage.attachments)
             else -> sendMsgAwaitN(channel, message)
         }
     }
@@ -292,33 +288,15 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
     private suspend fun replaceVariablesInCCMessage(member: Member, rawArg: String, cc: CustomCommand): ModularMessage {
         val modularMessage = cc.content
-        val newMessage = ModularMessage()
         val ccArgs = CCJagTagParserArgs(member, rawArg, cc)
 
-        newMessage.messageContent = modularMessage.messageContent?.let {
-            CCJagTagParser.parseCCJagTag(ccArgs, it)
+        return modularMessage.mapAllStringFields {
+            if (it != null) {
+                CCJagTagParser.parseJagTag(ccArgs, it)
+            } else {
+                null
+            }
         }
-
-        val oldEmbedData = modularMessage.embed?.toData()
-            ?.put("type", EmbedType.RICH)
-        if (oldEmbedData != null) {
-            val newEmbedJSON = CCJagTagParser.parseCCJagTag(ccArgs, oldEmbedData.toString())
-            val newEmbedData = DataObject.fromJson(newEmbedJSON)
-            val newEmbed = (member.jda as JDAImpl).entityBuilder.createMessageEmbed(newEmbedData)
-            newMessage.embed = newEmbed
-        }
-
-
-        val newAttachments = mutableMapOf<String, String>()
-        modularMessage.attachments.forEach { (t, u) ->
-            val url = CCJagTagParser.parseCCJagTag(ccArgs, t)
-            val file = CCJagTagParser.parseCCJagTag(ccArgs, u)
-            newAttachments[url] = file
-        }
-        newMessage.attachments = newAttachments
-        newMessage.extra = modularMessage.extra
-        return newMessage
-
     }
 
     private fun getCustomCommandByChance(ccs: List<CustomCommand>): CustomCommand {
@@ -385,11 +363,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         suspend fun checksFailed(
             container: Container,
             command: AbstractCommand,
+            cmdId: String,
             event: MessageReceivedEvent,
             isSubCommand: Boolean,
             commandParts: List<String>
         ): Boolean {
-            val cmdId = command.id.toString()
             if (event.isFromGuild && commandIsDisabled(container.daoManager, cmdId, event)) {
                 return true
             }
@@ -427,7 +405,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     return true
                 }
 
-                if (commandIsOnCooldown(container.daoManager, cmdId, event)) {
+                if (commandIsOnCooldown(container.daoManager, cmdId, command.cooldown, event)) {
                     return true
                 }
             }
@@ -454,7 +432,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 return true
             }
 
-            if (commandIsOnCooldown(daoManager, cmdId, event)) {
+            if (commandIsOnCooldown(daoManager, cmdId, 0, event)) {
                 return true
             }
 
@@ -462,7 +440,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
 
-        private suspend fun commandIsOnCooldown(daoManager: DaoManager, id: String, event: MessageReceivedEvent): Boolean {
+        private suspend fun commandIsOnCooldown(daoManager: DaoManager, id: String, globalCooldown: Long, event: MessageReceivedEvent): Boolean {
             val guildId = event.guild.idLong
             val userId = event.author.idLong
             val channelId = event.channel.idLong
@@ -513,14 +491,16 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     bool = true
                 }
             }
-            val lastExecutionBiggest = if (lastExecution > lastExecutionChannel) {
-                lastExecution
-            } else {
-                lastExecutionChannel
+
+            val lastGlobalExecuted = daoManager.globalCooldownWrapper.getLastExecuted(userId, id)
+            if (globalCooldown != 0L && (System.currentTimeMillis() - globalCooldown) < lastGlobalExecuted) {
+                if (cooldownResult < globalCooldown) cooldownResult = globalCooldown
+                bool = true
             }
 
-            if (bool && cooldownResult != 0L) {
+            val lastExecutionBiggest = maxOf(lastExecution, lastExecutionChannel, lastGlobalExecuted)
 
+            if (bool && cooldownResult != 0L) {
                 val language = getLanguage(daoManager, userId, guildId)
                 val unReplacedCooldown = i18n.getTranslation(language, "message.cooldown")
                 val msg = unReplacedCooldown

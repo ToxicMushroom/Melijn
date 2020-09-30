@@ -14,10 +14,7 @@ import me.melijn.melijnbot.database.birthday.BirthdayHistoryWrapper
 import me.melijn.melijnbot.database.birthday.BirthdayWrapper
 import me.melijn.melijnbot.database.channel.*
 import me.melijn.melijnbot.database.command.*
-import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownDao
-import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownWrapper
-import me.melijn.melijnbot.database.cooldown.CommandCooldownDao
-import me.melijn.melijnbot.database.cooldown.CommandCooldownWrapper
+import me.melijn.melijnbot.database.cooldown.*
 import me.melijn.melijnbot.database.disabled.ChannelCommandStateDao
 import me.melijn.melijnbot.database.disabled.ChannelCommandStateWrapper
 import me.melijn.melijnbot.database.disabled.DisabledCommandDao
@@ -176,6 +173,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
     val dailyCooldownWrapper: DailyCooldownWrapper
+    val globalCooldownWrapper: GlobalCooldownWrapper
 
     val osuWrapper: OsuWrapper
 
@@ -276,6 +274,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         balanceWrapper = BalanceWrapper(BalanceDao(driverManager))
         dailyCooldownWrapper = DailyCooldownWrapper(DailyCooldownDao(driverManager))
+        globalCooldownWrapper = GlobalCooldownWrapper(GlobalCooldownDao(driverManager))
 
         osuWrapper = OsuWrapper(OsuDao(driverManager))
         //After registering wrappers

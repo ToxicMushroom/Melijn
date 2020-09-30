@@ -51,7 +51,7 @@ class LavaManager(
      */
     suspend fun tryToConnectToVCNMessage(context: CommandContext, channel: VoiceChannel, groupId: String): Boolean {
         if (notEnoughPermissionsAndMessage(context, channel, Permission.VOICE_CONNECT)) return false
-        return if (channel.userLimit == 0 || channel.userLimit > channel.members.size || notEnoughPermissionsAndMessage(context, channel, Permission.VOICE_MOVE_OTHERS)) {
+        return if (channel.userLimit == 0 || channel.userLimit > channel.members.size || !notEnoughPermissionsAndMessage(context, channel, Permission.VOICE_MOVE_OTHERS)) {
             openConnection(channel, groupId)
             true
         } else {

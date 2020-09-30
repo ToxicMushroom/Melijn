@@ -64,6 +64,10 @@ class EventManager(val container: Container) : IEventManager {
         }
     }
 
+    companion object {
+        val eventCountMap = mutableMapOf<String, Long>()
+    }
+
     override fun handle(event: GenericEvent) {
         if (container.shuttingDown) return
         try {
@@ -78,6 +82,8 @@ class EventManager(val container: Container) : IEventManager {
                 else -> e.sendInGuild()
             }
         }
+
+        eventCountMap[event.javaClass.simpleName] = eventCountMap.getOrDefault(event.javaClass.simpleName, 0) + 1
     }
 
     override fun getRegisteredListeners(): MutableList<Any> {

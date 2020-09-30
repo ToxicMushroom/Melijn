@@ -105,7 +105,11 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         daoManager.softBanWrapper.addSoftBan(softBan)
 
         val msg = try {
-            guild.ban(targetUser, clearDays).reason("softbanned").await()
+            guild
+                .ban(targetUser, clearDays)
+                .reason("(softban) ${context.author.asTag}: ${softBan.reason}")
+                .await()
+
             softBanningMessage?.editMessage(
                 softBannedMessageDm
             )?.override(true)?.queue()
@@ -116,7 +120,8 @@ class SoftBanCommand : AbstractCommand("command.softban") {
             logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, softBannedMessageLc) }
 
             if (!hasActiveBan) {
-                guild.unban(targetUser).reason("softbanned").await()
+                guild.unban(targetUser)
+                    .reason("(softban) ${context.author.asTag}: ${softBan.reason}").await()
             }
 
             context.getTranslation("$root.success")

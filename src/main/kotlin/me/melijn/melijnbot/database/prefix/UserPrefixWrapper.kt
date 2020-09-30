@@ -23,7 +23,7 @@ class UserPrefixWrapper(private val userPrefixDao: UserPrefixDao) {
         setPrefixes(userId, prefixList)
     }
 
-    private fun setPrefixes(userId: Long, prefixList: List<String>) {
+    fun setPrefixes(userId: Long, prefixList: List<String>) {
         val prefixes = prefixList.joinToString("%SPLIT%")
         userPrefixDao.set(userId, prefixes)
         userPrefixDao.setCacheEntry(userId, prefixes, NORMAL_CACHE)

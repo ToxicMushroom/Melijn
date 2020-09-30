@@ -14,6 +14,7 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 class RemoveCommand : AbstractCommand("command.remove") {
 
     init {
+
         name = "remove"
         aliases = arrayOf("deleteTrack", "removeTrack")
         runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL)

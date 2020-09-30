@@ -10,11 +10,25 @@ class EventWaiter : EventListener {
 
     private val eventHandlers = mutableMapOf<Class<*>, Set<EventHandler<GenericEvent>>>()
 
-    fun <T : Event> waitFor(eventType: Class<T>, condition: suspend (T) -> Boolean, action: suspend (T) -> Unit) {
+    fun <T : Event> waitFor(
+        eventType: Class<T>, condition: suspend (T) -> Boolean,
+        action: suspend (T) -> Unit, expired: (() -> Unit)? = null, seconds: Long = 120
+    ) {
         val newHandler = EventHandler(condition, action)
         val set = eventHandlers.getOrDefault(eventType, emptySet()).toMutableSet()
+
         tryCast<EventHandler<GenericEvent>>(newHandler) {
             set.add(this)
+        }
+
+        TaskManager.asyncAfter(seconds * 1000) {
+            tryCast<EventHandler<GenericEvent>>(newHandler) {
+                val newSet = eventHandlers.getOrDefault(eventType, emptySet()).toMutableSet()
+                if (newSet.remove(this)) {
+                    expired?.invoke()
+                }
+                eventHandlers[eventType] = newSet
+            }
         }
 
         eventHandlers[eventType] = set
@@ -28,11 +42,12 @@ class EventWaiter : EventListener {
 
 
     override fun onEvent(event: GenericEvent) {
-        val found = eventHandlers.getOrDefault(event::class.java, emptySet())
+        val found = eventHandlers[event::class.java] ?: return
         TaskManager.async {
             for (handler in found) {
                 if (handler.tryRun(event)) {
                     val set = eventHandlers.getOrDefault(event::class.java, emptySet()).toMutableSet()
+
                     tryCast<EventHandler<GenericEvent>>(handler) {
                         set.remove(this)
                     }
@@ -43,7 +58,7 @@ class EventWaiter : EventListener {
         }
     }
 
-    private inner class EventHandler<T : GenericEvent>(
+    private class EventHandler<T : GenericEvent>(
         val condition: suspend (T) -> Boolean,
         val action: suspend (T) -> Unit
     ) {

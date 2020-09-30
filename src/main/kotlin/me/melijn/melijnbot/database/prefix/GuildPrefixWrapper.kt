@@ -23,7 +23,7 @@ class GuildPrefixWrapper(private val guildPrefixDao: GuildPrefixDao) {
         setPrefixes(guildId, prefixList)
     }
 
-    private fun setPrefixes(guildId: Long, prefixList: List<String>) {
+    fun setPrefixes(guildId: Long, prefixList: List<String>) {
         val prefixes = prefixList.joinToString("%SPLIT%")
         guildPrefixDao.set(guildId, prefixes)
         guildPrefixDao.setCacheEntry(guildId, prefixes, NORMAL_CACHE)

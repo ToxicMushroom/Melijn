@@ -47,7 +47,7 @@ class GuildTrackManager(
     var loopedTrack = false
     var loopedQueue = false
 
-    val tracks: LinkedList<AudioTrack> = LinkedList()
+    var tracks: LinkedList<AudioTrack> = LinkedList()
     fun trackSize() = tracks.size
 
 
@@ -122,7 +122,9 @@ class GuildTrackManager(
     }
 
     fun shuffle() {
-        tracks.shuffle()
+        val tempList = LinkedList(tracks)
+        tempList.shuffle()
+        tracks = tempList
     }
 
 
@@ -257,7 +259,7 @@ class GuildTrackManager(
     fun removeAt(indexes: IntArray): Map<Int, AudioTrack> {
         val removed = HashMap<Int, AudioTrack>()
 
-        for (index in indexes) {
+        for (index in indexes.sortedBy { it }.reversed()) {
             removed[index] = tracks.removeAt(index)
         }
 

@@ -9,6 +9,7 @@ import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.toUCC
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -16,9 +17,9 @@ import java.nio.ByteBuffer
 import java.util.*
 
 
-fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread(), extra: String? = null) = runBlocking {
+fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread(), extra: String? = null, shouldSend: Boolean = true) = runBlocking {
     val sanitizedMessage = "Message: ${MarkdownSanitizer.escape(context.message.contentRaw)}\n" + (extra ?: "")
-    sendInGuildSuspend(context.guildN, context.messageChannel, context.author, thread, sanitizedMessage)
+    sendInGuildSuspend(context.guildN, context.messageChannel, context.author, thread, sanitizedMessage, shouldSend)
 }
 
 fun Throwable.sendInGuild(
@@ -26,9 +27,10 @@ fun Throwable.sendInGuild(
     channel: MessageChannel? = null,
     author: User? = null,
     thread: Thread = Thread.currentThread(),
-    extra: String? = null
+    extra: String? = null,
+    shouldSend: Boolean = true
 ) = runBlocking {
-    sendInGuildSuspend(guild, channel, author, thread, extra)
+    sendInGuildSuspend(guild, channel, author, thread, extra, shouldSend)
 }
 
 suspend fun Throwable.sendInGuildSuspend(
@@ -36,7 +38,8 @@ suspend fun Throwable.sendInGuildSuspend(
     channel: MessageChannel? = null,
     author: User? = null,
     thread: Thread = Thread.currentThread(),
-    extra: String? = null
+    extra: String? = null,
+    shouldSend: Boolean = true
 ) {
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 
@@ -81,9 +84,14 @@ suspend fun Throwable.sendInGuildSuspend(
         sendMsg(textChannel, sb.toString())
     }
 
-    if (channel != null && (channel !is TextChannel || channel.canTalk()) && (channel is TextChannel || channel is PrivateChannel)) {
+    if (shouldSend && channel != null && (channel !is TextChannel || channel.canTalk()) && (channel is TextChannel || channel is PrivateChannel)) {
         val lang = getLanguage(Container.instance.daoManager, author?.idLong ?: -1, guild?.idLong ?: -1)
-        val msg = i18n.getTranslation(lang, "message.exception")
+
+        val permError = this is InsufficientPermissionException
+        val msg = if (permError) {
+            "${this.message}, caseId: $caseId (consider using `>support` to join our support server)"
+
+        } else i18n.getTranslation(lang, "message.exception")
             .withVariable("caseId", caseId)
 
         if (channel is TextChannel)

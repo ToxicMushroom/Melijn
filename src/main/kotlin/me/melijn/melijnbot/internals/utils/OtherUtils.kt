@@ -102,7 +102,7 @@ fun getUnixRam(): Int {
 fun getWindowsUptime(): Long {
     val uptimeProc = Runtime.getRuntime().exec("net stats workstation")
     uptimeProc.inputStream.use { `is` ->
-        `is`.bufferedReader().use {br ->
+        `is`.bufferedReader().use { br ->
             for (line in br.readLines()) {
                 if (line.startsWith("Statistieken vanaf")) {
                     val format = SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss") //Dutch windows version
@@ -256,9 +256,9 @@ suspend fun getLongFromArgNMessage(
     }
     if (long != null) {
         if (min > long || long > max) {
-            val msg = context.getTranslation("message.number.notingrange")
-                .withVariable("min", min)
-                .withVariable("max", max)
+            val msg = context.getTranslation("message.number.notinrange")
+                .withVariable("start", min)
+                .withVariable("end", max)
                 .withVariable(PLACEHOLDER_ARG, arg)
             sendRsp(context, msg)
             return null
@@ -343,6 +343,39 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
     }
 }
 
+//Dayofyear, year
+fun getBirthdayByArgsN(arg: String): Pair<Int, Int?>? {
+    val list: List<Int> = arg.split("/", "-")
+        .map { value ->
+            value.toIntOrNull() ?: return null
+        }
+
+    if (list.size < 2) {
+        return null
+    }
+
+    val yearIndex = 0
+    val monthIndex = 1
+    val birthdayIndex = 2
+
+    val birthday = list[birthdayIndex]
+    if (birthday < 1 || birthday > 31) {
+        return null
+    }
+    val birthMonth = list[monthIndex]
+    if (birthMonth < 1 || birthMonth > 12) {
+        return null
+    }
+
+    val birthYear = if (list.size > 2) list[yearIndex] else null
+    if (birthYear != null && (birthYear < 1900 || birthYear > Year.now().value - 12)) {
+        return null
+    }
+
+    val localDate = LocalDate.of(2019, Month.of(birthMonth), birthday)
+    return Pair(localDate.dayOfYear, birthYear)
+}
+
 suspend fun isPremiumUser(context: CommandContext, user: User = context.author): Boolean {
     return context.daoManager.supporterWrapper.getUsers().contains(user.idLong) ||
         context.container.settings.botInfo.developerIds.contains(user.idLong)
@@ -354,6 +387,28 @@ suspend fun isPremiumGuild(context: CommandContext): Boolean {
 
 suspend fun isPremiumGuild(daoManager: DaoManager, guildId: Long): Boolean {
     return daoManager.supporterWrapper.getGuilds().contains(guildId)
+}
+
+
+suspend fun getBalanceNMessage(context: CommandContext, index: Int): Long? {
+    if (argSizeCheckFailed(context, index)) return null
+    val bal = context.daoManager.balanceWrapper.getBalance(context.authorId)
+
+    val arg = context.args[index]
+    return if (arg.equals("all", true)) {
+        bal
+    } else {
+        val amount = getLongFromArgNMessage(context, index, 1) ?: return null
+        if (amount > bal) {
+            val msg = context.getTranslation("message.amounttoobig")
+                .withVariable("bal", bal)
+                .withVariable("amount", amount)
+
+            sendRsp(context, msg)
+            return null
+        }
+        amount
+    }
 }
 
 

@@ -1,0 +1,27 @@
+version: v1.0
+name: Pull image on prod & shutdown bot
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: Deploy
+    task:
+      secrets:
+        - name: prod-deploy-details
+      jobs:
+        - name: Pull image & shutdown bot
+          commands:
+            - chmod 400 /home/semaphore/.ssh/id_rsa
+            - ssh-keyscan -p ${SSH_PORT} -H ${SSH_HOST} >> /home/semaphore/.ssh/known_hosts
+            - ssh-keyscan -p ${PROD_SSH_PORT} -H ${PROD_SSH_HOST} >> /home/semaphore/.ssh/known_hosts
+            - ssh ${SSH_USER}@${SSH_HOST} -p ${SSH_PORT} sudo ./pullAndDown.sh "${REST_TOKEN}"
+            - ssh ${PROD_SSH_USER}@${PROD_SSH_HOST} -p ${PROD_SSH_PORT} kubectl rollout restart deployment -n merlijn melijn
+#promotions:
+#  - name: Prod restart compose
+#    pipeline_file: production-2-deploy.yml
+#    auto_promote_on:
+#      - result: passed
+#        branch:
+#          - staging
+#          - master

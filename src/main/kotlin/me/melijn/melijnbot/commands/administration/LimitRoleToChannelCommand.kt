@@ -49,7 +49,7 @@ class LimitRoleToChannelCommand : AbstractCommand("command.limitroletochannel") 
                         if (context.selfMember.hasPermission(channel, Permission.MANAGE_CHANNEL)) {
                             channel.putPermissionOverride(role)
                                 .grant(Permission.VIEW_CHANNEL)
-                                .reason("limitRoleToChannel")
+                                .reason("(limitRoleToChannel) ${context.author.asTag}")
                                 .queue()
                         } else failed++
                     }
@@ -57,7 +57,7 @@ class LimitRoleToChannelCommand : AbstractCommand("command.limitroletochannel") 
                         if (context.selfMember.hasPermission(channel, Permission.MANAGE_CHANNEL)) {
                             channel.putPermissionOverride(role)
                                 .deny(Permission.VIEW_CHANNEL)
-                                .reason("limitRoleToChannel")
+                                .reason("(limitRoleToChannel) ${context.author.asTag}")
                                 .queue()
                         } else failed++
                     }

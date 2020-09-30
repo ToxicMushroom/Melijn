@@ -3,6 +3,7 @@ package me.melijn.melijnbot.database.autopunishment
 import com.fasterxml.jackson.module.kotlin.readValue
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.objectMapper
 
 class PunishmentWrapper(private val punishmentDao: PunishmentDao) {
 

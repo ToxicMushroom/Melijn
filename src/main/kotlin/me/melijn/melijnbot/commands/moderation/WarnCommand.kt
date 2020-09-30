@@ -129,7 +129,7 @@ fun getWarnMessage(
         .withVariable("warnAuthorId", warnAuthor.id)
         .withVariable("warned", warnedUser.asTag)
         .withVariable("warnedId", warnedUser.id)
-        .withVariable("reason", warn.reason)
+        .withVariable("reason", warn.reason.take(1600))
         .withVariable("moment", (warn.moment.asEpochMillisToDateTime(zoneId)))
         .withVariable("warnId", warn.warnId)
 

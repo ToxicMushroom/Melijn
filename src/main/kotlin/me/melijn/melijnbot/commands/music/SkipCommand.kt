@@ -26,6 +26,11 @@ class SkipCommand : AbstractCommand("command.skip") {
         val amount = getIntegerFromArgN(context, 0, 1) ?: 1
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val cTrack = trackManager.iPlayer.playingTrack ?: return
+        val trackPos = try {
+            trackManager.iPlayer.trackPosition
+        } catch (e: Exception) {
+            return
+        }
         val part1 = if (amount > 1) {
             context.getTranslation("$root.skips")
                 .withVariable("amount", amount.toString())
@@ -34,7 +39,7 @@ class SkipCommand : AbstractCommand("command.skip") {
         }
             .withVariable("track", cTrack.info.title)
             .withVariable("url", cTrack.info.uri)
-            .withVariable("position", getDurationString(trackManager.iPlayer.trackPosition))
+            .withVariable("position", getDurationString(trackPos))
             .withVariable("duration", getDurationString(cTrack.duration))
 
         context.getGuildMusicPlayer().guildTrackManager.skip(amount)
@@ -53,8 +58,8 @@ class SkipCommand : AbstractCommand("command.skip") {
             .withVariable(PLACEHOLDER_USER, context.author.asTag)
 
         val eb = Embedder(context)
-        eb.setTitle(title)
-        eb.setDescription(part1 + part2)
+            .setTitle(title)
+            .setDescription(part1 + part2)
         sendEmbedRsp(context, eb.build())
     }
 }

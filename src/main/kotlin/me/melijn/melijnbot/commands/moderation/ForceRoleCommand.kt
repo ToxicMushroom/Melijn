@@ -133,7 +133,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
             context.daoManager.forceRoleWrapper.add(context.guildId, user.idLong, role.idLong)
             if (member != null && !member.roles.contains(role)) {
-                if (!context.guild.addRoleToMember(member, role).reason("forcerole").awaitBool()) {
+                if (!context.guild.addRoleToMember(member, role).reason("(forceRole add) ${context.author.asTag}").awaitBool()) {
                     LogUtils.sendMessageFailedToAddRoleToMember(context.daoManager, member, role)
                 }
             }
@@ -162,7 +162,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
             context.daoManager.forceRoleWrapper.remove(context.guildId, user.idLong, role.idLong)
             if (member != null && member.roles.contains(role)) {
-                if (context.guild.removeRoleFromMember(member, role).reason("deforceroled").awaitBool()) {
+                if (context.guild.removeRoleFromMember(member, role).reason("(forceRole remove) ${context.author.asTag}").awaitBool()) {
                     LogUtils.sendMessageFailedToRemoveRoleFromMember(context.daoManager, member, role)
                 }
             }

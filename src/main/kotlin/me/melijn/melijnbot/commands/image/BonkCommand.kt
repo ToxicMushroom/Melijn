@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.utils.getLongFromArgN
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import net.dv8tion.jda.api.Permission
 import java.awt.image.RenderedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -28,6 +29,7 @@ class BonkCommand : AbstractCommand("command.bonk") {
         id = 205
         name = "bonk"
         commandCategory = CommandCategory.IMAGE
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -39,9 +41,9 @@ class BonkCommand : AbstractCommand("command.bonk") {
         val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
         val rediCon = context.daoManager.driverManager.redisConnection
-        val avatar = rediCon.async()
-            .get("avatar:${user.id}")
-            .await()
+        val avatar = rediCon?.async()
+            ?.get("avatar:${user.id}")
+            ?.await()
 
         val inputImg = if (avatar == null) {
             ImageIO.read(URL(user.effectiveAvatarUrl.replace(".gif", ".png") + "?size=512"))
@@ -80,8 +82,8 @@ class BonkCommand : AbstractCommand("command.bonk") {
         val baos = ByteArrayOutputStream()
         ImageIO.write(inputImg, "png", baos);
 
-        rediCon.async()
-            .set("avatar:${user.id}", Base64.encode(baos.toByteArray()), SetArgs().ex(600))
+        rediCon?.async()
+            ?.set("avatar:${user.id}", Base64.encode(baos.toByteArray()), SetArgs().ex(600))
     }
 }
 

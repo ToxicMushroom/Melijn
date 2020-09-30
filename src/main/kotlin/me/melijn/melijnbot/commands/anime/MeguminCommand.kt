@@ -10,7 +10,7 @@ class MeguminCommand : AbstractCommand("command.megumin") {
     init {
         id = 104
         name = "megumin"
-        aliases = arrayOf("bakuretsu")
+        aliases = arrayOf("megu", "bakuretsu")
         commandCategory = CommandCategory.ANIME
     }
 

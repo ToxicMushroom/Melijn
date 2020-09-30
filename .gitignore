@@ -20,4 +20,4 @@ out/
 /config_local.json
 
 .env
-.*env
+*.*env
