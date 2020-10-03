@@ -95,12 +95,12 @@ object ImageUtils {
                 val emoteId = EMOTE_MENTION.find(args[0])?.groupValues?.get(2)
 
                 url = "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1"
-                img = downloadImage(context, url)
+                img = downloadImage(context, url, false)
             } else {
                 arg = true
                 url = args[0]
                 try {
-                    if (!checkFormat(context, args[0], reqFormat)) return null
+                    if (!checkFormat(context, url, reqFormat)) return null
 
                     img = downloadImage(context, url)
                     ByteArrayInputStream(img).use { bis ->
@@ -333,6 +333,12 @@ object ImageUtils {
     private suspend fun checkFormat(context: CommandContext, url: String, reqFormat: String?): Boolean {
         if (reqFormat != null && !url.contains(reqFormat)) {
             val msg = context.getTranslation("message.notagif")
+                .withVariable("url", url)
+            sendRsp(context, msg)
+            return false
+        }
+        if (!URL_PATTERN.matches(url)) {
+            val msg = context.getTranslation("message.notaurl")
                 .withVariable("url", url)
             sendRsp(context, msg)
             return false
