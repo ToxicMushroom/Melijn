@@ -84,6 +84,13 @@ class RedditCommand : AbstractCommand("command.reddit") {
                     objectMapper.readValue<RedditAbout>(it)
                 } ?: requestAboutAndStore(context.webManager.httpClient, context.daoManager.driverManager, subreddit)
 
+            if (about == null) {
+                val unknownReddit = context.getTranslation("command.reddit.down")
+                    .withVariable("subreddit", subreddit)
+                sendRsp(context, unknownReddit)
+                return null
+            }
+
             if (about.private) {
                 val unknownReddit = context.getTranslation("command.reddit.private")
                     .withVariable("subreddit", subreddit)
@@ -119,7 +126,7 @@ class RedditCommand : AbstractCommand("command.reddit") {
 
             if (posts == null) {
                 val unknownReddit = context.getTranslation("command.reddit.down")
-                        .withVariable("subreddit", subreddit)
+                    .withVariable("subreddit", subreddit)
                 sendRsp(context, unknownReddit)
                 return null
             }
@@ -141,8 +148,8 @@ class RedditCommand : AbstractCommand("command.reddit") {
 
         suspend fun requestPostsAndStore(httpClient: HttpClient, driverManager: DriverManager, subreddit: String, arg: String, time: String): List<RedditResult>? {
             val data = try {
-               DataObject.fromJson(
-                        httpClient.get<String>("https://www.reddit.com/r/$subreddit.json?sort=${arg}&t=${time}&limit=100")
+                DataObject.fromJson(
+                    httpClient.get<String>("https://www.reddit.com/r/$subreddit.json?sort=${arg}&t=${time}&limit=100")
                 ).getObject("data")
             } catch (t: Throwable) {
                 return null
@@ -175,10 +182,14 @@ class RedditCommand : AbstractCommand("command.reddit") {
             return posts
         }
 
-        suspend fun requestAboutAndStore(httpClient: HttpClient, driverManager: DriverManager, subreddit: String): RedditAbout {
-            val res = DataObject.fromJson(
-                httpClient.get<HttpResponse>("https://api.reddit.com/r/$subreddit/about").readText()
-            )
+        suspend fun requestAboutAndStore(httpClient: HttpClient, driverManager: DriverManager, subreddit: String): RedditAbout? {
+            val res = try {
+                DataObject.fromJson(
+                    httpClient.get<HttpResponse>("https://api.reddit.com/r/$subreddit/about").readText()
+                )
+            } catch (t: Throwable) {
+                return null
+            }
             val about = if (res.hasKey("error") && res.getInt("error") == 403 && res.getString("reason") == "private") {
                 RedditAbout(exists = true, private = true, over18 = false)
             } else if (res.hasKey("error") && res.getInt("error") == 404) {
