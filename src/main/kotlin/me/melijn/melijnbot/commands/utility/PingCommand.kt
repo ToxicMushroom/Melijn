@@ -8,8 +8,8 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.message.handleRspDelete
 import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
-import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.withVariable
+import net.dv8tion.jda.api.Permission
 
 
 class PingCommand : AbstractCommand("command.ping") {
@@ -18,6 +18,7 @@ class PingCommand : AbstractCommand("command.ping") {
         id = 1
         name = "ping"
         aliases = arrayOf("pong", "latency")
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
         commandCategory = CommandCategory.UTILITY
     }
 
