@@ -95,14 +95,14 @@ object ImageUtils {
                 val emoteId = EMOTE_MENTION.find(args[0])?.groupValues?.get(2)
 
                 url = "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1"
-                img = downloadImage(context, url, false)
+                img = downloadImage(context, url)
             } else {
                 arg = true
                 url = args[0]
                 try {
                     if (!checkFormat(context, url, reqFormat)) return null
 
-                    img = downloadImage(context, url)
+                    img = downloadImage(context.webManager.proxiedHttpClient, url)
                     ByteArrayInputStream(img).use { bis ->
                         if (ImageIO.read(bis) == null) {
                             img = null
@@ -123,7 +123,7 @@ object ImageUtils {
             arg = false
             url = context.author.effectiveAvatarUrl + discordSize
             if (!checkFormat(context, context.author.effectiveAvatarUrl, reqFormat)) return null
-            img = downloadImage(context, url, false)
+            img = downloadImage(context, url)
         }
 
         if (img == null) {
