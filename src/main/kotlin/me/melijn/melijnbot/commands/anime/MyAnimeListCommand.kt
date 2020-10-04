@@ -1,8 +1,5 @@
 package me.melijn.melijnbot.commands.anime
 
-import io.ktor.client.features.auth.*
-import io.ktor.client.features.auth.providers.*
-import io.ktor.client.features.json.*
 import me.melijn.melijnbot.commands.utility.toUniversalDateFormat
 import me.melijn.melijnbot.commands.utility.toUniversalDateTimeFormat
 import me.melijn.melijnbot.internals.Settings
