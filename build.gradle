@@ -50,7 +50,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_207') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_208') {
         exclude module: 'opus-java'
     }
 
@@ -117,6 +117,8 @@ dependencies {
     // https://github.com/GSculerlor/JikanKt/releases
 //    implementation group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.3.1'
     implementation 'com.github.Melijn:JikanKt:dd5884b643'
+
+    implementation 'org.mariuszgromada.math:MathParser.org-mXparser:4.4.2'
 
 
 
