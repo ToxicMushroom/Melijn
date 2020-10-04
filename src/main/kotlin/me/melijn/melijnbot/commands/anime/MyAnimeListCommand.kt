@@ -1,5 +1,8 @@
 package me.melijn.melijnbot.commands.anime
 
+import io.ktor.client.features.auth.*
+import io.ktor.client.features.auth.providers.*
+import io.ktor.client.features.json.*
 import me.melijn.melijnbot.commands.utility.toUniversalDateFormat
 import me.melijn.melijnbot.commands.utility.toUniversalDateTimeFormat
 import me.melijn.melijnbot.internals.Settings
@@ -36,9 +39,11 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
             MangaArg(root),
             CharacterArg(root)
         )
-        jikanUrl = "http${(if (jikanSettings.ssl) "s" else "")}://${jikanSettings.host}:${jikanSettings.port}/v3/"
+        jikanUrl = "http${(if (jikanSettings.ssl) "s" else "")}://${jikanSettings.host}:${jikanSettings.port}/public/v3/"
 
-        JikanKt.apply { restClient = RestClient(false, jikanUrl) }
+        JikanKt.apply {
+            restClient = RestClient(false, jikanUrl, jikanSettings.key)
+        }
         commandCategory = CommandCategory.ANIME
     }
 

@@ -50,6 +50,7 @@ data class Settings(
         data class Jikan(
             var ssl: Boolean,
             var host: String,
+            var key: String,
             var port: Int
         )
 
@@ -162,6 +163,7 @@ data class Settings(
                     Api.Jikan(
                         getBoolean("api.jikan.ssl"),
                         get("api.jikan.host"),
+                        get("api.jikan.key"),
                         getInt("api.jikan.port")
                     ),
                     Api.Spotify(
