@@ -35,7 +35,6 @@ data class Settings(
     )
 
     data class Api(
-        val melijnCDN: MelijnCDN,
         val jikan: Jikan,
         val spotify: Spotify,
         val imgHoard: ImgHoard,
@@ -52,10 +51,6 @@ data class Settings(
             var host: String,
             var key: String,
             var port: Int
-        )
-
-        data class MelijnCDN(
-            var token: String
         )
 
         data class ImgHoard(
@@ -157,9 +152,6 @@ data class Settings(
                     get("restserver.token")
                 ),
                 Api(
-                    Api.MelijnCDN(
-                        get("api.melijncdn.token")
-                    ),
                     Api.Jikan(
                         getBoolean("api.jikan.ssl"),
                         get("api.jikan.host"),

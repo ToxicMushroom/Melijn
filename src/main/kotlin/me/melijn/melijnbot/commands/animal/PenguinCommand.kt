@@ -24,7 +24,7 @@ class PenguinCommand : AbstractCommand("command.penguin") {
 
         val eb = Embedder(context)
             .setTitle(title)
-            .setImage(getRandomPenguinUrl(web, context.container.settings.api.melijnCDN.token))
+            .setImage(getRandomPenguinUrl(web, context.container.settings.api.imgHoard.token))
         sendEmbedRsp(context, eb.build())
     }
 

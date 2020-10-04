@@ -58,7 +58,7 @@ class RedditCommand : AbstractCommand("command.reddit") {
         val embedder = Embedder(context)
             .setTitle(randomResult.title.take(256), "https://reddit.com" + randomResult.url)
             .setImage(if (randomResult.justText) null else randomResult.img)
-            .setThumbnail(if (randomResult.justText) "https://cdn.melijn.com/img/11ixgBjie.png" else null)
+            .setThumbnail(if (randomResult.justText) "https://static.melijn.com/text-icon.png" else null)
             .setFooter("\uD83D\uDD3C ${randomResult.ups} | " + (randomResult.created * 1000).asEpochMillisToDateTime(context.getTimeZoneId()))
         if (randomResult.thumb.isNotBlank() && randomResult.thumb != "self" && randomResult.justText) {
             try {
