@@ -238,7 +238,8 @@ class CommandClientBuilder(private val container: Container) {
         ClearCacheCommand(),
         SlotsCommand(),
         PokerCommand(),
-        JailCommand()
+        JailCommand(),
+        CalculateCommand()
     )
 
     fun build(): CommandClient {
