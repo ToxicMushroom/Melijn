@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import org.mariuszgromada.math.mxparser.Expression
 
-class CalculateCommand : AbstractCommand("command.calculator") {
+class CalculateCommand : AbstractCommand("command.calculate") {
 
     init {
         id = 220
