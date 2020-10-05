@@ -210,7 +210,7 @@ class HelpCommand : AbstractCommand("command.help") {
             ?.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
 
         val embedder = Embedder(context)
-            .setTitle(cmdTitle)
+            .setTitle(cmdTitle, "https://melijn.com/commands?q=${parent.name}&c=${parent.commandCategory.toString().toLowerCase()}")
             .addField(
                 cmdSyntax,
                 MarkdownSanitizer.escape(
@@ -227,8 +227,7 @@ class HelpCommand : AbstractCommand("command.help") {
         embedder.addField(
             cmdDesc,
             context.getTranslation(command.description)
-                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
-            , false
+                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix), false
         )
 
         cmdArgumentsValue?.let {

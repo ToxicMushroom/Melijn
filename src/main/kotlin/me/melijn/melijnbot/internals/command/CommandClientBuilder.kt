@@ -96,7 +96,7 @@ class CommandClientBuilder(private val container: Container) {
         T2eCommand(),
         FlipImgCommand(),
         ClearChannelCommand(),
-        ServerInfo(),
+        ServerInfoCommand(),
         PatCommand(),
         SelfRoleCommand(),
         PingCommand(),
