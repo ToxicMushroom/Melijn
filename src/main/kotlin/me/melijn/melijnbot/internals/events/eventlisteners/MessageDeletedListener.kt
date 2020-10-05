@@ -28,10 +28,18 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.ConcurrentHashMap
 import java.util.stream.Collectors
 
+const val SNIPE_LIMIT = 2
+const val PREMIUM_SNIPE_LIMIT = 10
 
 class MessageDeletedListener(container: Container) : AbstractListener(container) {
+
+    companion object {
+        // (guildId, channelId) -> [msg -> deletionTime, ...]
+        val recentDeletions = ConcurrentHashMap<Pair<Long, Long>, Map<DaoMessage, Long>>()
+    }
 
     override fun onEvent(event: GenericEvent) {
         if (event is GuildMessageDeleteEvent) {
@@ -67,14 +75,26 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     }
 
     private suspend fun selectCorrectLogType(
-        event: GuildMessageDeleteEvent,
-        odmLogChannel: TextChannel?,
-        sdmLogChannel: TextChannel?,
-        fmLogChannel: TextChannel?
+            event: GuildMessageDeleteEvent,
+            odmLogChannel: TextChannel?,
+            sdmLogChannel: TextChannel?,
+            fmLogChannel: TextChannel?
     ) {
         val guild = event.guild
         val msg = container.daoManager.messageHistoryWrapper.getMessageById(event.messageIdLong) ?: return
-        val msgDeleteTime = OffsetDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.of("GMT"))
+        val deletedMillis = System.currentTimeMillis()
+
+        val msgDeleteTime = OffsetDateTime.ofInstant(Instant.ofEpochMilli(deletedMillis), ZoneId.of("GMT"))
+        val deletionLocId = Pair(guild.idLong, event.channel.idLong)
+        val snipeMap = recentDeletions[deletionLocId]?.toMutableMap() ?: mutableMapOf()
+        if (snipeMap.size > SNIPE_LIMIT &&
+                (!container.daoManager.supporterWrapper.getGuilds().contains(guild.idLong) || snipeMap.size > PREMIUM_SNIPE_LIMIT)) {
+            val toRemove = snipeMap.entries.maxByOrNull { it.value }?.key
+            snipeMap.remove(toRemove)
+        }
+        snipeMap[msg] = deletedMillis
+        recentDeletions[deletionLocId] = snipeMap
+
 
         when {
             container.purgedIds.keys.contains(msg.messageId) -> {
@@ -94,12 +114,12 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             else -> {
                 val list = guild.retrieveAuditLogs().type(ActionType.MESSAGE_DELETE).limit(50).await()
                 val filtered = list.stream()
-                    .filter {
-                        it.getOption<String>(AuditLogOption.CHANNEL)?.toLong() == msg.textChannelId &&
-                            it.targetIdLong == msg.authorId &&
-                            it.timeCreated.until(msgDeleteTime, ChronoUnit.MINUTES) <= 5
-                    }
-                    .collect(Collectors.toList())
+                        .filter {
+                            it.getOption<String>(AuditLogOption.CHANNEL)?.toLong() == msg.textChannelId &&
+                                    it.targetIdLong == msg.authorId &&
+                                    it.timeCreated.until(msgDeleteTime, ChronoUnit.MINUTES) <= 5
+                        }
+                        .collect(Collectors.toList())
 
                 val entry = when {
                     filtered.size > 1 -> {
@@ -138,7 +158,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             if (index == ebs.size - 1) {
                 val language = getLanguage(container.daoManager, -1, event.guild.idLong)
                 val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
-                    .withVariable(PLACEHOLDER_USER, messageAuthor.asTag)
+                        .withVariable(PLACEHOLDER_USER, messageAuthor.asTag)
                 eb.setFooter(footer, messageAuthor.effectiveAvatarUrl)
             }
             sendEmbed(container.daoManager.embedDisabledWrapper, sdmLogChannel, eb.build())
@@ -157,7 +177,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             if (index == ebs.size - 1) {
                 val language = getLanguage(container.daoManager, -1, event.guild.idLong)
                 val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
-                    .withVariable(PLACEHOLDER_USER, deleterMember.asTag)
+                        .withVariable(PLACEHOLDER_USER, deleterMember.asTag)
                 eb.setFooter(footer, deleterMember.user.effectiveAvatarUrl)
             }
 
@@ -183,14 +203,14 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
                     for ((key, value) in it) {
                         if (value.isEmpty()) continue
                         extra += i18n.getTranslation(language, "logging.punishmentpoints.cause.${key}")
-                            .withVariable("word", value.joinToString()) + "\n"
+                                .withVariable("word", value.joinToString()) + "\n"
                     }
                 }
 
                 eb.addField(fieldTitle, extra.take(MessageEmbed.VALUE_MAX_LENGTH), false)
 
                 val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
-                    .withVariable(PLACEHOLDER_USER, event.jda.selfUser.asTag)
+                        .withVariable(PLACEHOLDER_USER, event.jda.selfUser.asTag)
                 eb.setFooter(footer, event.jda.selfUser.effectiveAvatarUrl)
             }
             sendEmbed(container.daoManager.embedDisabledWrapper, fmLogChannel, eb.build())
@@ -198,10 +218,10 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     }
 
     private suspend fun getGeneralEmbedBuilder(
-        msg: DaoMessage,
-        event: GuildMessageDeleteEvent,
-        messageAuthor: User,
-        messageDeleterId: Long
+            msg: DaoMessage,
+            event: GuildMessageDeleteEvent,
+            messageAuthor: User,
+            messageDeleterId: Long
     ): List<EmbedBuilder> {
 
         val daoManager = container.daoManager
@@ -211,16 +231,16 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.deletion.log.title")
-            .withVariable(PLACEHOLDER_CHANNEL, channel?.asTag ?: "<#${msg.textChannelId}>")
+                .withVariable(PLACEHOLDER_CHANNEL, channel?.asTag ?: "<#${msg.textChannelId}>")
 
         val extra = if (msg.authorId == messageDeleterId) ".self" else ""
         val description = i18n.getTranslation(language, "listener.message.deletion.log${extra}.description")
-            .withVariable("messageAuthor", messageAuthor.asTag)
-            .withVariable("messageContent", escapeForLog(msg.content))
-            .withVariable("messageAuthorId", msg.authorId.toString())
-            .withVariable("messageDeleterId", messageDeleterId.toString())
-            .withVariable("sentTime", msg.moment.asEpochMillisToDateTime(zoneId))
-            .withVariable("deletedTime", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+                .withVariable("messageAuthor", messageAuthor.asTag)
+                .withVariable("messageContent", escapeForLog(msg.content))
+                .withVariable("messageAuthorId", msg.authorId.toString())
+                .withVariable("messageDeleterId", messageDeleterId.toString())
+                .withVariable("sentTime", msg.moment.asEpochMillisToDateTime(zoneId))
+                .withVariable("deletedTime", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         val ebs = mutableListOf<EmbedBuilder>()
 
