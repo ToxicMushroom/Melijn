@@ -5,7 +5,6 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.services.bans.BanService
 import me.melijn.melijnbot.internals.services.birthday.BirthdayService
 import me.melijn.melijnbot.internals.services.donator.DonatorService
-import me.melijn.melijnbot.internals.services.memspam.SpamService
 import me.melijn.melijnbot.internals.services.message.MessageCleanerService
 import me.melijn.melijnbot.internals.services.music.SpotifyService
 import me.melijn.melijnbot.internals.services.mutes.MuteService

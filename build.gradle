@@ -121,7 +121,6 @@ dependencies {
     implementation 'org.mariuszgromada.math:MathParser.org-mXparser:4.4.2'
 
 
-
     implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.4.1'
     implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.4.1'
 
