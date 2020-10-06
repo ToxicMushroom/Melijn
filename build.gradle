@@ -115,7 +115,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.4.10'
 
     // https://github.com/GSculerlor/JikanKt/releases
-//    implementation group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.3.1'
+    // `implementation group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.3.1'
     implementation 'com.github.Melijn:JikanKt:dd5884b643'
 
     implementation 'org.mariuszgromada.math:MathParser.org-mXparser:4.4.2'
@@ -126,7 +126,7 @@ dependencies {
     implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.4.1'
 
     // implementation group: 'com.github.husnjak', name: 'IGDB-API-JVM', version: '0.7'
-    implementation group: 'io.lettuce', name: 'lettuce-core', version: '5.3.4.RELEASE'
+    implementation group: 'io.lettuce', name: 'lettuce-core', version: '6.0.0.RELEASE'
 
     implementation group: 'org.codehaus.groovy', name: 'groovy', version: '3.0.6'
 

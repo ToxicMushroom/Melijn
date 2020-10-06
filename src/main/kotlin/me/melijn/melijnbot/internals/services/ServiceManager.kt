@@ -5,6 +5,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.services.bans.BanService
 import me.melijn.melijnbot.internals.services.birthday.BirthdayService
 import me.melijn.melijnbot.internals.services.donator.DonatorService
+import me.melijn.melijnbot.internals.services.memspam.SpamService
 import me.melijn.melijnbot.internals.services.message.MessageCleanerService
 import me.melijn.melijnbot.internals.services.music.SpotifyService
 import me.melijn.melijnbot.internals.services.mutes.MuteService
@@ -43,6 +44,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         services.add(DonatorService(container, shardManager))
         slowServices.add(RolesService(daoManager.tempRoleWrapper, shardManager))
         slowServices.add(VoteReminderService(daoManager))
+//        slowServices.add(SpamService(container, shardManager))
         services.add(RedditService(webManager.httpClient, daoManager.driverManager))
         services.add(RedditAboutService(webManager.httpClient, daoManager.driverManager))
     }
