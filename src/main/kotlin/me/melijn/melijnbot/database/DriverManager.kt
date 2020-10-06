@@ -23,7 +23,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class DriverManager(
     dbSettings: Settings.Database,
-    redisSettings: Settings.Redis
+    val redisSettings: Settings.Redis
 ) {
 
     private val afterConnectToBeExecutedQueries = ArrayList<String>()
@@ -57,7 +57,7 @@ class DriverManager(
         }
     }
 
-    private fun connectRedis(host: String, port: Int) {
+    private fun connectRedis(host: String, port: Int, resp2: Boolean = false) {
         val uri = RedisURI.builder()
             .withHost(host)
             .withPort(port)
@@ -66,8 +66,9 @@ class DriverManager(
         val redisClient = RedisClient
             .create(uri)
 
-        val clientOptions =  ClientOptions.builder()
-            .protocolVersion(ProtocolVersion.RESP2)
+        val protocol = if (resp2) ProtocolVersion.RESP2 else ProtocolVersion.RESP3
+        val clientOptions = ClientOptions.builder()
+            .protocolVersion(protocol)
             .build()
 
         redisClient.options = clientOptions
@@ -77,12 +78,21 @@ class DriverManager(
             redisConnection = redisClient.connect()
             logger.info("Connected to redis")
         } catch (e: Throwable) {
-            TaskManager.async {
-                logger.warn("Retrying to connect to redis..")
-                recursiveConnectRedis(host, port)
-                logger.warn("Retrying to connect to redis has succeeded!")
+            if (resp2) {
+                TaskManager.async {
+                    logger.warn("Retrying to connect to redis..")
+                    recursiveConnectRedis(host, port)
+                    logger.warn("Retrying to connect to redis has succeeded!")
+                }
+            } else {
+                connectRedis(host, port, true)
             }
         }
+    }
+
+    fun resp2redis() {
+        logger.warn("redis error caught, switching to resp2 protocol")
+        connectRedis(redisSettings.host, redisSettings.port, true)
     }
 
     private suspend fun recursiveConnectRedis(host: String, port: Int) {
@@ -285,4 +295,6 @@ class DriverManager(
     fun dropTable(table: String) {
         afterConnectToBeExecutedQueries.add(0, "DROP TABLE $table")
     }
+
+
 }
