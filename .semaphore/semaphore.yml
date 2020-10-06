@@ -16,6 +16,7 @@ blocks:
             - docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
             - docker build -t ${DOCKER_USERNAME}/${DOCKER_IMAGE}:$SEMAPHORE_GIT_SHA .
             - docker push ${DOCKER_USERNAME}/${DOCKER_IMAGE}:$SEMAPHORE_GIT_SHA
+            - docker push ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest
 promotions:
   - name: Staging pull img & down bot
     pipeline_file: staging-1-deploy.yml
