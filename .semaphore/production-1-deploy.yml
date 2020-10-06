@@ -16,5 +16,5 @@ blocks:
             - ssh-keyscan -p ${SSH_PORT} -H ${SSH_HOST} >> /home/semaphore/.ssh/known_hosts
             - ssh-keyscan -p ${PROD_SSH_PORT} -H ${PROD_SSH_HOST} >> /home/semaphore/.ssh/known_hosts
             - ssh ${SSH_USER}@${SSH_HOST} -p ${SSH_PORT} sudo ./pullAndDown.sh "${REST_TOKEN}"
-            - "ssh ${PROD_SSH_USER}@${PROD_SSH_HOST} -p ${PROD_SSH_PORT} sed -i 's@image:.*@image: toxicmushroom/melijn:latest@g' /opt/k3s/merlijn/melijn/02-deployment.yml"
+            - ssh ${PROD_SSH_USER}@${PROD_SSH_HOST} -p ${PROD_SSH_PORT} "sed -i 's@image:.*@image: toxicmushroom/melijn:$SEMAPHORE_GIT_SHA@g' /opt/k3s/merlijn/melijn/02-deployment.yml"
             - "ssh ${PROD_SSH_USER}@${PROD_SSH_HOST} -p ${PROD_SSH_PORT} k apply -f"
