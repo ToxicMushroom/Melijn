@@ -2,11 +2,9 @@ package me.melijn.melijnbot.database
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.lettuce.core.ClientOptions
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
 import io.lettuce.core.api.StatefulRedisConnection
-import io.lettuce.core.protocol.ProtocolVersion
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -57,7 +55,7 @@ class DriverManager(
         }
     }
 
-    private fun connectRedis(host: String, port: Int, resp2: Boolean = false) {
+    private fun connectRedis(host: String, port: Int) {
         val uri = RedisURI.builder()
             .withHost(host)
             .withPort(port)
@@ -66,33 +64,18 @@ class DriverManager(
         val redisClient = RedisClient
             .create(uri)
 
-        val protocol = if (resp2) ProtocolVersion.RESP2 else ProtocolVersion.RESP3
-        val clientOptions = ClientOptions.builder()
-            .protocolVersion(protocol)
-            .build()
-
-        redisClient.options = clientOptions
         this.redisClient = redisClient
 
         try {
             redisConnection = redisClient.connect()
             logger.info("Connected to redis")
         } catch (e: Throwable) {
-            if (resp2) {
-                TaskManager.async {
-                    logger.warn("Retrying to connect to redis..")
-                    recursiveConnectRedis(host, port)
-                    logger.warn("Retrying to connect to redis has succeeded!")
-                }
-            } else {
-                connectRedis(host, port, true)
+            TaskManager.async {
+                logger.warn("Retrying to connect to redis..")
+                recursiveConnectRedis(host, port)
+                logger.warn("Retrying to connect to redis has succeeded!")
             }
         }
-    }
-
-    fun resp2redis() {
-        logger.warn("redis error caught, switching to resp2 protocol")
-        connectRedis(redisSettings.host, redisSettings.port, true)
     }
 
     private suspend fun recursiveConnectRedis(host: String, port: Int) {

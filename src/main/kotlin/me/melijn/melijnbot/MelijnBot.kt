@@ -40,28 +40,6 @@ class MelijnBot {
         nodeMap["normal"] = container.settings.lavalink.verified_nodes
         nodeMap["http"] = container.settings.lavalink.http_nodes
 
-        try {
-            logger.info("Start redis tests")
-            logger.info("try redis set")
-            container.daoManager.driverManager.redisConnection?.sync()
-                ?.set("key", "value")
-
-            logger.info("try redis get")
-            val value = container.daoManager.driverManager.redisConnection?.sync()
-                ?.get("key")
-            logger.info("got $value")
-
-            logger.info("try redis expire")
-            container.daoManager.driverManager.redisConnection?.sync()
-                ?.expire("key", 60)
-
-            logger.info("try redis delete")
-            container.daoManager.driverManager.redisConnection?.sync()
-                ?.del("key")
-            logger.info("Finished redis tests")
-        } catch (t: Throwable) {
-            container.daoManager.driverManager.resp2redis()
-        }
         logger.info("Connecting to lavalink")
         val jdaLavaLink = runBlocking {
             TaskManager.taskValueAsync { generateJdaLinkFromNodes(container, nodeMap) }.await()
