@@ -141,11 +141,16 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         }
     }
 
+    suspend fun shouldLogBots(guildId: Long): Boolean {
+        return container.daoManager.supporterWrapper.getGuilds().contains(guildId) &&
+            container.daoManager.botLogStateWrapper.shouldLog(guildId)
+    }
+
     private suspend fun handleMessageReceivedStoring(event: GuildMessageReceivedEvent) {
-        // TODO Add switch for bot logging 'premium feature
-        // if (event.author.isBot && event.author.idLong != container.settings.id) return
+        if (event.author.isBot && event.author.idLong != container.settings.botInfo.id && shouldLogBots(event.guild.idLong)) return
         val guildId = event.guild.idLong
-        val logChannelWrapper = container.daoManager.logChannelWrapper
+        val daoManager = container.daoManager
+        val logChannelWrapper = daoManager.logChannelWrapper
 
         val odmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.OTHER_DELETED_MESSAGE) }
         val sdmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.SELF_DELETED_MESSAGE) }
@@ -155,7 +160,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         if (odmId.await() == -1L && sdmId.await() == -1L && pmId.await() == -1L && fmId.await() == -1L && emId.await() == -1L) return
 
 
-        val messageWrapper = container.daoManager.messageHistoryWrapper
+        val messageWrapper = daoManager.messageHistoryWrapper
         var content = event.message.contentRaw
         event.message.embeds.forEach { embed ->
             content += "\n${embed.toMessage()}"
@@ -174,29 +179,33 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     }
 
     private suspend fun postAttachmentLog(event: GuildMessageReceivedEvent, logChannel: TextChannel, attachment: Message.Attachment) {
-        val embedBuilder = EmbedBuilder()
-        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
-        val title = i18n.getTranslation(language, "listener.message.attachment.log.title")
-            .withVariable(PLACEHOLDER_CHANNEL, event.channel.asTag)
+        val guild = event.guild
+        val daoManager = container.daoManager
+        val channel = event.channel
 
+        val language = getLanguage(daoManager, -1, guild.idLong)
+        val title = i18n.getTranslation(language, "listener.message.attachment.log.title")
+            .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+
+        val author = event.author
+        val message = event.message
         val description = i18n.getTranslation(language, "listener.message.attachment.log.description")
-            .withVariable(PLACEHOLDER_USER_ID, event.author.id)
+            .withVariable(PLACEHOLDER_USER_ID, author.id)
             .withVariable("messageId", event.messageId)
-            .withVariable("messageUrl", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
+            .withVariable("messageUrl", "https://discordapp.com/channels/${guild.id}/${channel.id}/${message.id}")
             .withVariable("attachmentUrl", attachment.url)
-            .withVariable("moment", event.message.timeCreated.asLongLongGMTString())
+            .withVariable("moment", message.timeCreated.asLongLongGMTString())
 
         val footer = i18n.getTranslation(language, "listener.message.attachment.log.footer")
-            .withVariable(PLACEHOLDER_USER, event.author.asTag)
+            .withVariable(PLACEHOLDER_USER, author.asTag)
 
-        embedBuilder.setFooter(footer, event.author.effectiveAvatarUrl)
+        val embedBuilder = EmbedBuilder()
+            .setFooter(footer, author.effectiveAvatarUrl)
+            .setColor(Color(0xDC143C))
+            .setImage(attachment.url)
+            .setTitle(title)
+            .setDescription(description)
 
-        embedBuilder.setColor(Color(0xDC143C))
-        embedBuilder.setImage(attachment.url)
-
-        embedBuilder.setTitle(title)
-        embedBuilder.setDescription(description)
-
-        sendEmbed(container.daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
+        sendEmbed(daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
     }
 }
