@@ -2,9 +2,11 @@ package me.melijn.melijnbot.database
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.lettuce.core.ClientOptions
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
 import io.lettuce.core.api.StatefulRedisConnection
+import io.lettuce.core.protocol.ProtocolVersion
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -61,7 +63,14 @@ class DriverManager(
             .withPort(port)
             .build()
 
-        val redisClient = RedisClient.create(uri)
+        val redisClient = RedisClient
+            .create(uri)
+
+        val clientOptions =  ClientOptions.builder()
+            .protocolVersion(ProtocolVersion.RESP2)
+            .build()
+
+        redisClient.options = clientOptions
         this.redisClient = redisClient
 
         try {
