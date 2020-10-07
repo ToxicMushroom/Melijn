@@ -7,24 +7,17 @@
         </encoder>
     </appender>
 
-    <!--
-        <appender name="FILE-AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>/home/fabian/Bots/Melijn/logs/debug.log</file>
-            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-                <Pattern>%d{yyyy-MM-dd HH:mm:ss} - %msg%n</Pattern>
-            </encoder>
 
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>/home/fabian/Bots/Melijn/archived/debug.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                    <maxFileSize>50MB</maxFileSize>
-                </timeBasedFileNamingAndTriggeringPolicy>
-            </rollingPolicy>
-        </appender>
-    -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/var/log/melijn/lettuce.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d{dd-MM-yyyy HH:mm:ss} %boldCyan(%thread) %boldGreen(%logger{0}) %highlight(%level) %msg%n</Pattern>
+        </encoder>
+    </appender>
+
 
     <logger name="com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager" level="ERROR">
-        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
     </logger>
 
     <root level="INFO">
