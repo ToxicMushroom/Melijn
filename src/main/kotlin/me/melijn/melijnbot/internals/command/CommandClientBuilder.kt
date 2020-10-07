@@ -240,7 +240,8 @@ class CommandClientBuilder(private val container: Container) {
         PokerCommand(),
         JailCommand(),
         CalculateCommand(),
-        SnipeCommand()
+        SnipeCommand(),
+        SnekCommand()
     )
 
     fun build(): CommandClient {
