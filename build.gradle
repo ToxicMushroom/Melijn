@@ -125,8 +125,7 @@ dependencies {
     implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.4.1'
 
     // implementation group: 'com.github.husnjak', name: 'IGDB-API-JVM', version: '0.7'
-//    implementation group: 'io.lettuce', name: 'lettuce-core', version: '5.3.4.RELEASE'
-    implementation group: 'io.lettuce', name: 'lettuce-core', version: '6.0.0.RELEASE'
+    implementation group: 'io.lettuce', name: 'lettuce-core', version: '5.3.4.RELEASE'
 
     implementation group: 'org.codehaus.groovy', name: 'groovy', version: '3.0.6'
 
