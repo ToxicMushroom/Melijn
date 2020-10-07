@@ -31,5 +31,6 @@ class TestCommand : AbstractCommand("command.test") {
                     it.key.content
         } ?: "No messages to snipe!"
         sendRsp(context, msg)
+        throw IllegalStateException()
     }
 }
