@@ -305,6 +305,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 Pair(CommandCategory.ANIMAL, "$root.field6.title"),
                 Pair(CommandCategory.ANIME, "$root.field7.title"),
                 Pair(CommandCategory.ECONOMY, "$root.field8.title"),
+                Pair(CommandCategory.GAME, "$root.field9.title"),
                 Pair(CommandCategory.IMAGE, "$root.field5.title"),
                 Pair(CommandCategory.MODERATION, "$root.field3.title"),
                 Pair(CommandCategory.MUSIC, "$root.field4.title"),
