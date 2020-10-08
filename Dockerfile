@@ -1,11 +1,11 @@
-FROM openjdk:12-jdk as builder
+FROM azul/zulu-openjdk-alpine:15 as builder
 WORKDIR /etc/melijn
 COPY ./ ./
 USER root
 RUN chmod +x ./gradlew
 RUN ./gradlew shadowJar
 
-FROM toxicmushroom/openjdk12-procps:v3
+FROM azul/zulu-openjdk-alpine:15
 WORKDIR /opt/melijn
 COPY --from=builder ./etc/melijn/build/libs/ .
 ENTRYPOINT java \

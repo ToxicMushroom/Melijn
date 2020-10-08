@@ -79,7 +79,7 @@ fun getUnixUptime(): Long {
     val days = if (days2 != null) Integer.parseInt(days2) else 0
     val hours = if (hours2 != null) Integer.parseInt(hours2) else 0
     val minutes = if (minutes2 != null) Integer.parseInt(minutes2) else 0
-    return (minutes * 60000 + hours * 60000 * 60 + days * 60000 * 60 * 24).toLong()
+    return minutes * 60000L + hours * 60000L * 60 + days * 60000L * 60L * 24L
 }
 
 fun getUnixRam(): Int {
