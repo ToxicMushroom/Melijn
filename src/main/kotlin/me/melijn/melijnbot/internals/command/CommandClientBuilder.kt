@@ -193,7 +193,6 @@ class CommandClientBuilder(private val container: Container) {
         AngryCommand(),
         PngsFromGifCommand(),
         PngsToGifCommand(),
-        //GiveawayCommand(),
         ReplaceColorCommand(),
         SetAllowSpacedPrefixState(),
         SetPrivateAllowSpacedPrefixState(),
@@ -241,7 +240,8 @@ class CommandClientBuilder(private val container: Container) {
         JailCommand(),
         CalculateCommand(),
         SnipeCommand(),
-        SnekCommand()
+        SnekCommand(),
+        PlaylistCommand()
     )
 
     fun build(): CommandClient {
