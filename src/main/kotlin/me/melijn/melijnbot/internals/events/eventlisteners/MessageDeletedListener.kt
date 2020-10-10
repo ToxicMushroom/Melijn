@@ -90,7 +90,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         // Keep snipeLog updated
         val snipeMap = recentDeletions[deletionLocId]?.toMutableMap() ?: mutableMapOf()
         if (snipeLogLimitReached(snipeMap, guild.idLong)) {
-            val toRemove = snipeMap.entries.maxByOrNull { it.value }?.key
+            val toRemove = snipeMap.entries.minByOrNull { it.value }?.key
             snipeMap.remove(toRemove)
         }
         snipeMap[msg] = deletedMillis
@@ -147,8 +147,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     }
 
     private suspend fun snipeLogLimitReached(snipeMap: Map<DaoMessage, Long>, guildId: Long): Boolean {
-        return snipeMap.size > SNIPE_LIMIT &&
-            (!container.daoManager.supporterWrapper.getGuilds().contains(guildId) || snipeMap.size > PREMIUM_SNIPE_LIMIT)
+        return snipeMap.size >= SNIPE_LIMIT &&
+            (!container.daoManager.supporterWrapper.getGuilds().contains(guildId) || snipeMap.size >= PREMIUM_SNIPE_LIMIT)
     }
 
     private suspend fun logBots(textChannel: TextChannel): Boolean {

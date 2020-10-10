@@ -853,7 +853,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 val selfRoleGroup1 = getSelfRoleGroupByArgNMessage(context, 0) ?: return
-                val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
+                val name = getStringFromArgsNMessage(context, 1, 1, 64) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
 
                 val selfRoleGroup2 = getSelfRoleGroupByGroupNameN(context, name)

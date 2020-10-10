@@ -62,13 +62,13 @@ class SnipeCommand : AbstractCommand("command.snipe") {
         MessageDeletedListener.recentDeletions[locId] = newLog
 
         val sb = StringBuilder()
-        for (item in log.sortedBy { it.key.moment }) {
+        for ((key) in log.sortedBy { it.key.moment }) {
             sb.append("[")
-                    .append(item.key.moment.asEpochMillisToDateTime(context.getTimeZoneId()))
-                    .append("] **")
-                    .append(context.guild.retrieveMemberById(item.key.authorId).awaitOrNull()?.asTag ?: item.key.authorId)
-                    .append("**: ")
-                    .appendLine(MarkdownSanitizer.escape(item.key.content))
+                .append(key.moment.asEpochMillisToDateTime(context.getTimeZoneId()))
+                .append("] **")
+                .append(context.guild.retrieveMemberById(key.authorId).awaitOrNull()?.asTag ?: key.authorId)
+                .append("**: ")
+                .appendLine(MarkdownSanitizer.escape(key.content))
         }
         sendRsp(context, sb.toString())
 
