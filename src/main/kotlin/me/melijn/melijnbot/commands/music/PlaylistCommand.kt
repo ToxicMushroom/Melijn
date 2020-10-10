@@ -10,7 +10,14 @@ import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
+
+const val tracksLimit = 20
+const val playlistLimit = 3
+
+const val premiumTrackLimit = 200
+const val premiumPlaylistLimit = 20
 
 class PlaylistCommand : AbstractCommand("command.playlist") {
 
@@ -47,6 +54,15 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
 
             val tracksMap = getPlaylistByNameNMessage(context, 0) ?: return
             val guildMusicPlayer = context.musicPlayerManager.getGuildMusicPlayer(context.guild)
+
+            if (context.lavaManager.getConnectedChannel(context.guild) == null) {
+                if (!RunConditionUtil.checkOtherBotAloneOrDJOrSameVC(context.container, context.event, this, context.getLanguage())) return
+                val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
+                if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
+
+                context.lavaManager.openConnection(vc, context.getGuildMusicPlayer().groupId)
+            }
+
             val tracks = tracksMap.toSortedMap().map {
                 LavalinkUtil.toAudioTrack(it.value)
             }
@@ -115,7 +131,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             val sb = StringBuilder()
             for ((index, track) in tracks.withIndex()) {
                 sb
-                    .append("\n[#$index](")
+                    .append("\n[#${index + 1}](")
                     .append(track.info.uri)
                     .append(") - ")
                     .append(track.info.title)
@@ -144,20 +160,33 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             }
 
             val tracksMap = getPlaylistByNameNMessage(context, 0) ?: return
-            val position = getIntegerFromArgNMessage(context, 1, 1, tracksMap.size) ?: return
+            val position = getIntegersFromArgsNMessage(context, 1, 1, tracksMap.size) ?: return
 
-            var trackvalue = ""
-            val track = tracksMap.toSortedMap().map { it.value }[position]?.let {
-                trackvalue = it
-                LavalinkUtil.toAudioTrack(it)
-            } ?: throw IllegalStateException("shouldn't be able to happen")
-            val absPosition = tracksMap.entries.first { it.value == trackvalue }.key
+            val trackValues = mutableListOf<String>()
+            val tracks = tracksMap.toSortedMap()
+                .map { it.value }
+                .withIndex()
+                .filter { position.contains(it.index) }
+                .map {
+                    trackValues.add(it.value)
+                    LavalinkUtil.toAudioTrack(it.value)
+                }
+            val absPositions = tracksMap.entries
+                .filter { trackValues.contains(it.value) }
+                .map { it.key }
 
-            context.daoManager.playlistWrapper.remove(context.authorId, context.args[0], absPosition)
+            context.daoManager.playlistWrapper.removeAll(context.authorId, context.args[0], absPositions)
 
-            val msg = context.getTranslation("$root.removed")
-                .withVariable("position", position)
-                .withVariable("title", track.info.title)
+            val msg = if (tracks.size > 1) {
+                context.getTranslation("$root.removed.multiple")
+                    .withVariable("playlist", context.args[0])
+                    .withVariable("amount", tracks.size)
+            } else {
+                context.getTranslation("$root.removed")
+                    .withVariable("playlist", context.args[0])
+                    .withVariable("title", tracks.first().info.title)
+            }
+
             sendRsp(context, msg)
         }
     }
@@ -185,7 +214,17 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                 return
             }
 
+            val playlists = context.daoManager.playlistWrapper.getPlaylists(context.authorId)
+            if (playlistsLimitReachedAndMessage(context, playlists.size)) {
+                return
+            }
+
+
             val tracksMap = getPlaylistByNameN(context, 0)
+            if (tracksMap != null && tracksLimitReachedAndMessage(context, tracksMap.size)) {
+                return
+            }
+
             val position = tracksMap?.maxByOrNull { it.key }?.key ?: 0
 
             context.daoManager.playlistWrapper
@@ -196,6 +235,40 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                 .withVariable("playlist", MarkdownSanitizer.escape(context.args[0]))
                 .withVariable("position", (tracksMap?.size ?: 0) + 1)
             sendRsp(context, msg)
+        }
+
+        private suspend fun tracksLimitReachedAndMessage(context: CommandContext, size: Int): Boolean {
+            if (size < tracksLimit) return false
+
+            val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
+            if (premium && size < premiumTrackLimit) {
+                return false
+            }
+
+            val msg = if (premium) {
+                context.getTranslation("$root.tracklimit.premium")
+            } else {
+                context.getTranslation("$root.tracklimit")
+            }
+            sendRsp(context, msg)
+            return true
+        }
+
+        private suspend fun playlistsLimitReachedAndMessage(context: CommandContext, size: Int): Boolean {
+            if (size < playlistLimit) return false
+
+            val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
+            if (premium && size < premiumPlaylistLimit) {
+                return false
+            }
+
+            val msg = if (premium) {
+                context.getTranslation("$root.playlistlimit.premium")
+            } else {
+                context.getTranslation("$root.playlistlimit")
+            }
+            sendRsp(context, msg)
+            return true
         }
     }
 
