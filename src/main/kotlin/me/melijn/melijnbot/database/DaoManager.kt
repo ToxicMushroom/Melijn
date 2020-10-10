@@ -45,6 +45,8 @@ import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.mute.MuteDao
 import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.database.permission.*
+import me.melijn.melijnbot.database.playlist.PlaylistDao
+import me.melijn.melijnbot.database.playlist.PlaylistWrapper
 import me.melijn.melijnbot.database.prefix.GuildPrefixDao
 import me.melijn.melijnbot.database.prefix.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefix.UserPrefixDao
@@ -86,6 +88,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     }
 
     val tracksWrapper: TracksWrapper
+    val playlistWrapper: PlaylistWrapper
     val songCacheWrapper: SongCacheWrapper
     val gainProfileWrapper: GainProfileWrapper
     val music247Wrapper: Music247Wrapper
@@ -188,6 +191,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         }
 
         tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
+        playlistWrapper = PlaylistWrapper(PlaylistDao(driverManager))
         songCacheWrapper = SongCacheWrapper(SongCacheDao(driverManager))
         gainProfileWrapper = GainProfileWrapper(GainProfileDao(driverManager))
         music247Wrapper = Music247Wrapper(Music247Dao(driverManager))

@@ -18,15 +18,18 @@ class PlaylistDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
 
     fun set(userId: Long, playlist: String, id: Int, track: String) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, playlist, id, track) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET track ")
+        driverManager.executeUpdate("INSERT INTO $table (userId, playlist, id, track) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET track = ?",
+        userId, playlist, id, track, track)
     }
 
     fun removeById(userId: Long, playlist: String, id: Int) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND playlist = ? AND id = ?")
+        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND playlist = ? AND id = ?",
+        userId, playlist, id)
     }
 
     fun removeByTrack(userId: Long, playlist: String, track: String) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND playlist = ? AND id = ?")
+        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND playlist = ? AND track = ?",
+        userId, playlist, track)
     }
 
 
