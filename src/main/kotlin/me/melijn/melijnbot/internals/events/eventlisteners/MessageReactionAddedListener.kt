@@ -19,7 +19,10 @@ import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
 import net.dv8tion.jda.api.events.message.priv.react.PrivateMessageReactionAddEvent
@@ -120,7 +123,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         searchMenuHandler(event)
         paginationHandler(event)
         pokerHandler(event)
-        starboardHandler(event)
+//        starboardHandler(event)
     }
 
     private suspend fun starboardHandler(event: GuildMessageReactionAddEvent) {
@@ -128,22 +131,53 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val emoji = event.reactionEmote.emoji
         if (emoji != "⭐") return
 
-        val starboardSettings= container.daoManager.starboardSettingsWrapper
+        val starboardSettings = container.daoManager.starboardSettingsWrapper
         val starboardMessageWrapper = container.daoManager.starboardMessageWrapper
-        val channel = event.guild.getAndVerifyChannelByType(container.daoManager, ChannelType.STARBOARD, Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS) ?: return
+        val channel = event.guild.getAndVerifyChannelByType(container.daoManager, ChannelType.STARBOARD, Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS)
+            ?: return
         val msg = starboardMessageWrapper.getStarboardInfo(event.messageIdLong)
         if (msg == null) {
             val reactions = event.channel.retrieveReactionUsersById(event.messageIdLong, "⭐").await().filter { !it.isBot }.size
             val settings = starboardSettings.getStarboardSettings(event.guild.idLong)
-            if (reactions>=settings.minStars){
-
-                starboardMessageWrapper
+            if (reactions >= settings.minStars) {
+                val starboardMessage = getAndSendStarboardMessage(event, channel, reactions) ?: return
+                starboardMessageWrapper.setStarboardInfo(event.guild.idLong, event.channel.idLong, event.userIdLong, event.messageIdLong,
+                    starboardMessage.idLong, reactions, false, System.currentTimeMillis())
             }
 
         } else {
             if (msg.deleted) return
             starboardMessageWrapper.setStarboardInfo(event.guild.idLong, event.channel.idLong, event.userIdLong, event.messageIdLong, msg.starboardMessageId, msg.stars + 1, msg.deleted, msg.moment)
+
         }
+    }
+
+    private suspend fun getAndSendStarboardMessage(event: GuildMessageReactionAddEvent, channel: TextChannel, stars: Int): Message? {
+        val ogMessage = event.channel.retrieveMessageById(event.messageIdLong).await() ?: return null
+
+
+        val eb = Embedder(container.daoManager, event.guild.idLong, event.userIdLong, container.settings.botInfo.embedColor)
+        if (ogMessage.embeds.size > 0) {
+            val embed = ogMessage.embeds[0]
+            eb.setTitle(embed.title, embed.url)
+                .setAuthor(embed.author?.name, embed.author?.url, embed.author?.iconUrl)
+                .setDescription(embed.description)
+                .setColor(embed.color)
+                .setImage(embed.image?.url)
+                .setThumbnail(embed.thumbnail?.url)
+                .setTimestamp(embed.timestamp)
+                .setFooter(embed.footer?.text, embed.footer?.iconUrl)
+
+            for (field in embed.fields) {
+                eb.addField(field.name, field.value, field.isInline)
+            }
+        }
+
+        val messageBuilder = MessageBuilder()
+            .setContent("$stars⭐ message by ${event.user.asMention} in ${event.channel.asMention}")
+            .setEmbed(eb.build())
+
+        return channel.sendMessage(messageBuilder.build()).await()
     }
 
     private fun pokerHandler(event: GuildMessageReactionAddEvent) {

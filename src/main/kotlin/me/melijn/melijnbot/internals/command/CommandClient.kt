@@ -53,12 +53,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 commandFinder(event)
             } catch (t: Throwable) {
                 t.printStackTrace()
-
-                if (event.isFromType(ChannelType.PRIVATE)) {
-                    t.sendInGuild(channel = event.privateChannel, author = event.author)
-                } else if (event.isFromType(ChannelType.TEXT)) {
-                    t.sendInGuild(event.guild, event.textChannel, event.author)
-                }
+                t.sendInGuild(event.guild, shouldSend = false)
             }
         }
     }

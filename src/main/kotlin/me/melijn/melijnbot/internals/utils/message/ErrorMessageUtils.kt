@@ -41,7 +41,6 @@ suspend fun Throwable.sendInGuildSuspend(
     extra: String? = null,
     shouldSend: Boolean = true
 ) {
-    return
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 
     val channelId = Container.instance.settings.botInfo.exceptionChannel

@@ -241,8 +241,8 @@ class CommandClientBuilder(private val container: Container) {
         CalculateCommand(),
         SnipeCommand(),
         SnekCommand(),
-        PlaylistCommand(),
-        StarboardCommand()
+        PlaylistCommand()
+//        StarboardCommand()
     )
 
     fun build(): CommandClient {
@@ -250,7 +250,6 @@ class CommandClientBuilder(private val container: Container) {
     }
 
     fun loadCommands(): CommandClientBuilder {
-
         TaskManager.async {
             container.daoManager.commandWrapper.bulkInsert(commands)
         }
