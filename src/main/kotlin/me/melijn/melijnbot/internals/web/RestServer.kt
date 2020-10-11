@@ -4,8 +4,8 @@ import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.server.cio.*
 import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.translation.i18n
@@ -33,7 +33,7 @@ class RestServer(container: Container) {
     private val jsonType = ContentType.parse("Application/JSON")
 
 
-    private val server = embeddedServer(CIO, container.settings.restServer.port) {
+    private val server: NettyApplicationEngine = embeddedServer(Netty, container.settings.restServer.port) {
         routing {
             get("/guildCount") {
                 call.respondText {
