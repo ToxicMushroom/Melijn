@@ -53,6 +53,10 @@ import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
 import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.settings.*
+import me.melijn.melijnbot.database.starboard.StarboardMessageDao
+import me.melijn.melijnbot.database.starboard.StarboardMessageWrapper
+import me.melijn.melijnbot.database.starboard.StarboardSettingsDao
+import me.melijn.melijnbot.database.starboard.StarboardSettingsWrapper
 import me.melijn.melijnbot.database.supporter.SupporterDao
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.time.TimeZoneDao
@@ -178,6 +182,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val dailyCooldownWrapper: DailyCooldownWrapper
     val globalCooldownWrapper: GlobalCooldownWrapper
 
+    val starboardSettingsWrapper: StarboardSettingsWrapper
+    val starboardMessageWrapper: StarboardMessageWrapper
+
     val osuWrapper: OsuWrapper
 
     var driverManager: DriverManager
@@ -279,6 +286,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         balanceWrapper = BalanceWrapper(BalanceDao(driverManager))
         dailyCooldownWrapper = DailyCooldownWrapper(DailyCooldownDao(driverManager))
         globalCooldownWrapper = GlobalCooldownWrapper(GlobalCooldownDao(driverManager))
+
+        starboardSettingsWrapper = StarboardSettingsWrapper(StarboardSettingsDao(driverManager))
+        starboardMessageWrapper = StarboardMessageWrapper(StarboardMessageDao(driverManager))
 
         osuWrapper = OsuWrapper(OsuDao(driverManager))
         //After registering wrappers

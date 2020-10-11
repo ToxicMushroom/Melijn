@@ -10,5 +10,6 @@ enum class ChannelType {
     BIRTHDAY,
     PRE_VERIFICATION_JOIN,
     PRE_VERIFICATION_LEAVE,
-    BOOST
+    BOOST,
+    STARBOARD
 }

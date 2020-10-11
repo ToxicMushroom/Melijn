@@ -120,6 +120,30 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         searchMenuHandler(event)
         paginationHandler(event)
         pokerHandler(event)
+        starboardHandler(event)
+    }
+
+    private suspend fun starboardHandler(event: GuildMessageReactionAddEvent) {
+        if (event.user.isBot || event.reactionEmote.isEmote) return
+        val emoji = event.reactionEmote.emoji
+        if (emoji != "⭐") return
+
+        val starboardSettings= container.daoManager.starboardSettingsWrapper
+        val starboardMessageWrapper = container.daoManager.starboardMessageWrapper
+        val channel = event.guild.getAndVerifyChannelByType(container.daoManager, ChannelType.STARBOARD, Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS) ?: return
+        val msg = starboardMessageWrapper.getStarboardInfo(event.messageIdLong)
+        if (msg == null) {
+            val reactions = event.channel.retrieveReactionUsersById(event.messageIdLong, "⭐").await().filter { !it.isBot }.size
+            val settings = starboardSettings.getStarboardSettings(event.guild.idLong)
+            if (reactions>=settings.minStars){
+
+                starboardMessageWrapper
+            }
+
+        } else {
+            if (msg.deleted) return
+            starboardMessageWrapper.setStarboardInfo(event.guild.idLong, event.channel.idLong, event.userIdLong, event.messageIdLong, msg.starboardMessageId, msg.stars + 1, msg.deleted, msg.moment)
+        }
     }
 
     private fun pokerHandler(event: GuildMessageReactionAddEvent) {

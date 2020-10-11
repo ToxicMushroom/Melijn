@@ -27,6 +27,6 @@ class StarboardSettingsDao(driverManager: DriverManager) : CacheDBDao(driverMana
 }
 
 data class StarboardSettings(
-    val minStars: Int,
+    var minStars: Int,
     val excludedChannelIds: String
 )
