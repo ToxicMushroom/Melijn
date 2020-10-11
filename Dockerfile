@@ -1,11 +1,11 @@
-FROM openjdk:12-jdk as builder
+FROM openjdk:14.0.2-jdk as builder
 WORKDIR /etc/melijn
 COPY ./ ./
 USER root
 RUN chmod +x ./gradlew
 RUN ./gradlew shadowJar
 
-FROM toxicmushroom/openjdk12-procps:v3
+FROM openjdk:14.0.2-jdk
 WORKDIR /opt/melijn
 COPY --from=builder ./etc/melijn/build/libs/ .
 ENTRYPOINT java \
