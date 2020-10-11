@@ -43,7 +43,12 @@ class RestServer(container: Container) {
 
 
             get("/stats") {
-                StatsResponseHandler.handleStatsResponse(RequestContext(call, container))
+                try {
+                    StatsResponseHandler.handleStatsResponse(RequestContext(call, container))
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                    call.respondText { t.message + "\n" + t.stackTraceToString() }
+                }
             }
 
 

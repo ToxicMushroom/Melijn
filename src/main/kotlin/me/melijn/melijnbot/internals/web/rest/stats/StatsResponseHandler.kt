@@ -7,8 +7,8 @@ import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.threading.TaskManager.scheduledExecutorService
 import me.melijn.melijnbot.internals.utils.OSValidator
+import me.melijn.melijnbot.internals.utils.getFreeKBUnixRam
 import me.melijn.melijnbot.internals.utils.getSystemUptime
-import me.melijn.melijnbot.internals.utils.getUnixRam
 import me.melijn.melijnbot.internals.web.RequestContext
 import me.melijn.melijnbot.internals.web.WebUtils.respondJson
 import me.melijn.melijnbot.objectMapper
@@ -23,10 +23,10 @@ object StatsResponseHandler {
 
     suspend fun handleStatsResponse(context: RequestContext) {
         val bean: OperatingSystemMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
-        val totalMem = bean.totalPhysicalMemorySize shr 20
+        val totalMem = bean.totalMemorySize shr 20
 
         val usedMem = if (OSValidator.isUnix) {
-            totalMem - getUnixRam()
+            totalMem - (getFreeKBUnixRam()/1000)
         } else {
             totalMem - (bean.freeSwapSpaceSize shr 20)
         }

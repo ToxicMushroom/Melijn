@@ -27,11 +27,11 @@ import java.util.regex.Pattern
 
 
 val linuxUptimePattern: Pattern = Pattern.compile(
-    "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
+    "(?:([0-9]+)(?:\\.[0-9]+)?) (?:[0-9]+(?:\\.[0-9]+)?)" // 11105353.49 239988480.98
 )
 
 // Thx xavin
-val linuxRamPattern: Pattern = Pattern.compile("([0-9]+$)")
+val linuxRamPattern: Pattern = Pattern.compile("MemFree:\\s+([0-9]+) kB")
 
 fun getSystemUptime(): Long {
     return try {
@@ -63,27 +63,17 @@ fun <K, V> loadingCacheFrom(function: (K) -> CompletableFuture<V>): CacheLoader<
 }
 
 fun getUnixUptime(): Long {
-    val uptimeProc = Runtime.getRuntime().exec("uptime") // Parse time to groups if possible
+    val uptimeProc = Runtime.getRuntime().exec("cat /proc/uptime") // Parse time to groups if possible
     val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
     val line = `in`.readLine() ?: return -1
     val matcher = linuxUptimePattern.matcher(line)
 
     if (!matcher.find()) return -1 // Extract ints out of groups
-    val days2 = matcher.group(1)
-    val hours2 = matcher.group(2)
-    val minutes2 = if (matcher.group(3) == null) {
-        matcher.group(4)
-    } else {
-        matcher.group(3)
-    }
-    val days = if (days2 != null) Integer.parseInt(days2) else 0
-    val hours = if (hours2 != null) Integer.parseInt(hours2) else 0
-    val minutes = if (minutes2 != null) Integer.parseInt(minutes2) else 0
-    return minutes * 60000L + hours * 60000L * 60 + days * 60000L * 60L * 24L
+    return matcher.group(1).toLong()
 }
 
-fun getUnixRam(): Int {
-    val uptimeProc = Runtime.getRuntime().exec("free -m") // Parse time to groups if possible
+fun getFreeKBUnixRam(): Long {
+    val uptimeProc = Runtime.getRuntime().exec("cat /proc/meminfo") // Parse time to groups if possible
     uptimeProc.inputStream.use { `is` ->
         `is`.bufferedReader().use { br ->
             br.readLine() ?: return -1
@@ -93,7 +83,7 @@ fun getUnixRam(): Int {
 
             if (!matcher.find()) return -1 // Extract ints out of groups
             val group = matcher.group(1)
-            return group.toInt()
+            return group.toLong()
         }
     }
 }
