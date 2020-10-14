@@ -97,7 +97,7 @@ fun getUsedKBUnixRam(): Long {
 
             if (!matcher1.find() || !matcher2.find()) return -1 // Extract ints out of groups
             val totalLong = matcher1.group(1).toLong()
-            val availableLong = matcher1.group(2).toLong()
+            val availableLong = matcher2.group(1).toLong()
             return (totalLong - availableLong)
         }
     }
