@@ -19,7 +19,8 @@ class StarboardCommand : AbstractCommand("command.starboard") {
             ExcludeChannelArg(root),
             IncludeChannelArg(root),
             ExcludedChannelsArg(root),
-            HideMessage(root)
+            HideMessage(root),
+            DeleteMessage(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
@@ -82,8 +83,8 @@ class StarboardCommand : AbstractCommand("command.starboard") {
     class ExcludedChannelsArg(parent: String) : AbstractCommand("$parent.excludedchannels") {
 
         init {
-            name = "excludeChannel"
-            aliases = arrayOf("ecs")
+            name = "excludedChannels"
+            aliases = arrayOf("ecs", "excluded")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -179,6 +180,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
 
             val starMessage = channel.retrieveMessageById(info.starboardMessageId).awaitOrNull()
             if (starMessage == null) {
+                starboardMessageWrapper.delete(info.starboardMessageId)
                 val blub = context.getTranslation("$root.stargone")
                 sendRsp(context, blub)
                 return
@@ -186,7 +188,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
 
             starMessage.delete().reason("(starboard deleteMessage) ${context.author.asTag}").queue()
             starboardMessageWrapper.delete(info.starboardMessageId)
-            val msg = context.getTranslation("$root.hidden")
+            val msg = context.getTranslation("$root.deleted")
             sendRsp(context, msg)
         }
     }
