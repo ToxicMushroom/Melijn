@@ -16,7 +16,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
         name = "starboard"
         children = arrayOf(
             SetMinStarsArg(root),
-            ExcludeChannelArg(root),
+            ExcludeArg(root),
             IncludeChannelArg(root),
             ExcludedChannelsArg(root),
             HideMessage(root),
@@ -25,11 +25,11 @@ class StarboardCommand : AbstractCommand("command.starboard") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    class ExcludeChannelArg(parent: String) : AbstractCommand("$parent.excludechannel") {
+    class ExcludeArg(parent: String) : AbstractCommand("$parent.exclude") {
 
         init {
-            name = "excludeChannel"
-            aliases = arrayOf("ec")
+            name = "exclude"
+            aliases = arrayOf("ex")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -53,11 +53,11 @@ class StarboardCommand : AbstractCommand("command.starboard") {
         }
     }
 
-    class IncludeChannelArg(parent: String) : AbstractCommand("$parent.includechannel") {
+    class IncludeChannelArg(parent: String) : AbstractCommand("$parent.include") {
 
         init {
-            name = "includeChannel"
-            aliases = arrayOf("ic")
+            name = "include"
+            aliases = arrayOf("inc")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -80,11 +80,11 @@ class StarboardCommand : AbstractCommand("command.starboard") {
         }
     }
 
-    class ExcludedChannelsArg(parent: String) : AbstractCommand("$parent.excludedchannels") {
+    class ExcludedChannelsArg(parent: String) : AbstractCommand("$parent.excluded") {
 
         init {
-            name = "excludedChannels"
-            aliases = arrayOf("ecs", "excluded")
+            name = "excluded"
+            aliases = arrayOf("exl")
         }
 
         override suspend fun execute(context: CommandContext) {
