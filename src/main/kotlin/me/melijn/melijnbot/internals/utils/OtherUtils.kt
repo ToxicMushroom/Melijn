@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.utils
 
-import com.google.common.cache.CacheLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -21,7 +20,6 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.Year
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.regex.Pattern
 
@@ -55,12 +53,12 @@ fun Calendar.isLeapYear(): Boolean {
 
 
 // EPIC CODE, DO NOT TOUCH
-fun <K, V> loadingCacheFrom(function: (K) -> CompletableFuture<V>): CacheLoader<K, CompletableFuture<V>> {
-    return CacheLoader.from { k ->
-        if (k == null) throw IllegalArgumentException("BRO CRINGE")
-        function.invoke(k)
-    }
-}
+//fun <K, V> loadingCacheFrom(function: (K) -> CompletableFuture<V>): CacheLoader<K, CompletableFuture<V>> {
+//    return CacheLoader.from { k ->
+//        if (k == null) throw IllegalArgumentException("BRO CRINGE")
+//        function.invoke(k)
+//    }
+//}
 
 fun getUnixUptime(): Long {
     val uptimeProc = Runtime.getRuntime().exec("cat /proc/uptime") // Parse time to groups if possible
