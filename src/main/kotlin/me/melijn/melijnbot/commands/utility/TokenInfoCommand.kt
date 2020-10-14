@@ -7,6 +7,7 @@ import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.iharder.Base64
 import java.math.BigInteger
@@ -34,7 +35,12 @@ class TokenInfoCommand : AbstractCommand("command.tokeninfo") {
         val userId = String(Base64.decode(split[0])).toLongOrNull() ?: return
         val bot = context.shardManager.retrieveUserById(userId).awaitOrNull()
         val botCreated = (userId shr 22) + 1420070400000
-        val tokenCreated = BigInteger(Base64.decode(split[1])).toLong() * 1000 + 1_592_707_552_616
+        val tokenCreated = try {
+            BigInteger(Base64.decode(split[1])).toLong() * 1000 + 1_592_707_552_616
+        } catch (t: Throwable) {
+            sendRsp(context, "your token was stinky or discord changed stuff")
+            return
+        }
         val hmac = (split[2])
 
         val eb = Embedder(context)

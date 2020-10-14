@@ -82,7 +82,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:3.4.5")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.2.16")
+    implementation("org.postgresql:postgresql:42.2.17")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
@@ -107,7 +107,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3")
 
     // https://mvnrepository.com/artifact/com.google.guava/guava
-    implementation("com.google.guava:guava:29.0-jre")
+    // implementation("com.google.guava:guava:29.0-jre")
 
 
     implementation("io.ktor:ktor:1.4.1")
