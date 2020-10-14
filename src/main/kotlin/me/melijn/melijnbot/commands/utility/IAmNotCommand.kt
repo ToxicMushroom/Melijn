@@ -82,6 +82,7 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
                 sendRsp(context, msg)
             } else {
                 val msg = context.getTranslation("$root.$noMatchReason")
+                    .withVariable("prefix", context.usedPrefix)
                 sendRsp(context, msg)
             }
         }
