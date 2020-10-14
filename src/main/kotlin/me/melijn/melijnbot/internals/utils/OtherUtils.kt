@@ -29,7 +29,7 @@ val linuxUptimePattern: Pattern = Pattern.compile(
 )
 
 // Thx xavin
-val linuxRamPattern: Pattern = Pattern.compile("Mem(.*):\\s+([0-9]+) kB")
+val linuxRamPattern: Pattern = Pattern.compile("Mem(?:.*):\\s+([0-9]+) kB")
 
 fun getSystemUptime(): Long {
     return try {
