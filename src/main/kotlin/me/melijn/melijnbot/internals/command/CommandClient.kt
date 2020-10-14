@@ -443,47 +443,46 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             val commandCooldownWrapper = daoManager.commandCooldownWrapper
             val commandChannelCoolDownWrapper = daoManager.commandChannelCoolDownWrapper
 
-            if (!daoManager.commandChannelCoolDownWrapper.executions.contains(Pair(guildId, userId))) {
-                return false
-            }
 
             var lastExecution = 0L // millis for last guild execution
             var lastExecutionChannel = 0L // millis for last channel execution
             var bool = false
             var cooldownResult = 0L
 
-            val commandChannelCooldowns = commandChannelCoolDownWrapper.getMap(channelId)
-            if (commandChannelCooldowns.containsKey(id)) {
+            if (!daoManager.commandChannelCoolDownWrapper.executions.contains(Pair(guildId, userId))) {
+                val commandChannelCooldowns = commandChannelCoolDownWrapper.getMap(channelId)
+                if (commandChannelCooldowns.containsKey(id)) {
 
-                //init lastExecutionChannel
-                daoManager.commandChannelCoolDownWrapper.executions[Pair(channelId, userId)]
-                    ?.filter { entry -> entry.key == id }
-                    ?.forEach { entry ->
-                        if (entry.value > lastExecutionChannel) lastExecutionChannel = entry.value
+                    //init lastExecutionChannel
+                    daoManager.commandChannelCoolDownWrapper.executions[Pair(channelId, userId)]
+                        ?.filter { entry -> entry.key == id }
+                        ?.forEach { entry ->
+                            if (entry.value > lastExecutionChannel) lastExecutionChannel = entry.value
+                        }
+
+                    val cooldown = commandChannelCooldowns[id] ?: 0L
+
+                    if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
+                        cooldownResult = cooldown
+                        bool = true
                     }
-
-                val cooldown = commandChannelCooldowns[id] ?: 0L
-
-                if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
-                    cooldownResult = cooldown
-                    bool = true
                 }
-            }
-            val commandCooldowns = commandCooldownWrapper.getMap(guildId)
-            if (commandCooldowns.containsKey(id)) {
+                val commandCooldowns = commandCooldownWrapper.getMap(guildId)
+                if (commandCooldowns.containsKey(id)) {
 
-                //init lastExecution
-                daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
-                    ?.filter { entry -> entry.key == id }
-                    ?.forEach { entry ->
-                        if (entry.value > lastExecution) lastExecution = entry.value
+                    //init lastExecution
+                    daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
+                        ?.filter { entry -> entry.key == id }
+                        ?.forEach { entry ->
+                            if (entry.value > lastExecution) lastExecution = entry.value
+                        }
+
+                    val cooldown = commandCooldowns[id] ?: 0L
+
+                    if (System.currentTimeMillis() - cooldown < lastExecution) {
+                        if (cooldownResult < cooldown) cooldownResult = cooldown
+                        bool = true
                     }
-
-                val cooldown = commandCooldowns[id] ?: 0L
-
-                if (System.currentTimeMillis() - cooldown < lastExecution) {
-                    if (cooldownResult < cooldown) cooldownResult = cooldown
-                    bool = true
                 }
             }
 

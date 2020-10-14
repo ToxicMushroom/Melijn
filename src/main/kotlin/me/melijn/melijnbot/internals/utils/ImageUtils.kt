@@ -653,7 +653,6 @@ object ImageUtils {
         }
 
         val kernel = Kernel(size, size, data)
-
         useKernel(image, kernel, isGif)
     }
 

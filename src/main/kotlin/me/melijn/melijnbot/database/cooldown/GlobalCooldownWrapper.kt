@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.cooldown
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
 
-class GlobalCooldownWrapper(val globalCooldownDao: GlobalCooldownDao) {
+class GlobalCooldownWrapper(private val globalCooldownDao: GlobalCooldownDao) {
 
     suspend fun getLastExecuted(userId: Long, commandId: String): Long {
         val cached = globalCooldownDao.getCacheEntry("$userId:$commandId", HIGHER_CACHE)?.toLong()

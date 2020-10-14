@@ -28,7 +28,7 @@ fun Throwable.sendInGuild(
     author: User? = null,
     thread: Thread = Thread.currentThread(),
     extra: String? = null,
-    shouldSend: Boolean = true
+    shouldSend: Boolean = false
 ) = runBlocking {
     sendInGuildSuspend(guild, channel, author, thread, extra, shouldSend)
 }
@@ -39,7 +39,7 @@ suspend fun Throwable.sendInGuildSuspend(
     author: User? = null,
     thread: Thread = Thread.currentThread(),
     extra: String? = null,
-    shouldSend: Boolean = true
+    shouldSend: Boolean = false
 ) {
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 

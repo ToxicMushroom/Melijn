@@ -14,7 +14,7 @@ suspend fun sendMissingPermissionMessage(context: CommandContext, permission: St
 }
 
 
-suspend fun sendMissingPermissionMessage(tc: TextChannel, daoManager: DaoManager, language: String, permission: String) {
+fun sendMissingPermissionMessage(tc: TextChannel, daoManager: DaoManager, language: String, permission: String) {
     val msg = i18n.getTranslation(language, "message.botpermission.missing")
         .withVariable("permission", permission)
     sendRsp(tc, daoManager, msg)
@@ -31,7 +31,7 @@ suspend fun sendMelijnMissingChannelPermissionMessage(textChannel: TextChannel, 
     }
 
     val msg = i18n.getTranslation(language, "message.discordchannelpermission$more.missing")
-        .withVariable("permissions", permString)
+        .withVariable("permissions", "\n" + permString)
         .withVariable("channel", textChannel.asTag)
 
     sendRspOrMsg(textChannel, daoManager, msg)
@@ -44,7 +44,7 @@ suspend fun sendMelijnMissingPermissionMessage(textChannel: TextChannel, languag
     }
 
     val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
-        .withVariable("permissions", permString)
+        .withVariable("permissions", "\n" + permString)
 
     sendRspOrMsg(textChannel, daoManager, msg)
 }

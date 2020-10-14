@@ -241,8 +241,8 @@ class CommandClientBuilder(private val container: Container) {
         CalculateCommand(),
         SnipeCommand(),
         SnekCommand(),
-        PlaylistCommand()
-//        StarboardCommand()
+        PlaylistCommand(),
+        StarboardCommand()
     )
 
     fun build(): CommandClient {

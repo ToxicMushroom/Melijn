@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.getBalanceNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
 import me.melijn.melijnbot.internals.utils.withVariable
+import net.dv8tion.jda.api.Permission
 import kotlin.random.Random
 
 
@@ -17,6 +18,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
         id = 217
         name = "slots"
         cooldown = 3500
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
         commandCategory = CommandCategory.GAME
     }
 

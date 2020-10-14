@@ -19,6 +19,7 @@ class SayCommand : AbstractCommand("command.say") {
         id = 115
         name = "say"
         aliases = arrayOf("zeg")
+        cooldown = 2000
         discordChannelPermissions = arrayOf(
             Permission.MESSAGE_ATTACH_FILES
         )
@@ -30,6 +31,7 @@ class SayCommand : AbstractCommand("command.say") {
             sendSyntax(context)
         }
 
+        context.initCooldown()
         val fontSize = getIntegerFromArgN(context, 0)
         val input = if (fontSize == null) {
             context.rawArg
