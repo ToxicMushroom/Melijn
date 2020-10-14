@@ -80,8 +80,13 @@ object ImageUtils {
             val user = retrieveUserByArgsN(context, 0)
             if (user != null) {
                 arg = true
-                url = user.effectiveAvatarUrl + discordSize
-                if (!checkFormat(context, user.effectiveAvatarUrl, reqFormat)) return null
+                val fixedForm = if (reqFormat == "png") {
+                    user.effectiveAvatarUrl.split(".").dropLast(1).joinToString(".") + ".png"
+                } else {
+                    user.effectiveAvatarUrl
+                }
+                url = fixedForm + discordSize
+                if (!checkFormat(context, fixedForm, reqFormat)) return null
 
                 img = downloadImage(context, url)
                 ByteArrayInputStream(img).use { bis ->
@@ -121,8 +126,13 @@ object ImageUtils {
             }
         } else {
             arg = false
-            url = context.author.effectiveAvatarUrl + discordSize
-            if (!checkFormat(context, context.author.effectiveAvatarUrl, reqFormat)) return null
+            val fixedForm = if (reqFormat == "png") {
+                context.author.effectiveAvatarUrl.split(".").dropLast(1).joinToString(".") + ".png"
+            } else {
+                context.author.effectiveAvatarUrl
+            }
+            url = fixedForm + discordSize
+            if (!checkFormat(context, fixedForm, reqFormat)) return null
             img = downloadImage(context, url)
         }
 
