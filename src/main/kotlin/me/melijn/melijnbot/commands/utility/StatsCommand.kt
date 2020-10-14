@@ -29,8 +29,8 @@ class StatsCommand : AbstractCommand("command.stats") {
         val totalMem: Long
         val usedMem: Long
         if (OSValidator.isUnix) {
-            totalMem = getTotalKBUnixRam() / 1000
-            usedMem = getUsedKBUnixRam() / 1000
+            totalMem = getTotalMBUnixRam()
+            usedMem = getUsedMBUnixRam()
         } else {
             totalMem = bean.totalMemorySize shr 20
             usedMem = totalMem - (bean.freeSwapSpaceSize shr 20)

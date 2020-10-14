@@ -8,8 +8,8 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.threading.TaskManager.scheduledExecutorService
 import me.melijn.melijnbot.internals.utils.OSValidator
 import me.melijn.melijnbot.internals.utils.getSystemUptime
-import me.melijn.melijnbot.internals.utils.getTotalKBUnixRam
-import me.melijn.melijnbot.internals.utils.getUsedKBUnixRam
+import me.melijn.melijnbot.internals.utils.getTotalMBUnixRam
+import me.melijn.melijnbot.internals.utils.getUsedMBUnixRam
 import me.melijn.melijnbot.internals.web.RequestContext
 import me.melijn.melijnbot.internals.web.WebUtils.respondJson
 import me.melijn.melijnbot.objectMapper
@@ -27,8 +27,8 @@ object StatsResponseHandler {
         val totalMem: Long
         val usedMem: Long
         if (OSValidator.isUnix) {
-            totalMem = getTotalKBUnixRam() / 1000
-            usedMem = getUsedKBUnixRam() / 1000
+            totalMem = getTotalMBUnixRam()
+            usedMem = getUsedMBUnixRam()
         } else {
             totalMem = bean.totalMemorySize shr 20
             usedMem = totalMem - (bean.freeSwapSpaceSize shr 20)
