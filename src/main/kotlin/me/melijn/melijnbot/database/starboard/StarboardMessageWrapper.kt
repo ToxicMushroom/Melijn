@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.objectMapper
 
-class StarboardMessageWrapper(val starboardMessageDao: StarboardMessageDao) {
+class StarboardMessageWrapper(private val starboardMessageDao: StarboardMessageDao) {
 
     suspend fun getStarboardInfo(messageId: Long): StarboardInfo? {
         val result = starboardMessageDao.getCacheEntry(messageId, HIGHER_CACHE)?.let {
@@ -20,7 +20,20 @@ class StarboardMessageWrapper(val starboardMessageDao: StarboardMessageDao) {
 
     fun setStarboardInfo(guildId: Long, channelId: Long, authorId: Long, messageId: Long, starboardMessageId: Long, stars: Int, deleted: Boolean, moment: Long) {
         starboardMessageDao.set(guildId, channelId, authorId, messageId, starboardMessageId, stars, deleted, moment)
-        starboardMessageDao.setCacheEntry(messageId, objectMapper.writeValueAsString(StarboardInfo(starboardMessageId, stars, deleted, moment)), NORMAL_CACHE)
+        starboardMessageDao.setCacheEntry(messageId, objectMapper.writeValueAsString(
+            StarboardInfo(authorId, channelId, messageId, starboardMessageId, stars, deleted, moment)
+        ), NORMAL_CACHE)
     }
 
+    fun updateChannel(messageId: Long, newChannelId: Int) {
+        starboardMessageDao.updateChannel(messageId, newChannelId)
+    }
+
+    fun updateDeleted(messageId: Long, deleted: Boolean) {
+        starboardMessageDao.updateDeleted(messageId, deleted)
+    }
+
+    fun delete(messageId: Long) {
+        starboardMessageDao.delete(messageId)
+    }
 }

@@ -27,6 +27,9 @@ class StarboardMessageDao(driverManager: DriverManager) : CacheDBDao(driverManag
             { rs ->
                 if (rs.next()) {
                     it.resume(StarboardInfo(
+                        rs.getLong("authorId"),
+                        rs.getLong("channelId"),
+                        rs.getLong("messageId"),
                         rs.getLong("starboardMessageId"),
                         rs.getInt("stars"),
                         rs.getBoolean("deleted"),
@@ -38,9 +41,27 @@ class StarboardMessageDao(driverManager: DriverManager) : CacheDBDao(driverManag
             }, messageId, messageId
         )
     }
+
+    fun updateChannel(messageId: Long, newChannelId: Int) {
+        driverManager.executeUpdate("UPDATE $table SET channelId = ? WHERE messageId = ? OR starboardMessageId = ?",
+            newChannelId, messageId, messageId)
+    }
+
+    fun updateDeleted(messageId: Long, deleted: Boolean) {
+        driverManager.executeUpdate("UPDATE $table SET deleted = ? WHERE messageId = ? OR starboardMessageId = ?",
+            deleted, messageId, messageId)
+    }
+
+    fun delete(messageId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE messageId = ? OR starboardMessageId = ?",
+            messageId)
+    }
 }
 
 data class StarboardInfo(
+    val authorId: Long,
+    val ogChannelId: Long,
+    val ogMessageId: Long,
     val starboardMessageId: Long,
     val stars: Int,
     val deleted: Boolean,
