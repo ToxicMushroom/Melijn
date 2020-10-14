@@ -29,7 +29,7 @@ val linuxUptimePattern: Pattern = Pattern.compile(
 )
 
 // Thx xavin
-val linuxRamPattern: Pattern = Pattern.compile("MemFree:\\s+([0-9]+) kB")
+val linuxRamPattern: Pattern = Pattern.compile("Mem(.*):\\s+([0-9]+) kB")
 
 fun getSystemUptime(): Long {
     return try {
@@ -70,14 +70,12 @@ fun getUnixUptime(): Long {
     return matcher.group(1).toLong()
 }
 
-fun getFreeKBUnixRam(): Long {
-    val uptimeProc = Runtime.getRuntime().exec("cat /proc/meminfo") // Parse time to groups if possible
+fun getTotalKBUnixRam(): Long {
+    val uptimeProc = Runtime.getRuntime().exec("cat /proc/meminfo")
     uptimeProc.inputStream.use { `is` ->
         `is`.bufferedReader().use { br ->
-            br.readLine() ?: return -1
-            val lineTwo = br.readLine() ?: return -1
-
-            val matcher = linuxRamPattern.matcher(lineTwo)
+            val total = br.readLine() ?: return -1
+            val matcher = linuxRamPattern.matcher(total)
 
             if (!matcher.find()) return -1 // Extract ints out of groups
             val group = matcher.group(1)
@@ -86,6 +84,24 @@ fun getFreeKBUnixRam(): Long {
     }
 }
 
+fun getUsedKBUnixRam(): Long {
+    val uptimeProc = Runtime.getRuntime().exec("cat /proc/meminfo")
+    uptimeProc.inputStream.use { `is` ->
+        `is`.bufferedReader().use { br ->
+            val total = br.readLine() ?: return -1
+            br.readLine() ?: return -1
+            val available = br.readLine() ?: return -1
+
+            val matcher1 = linuxRamPattern.matcher(total)
+            val matcher2 = linuxRamPattern.matcher(available)
+
+            if (!matcher1.find() || !matcher2.find()) return -1 // Extract ints out of groups
+            val totalLong = matcher1.group(1).toLong()
+            val availableLong = matcher1.group(2).toLong()
+            return (totalLong - availableLong)
+        }
+    }
+}
 
 fun getWindowsUptime(): Long {
     val uptimeProc = Runtime.getRuntime().exec("net stats workstation")
