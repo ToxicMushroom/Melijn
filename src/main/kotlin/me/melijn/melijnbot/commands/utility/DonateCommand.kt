@@ -13,7 +13,7 @@ class DonateCommand : AbstractCommand("command.donate") {
     init {
         id = 97
         name = "donate"
-        aliases = arrayOf("patreon", "patron", "sponsor", "donator", "subscribe")
+        aliases = arrayOf("patreon", "patron", "premium", "donator", "subscribe")
         children = arrayOf(LinkServerArg(root))
         commandCategory = CommandCategory.UTILITY
     }
