@@ -242,7 +242,8 @@ class CommandClientBuilder(private val container: Container) {
         SnipeCommand(),
         SnekCommand(),
         PlaylistCommand(),
-        StarboardCommand()
+        StarboardCommand(),
+        LikeCommand()
     )
 
     fun build(): CommandClient {

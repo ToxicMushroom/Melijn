@@ -228,7 +228,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             val position = tracksMap?.maxByOrNull { it.key }?.key ?: 0
 
             context.daoManager.playlistWrapper
-                .set(context.authorId, context.args[0], position, LavalinkUtil.toMessage(audioTrack))
+                .set(context.authorId, context.args[0], position+1, LavalinkUtil.toMessage(audioTrack))
 
             val msg = context.getTranslation("$root.added")
                 .withVariable("title", audioTrack.info.title)
@@ -237,38 +237,41 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             sendRsp(context, msg)
         }
 
-        private suspend fun tracksLimitReachedAndMessage(context: CommandContext, size: Int): Boolean {
-            if (size < tracksLimit) return false
+        companion object {
+            suspend fun tracksLimitReachedAndMessage(context: CommandContext, size: Int): Boolean {
+                if (size < tracksLimit) return false
 
-            val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
-            if (premium && size < premiumTrackLimit) {
-                return false
+                val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
+                if (premium && size < premiumTrackLimit) {
+                    return false
+                }
+
+                val root = context.commandOrder.last().root
+                val msg = if (premium) {
+                    context.getTranslation("$root.tracklimit.premium")
+                } else {
+                    context.getTranslation("$root.tracklimit")
+                }
+                sendRsp(context, msg)
+                return true
             }
 
-            val msg = if (premium) {
-                context.getTranslation("$root.tracklimit.premium")
-            } else {
-                context.getTranslation("$root.tracklimit")
-            }
-            sendRsp(context, msg)
-            return true
-        }
+            suspend fun playlistsLimitReachedAndMessage(context: CommandContext, size: Int): Boolean {
+                if (size < playlistLimit) return false
 
-        private suspend fun playlistsLimitReachedAndMessage(context: CommandContext, size: Int): Boolean {
-            if (size < playlistLimit) return false
-
-            val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
-            if (premium && size < premiumPlaylistLimit) {
-                return false
+                val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
+                if (premium && size < premiumPlaylistLimit) {
+                    return false
+                }
+                val root = context.commandOrder.last().root
+                val msg = if (premium) {
+                    context.getTranslation("$root.playlistlimit.premium")
+                } else {
+                    context.getTranslation("$root.playlistlimit")
+                }
+                sendRsp(context, msg)
+                return true
             }
-
-            val msg = if (premium) {
-                context.getTranslation("$root.playlistlimit.premium")
-            } else {
-                context.getTranslation("$root.playlistlimit")
-            }
-            sendRsp(context, msg)
-            return true
         }
     }
 
