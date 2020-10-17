@@ -128,7 +128,12 @@ abstract class AbstractCommand(val root: String) {
                 if (CommandClient.checksFailed(context.container, context.commandOrder.last(), cmdId, context.event, true, context.commandParts)) return
                 cmdlogger.info("${context.guildN?.name ?: ""}/${context.author.name}◠: ${context.message.contentRaw}")
                 val start = System.currentTimeMillis()
-                execute(context)
+                try {
+                    execute(context)
+                } catch (t: Throwable) {
+                    cmdlogger.error("↱ ${context.guildN?.name ?: ""}/${context.author.name}◡: ${context.message.contentRaw}", t)
+                    t.sendInGuild(context, shouldSend = true)
+                }
                 if (context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)) {
                     TaskManager.async {
                         val timeMap = context.daoManager.removeInvokeWrapper.getMap(context.guildId)
