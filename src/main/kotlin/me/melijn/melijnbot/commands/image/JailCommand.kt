@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import net.dv8tion.jda.api.Permission
 import java.io.ByteArrayOutputStream
 import java.net.URL
 import javax.imageio.ImageIO
@@ -21,6 +22,7 @@ class JailCommand : AbstractCommand("command.jail") {
         id = 219
         name = "jail"
         aliases = arrayOf("jailGif")
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 
