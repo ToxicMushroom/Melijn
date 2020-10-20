@@ -74,7 +74,7 @@ class GuildTrackManager(
             return
         }
 
-        val track: AudioTrack = tracks.poll()
+        val track: AudioTrack = tracks.poll() ?: return
         chekNChangeGroup(track.info.uri)
         if (track == lastTrack) {
             iPlayer.playTrack(track.makeClone())
