@@ -17,6 +17,7 @@ import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 import me.melijn.melijnbot.objectMapper
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -86,21 +87,21 @@ class RedditCommand : AbstractCommand("command.reddit") {
 
             if (about == null) {
                 val unknownReddit = context.getTranslation("command.reddit.down")
-                    .withVariable("subreddit", subreddit)
+                    .withSafeVariable("subreddit", subreddit)
                 sendRsp(context, unknownReddit)
                 return null
             }
 
             if (about.private) {
                 val unknownReddit = context.getTranslation("command.reddit.private")
-                    .withVariable("subreddit", subreddit)
+                    .withSafeVariable("subreddit", subreddit)
                 sendRsp(context, unknownReddit)
                 return null
             }
 
             if (!about.exists) {
                 val unknownReddit = context.getTranslation("command.reddit.unknown")
-                    .withVariable("subreddit", subreddit)
+                    .withSafeVariable("subreddit", subreddit)
                 sendRsp(context, unknownReddit)
                 return null
             }
@@ -108,7 +109,7 @@ class RedditCommand : AbstractCommand("command.reddit") {
             if (about.over18 && context.isFromGuild && !context.textChannel.isNSFW) {
                 // send stinky nsfw warning
                 val msg = context.getTranslation("command.reddit.subnsfw")
-                    .withVariable("subreddit", subreddit)
+                    .withSafeVariable("subreddit", subreddit)
                 sendRsp(context, msg)
                 return null
             }
@@ -126,7 +127,7 @@ class RedditCommand : AbstractCommand("command.reddit") {
 
             if (posts == null) {
                 val unknownReddit = context.getTranslation("command.reddit.down")
-                    .withVariable("subreddit", subreddit)
+                    .withSafeVariable("subreddit", subreddit)
                 sendRsp(context, unknownReddit)
                 return null
             }
@@ -139,7 +140,7 @@ class RedditCommand : AbstractCommand("command.reddit") {
                 return null
             } else if (posts.isEmpty()) {
                 val msg = context.getTranslation("command.reddit.empty")
-                    .withVariable("subreddit", subreddit)
+                    .withSafeVariable("subreddit", subreddit)
                 sendRsp(context, msg)
                 return null
             }

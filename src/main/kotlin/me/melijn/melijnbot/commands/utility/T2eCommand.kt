@@ -5,12 +5,14 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 class T2eCommand : AbstractCommand("command.t2e") {
 
     init {
         id = 127
         name = "t2e"
+        cooldown = 5000
         children = arrayOf(
             NoSpaceArg(root)
         )
@@ -34,6 +36,7 @@ class T2eCommand : AbstractCommand("command.t2e") {
 
     companion object {
         suspend fun t2e(context: CommandContext, spaces: Boolean) {
+            context.initCooldown()
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -79,7 +82,7 @@ class T2eCommand : AbstractCommand("command.t2e") {
                     "8" -> letter("eight")
                     "9" -> letter("nine")
                     "0" -> letter("zero")
-                    else -> s
+                    else -> MarkdownSanitizer.escape(s)
                 } + if (spaces) " " else ""
             }
 

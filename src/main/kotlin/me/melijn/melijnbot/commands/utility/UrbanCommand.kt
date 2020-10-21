@@ -10,7 +10,7 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.remove
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.web.WebManager
 import me.melijn.melijnbot.internals.web.WebUtils
 import java.lang.Integer.min
@@ -42,7 +42,7 @@ class UrbanCommand : AbstractCommand("command.urban") {
 
         } else if (result.first == null && result.second == null) {
             val notfound = context.getTranslation("$root.notfound")
-                .withVariable(PLACEHOLDER_ARG, context.rawArg)
+                .withSafeVariable(PLACEHOLDER_ARG, context.rawArg)
             sendRsp(context, notfound)
 
         } else {

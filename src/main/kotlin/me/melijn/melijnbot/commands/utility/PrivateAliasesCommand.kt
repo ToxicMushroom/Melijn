@@ -2,13 +2,11 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.commands.administration.AliasesCommand.Companion.getCommandPathInfo
 import me.melijn.melijnbot.internals.command.*
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.removePrefix
-import me.melijn.melijnbot.internals.utils.withVariable
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 const val TOTAL_ALIASES_LIMIT = 25
 const val CMD_ALIASES_LIMIT = 3
@@ -56,7 +54,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
                 sb.append(indexer++).append(". [").append(rootCmd.name).append("]").append(idLessCmd.replace(".", " "))
                     .append("\n")
                 for ((index, alias) in aliases.sorted().withIndex()) {
-                    sb.append("    ").append(index + 1).append(": ").append(alias).append("\n")
+                    sb.append("    ").append(index + 1).append(": ").append(MarkdownSanitizer.escape(alias)).append("\n")
                 }
             }
             sb.append("```")
@@ -149,7 +147,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             if (aliases.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
                     .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
-                    .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                    .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
 
                 sendRsp(context, msg)
                 return
@@ -161,7 +159,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliasWrapper.remove(context.authorId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.removed")
-                .withVariable("alias", alias)
+                .withSafeVariable("alias", alias)
                 .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
             sendRsp(context, msg)
         }
@@ -183,7 +181,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             context.daoManager.aliasWrapper.remove(context.authorId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.removed")
-                .withVariable("alias", alias)
+                .withSafeVariable("alias", alias)
                 .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
             sendRsp(context, msg)
         }
@@ -233,7 +231,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliasWrapper.add(context.authorId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.added")
-                .withVariable("alias", alias)
+                .withSafeVariable("alias", alias)
                 .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
             sendRsp(context, msg)
         }

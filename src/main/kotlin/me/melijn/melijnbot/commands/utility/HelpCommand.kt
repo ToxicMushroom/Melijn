@@ -53,18 +53,18 @@ class HelpCommand : AbstractCommand("command.help") {
             val path = "help.arg.${context.rawArg.toLowerCase()}"
             val pathExtra = "help.arg.${context.rawArg.toLowerCase()}.examples"
             val translation = context.getTranslation(path)
-                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
             val translationExtra = context.getTranslation(pathExtra)
             val hasExtra = translationExtra != pathExtra
             if (path == translation) {
                 val msg = context.getTranslation("$root.missing")
-                    .withVariable(PLACEHOLDER_ARG, context.rawArg)
+                    .withSafeVariable(PLACEHOLDER_ARG, context.rawArg)
                 sendRsp(context, msg)
                 return
             }
 
             val title = context.getTranslation("$root.embed.title")
-                .withVariable("argName", context.rawArg)
+                .withSafeVariable("argName", context.rawArg)
 
             val embedder = Embedder(context)
                 .setTitle(title)
@@ -131,13 +131,13 @@ class HelpCommand : AbstractCommand("command.help") {
             val translation = context.getTranslation(path)
             if (path == translation) {
                 val msg = context.getTranslation("$root.missing")
-                    .withVariable(PLACEHOLDER_ARG, context.rawArg)
+                    .withSafeVariable(PLACEHOLDER_ARG, context.rawArg)
                 sendRsp(context, msg)
                 return
             }
 
             val title = context.getTranslation("$root.embed.title")
-                .withVariable("varName", "{${context.rawArg.remove("{", "}")}}")
+                .withSafeVariable("varName", "{${context.rawArg.remove("{", "}")}}")
 
             val embedder = Embedder(context)
                 .setTitle(title)

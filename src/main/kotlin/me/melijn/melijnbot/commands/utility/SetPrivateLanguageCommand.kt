@@ -9,7 +9,7 @@ import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_LANGUAGE
 import me.melijn.melijnbot.internals.utils.getEnumFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 
 class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") {
 
@@ -42,7 +42,7 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
             } else {
                 "$root.show.set"
             }
-        ).withVariable("language", lang)
+        ).withSafeVariable("language", lang)
 
         sendRsp(context, msg)
     }
@@ -71,7 +71,7 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         }
 
         val msg = context.getTranslation("$root.${possible}set")
-            .withVariable("language", language.toString())
+            .withSafeVariable("language", language.toString())
 
         sendRsp(context, msg)
     }

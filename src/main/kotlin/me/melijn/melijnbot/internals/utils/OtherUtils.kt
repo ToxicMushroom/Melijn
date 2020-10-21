@@ -147,7 +147,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
     }
     if (enum == null) {
         val msg = context.getTranslation(path)
-            .withVariable(PLACEHOLDER_ARG, enumName)
+            .withSafeVariable(PLACEHOLDER_ARG, enumName)
         sendRsp(context, msg)
     }
     return enum
@@ -158,7 +158,7 @@ suspend inline fun <T> getObjectFromArgNMessage(context: CommandContext, index: 
     val newObj = getObjectFromArgN(context, index, mapper)
     if (newObj == null) {
         val msg = context.getTranslation(path)
-            .withVariable(PLACEHOLDER_ARG, context.args[index])
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
     return newObj
@@ -206,7 +206,7 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
 
     if (commands.isEmpty()) {
         val msg = context.getTranslation("message.unknown.commandnode")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
         return null
     }
@@ -228,7 +228,7 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
 
     if (commands.isEmpty()) {
         val msg = context.getTranslation("message.unknown.commands")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
         return null
     }
@@ -251,11 +251,11 @@ suspend fun getLongFromArgNMessage(
     val long = arg.toLongOrNull()
     if (!arg.isNumber()) {
         val msg = context.getTranslation("message.unknown.number")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     } else if (long == null) {
         val msg = context.getTranslation("message.unknown.long")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     }
     if (long != null) {
@@ -263,7 +263,7 @@ suspend fun getLongFromArgNMessage(
             val msg = context.getTranslation("message.number.notinrange")
                 .withVariable("start", min)
                 .withVariable("end", max)
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
             sendRsp(context, msg)
             return null
         }
@@ -280,7 +280,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
             val newVal = value.toIntOrNull()
             if (newVal == null) {
                 val msg = context.getTranslation("message.unknown.number")
-                    .withVariable(PLACEHOLDER_ARG, value)
+                    .withSafeVariable(PLACEHOLDER_ARG, value)
                 sendRsp(context, msg)
                 return null
             } else newVal
@@ -311,7 +311,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         val birthday = list[birthdayIndex]
         if (birthday < 1 || birthday > 31) {
             val msg = context.getTranslation("message.number.notinrange")
-                .withVariable(PLACEHOLDER_ARG, "$birthday")
+                .withSafeVariable(PLACEHOLDER_ARG, "$birthday")
                 .withVariable("start", "1")
                 .withVariable("end", "31")
             sendRsp(context, msg)
@@ -320,7 +320,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         val birthMonth = list[monthIndex]
         if (birthMonth < 1 || birthMonth > 12) {
             val msg = context.getTranslation("message.number.notinrange")
-                .withVariable(PLACEHOLDER_ARG, "$birthMonth")
+                .withSafeVariable(PLACEHOLDER_ARG, "$birthMonth")
                 .withVariable("start", "1")
                 .withVariable("end", "12")
             sendRsp(context, msg)
@@ -330,7 +330,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         val birthYear = if (list.size > 2) list[yearIndex] else null
         if (birthYear != null && (birthYear < 1900 || birthYear > Year.now().value - 12)) {
             val msg = context.getTranslation("message.number.notinrange")
-                .withVariable(PLACEHOLDER_ARG, "$birthYear")
+                .withSafeVariable(PLACEHOLDER_ARG, "$birthYear")
                 .withVariable("start", "1900")
                 .withVariable("end", "2008")
             sendRsp(context, msg)
@@ -341,7 +341,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         return Pair(localDate.dayOfYear, birthYear)
     } else {
         val msg = context.getTranslation("message.unknown.birthday")
-            .withVariable(PLACEHOLDER_ARG, context.args[index])
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
         return null
     }
