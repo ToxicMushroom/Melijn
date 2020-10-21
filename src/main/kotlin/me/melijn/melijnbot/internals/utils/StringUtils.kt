@@ -227,7 +227,9 @@ fun String.withSafeVariable(toReplace: String, obj: Any): String {
     return this.replace("%$toReplace%", MarkdownSanitizer.escape(obj.toString())
         .replace("discord.gg/", " yourFailedInviteLink ", ignoreCase = true)
         .replace("discord.com/invite", " yourFailedInviteLink ", ignoreCase = true)
-        .replace("discordapp.com/invite", " yourFailedInviteLink ", ignoreCase = true))
+        .replace("discordapp.com/invite", " yourFailedInviteLink ", ignoreCase = true)
+        .replace("discordapp.net/invite", " yourFailedInviteLink ", ignoreCase = true)
+        .replace("discord.media/invite", " yourFailedInviteLink ", ignoreCase = true))
 }
 fun String.toUpperWordCase(): String {
     var previous = ' '
