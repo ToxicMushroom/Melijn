@@ -224,7 +224,10 @@ fun String.withVariable(toReplace: String, obj: Any): String {
     return this.replace("%$toReplace%", obj.toString())
 }
 fun String.withSafeVariable(toReplace: String, obj: Any): String {
-    return this.replace("%$toReplace%", MarkdownSanitizer.escape(obj.toString()))
+    return this.replace("%$toReplace%", MarkdownSanitizer.escape(obj.toString())
+        .replace("discord.gg/", " yourFailedInviteLink ", ignoreCase = true)
+        .replace("discord.com/invite", " yourFailedInviteLink ", ignoreCase = true)
+        .replace("discordapp.com/invite", " yourFailedInviteLink ", ignoreCase = true))
 }
 fun String.toUpperWordCase(): String {
     var previous = ' '
