@@ -96,7 +96,7 @@ class CommandClientBuilder(private val container: Container) {
         T2eCommand(),
         FlipImgCommand(),
         ClearChannelCommand(),
-        ServerInfo(),
+        ServerInfoCommand(),
         PatCommand(),
         SelfRoleCommand(),
         PingCommand(),
@@ -193,7 +193,6 @@ class CommandClientBuilder(private val container: Container) {
         AngryCommand(),
         PngsFromGifCommand(),
         PngsToGifCommand(),
-        //GiveawayCommand(),
         ReplaceColorCommand(),
         SetAllowSpacedPrefixState(),
         SetPrivateAllowSpacedPrefixState(),
@@ -238,7 +237,13 @@ class CommandClientBuilder(private val container: Container) {
         ClearCacheCommand(),
         SlotsCommand(),
         PokerCommand(),
-        JailCommand()
+        JailCommand(),
+        CalculateCommand(),
+        SnipeCommand(),
+        SnekCommand(),
+        PlaylistCommand(),
+        StarboardCommand(),
+        LikeCommand()
     )
 
     fun build(): CommandClient {
@@ -246,7 +251,6 @@ class CommandClientBuilder(private val container: Container) {
     }
 
     fun loadCommands(): CommandClientBuilder {
-
         TaskManager.async {
             container.daoManager.commandWrapper.bulkInsert(commands)
         }

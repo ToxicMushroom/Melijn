@@ -19,7 +19,6 @@ import net.dv8tion.jda.api.requests.restaction.MessageAction
 import net.dv8tion.jda.internal.entities.DataMessage
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
-import java.net.URL
 import javax.imageio.ImageIO
 
 
@@ -214,41 +213,6 @@ fun sendFile(language: String, msg: String, textChannel: TextChannel, bytes: Byt
     }
 
     textChannel.sendMessage(msg).addFile(bytes, "finished.$extension").queue()
-}
-
-
-suspend fun sendMsg(context: CommandContext, listImages: List<BufferedImage>, extension: String) {
-    if (context.isFromGuild) {
-        sendMsg(context.textChannel, listImages, extension)
-    } else {
-        sendMsg(context.privateChannel, listImages, extension)
-    }
-}
-
-suspend fun sendMsg(privateChannel: PrivateChannel, listImages: List<BufferedImage>, extension: String) {
-    ByteArrayOutputStream().use { baos ->
-        withContext(Dispatchers.IO) {
-            for (image in listImages) {
-                ImageIO.write(image, extension, baos)
-            }
-        }
-
-        privateChannel.sendFile(baos.toByteArray(), "finished.$extension").queue()
-    }
-}
-
-suspend fun sendMsg(textChannel: TextChannel, listImages: List<BufferedImage>, extension: String) {
-    require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
-
-    ByteArrayOutputStream().use { baos ->
-        withContext(Dispatchers.IO) {
-            for (image in listImages) {
-                ImageIO.write(image, extension, baos)
-            }
-        }
-
-        textChannel.sendFile(baos.toByteArray(), "finished.$extension").queue()
-    }
 }
 
 private suspend fun attachmentsAction(textChannel: MessageChannel, httpClient: HttpClient, urls: Map<String, String>): MessageAction? {

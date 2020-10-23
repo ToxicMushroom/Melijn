@@ -7,27 +7,35 @@
         </encoder>
     </appender>
 
-    <!--
-        <appender name="FILE-AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>/home/fabian/Bots/Melijn/logs/debug.log</file>
-            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-                <Pattern>%d{yyyy-MM-dd HH:mm:ss} - %msg%n</Pattern>
-            </encoder>
-
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>/home/fabian/Bots/Melijn/archived/debug.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                    <maxFileSize>50MB</maxFileSize>
-                </timeBasedFileNamingAndTriggeringPolicy>
-            </rollingPolicy>
-        </appender>
-    -->
-
-    <logger name="com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager" level="ERROR">
-        <appender-ref ref="STDOUT"/>
-    </logger>
-
+    <!-- this block normally goes under the file block -->
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
+
+<!--    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+<!--        <file>lettuce.log</file>-->
+
+<!--        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">-->
+<!--            <fileNamePattern>logs/archived/app.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>-->
+<!--            &lt;!&ndash; each archived file, size max 10MB &ndash;&gt;-->
+<!--            <maxFileSize>10GB</maxFileSize>-->
+<!--            &lt;!&ndash; total size of all archive files, if total size > 20GB, it will delete old archived file &ndash;&gt;-->
+<!--            <totalSizeCap>20GB</totalSizeCap>-->
+<!--            &lt;!&ndash; 60 days to keep &ndash;&gt;-->
+<!--            <maxHistory>60</maxHistory>-->
+<!--        </rollingPolicy>-->
+
+<!--        <encoder>-->
+<!--            <pattern>%d %p %c{1.} [%t] %m%n</pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
+
+<!--    <logger name="io.lettuce.core" level="TRACE">-->
+<!--        <appender-ref ref="FILE"/>-->
+<!--    </logger>-->
+
+<!--    <root level="ERROR">-->
+<!--        <appender-ref ref="FILE"/>-->
+<!--    </root>-->
+
 </configuration>

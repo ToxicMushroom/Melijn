@@ -28,14 +28,14 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
         if (context.args.isEmpty()) {
             if (RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event)) {
                 val info = context.getGuildMusicPlayer().guildTrackManager.playingTrack?.info
-                    ?: throw IllegalArgumentException("angry pepe")
+                        ?: throw IllegalArgumentException("angry pepe")
 
                 val lyrics = getLyricsNMessage(context, info.title, info.author) ?: return
 
                 formatAndSendLyrics(context, lyrics.first, lyrics.second)
             } else {
                 val msg = context.getTranslation("$root.extrahelp")
-                    .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                        .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
                 sendRsp(context, msg)
             }
         } else {
@@ -52,11 +52,11 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
         val powered = context.getTranslation("$root.powered")
 
         val embed = Embedder(context)
-            .setTitle(name.take(MessageEmbed.TITLE_MAX_LENGTH))
-            .setDescription(lyrics.take(MessageEmbed.TEXT_MAX_LENGTH))
-            .addField(words, "${lyrics.countWords()}", true)
-            .addField(characters, "${lyrics.remove(" ").length}", true)
-            .setFooter(powered.withVariable("url", "api.ksoft.si"))
+                .setTitle(name.take(MessageEmbed.TITLE_MAX_LENGTH))
+                .setDescription(lyrics.take(MessageEmbed.TEXT_MAX_LENGTH))
+                .addField(words, "${lyrics.countWords()}", true)
+                .addField(characters, "${lyrics.remove(" ").length}", true)
+                .setFooter(powered.withVariable("url", "api.ksoft.si"))
 
         sendEmbedRsp(context, embed.build())
     }
@@ -64,15 +64,19 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
     // url, lyrics
     private suspend fun getLyricsNMessage(context: CommandContext, title: String, author: String?): Pair<String, String>? {
         val json = WebUtils.getJsonFromUrl(context.webManager.httpClient,
-            "$KSOFT_SI/lyrics/search",
-            mutableMapOf(
-                Pair("q", title + (author?.let { " $author" } ?: "")),
-                Pair("limit", "1")
-            ),
-            mutableMapOf(Pair("Authorization", context.container.settings.tokens.kSoftApi))
+                "$KSOFT_SI/lyrics/search",
+                mutableMapOf(
+                        Pair("q", title + (author?.let { " $author" } ?: "")),
+                        Pair("limit", "1")
+                ),
+                mutableMapOf(Pair("Authorization", context.container.settings.tokens.kSoftApi))
         ) ?: return null
 
-        val res = json.getArray("data")
+        val res = try {
+            json.getArray("data")
+        } catch (t: Throwable) {
+            return null
+        }
         if (res.isEmpty) return null
 
         val result = res.getObject(0)

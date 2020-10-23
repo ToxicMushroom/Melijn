@@ -10,6 +10,7 @@ class HandholdingCommand : AbstractCommand("command.handholding") {
     init {
         id = 75
         name = "handholding"
+        aliases = arrayOf("handhold")
         commandCategory = CommandCategory.ANIME
     }
 

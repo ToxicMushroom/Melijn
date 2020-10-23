@@ -13,6 +13,7 @@ import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import kotlin.math.max
@@ -253,6 +254,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 getTextChannelByArgsNMessage(context, 1)
             } ?: return
 
+            if (notEnoughPermissionsAndMessage(context, channel,
+                    Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_READ, Permission.MESSAGE_ADD_REACTION)
+            ) {
+                return
+            }
 
             val bodyFormat = group.pattern ?: context.getTranslation("$root.bodyformat")
 
@@ -853,7 +859,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 val selfRoleGroup1 = getSelfRoleGroupByArgNMessage(context, 0) ?: return
-                val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
+                val name = getStringFromArgsNMessage(context, 1, 1, 64) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
 
                 val selfRoleGroup2 = getSelfRoleGroupByGroupNameN(context, name)

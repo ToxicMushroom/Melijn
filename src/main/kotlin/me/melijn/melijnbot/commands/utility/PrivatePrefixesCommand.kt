@@ -6,6 +6,7 @@ import me.melijn.melijnbot.internals.utils.isPremiumUser
 import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresPremiumMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 
 const val PRIVATE_PREFIXES_LIMIT = 1
@@ -89,7 +90,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             context.daoManager.userPrefixWrapper.addPrefix(context.authorId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .withVariable(PLACEHOLDER_PREFIX, prefix)
+                .withSafeVariable(PLACEHOLDER_PREFIX, prefix)
             sendRsp(context, msg)
         }
     }
@@ -111,7 +112,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             context.daoManager.userPrefixWrapper.removePrefix(context.authorId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .withVariable(PLACEHOLDER_PREFIX, prefix)
+                .withSafeVariable(PLACEHOLDER_PREFIX, prefix)
             sendRsp(context, msg)
         }
     }
@@ -138,7 +139,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             wrapper.removePrefix(context.authorId, toRemove)
 
             val msg = context.getTranslation("$root.removed")
-                .withVariable(PLACEHOLDER_PREFIX, toRemove)
+                .withSafeVariable(PLACEHOLDER_PREFIX, toRemove)
             sendRsp(context, msg)
         }
     }

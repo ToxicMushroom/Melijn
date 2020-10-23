@@ -19,7 +19,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.regex.Pattern
 
-
+// webhook chain test
 class HelpCommand : AbstractCommand("command.help") {
 
     init {
@@ -53,18 +53,18 @@ class HelpCommand : AbstractCommand("command.help") {
             val path = "help.arg.${context.rawArg.toLowerCase()}"
             val pathExtra = "help.arg.${context.rawArg.toLowerCase()}.examples"
             val translation = context.getTranslation(path)
-                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
             val translationExtra = context.getTranslation(pathExtra)
             val hasExtra = translationExtra != pathExtra
             if (path == translation) {
                 val msg = context.getTranslation("$root.missing")
-                    .withVariable(PLACEHOLDER_ARG, context.rawArg)
+                    .withSafeVariable(PLACEHOLDER_ARG, context.rawArg)
                 sendRsp(context, msg)
                 return
             }
 
             val title = context.getTranslation("$root.embed.title")
-                .withVariable("argName", context.rawArg)
+                .withSafeVariable("argName", context.rawArg)
 
             val embedder = Embedder(context)
                 .setTitle(title)
@@ -131,13 +131,13 @@ class HelpCommand : AbstractCommand("command.help") {
             val translation = context.getTranslation(path)
             if (path == translation) {
                 val msg = context.getTranslation("$root.missing")
-                    .withVariable(PLACEHOLDER_ARG, context.rawArg)
+                    .withSafeVariable(PLACEHOLDER_ARG, context.rawArg)
                 sendRsp(context, msg)
                 return
             }
 
             val title = context.getTranslation("$root.embed.title")
-                .withVariable("varName", "{${context.rawArg.remove("{", "}")}}")
+                .withSafeVariable("varName", "{${context.rawArg.remove("{", "}")}}")
 
             val embedder = Embedder(context)
                 .setTitle(title)
@@ -210,7 +210,7 @@ class HelpCommand : AbstractCommand("command.help") {
             ?.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
 
         val embedder = Embedder(context)
-            .setTitle(cmdTitle)
+            .setTitle(cmdTitle, "https://melijn.com/commands?q=${parent.name}&c=${parent.commandCategory.toString().toLowerCase()}")
             .addField(
                 cmdSyntax,
                 MarkdownSanitizer.escape(
@@ -227,8 +227,7 @@ class HelpCommand : AbstractCommand("command.help") {
         embedder.addField(
             cmdDesc,
             context.getTranslation(command.description)
-                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
-            , false
+                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix), false
         )
 
         cmdArgumentsValue?.let {
@@ -306,6 +305,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 Pair(CommandCategory.ANIMAL, "$root.field6.title"),
                 Pair(CommandCategory.ANIME, "$root.field7.title"),
                 Pair(CommandCategory.ECONOMY, "$root.field8.title"),
+                Pair(CommandCategory.GAME, "$root.field9.title"),
                 Pair(CommandCategory.IMAGE, "$root.field5.title"),
                 Pair(CommandCategory.MODERATION, "$root.field3.title"),
                 Pair(CommandCategory.MUSIC, "$root.field4.title"),

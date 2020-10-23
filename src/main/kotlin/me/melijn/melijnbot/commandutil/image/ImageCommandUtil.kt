@@ -252,7 +252,7 @@ object ImageCommandUtil {
         },
         imgDataParser: (img: BufferedImage, imgData: DataObject) -> Unit = { _: BufferedImage, _: DataObject -> }
     ) {
-        val triple = ImageUtils.getImageBytesNMessage(context) ?: return
+        val triple = ImageUtils.getImageBytesNMessage(context, "png") ?: return
         val imageByteArray = triple.first
         val argInt = if (triple.third) 1 else 0
 

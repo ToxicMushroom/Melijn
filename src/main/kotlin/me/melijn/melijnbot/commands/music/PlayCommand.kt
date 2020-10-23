@@ -217,29 +217,29 @@ class PlayCommand : AbstractCommand("command.play") {
     }
 
     private suspend fun spotifySearchNLoad(audioLoader: AudioLoader, context: CommandContext, songArg: String, nextPos: NextSongPosition) {
-        try {
-            context.webManager.spotifyApi?.getTracksFromSpotifyUrl(songArg,
-                    { track ->
-                        audioLoader.loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, nextPos = nextPos)
-                    },
-                    { trackList ->
-                        audioLoader.loadSpotifyPlaylist(context, trackList, nextPos)
-                    },
-                    { simpleTrackList ->
-                        audioLoader.loadSpotifyAlbum(context, simpleTrackList, nextPos)
-                    },
-                    { error ->
-                        val msg = context.getTranslation("message.spotify.down")
-                                .replacePrefix(context)
-                        sendRsp(context, msg)
-                        error.sendInGuild(context)
-                    }
-            )
-        } catch (t: IllegalArgumentException) {
-            val msg = context.getTranslation("message.spotify.unknownlink")
-                    .withVariable("url", MarkdownSanitizer.escape(context.fullArg))
-            sendRsp(context, msg)
-        }
+        context.webManager.spotifyApi?.getTracksFromSpotifyUrl(songArg,
+            { track ->
+                audioLoader.loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, nextPos = nextPos)
+            },
+            { trackList ->
+                audioLoader.loadSpotifyPlaylist(context, trackList, nextPos)
+            },
+            { simpleTrackList ->
+                audioLoader.loadSpotifyAlbum(context, simpleTrackList, nextPos)
+            },
+            { error ->
+                if (error is IllegalArgumentException) {
+                    val msg = context.getTranslation("message.spotify.unknownlink")
+                        .withVariable("url", MarkdownSanitizer.escape(context.fullArg))
+                    sendRsp(context, msg)
+                } else {
+                    val msg = context.getTranslation("message.spotify.down")
+                        .replacePrefix(context)
+                    sendRsp(context, msg)
+                    error.sendInGuild(context)
+                }
+            }
+        )
     }
 }
 

@@ -19,6 +19,7 @@ class BlurCommand : AbstractCommand("command.blur") {
         name = "blur"
         aliases = arrayOf("blurGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        cooldown = 5000
         runConditions = arrayOf(RunCondition.VOTED)
         commandCategory = CommandCategory.IMAGE
     }
@@ -36,6 +37,7 @@ class BlurCommand : AbstractCommand("command.blur") {
             ImageUtils.blur(image, argData.getInt("offset"))
 
         }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
+            context.initCooldown()
             defaultOffsetArgParser(context, argInt, argData, imgData)
 
         }, imgDataParser = { img: BufferedImage, imgData: DataObject ->
@@ -51,6 +53,7 @@ class BlurCommand : AbstractCommand("command.blur") {
             ImageUtils.blur(image, argData.getInt("offset"), true)
 
         }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
+            context.initCooldown()
             defaultOffsetArgParser(context, argInt, argData, imgData)
 
         }, imgDataParser = { img: BufferedImage, imgData: DataObject ->

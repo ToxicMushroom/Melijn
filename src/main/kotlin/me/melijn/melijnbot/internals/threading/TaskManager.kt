@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.threading
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder
 import kotlinx.coroutines.*
 import me.melijn.melijnbot.internals.command.CommandContext
 import net.dv8tion.jda.api.entities.Guild
@@ -15,7 +14,10 @@ import java.util.concurrent.TimeUnit
 object TaskManager {
 
     private val threadFactory = { name: String ->
-        ThreadFactoryBuilder().setNameFormat("[$name-Pool-%d]").build()
+        var counter = 0
+        { r: Runnable ->
+            Thread(r, "[$name-Pool-%d]".replace("%d", "${counter++}"))
+        }
     }
 
     val executorService: ExecutorService = Executors.newCachedThreadPool(threadFactory.invoke("Task"))

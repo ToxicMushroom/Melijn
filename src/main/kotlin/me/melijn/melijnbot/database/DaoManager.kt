@@ -45,12 +45,18 @@ import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.mute.MuteDao
 import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.database.permission.*
+import me.melijn.melijnbot.database.playlist.PlaylistDao
+import me.melijn.melijnbot.database.playlist.PlaylistWrapper
 import me.melijn.melijnbot.database.prefix.GuildPrefixDao
 import me.melijn.melijnbot.database.prefix.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
 import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.settings.*
+import me.melijn.melijnbot.database.starboard.StarboardMessageDao
+import me.melijn.melijnbot.database.starboard.StarboardMessageWrapper
+import me.melijn.melijnbot.database.starboard.StarboardSettingsDao
+import me.melijn.melijnbot.database.starboard.StarboardSettingsWrapper
 import me.melijn.melijnbot.database.supporter.SupporterDao
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.time.TimeZoneDao
@@ -86,6 +92,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     }
 
     val tracksWrapper: TracksWrapper
+    val playlistWrapper: PlaylistWrapper
     val songCacheWrapper: SongCacheWrapper
     val gainProfileWrapper: GainProfileWrapper
     val music247Wrapper: Music247Wrapper
@@ -175,6 +182,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val dailyCooldownWrapper: DailyCooldownWrapper
     val globalCooldownWrapper: GlobalCooldownWrapper
 
+    val starboardSettingsWrapper: StarboardSettingsWrapper
+    val starboardMessageWrapper: StarboardMessageWrapper
+
     val osuWrapper: OsuWrapper
 
     var driverManager: DriverManager
@@ -188,6 +198,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         }
 
         tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
+        playlistWrapper = PlaylistWrapper(PlaylistDao(driverManager))
         songCacheWrapper = SongCacheWrapper(SongCacheDao(driverManager))
         gainProfileWrapper = GainProfileWrapper(GainProfileDao(driverManager))
         music247Wrapper = Music247Wrapper(Music247Dao(driverManager))
@@ -275,6 +286,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         balanceWrapper = BalanceWrapper(BalanceDao(driverManager))
         dailyCooldownWrapper = DailyCooldownWrapper(DailyCooldownDao(driverManager))
         globalCooldownWrapper = GlobalCooldownWrapper(GlobalCooldownDao(driverManager))
+
+        starboardSettingsWrapper = StarboardSettingsWrapper(StarboardSettingsDao(driverManager))
+        starboardMessageWrapper = StarboardMessageWrapper(StarboardMessageDao(driverManager))
 
         osuWrapper = OsuWrapper(OsuDao(driverManager))
         //After registering wrappers

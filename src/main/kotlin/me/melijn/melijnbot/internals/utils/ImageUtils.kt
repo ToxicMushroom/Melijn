@@ -80,8 +80,13 @@ object ImageUtils {
             val user = retrieveUserByArgsN(context, 0)
             if (user != null) {
                 arg = true
-                url = user.effectiveAvatarUrl + discordSize
-                if (!checkFormat(context, user.effectiveAvatarUrl, reqFormat)) return null
+                val fixedForm = if (reqFormat == "png") {
+                    user.effectiveAvatarUrl.split(".").dropLast(1).joinToString(".") + ".png"
+                } else {
+                    user.effectiveAvatarUrl
+                }
+                url = fixedForm + discordSize
+                if (!checkFormat(context, fixedForm, reqFormat)) return null
 
                 img = downloadImage(context, url)
                 ByteArrayInputStream(img).use { bis ->
@@ -100,9 +105,9 @@ object ImageUtils {
                 arg = true
                 url = args[0]
                 try {
-                    if (!checkFormat(context, args[0], reqFormat)) return null
+                    if (!checkFormat(context, url, reqFormat)) return null
 
-                    img = downloadImage(context, url)
+                    img = downloadImage(context.webManager.proxiedHttpClient, url)
                     ByteArrayInputStream(img).use { bis ->
                         if (ImageIO.read(bis) == null) {
                             img = null
@@ -121,9 +126,14 @@ object ImageUtils {
             }
         } else {
             arg = false
-            url = context.author.effectiveAvatarUrl + discordSize
-            if (!checkFormat(context, context.author.effectiveAvatarUrl, reqFormat)) return null
-            img = downloadImage(context, url, false)
+            val fixedForm = if (reqFormat == "png") {
+                context.author.effectiveAvatarUrl.split(".").dropLast(1).joinToString(".") + ".png"
+            } else {
+                context.author.effectiveAvatarUrl
+            }
+            url = fixedForm + discordSize
+            if (!checkFormat(context, fixedForm, reqFormat)) return null
+            img = downloadImage(context, url)
         }
 
         if (img == null) {
@@ -333,6 +343,12 @@ object ImageUtils {
     private suspend fun checkFormat(context: CommandContext, url: String, reqFormat: String?): Boolean {
         if (reqFormat != null && !url.contains(reqFormat)) {
             val msg = context.getTranslation("message.notagif")
+                .withVariable("url", url)
+            sendRsp(context, msg)
+            return false
+        }
+        if (!URL_PATTERN.matches(url)) {
+            val msg = context.getTranslation("message.notaurl")
                 .withVariable("url", url)
             sendRsp(context, msg)
             return false
@@ -647,7 +663,6 @@ object ImageUtils {
         }
 
         val kernel = Kernel(size, size, data)
-
         useKernel(image, kernel, isGif)
     }
 

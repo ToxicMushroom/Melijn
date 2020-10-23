@@ -20,7 +20,7 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey, uniqueKey)
     }
 
-    suspend fun setMute(mute: Mute) {
+    fun setMute(mute: Mute) {
         mute.apply {
             driverManager.executeUpdate("INSERT INTO $table (muteId, guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
                 " ON CONFLICT ($primaryKey) DO UPDATE SET endTime = ?, muteAuthorId = ?, reason = ?, unmuteAuthorId = ?, unmuteReason = ?, active = ?",

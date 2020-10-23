@@ -8,7 +8,8 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.threading.TaskManager.scheduledExecutorService
 import me.melijn.melijnbot.internals.utils.OSValidator
 import me.melijn.melijnbot.internals.utils.getSystemUptime
-import me.melijn.melijnbot.internals.utils.getUnixRam
+import me.melijn.melijnbot.internals.utils.getTotalMBUnixRam
+import me.melijn.melijnbot.internals.utils.getUsedMBUnixRam
 import me.melijn.melijnbot.internals.web.RequestContext
 import me.melijn.melijnbot.internals.web.WebUtils.respondJson
 import me.melijn.melijnbot.objectMapper
@@ -23,13 +24,16 @@ object StatsResponseHandler {
 
     suspend fun handleStatsResponse(context: RequestContext) {
         val bean: OperatingSystemMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
-        val totalMem = bean.totalPhysicalMemorySize shr 20
-
-        val usedMem = if (OSValidator.isUnix) {
-            totalMem - getUnixRam()
+        val totalMem: Long
+        val usedMem: Long
+        if (OSValidator.isUnix) {
+            totalMem = getTotalMBUnixRam()
+            usedMem = getUsedMBUnixRam()
         } else {
-            totalMem - (bean.freeSwapSpaceSize shr 20)
+            totalMem = bean.totalMemorySize shr 20
+            usedMem = totalMem - (bean.freeSwapSpaceSize shr 20)
         }
+
         val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
         val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
         val threadPoolExecutor = TaskManager.executorService as ThreadPoolExecutor

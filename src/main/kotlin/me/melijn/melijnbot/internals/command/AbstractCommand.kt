@@ -126,7 +126,14 @@ abstract class AbstractCommand(val root: String) {
             try {
                 val cmdId = context.commandOrder.first().id.toString() + context.commandOrder.drop(1).joinToString(".") { it.name }
                 if (CommandClient.checksFailed(context.container, context.commandOrder.last(), cmdId, context.event, true, context.commandParts)) return
-                execute(context)
+                cmdlogger.info("${context.guildN?.name ?: ""}/${context.author.name}◠: ${context.message.contentRaw}")
+                val start = System.currentTimeMillis()
+                try {
+                    execute(context)
+                } catch (t: Throwable) {
+                    cmdlogger.error("↱ ${context.guildN?.name ?: ""}/${context.author.name}◡: ${context.message.contentRaw}", t)
+                    t.sendInGuild(context, shouldSend = true)
+                }
                 if (context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)) {
                     TaskManager.async {
                         val timeMap = context.daoManager.removeInvokeWrapper.getMap(context.guildId)
@@ -142,13 +149,16 @@ abstract class AbstractCommand(val root: String) {
                         message.delete().queue(null, { context.container.botDeletedMessageIds.remove(message.idLong) })
                     }
                 }
-                cmdlogger.info("${context.guildN?.name ?: ""}/${context.author.name}: ${context.message.contentRaw}")
+                val second = System.currentTimeMillis()
+                cmdlogger.info("${context.guildN?.name ?: ""}/${context.author.name}◡${(second - start) / 1000.0}: ${context.message.contentRaw}")
             } catch (t: Throwable) {
-                cmdlogger.error("↱ ${context.guildN?.name ?: ""}/${context.author.name}: ${context.message.contentRaw}", t)
+                cmdlogger.error("↱ ${context.guildN?.name ?: ""}/${context.author.name}◡: ${context.message.contentRaw}", t)
                 t.sendInGuild(context)
             }
             context.daoManager.commandUsageWrapper.addUse(context.commandOrder[0].id)
-        } else sendMissingPermissionMessage(context, permission)
+        } else {
+            sendMissingPermissionMessage(context, permission)
+        }
     }
 
     fun isCommandFor(input: String): Boolean {

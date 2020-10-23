@@ -26,13 +26,16 @@ class StatsCommand : AbstractCommand("command.stats") {
 
     override suspend fun execute(context: CommandContext) {
         val bean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
-        val totalMem = bean.totalPhysicalMemorySize shr 20
-
-        val usedMem = if (OSValidator.isUnix) {
-            totalMem - getUnixRam()
+        val totalMem: Long
+        val usedMem: Long
+        if (OSValidator.isUnix) {
+            totalMem = getTotalMBUnixRam()
+            usedMem = getUsedMBUnixRam()
         } else {
-            totalMem - (bean.freeSwapSpaceSize shr 20)
+            totalMem = bean.totalMemorySize shr 20
+            usedMem = totalMem - (bean.freeSwapSpaceSize shr 20)
         }
+
         val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
         val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
         val shardManager = context.shardManager

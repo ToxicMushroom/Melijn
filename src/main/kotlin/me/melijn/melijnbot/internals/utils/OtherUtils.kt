@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.utils
 
-import com.google.common.cache.CacheLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -21,17 +20,16 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.Year
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.regex.Pattern
 
 
 val linuxUptimePattern: Pattern = Pattern.compile(
-    "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
+    "(?:([0-9]+)(?:\\.[0-9]+)?) (?:[0-9]+(?:\\.[0-9]+)?)" // 11105353.49 239988480.98
 )
 
 // Thx xavin
-val linuxRamPattern: Pattern = Pattern.compile("([0-9]+$)")
+val linuxRamPattern: Pattern = Pattern.compile("Mem(?:.*):\\s+([0-9]+) kB")
 
 fun getSystemUptime(): Long {
     return try {
@@ -55,49 +53,55 @@ fun Calendar.isLeapYear(): Boolean {
 
 
 // EPIC CODE, DO NOT TOUCH
-fun <K, V> loadingCacheFrom(function: (K) -> CompletableFuture<V>): CacheLoader<K, CompletableFuture<V>> {
-    return CacheLoader.from { k ->
-        if (k == null) throw IllegalArgumentException("BRO CRINGE")
-        function.invoke(k)
-    }
-}
+//fun <K, V> loadingCacheFrom(function: (K) -> CompletableFuture<V>): CacheLoader<K, CompletableFuture<V>> {
+//    return CacheLoader.from { k ->
+//        if (k == null) throw IllegalArgumentException("BRO CRINGE")
+//        function.invoke(k)
+//    }
+//}
 
 fun getUnixUptime(): Long {
-    val uptimeProc = Runtime.getRuntime().exec("uptime") // Parse time to groups if possible
+    val uptimeProc = Runtime.getRuntime().exec("cat /proc/uptime") // Parse time to groups if possible
     val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
     val line = `in`.readLine() ?: return -1
     val matcher = linuxUptimePattern.matcher(line)
 
     if (!matcher.find()) return -1 // Extract ints out of groups
-    val days2 = matcher.group(1)
-    val hours2 = matcher.group(2)
-    val minutes2 = if (matcher.group(3) == null) {
-        matcher.group(4)
-    } else {
-        matcher.group(3)
-    }
-    val days = if (days2 != null) Integer.parseInt(days2) else 0
-    val hours = if (hours2 != null) Integer.parseInt(hours2) else 0
-    val minutes = if (minutes2 != null) Integer.parseInt(minutes2) else 0
-    return (minutes * 60000 + hours * 60000 * 60 + days * 60000 * 60 * 24).toLong()
+    return matcher.group(1).toLong()
 }
 
-fun getUnixRam(): Int {
-    val uptimeProc = Runtime.getRuntime().exec("free -m") // Parse time to groups if possible
+fun getTotalMBUnixRam(): Long {
+    val uptimeProc = Runtime.getRuntime().exec("cat /proc/meminfo")
     uptimeProc.inputStream.use { `is` ->
         `is`.bufferedReader().use { br ->
-            br.readLine() ?: return -1
-            val lineTwo = br.readLine() ?: return -1
-
-            val matcher = linuxRamPattern.matcher(lineTwo)
+            val total = br.readLine() ?: return -1
+            val matcher = linuxRamPattern.matcher(total)
 
             if (!matcher.find()) return -1 // Extract ints out of groups
             val group = matcher.group(1)
-            return group.toInt()
+            return group.toLong() / 1024
         }
     }
 }
 
+fun getUsedMBUnixRam(): Long {
+    val uptimeProc = Runtime.getRuntime().exec("cat /proc/meminfo")
+    uptimeProc.inputStream.use { `is` ->
+        `is`.bufferedReader().use { br ->
+            val total = br.readLine() ?: return -1
+            br.readLine() ?: return -1
+            val available = br.readLine() ?: return -1
+
+            val matcher1 = linuxRamPattern.matcher(total)
+            val matcher2 = linuxRamPattern.matcher(available)
+
+            if (!matcher1.find() || !matcher2.find()) return -1 // Extract ints out of groups
+            val totalLong = matcher1.group(1).toLong()
+            val availableLong = matcher2.group(1).toLong()
+            return (totalLong - availableLong) / 1024
+        }
+    }
+}
 
 fun getWindowsUptime(): Long {
     val uptimeProc = Runtime.getRuntime().exec("net stats workstation")
@@ -143,7 +147,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
     }
     if (enum == null) {
         val msg = context.getTranslation(path)
-            .withVariable(PLACEHOLDER_ARG, enumName)
+            .withSafeVariable(PLACEHOLDER_ARG, enumName)
         sendRsp(context, msg)
     }
     return enum
@@ -154,7 +158,7 @@ suspend inline fun <T> getObjectFromArgNMessage(context: CommandContext, index: 
     val newObj = getObjectFromArgN(context, index, mapper)
     if (newObj == null) {
         val msg = context.getTranslation(path)
-            .withVariable(PLACEHOLDER_ARG, context.args[index])
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
     return newObj
@@ -202,7 +206,7 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
 
     if (commands.isEmpty()) {
         val msg = context.getTranslation("message.unknown.commandnode")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
         return null
     }
@@ -224,7 +228,7 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
 
     if (commands.isEmpty()) {
         val msg = context.getTranslation("message.unknown.commands")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
         return null
     }
@@ -247,11 +251,11 @@ suspend fun getLongFromArgNMessage(
     val long = arg.toLongOrNull()
     if (!arg.isNumber()) {
         val msg = context.getTranslation("message.unknown.number")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     } else if (long == null) {
         val msg = context.getTranslation("message.unknown.long")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     }
     if (long != null) {
@@ -259,7 +263,7 @@ suspend fun getLongFromArgNMessage(
             val msg = context.getTranslation("message.number.notinrange")
                 .withVariable("start", min)
                 .withVariable("end", max)
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
             sendRsp(context, msg)
             return null
         }
@@ -276,7 +280,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
             val newVal = value.toIntOrNull()
             if (newVal == null) {
                 val msg = context.getTranslation("message.unknown.number")
-                    .withVariable(PLACEHOLDER_ARG, value)
+                    .withSafeVariable(PLACEHOLDER_ARG, value)
                 sendRsp(context, msg)
                 return null
             } else newVal
@@ -307,7 +311,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         val birthday = list[birthdayIndex]
         if (birthday < 1 || birthday > 31) {
             val msg = context.getTranslation("message.number.notinrange")
-                .withVariable(PLACEHOLDER_ARG, "$birthday")
+                .withSafeVariable(PLACEHOLDER_ARG, "$birthday")
                 .withVariable("start", "1")
                 .withVariable("end", "31")
             sendRsp(context, msg)
@@ -316,7 +320,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         val birthMonth = list[monthIndex]
         if (birthMonth < 1 || birthMonth > 12) {
             val msg = context.getTranslation("message.number.notinrange")
-                .withVariable(PLACEHOLDER_ARG, "$birthMonth")
+                .withSafeVariable(PLACEHOLDER_ARG, "$birthMonth")
                 .withVariable("start", "1")
                 .withVariable("end", "12")
             sendRsp(context, msg)
@@ -326,7 +330,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         val birthYear = if (list.size > 2) list[yearIndex] else null
         if (birthYear != null && (birthYear < 1900 || birthYear > Year.now().value - 12)) {
             val msg = context.getTranslation("message.number.notinrange")
-                .withVariable(PLACEHOLDER_ARG, "$birthYear")
+                .withSafeVariable(PLACEHOLDER_ARG, "$birthYear")
                 .withVariable("start", "1900")
                 .withVariable("end", "2008")
             sendRsp(context, msg)
@@ -337,7 +341,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         return Pair(localDate.dayOfYear, birthYear)
     } else {
         val msg = context.getTranslation("message.unknown.birthday")
-            .withVariable(PLACEHOLDER_ARG, context.args[index])
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
         return null
     }

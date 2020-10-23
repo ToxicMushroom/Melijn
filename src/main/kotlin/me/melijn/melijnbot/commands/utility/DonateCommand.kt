@@ -6,6 +6,7 @@ import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 
 class DonateCommand : AbstractCommand("command.donate") {
@@ -13,7 +14,7 @@ class DonateCommand : AbstractCommand("command.donate") {
     init {
         id = 97
         name = "donate"
-        aliases = arrayOf("patreon", "patron", "sponsor", "donator", "subscribe")
+        aliases = arrayOf("patreon", "patron", "premium", "donator", "subscribe")
         children = arrayOf(LinkServerArg(root))
         commandCategory = CommandCategory.UTILITY
     }
@@ -34,7 +35,7 @@ class DonateCommand : AbstractCommand("command.donate") {
                 wrapper.setGuild(context.authorId, context.guildId)
 
                 val msg = context.getTranslation("$root.selected")
-                    .withVariable("server", context.guild.name)
+                    .withSafeVariable("server", context.guild.name)
                 sendRsp(context, msg)
             } else {
                 val msg = context.getTranslation("$root.oncooldown")

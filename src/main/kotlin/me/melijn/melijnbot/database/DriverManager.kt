@@ -21,7 +21,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class DriverManager(
     dbSettings: Settings.Database,
-    redisSettings: Settings.Redis
+    val redisSettings: Settings.Redis
 ) {
 
     private val afterConnectToBeExecutedQueries = ArrayList<String>()
@@ -61,7 +61,9 @@ class DriverManager(
             .withPort(port)
             .build()
 
-        val redisClient = RedisClient.create(uri)
+        val redisClient = RedisClient
+            .create(uri)
+
         this.redisClient = redisClient
 
         try {
@@ -276,4 +278,6 @@ class DriverManager(
     fun dropTable(table: String) {
         afterConnectToBeExecutedQueries.add(0, "DROP TABLE $table")
     }
+
+
 }

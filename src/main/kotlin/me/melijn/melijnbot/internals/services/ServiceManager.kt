@@ -43,6 +43,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         services.add(DonatorService(container, shardManager))
         slowServices.add(RolesService(daoManager.tempRoleWrapper, shardManager))
         slowServices.add(VoteReminderService(daoManager))
+//        slowServices.add(SpamService(container, shardManager))
         services.add(RedditService(webManager.httpClient, daoManager.driverManager))
         services.add(RedditAboutService(webManager.httpClient, daoManager.driverManager))
     }

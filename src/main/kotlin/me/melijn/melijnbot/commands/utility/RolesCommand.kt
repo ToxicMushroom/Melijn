@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Role
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 class RolesCommand : AbstractCommand("command.roles") {
 
@@ -67,7 +68,7 @@ class RolesCommand : AbstractCommand("command.roles") {
                     }
                 }
             } else {
-                content += "\n${index + 1} - [${role.name}] - ${role.id}"
+                content += "\n${index + 1} - [${MarkdownSanitizer.escape(role.name)}] - ${role.id}"
             }
         }
 

@@ -10,7 +10,7 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import net.dv8tion.jda.api.entities.Guild
 import kotlin.math.roundToLong
 
-class ServerInfo : AbstractCommand("command.serverinfo") {
+class ServerInfoCommand : AbstractCommand("command.serverinfo") {
 
     init {
         id = 7

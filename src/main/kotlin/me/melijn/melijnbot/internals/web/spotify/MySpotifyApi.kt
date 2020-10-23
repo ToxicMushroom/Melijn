@@ -67,11 +67,13 @@ class MySpotifyApi(spotifySettings: Settings.Api.Spotify) {
 
                 spotifyArtistUrl.matches(songArg) -> acceptArtistResults(songArg, trackList, spotifyArtistUrl)
                 spotifyArtistUri.matches(songArg) -> acceptArtistResults(songArg, trackList, spotifyArtistUri)
-                else -> error.invoke(IllegalArgumentException("That is not a valid spotify link"))
+                else -> throw IllegalArgumentException("That is not a valid spotify link")
             }
         } catch (ignored: IOException) {
             error.invoke(ignored)
         } catch (ignored: SpotifyWebApiException) {
+            error.invoke(ignored)
+        } catch (ignored: IllegalArgumentException) {
             error.invoke(ignored)
         }
     }

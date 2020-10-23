@@ -2,7 +2,6 @@ package me.melijn.melijnbot.internals.web
 
 import io.ktor.application.*
 import io.ktor.http.*
-import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
@@ -44,7 +43,12 @@ class RestServer(container: Container) {
 
 
             get("/stats") {
-                StatsResponseHandler.handleStatsResponse(RequestContext(call, container))
+                try {
+                    StatsResponseHandler.handleStatsResponse(RequestContext(call, container))
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                    call.respondText { t.message + "\n" + t.stackTraceToString() }
+                }
             }
 
 

@@ -27,6 +27,7 @@ class MelijnBot {
     companion object {
         lateinit var instance: MelijnBot
         lateinit var shardManager: ShardManager
+        lateinit var eventManager: EventManager
     }
 
     init {
@@ -47,7 +48,7 @@ class MelijnBot {
 
         container.initLava(jdaLavaLink)
 
-        val eventManager = EventManager(container)
+        eventManager = EventManager(container)
 
         val defaultShardManagerBuilder = DefaultShardManagerBuilder
             .create(

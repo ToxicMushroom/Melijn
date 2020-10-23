@@ -175,16 +175,16 @@ class CommandContext(
 
     //Gets part of the rawarg by using regex and args
     fun getRawArgPart(beginIndex: Int, endIndex: Int = -1): String {
-        if (beginIndex > oldArgs.size) return ""
-        var newString = rawArg
+        if (beginIndex > args.size) return ""
+        var newString = fullArg
         for (i in 0 until beginIndex) {
-            newString = newString.removeFirst(oldArgs[i]).trim()
+            newString = newString.removeFirst(args[i]).trim()
         }
 
 
-        if (endIndex != -1 && endIndex < oldArgs.size) {
-            for (i in endIndex until oldArgs.size) {
-                newString = newString.removeSuffix(oldArgs[i]).trim()
+        if (endIndex != -1 && endIndex < args.size) {
+            for (i in endIndex until args.size) {
+                newString = newString.removeSuffix(args[i]).trim()
             }
         }
 

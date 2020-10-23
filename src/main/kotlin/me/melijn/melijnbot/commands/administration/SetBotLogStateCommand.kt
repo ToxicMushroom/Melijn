@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.getBooleanFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 
@@ -12,6 +13,7 @@ class SetBotLogStateCommand : AbstractCommand("command.setbotlogstate") {
         id = 166
         name = "setBotLogState"
         aliases = arrayOf("sbls")
+        runConditions = arrayOf(RunCondition.GUILD_SUPPORTER)
         commandCategory = CommandCategory.ADMINISTRATION
     }
 

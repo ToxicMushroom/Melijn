@@ -19,6 +19,6 @@ class RawCommand : AbstractCommand("command.raw") {
             sendSyntax(context)
             return
         }
-        sendRsp(context, "```${context.rawArg}```")
+        sendRsp(context, "```${context.rawArg.replace("`", "'")}```")
     }
 }

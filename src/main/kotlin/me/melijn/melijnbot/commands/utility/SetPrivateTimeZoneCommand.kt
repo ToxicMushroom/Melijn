@@ -6,7 +6,7 @@ import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_TIMEZONE
 import me.melijn.melijnbot.internals.utils.getObjectFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import java.time.ZoneId
 import java.util.*
 
@@ -37,7 +37,7 @@ class SetPrivateTimeZoneCommand : AbstractCommand("command.setprivatetimezone") 
             } else {
                 "$root.show.set"
             }
-        ).withVariable("zone", id)
+        ).withSafeVariable("zone", id)
 
         sendRsp(context, msg)
     }
@@ -72,7 +72,7 @@ class SetPrivateTimeZoneCommand : AbstractCommand("command.setprivatetimezone") 
         }
 
         val msg = context.getTranslation("$root.${possible}set")
-            .withVariable("zone", zone?.id ?: "")
+            .withSafeVariable("zone", zone?.id ?: "")
 
         sendRsp(context, msg)
     }

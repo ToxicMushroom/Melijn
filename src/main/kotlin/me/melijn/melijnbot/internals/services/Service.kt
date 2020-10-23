@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.services
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder
 import me.melijn.melijnbot.internals.threading.RunnableTask
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -16,7 +15,15 @@ abstract class Service(
     private val unit: TimeUnit = TimeUnit.SECONDS
 ) {
 
-    private val scheduledExecutor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(ThreadFactoryBuilder().setNameFormat("[$name-Service]").build())
+    companion object {
+        private val serviceThreadFactory = { name: String ->
+            { r: Runnable ->
+                Thread(r, "[$name-Service]")
+            }
+        }
+    }
+
+    private val scheduledExecutor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(serviceThreadFactory(name))
     private lateinit var future: ScheduledFuture<*>
     val logger: Logger = LoggerFactory.getLogger(name)
 

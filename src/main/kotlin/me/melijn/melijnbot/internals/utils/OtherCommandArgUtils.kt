@@ -7,6 +7,63 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import java.time.Instant
 import java.util.*
 
+
+// warning the scanned numbers are decreased by one
+suspend fun getIntegersFromArgsNMessage(context: CommandContext, index: Int, start: Int, end: Int): IntArray? {
+
+    val args = context.getRawArgPart(index).remove(" ").split(",")
+    val ints = mutableListOf<Int>()
+    try {
+        for (arg in args) {
+            if (arg.contains("-")) {
+
+                val list: List<String> = arg.split("-")
+                if (list.size == 2) {
+                    val first = list[0]
+                    val second = list[1]
+                    if (first.isNumber() && second.isNumber()) {
+                        val firstInt = first.toInt()
+                        val secondInt = second.toInt()
+                        for (i in firstInt..secondInt)
+                            ints.addIfNotPresent(i - 1)
+                    }
+                } else {
+                    val msg = context.getTranslation("message.unknown.numberornumberrange")
+                        .withSafeVariable(PLACEHOLDER_ARG, arg)
+                    sendRsp(context, msg)
+                    return null
+                }
+            } else if (arg.isNumber()) {
+                if (!ints.contains(arg.toInt() - 1)) {
+                    ints.add(arg.toInt() - 1)
+                }
+            } else {
+                val msg = context.getTranslation("message.unknown.numberornumberrange")
+                    .withSafeVariable(PLACEHOLDER_ARG, arg)
+                sendRsp(context, msg)
+                return null
+            }
+        }
+
+    } catch (e: NumberFormatException) {
+        val msg = context.getTranslation("message.numbertobig")
+            .withVariable(PLACEHOLDER_ARG, e.message ?: "/")
+        sendRsp(context, msg)
+        return null
+    }
+    for (i in ints) {
+        if (i < (start - 1) || i > (end - 1)) {
+            val msg = context.getTranslation("message.number.notinrange")
+                .withSafeVariable(PLACEHOLDER_ARG, i + 1)
+                .withVariable("start", start)
+                .withVariable("end", end)
+            sendRsp(context, msg)
+            return null
+        }
+    }
+    return ints.toIntArray()
+}
+
 suspend fun getIntegerFromArgNMessage(context: CommandContext, index: Int, start: Int = Integer.MIN_VALUE, end: Int = Integer.MAX_VALUE): Int? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
@@ -15,19 +72,19 @@ suspend fun getIntegerFromArgNMessage(context: CommandContext, index: Int, start
     when {
         int == null -> {
             val msg = context.getTranslation("message.unknown.integer")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
             sendRsp(context, msg)
         }
         int < start -> {
             val msg = context.getTranslation("message.tosmall.integer")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("min", start)
             sendRsp(context, msg)
             return null
         }
         int > end -> {
             val msg = context.getTranslation("message.tobig.integer")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("max", end)
             sendRsp(context, msg)
             return null
@@ -45,18 +102,18 @@ suspend fun getFloatFromArgNMessage(context: CommandContext, index: Int, start: 
     when {
         float == null -> {
             val msg = context.getTranslation("message.unknown.float")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
             sendRsp(context, msg)
         }
         float < start -> {
             val msg = context.getTranslation("message.tosmall.float")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("min", start)
             sendRsp(context, msg)
         }
         float > end -> {
             val msg = context.getTranslation("message.tobig.float")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("max", end)
             sendRsp(context, msg)
         }
@@ -83,7 +140,7 @@ suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Bool
     val bool = getBooleanFromArgN(context, index)
     if (bool == null) {
         val msg = context.getTranslation("message.unknown.boolean")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     }
 
@@ -102,7 +159,7 @@ suspend fun getDateTimeFromArgNMessage(context: CommandContext, index: Int): Lon
     val dateTime = getEpochMillisFromArgN(context, index)
     if (dateTime == null) {
         val msg = context.getTranslation("message.unknown.datetime")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     }
 
