@@ -63,7 +63,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
 
         } else {
             val msg = context.getTranslation("$root.notanemote")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
             sendRsp(context, msg)
         }
     }
@@ -71,7 +71,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
 
     private suspend fun replaceMissingEmoteVars(string: String, context: CommandContext, id: String, name: String, animated: Boolean): String = string
         .withVariable("id", id)
-        .withVariable("name", name)
+        .withSafeVariable("name", name)
         .withVariable("isAnimated", context.getTranslation(if (animated) "yes" else "no"))
         .withVariable("url", "https://cdn.discordapp.com/emojis/$id." + (if (animated) "gif" else "png") + "?size=2048")
 

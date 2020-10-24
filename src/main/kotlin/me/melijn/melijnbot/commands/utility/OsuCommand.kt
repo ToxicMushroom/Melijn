@@ -5,13 +5,10 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.utils.getDurationString
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
-import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.withVariable
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
@@ -61,7 +58,7 @@ class OsuCommand : AbstractCommand("command.osu") {
                     context.getTranslation("$root.show.unset")
                 } else {
                     context.getTranslation("$root.show.set")
-                        .withVariable("name", currentName)
+                        .withSafeVariable("name", currentName)
                 }
                 sendRsp(context, msg)
                 return
@@ -79,7 +76,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             val profile = context.webManager.osuApi.getUserInfo(name)
             if (profile == null) {
                 val msg = context.getTranslation("$parent.unknownuser")
-                    .withVariable("name", name)
+                    .withSafeVariable("name", name)
                 sendRsp(context, msg)
                 return
             }
@@ -87,7 +84,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             context.daoManager.osuWrapper.setName(context.authorId, name)
 
             val msg = context.getTranslation("$root.set")
-                .withVariable("name", name)
+                .withSafeVariable("name", name)
             sendRsp(context, msg)
         }
     }
@@ -106,7 +103,7 @@ class OsuCommand : AbstractCommand("command.osu") {
                 if (userName == null) {
                     val msg = context.getTranslation("$parent.guide")
                         .withVariable("syntax", context.getTranslation(syntax))
-                        .withVariable("prefix", context.usedPrefix)
+                        .withSafeVariable("prefix", context.usedPrefix)
 
                     sendRsp(context, msg)
                     return
@@ -127,14 +124,14 @@ class OsuCommand : AbstractCommand("command.osu") {
 
             if (results == null) {
                 val msg = context.getTranslation("$parent.unknownuser")
-                    .withVariable("name", name)
+                    .withSafeVariable("name", name)
                 sendRsp(context, msg)
                 return
             }
 
             if (results.isEmpty()) {
                 val msg = context.getTranslation("$parent.unknownscore")
-                    .withVariable("name", name)
+                    .withSafeVariable("name", name)
                 sendRsp(context, msg)
                 return
             }
@@ -156,7 +153,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             val beatMap = context.webManager.osuApi.getBeatMap(result.beatmapId)
             if (beatMap == null) {
                 val msg = context.getTranslation("$parent.unknownbeatmapfromscore")
-                    .withVariable("x", index + 1)
+                    .withSafeVariable("x", index + 1)
                 sendRsp(context, msg)
                 return
             }
@@ -208,8 +205,8 @@ class OsuCommand : AbstractCommand("command.osu") {
                 userName = if (name.isEmpty()) null else name
                 if (userName == null) {
                     val msg = context.getTranslation("$parent.guide")
-                        .withVariable("syntax", context.getTranslation(syntax))
-                        .withVariable("prefix", context.usedPrefix)
+                        .withSafeVariable("syntax", context.getTranslation(syntax))
+                        .withSafeVariable("prefix", context.usedPrefix)
 
                     sendRsp(context, msg)
                     return
@@ -230,14 +227,14 @@ class OsuCommand : AbstractCommand("command.osu") {
 
             if (results == null) {
                 val msg = context.getTranslation("$parent.unknownuser")
-                    .withVariable("name", name)
+                    .withSafeVariable("name", name)
                 sendRsp(context, msg)
                 return
             }
 
             if (results.isEmpty()) {
                 val msg = context.getTranslation("$parent.unknownscore")
-                    .withVariable("name", name)
+                    .withSafeVariable("name", name)
                 sendRsp(context, msg)
                 return
             }
@@ -313,7 +310,7 @@ class OsuCommand : AbstractCommand("command.osu") {
                 if (userName == null) {
                     val msg = context.getTranslation("$parent.guide")
                         .withVariable("syntax", context.getTranslation(syntax))
-                        .withVariable("prefix", context.usedPrefix)
+                        .withSafeVariable("prefix", context.usedPrefix)
 
                     sendRsp(context, msg)
                     return
@@ -333,7 +330,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             val result = context.webManager.osuApi.getUserInfo(name)
             if (result == null) {
                 val msg = context.getTranslation("$parent.unknownuser")
-                    .withVariable("name", name)
+                    .withSafeVariable("name", name)
                 sendRsp(context, msg)
                 return
             }

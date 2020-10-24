@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 
 class AvatarCommand : AbstractCommand("command.avatar") {
 
@@ -28,7 +28,8 @@ class AvatarCommand : AbstractCommand("command.avatar") {
         val avatar = user.effectiveAvatarUrl + "?size=2048"
 
         val title = context.getTranslation("$root.title")
-            .withVariable(PLACEHOLDER_USER, user.asTag)
+            .withSafeVariable(PLACEHOLDER_USER, user.asTag)
+
         val links = context.getTranslation("$root.links")
 
         val eb = Embedder(context)

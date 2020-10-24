@@ -186,7 +186,7 @@ suspend fun retrieveUserByArgsNMessage(context: CommandContext, index: Int): Use
     val possibleUser = retrieveUserByArgsN(context, index)
     if (possibleUser == null) {
         val msg = context.getTranslation(MESSAGE_UNKNOWN_USER)
-            .withVariable(PLACEHOLDER_ARG, context.args[index])
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
     return possibleUser
@@ -227,12 +227,12 @@ suspend fun getRoleByArgsNMessage(
     val role = getRoleByArgsN(context, index, sameGuildAsContext)
     if (role == null) {
         val msg = context.getTranslation("message.unknown.role")
-            .withVariable(PLACEHOLDER_ARG, context.args[index])
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
 
     } else if (canInteract && !context.guild.selfMember.canInteract(role)) {
         val msg = context.getTranslation(MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
-            .withVariable(PLACEHOLDER_ROLE, context.args[index])
+            .withSafeVariable(PLACEHOLDER_ROLE, context.args[index])
         sendRsp(context, msg)
         return null
     }
@@ -249,15 +249,19 @@ suspend fun getImageUrlFromArgsNMessage(
         return Pair(false, attachments[0].url)
     } else if (context.args.isNotEmpty()) {
         val arg = context.args[index]
-        if (arg.matches(URL_PATTERN)) {
-            return Pair(true, arg)
-        } else if (EMOTE_MENTION.matches(arg)) {
-            val emoteType = if (arg.startsWith("<a")) "gif" else "png"
-            val emoteId = EMOTE_MENTION.find(arg)?.groupValues?.get(2)
-            return Pair(true, "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1")
-        } else {
-            val msg = "The text you provided `${MarkdownSanitizer.sanitize(arg)}` is not a valid url"
-            sendRsp(context, msg)
+        when {
+            URL_PATTERN.matches(arg) -> {
+                return Pair(true, arg)
+            }
+            EMOTE_MENTION.matches(arg) -> {
+                val emoteType = if (arg.startsWith("<a")) "gif" else "png"
+                val emoteId = EMOTE_MENTION.find(arg)?.groupValues?.get(2)
+                return Pair(true, "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1")
+            }
+            else -> {
+                val msg = "The text you provided `${MarkdownSanitizer.sanitize(arg)}` is not a valid url"
+                sendRsp(context, msg)
+            }
         }
     } else {
         val msg = "No image was provided as an attachment or as a url"
@@ -280,7 +284,7 @@ suspend fun getStringFromArgsNMessage(
     val arg = context.args[index]
     if (arg.length < min) {
         val msg = context.getTranslation("message.string.minfailed")
-            .withVariable("arg", MarkdownSanitizer.sanitize(arg))
+            .withSafeVariable("arg", arg)
             .withVariable("min", min)
             .withVariable("length", arg.length)
         sendRsp(context, msg)
@@ -288,7 +292,7 @@ suspend fun getStringFromArgsNMessage(
     }
     if (arg.length > max) {
         val msg = context.getTranslation("message.string.maxfailed")
-            .withVariable("arg", MarkdownSanitizer.sanitize(arg))
+            .withSafeVariable("arg", arg)
             .withVariable("max", max)
             .withVariable("length", arg.length)
         sendRsp(context, msg)
@@ -296,7 +300,7 @@ suspend fun getStringFromArgsNMessage(
     }
     if (mustMatch != null && !mustMatch.matches(arg)) {
         val msg = context.getTranslation("message.string.matchfailed")
-            .withVariable("arg", MarkdownSanitizer.sanitize(arg))
+            .withSafeVariable("arg", arg)
             .withVariable("pattern", mustMatch)
         sendRsp(context, msg)
         return null
@@ -304,7 +308,7 @@ suspend fun getStringFromArgsNMessage(
     for (char in cantContainChars) {
         if (arg.contains(char, ignoreCase)) {
             val msg = context.getTranslation("message.string.cantcontaincharfailed")
-                .withVariable("arg", MarkdownSanitizer.sanitize(arg))
+                .withSafeVariable("arg", arg)
                 .withVariable("chars", cantContainChars)
                 .withVariable("char", char)
                 .withVariable("ignorecase", ignoreCase)
@@ -315,7 +319,7 @@ suspend fun getStringFromArgsNMessage(
     for (word in cantContainWords) {
         if (arg.contains(word, ignoreCase)) {
             val msg = context.getTranslation("message.string.cantcontainwordfailed")
-                .withVariable("arg", MarkdownSanitizer.sanitize(arg))
+                .withSafeVariable("arg", arg)
                 .withVariable("words", cantContainWords)
                 .withVariable("word", word)
                 .withVariable("ignorecase", ignoreCase)
@@ -332,7 +336,7 @@ suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGu
     val emoteji = getEmotejiByArgsN(context, index, sameGuildAsContext)
     if (emoteji == null) {
         val msg = context.getTranslation("message.unknown.emojioremote")
-            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(context.args[index]))
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
 
@@ -364,7 +368,7 @@ suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuil
     val emote = getEmoteByArgsN(context, index, sameGuildAsContext)
     if (emote == null) {
         val msg = context.getTranslation("message.unknown.emote")
-            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(context.args[index]))
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
     return emote
@@ -443,7 +447,7 @@ suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color?
     }
     if (color == null) {
         val msg = context.getTranslation("message.unknown.color")
-            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(arg))
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     }
     return color
@@ -476,7 +480,7 @@ suspend fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sa
     val textChannel = getTextChannelByArgsN(context, index, sameGuildAsContext)
     if (textChannel == null) {
         val msg = context.getTranslation("message.unknown.textchannel")
-            .withVariable(PLACEHOLDER_ARG, context.args[index])
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
     return textChannel
@@ -510,7 +514,7 @@ suspend fun getVoiceChannelByArgNMessage(context: CommandContext, index: Int, sa
     val voiceChannel = getVoiceChannelByArgsN(context, index, sameGuildAsContext)
     if (voiceChannel == null) {
         val msg = context.getTranslation("message.unknown.voicechannel")
-            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(context.args[index]))
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
     return voiceChannel
@@ -534,21 +538,21 @@ suspend fun retrieveMemberByArgsNMessage(context: CommandContext, index: Int, in
 
     if (member == null) {
         val msg = context.getTranslation("message.unknown.member")
-            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(context.args[index]))
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
         return null
     }
 
     if (interactable && !member.guild.selfMember.canInteract(member)) {
         val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-            .withVariable(PLACEHOLDER_USER, MarkdownSanitizer.sanitize(member.asTag))
+            .withSafeVariable(PLACEHOLDER_USER, member.asTag)
         sendRsp(context, msg)
         return null
     }
 
     if (!botAllowed && member.user.isBot) {
         val msg = context.getTranslation("message.interact.member.isbot")
-            .withVariable(PLACEHOLDER_USER, MarkdownSanitizer.sanitize(member.asTag))
+            .withSafeVariable(PLACEHOLDER_USER, member.asTag)
         sendRsp(context, msg)
         return null
     }
@@ -567,7 +571,7 @@ suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: Gui
             .withVariable("permissions", result.first.joinToString(separator = "") { perm ->
                 "\n    ⁎ `${perm.toUCSC()}`"
             })
-            .withVariable("channel", channel.name)
+            .withSafeVariable("channel", channel.name)
 
         sendRsp(context, msg)
         return true
@@ -577,7 +581,7 @@ suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: Gui
             .withVariable("permissions", result.second.joinToString(separator = "") { perm ->
                 "\n    ⁎ `${perm.toUCSC()}`"
             })
-            .withVariable("category", channel.parent?.name ?: "Yhea go to support and report this bug lol")
+            .withSafeVariable("category", channel.parent?.name ?: "error")
 
         sendRsp(context, msg)
         return true
@@ -699,13 +703,13 @@ suspend fun getTimeFromArgsNMessage(context: CommandContext, start: Long = Long.
             "message.unknown.number"
         }
         val msg = context.getTranslation(path)
-            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(workingPart))
+            .withSafeVariable(PLACEHOLDER_ARG, workingPart)
         sendRsp(context, msg)
         return null
     }
     if (start > time || end < time) {
         val msg = context.getTranslation("command.seek.notinrange")
-            .withVariable(PLACEHOLDER_ARG, MarkdownSanitizer.sanitize(workingPart))
+            .withSafeVariable(PLACEHOLDER_ARG, workingPart)
         sendRsp(context, msg)
         return null
     }

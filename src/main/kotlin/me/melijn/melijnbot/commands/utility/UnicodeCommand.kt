@@ -41,6 +41,6 @@ class UnicodeCommand : AbstractCommand("command.unicode") {
             }
             builder.append(String(chars)).append("   _").append(Character.getName(code)).append("_\n")
         }
-        sendRsp(context, builder.toString())
+        sendRsp(context, builder.toString().take(2000))
     }
 }

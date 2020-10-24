@@ -29,7 +29,7 @@ suspend fun getIntegersFromArgsNMessage(context: CommandContext, index: Int, sta
                     }
                 } else {
                     val msg = context.getTranslation("message.unknown.numberornumberrange")
-                        .withVariable(PLACEHOLDER_ARG, arg)
+                        .withSafeVariable(PLACEHOLDER_ARG, arg)
                     sendRsp(context, msg)
                     return null
                 }
@@ -39,7 +39,7 @@ suspend fun getIntegersFromArgsNMessage(context: CommandContext, index: Int, sta
                 }
             } else {
                 val msg = context.getTranslation("message.unknown.numberornumberrange")
-                    .withVariable(PLACEHOLDER_ARG, arg)
+                    .withSafeVariable(PLACEHOLDER_ARG, arg)
                 sendRsp(context, msg)
                 return null
             }
@@ -54,7 +54,7 @@ suspend fun getIntegersFromArgsNMessage(context: CommandContext, index: Int, sta
     for (i in ints) {
         if (i < (start - 1) || i > (end - 1)) {
             val msg = context.getTranslation("message.number.notinrange")
-                .withVariable(PLACEHOLDER_ARG, i + 1)
+                .withSafeVariable(PLACEHOLDER_ARG, i + 1)
                 .withVariable("start", start)
                 .withVariable("end", end)
             sendRsp(context, msg)
@@ -72,19 +72,19 @@ suspend fun getIntegerFromArgNMessage(context: CommandContext, index: Int, start
     when {
         int == null -> {
             val msg = context.getTranslation("message.unknown.integer")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
             sendRsp(context, msg)
         }
         int < start -> {
             val msg = context.getTranslation("message.tosmall.integer")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("min", start)
             sendRsp(context, msg)
             return null
         }
         int > end -> {
             val msg = context.getTranslation("message.tobig.integer")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("max", end)
             sendRsp(context, msg)
             return null
@@ -102,18 +102,18 @@ suspend fun getFloatFromArgNMessage(context: CommandContext, index: Int, start: 
     when {
         float == null -> {
             val msg = context.getTranslation("message.unknown.float")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
             sendRsp(context, msg)
         }
         float < start -> {
             val msg = context.getTranslation("message.tosmall.float")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("min", start)
             sendRsp(context, msg)
         }
         float > end -> {
             val msg = context.getTranslation("message.tobig.float")
-                .withVariable(PLACEHOLDER_ARG, arg)
+                .withSafeVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("max", end)
             sendRsp(context, msg)
         }
@@ -140,7 +140,7 @@ suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Bool
     val bool = getBooleanFromArgN(context, index)
     if (bool == null) {
         val msg = context.getTranslation("message.unknown.boolean")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     }
 
@@ -159,7 +159,7 @@ suspend fun getDateTimeFromArgNMessage(context: CommandContext, index: Int): Lon
     val dateTime = getEpochMillisFromArgN(context, index)
     if (dateTime == null) {
         val msg = context.getTranslation("message.unknown.datetime")
-            .withVariable(PLACEHOLDER_ARG, arg)
+            .withSafeVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     }
 
