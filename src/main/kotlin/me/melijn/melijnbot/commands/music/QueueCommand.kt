@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import me.melijn.melijnbot.internals.utils.message.sendMelijnMissingChannelPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendPaginationModularRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -42,9 +43,17 @@ class QueueCommand : AbstractCommand("command.queue") {
 
         val status = context.getTranslation(if (trackManager.iPlayer.paused) "paused" else "playing")
         description += "[$status](${cTrack.info.uri}) - **${cTrack.info.title}** `[${getDurationString(trackManager.iPlayer.trackPosition)} / ${getDurationString(cTrack.duration)}]`"
-        for ((index, track) in allTracks.withIndex()) {
-            totalDuration += track.duration
-            description += "\n[#${index + 1}](${track.info.uri}) - ${track.info.title} `[${getDurationString(track.duration)}]`"
+        try {
+            for ((index, track) in allTracks.withIndex()) {
+                try {
+                    totalDuration += track.duration
+                    description += "\n[#${index + 1}](${track.info.uri}) - ${track.info.title} `[${getDurationString(track.duration)}]`"
+                } catch (t: Throwable) {
+                    t.sendInGuild(context, shouldSend = true, extra = (track?.duration?.toString() + "" + track?.info))
+                }
+            }
+        } catch (t: Throwable) {
+            t.sendInGuild(context, shouldSend = true, extra = allTracks.joinToString())
         }
 
         val title = context.getTranslation("$root.title")
