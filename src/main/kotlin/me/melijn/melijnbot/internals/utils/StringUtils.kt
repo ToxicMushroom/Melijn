@@ -53,7 +53,7 @@ object StringUtils {
                 }
             }
 
-            val index = getSplitIndex(findLastNewline, nextSplitThreshold, margin)
+            val index = getSplitIndex(findLastNewline, nextSplitThreshold, margin, 2000)
             messages.add(findLastNewline.substring(0, index) +
                 if (shouldAppendBackTicks) {
                     "```"
@@ -102,10 +102,12 @@ object StringUtils {
 
     fun splitMessage(message: String, splitAtLeast: Int = 1800, maxLength: Int = 2000): List<String> {
         var msg = message
+        val margin = maxLength - splitAtLeast
         val messages = ArrayList<String>()
         while (msg.length > maxLength) {
             val findLastNewline = msg.substring(0, maxLength - 1)
-            val index = getSplitIndex(findLastNewline, splitAtLeast, maxLength - 1)
+
+            val index = getSplitIndex(findLastNewline, splitAtLeast, margin, maxLength)
 
             messages.add(msg.substring(0, index))
             msg = msg.substring(index)
@@ -114,7 +116,7 @@ object StringUtils {
         return messages
     }
 
-    private fun getSplitIndex(findLastNewline: String, splitAtLeast: Int, margin: Int): Int {
+    private fun getSplitIndex(findLastNewline: String, splitAtLeast: Int, margin: Int, maxLength: Int): Int {
         var index = findLastNewline.lastIndexOf("\n")
         if (index < splitAtLeast) {
             index = findLastNewline.lastIndexOf(". ")
@@ -126,7 +128,7 @@ object StringUtils {
             index = findLastNewline.lastIndexOf(",")
         }
         if (index < splitAtLeast) {
-            index = 1999 - margin
+            index = (maxLength-1) - margin
         }
 
         return index
