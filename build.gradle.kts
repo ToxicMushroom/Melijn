@@ -147,6 +147,7 @@ tasks {
     }
     withType(KotlinCompile::class) {
         kotlinOptions {
+            // 15 not supported at this time 25/10/2020 | latest kotlin: 1.4.10
             jvmTarget = "14"
         }
     }
