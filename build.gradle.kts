@@ -58,7 +58,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation("net.dv8tion:JDA:4.2.0_209") {
+    implementation("net.dv8tion:JDA:4.2.0_211") {
         exclude("opus-java")
     }
 
@@ -147,6 +147,7 @@ tasks {
     }
     withType(KotlinCompile::class) {
         kotlinOptions {
+            // 15 not supported at this time 25/10/2020 | latest kotlin: 1.4.10
             jvmTarget = "14"
         }
     }

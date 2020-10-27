@@ -13,7 +13,7 @@ class FlipImgCommand : AbstractCommand("command.flipimg") {
     init {
         id = 129
         name = "flipImg"
-        aliases = arrayOf("flipGif")
+        aliases = arrayOf("flipImage", "flipGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
