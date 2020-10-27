@@ -46,7 +46,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             var content = "```INI"
             val prefixes = context.daoManager.userPrefixWrapper.getPrefixes(context.authorId)
             for ((index, prefix) in prefixes.withIndex()) {
-                content += "\n$index - [$prefix]"
+                content += "\n${index + 1} - [$prefix]"
             }
             content += "```"
 
@@ -133,10 +133,17 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
 
             val wrapper = context.daoManager.userPrefixWrapper
             val list = wrapper.getPrefixes(context.authorId)
-            val index = getIntegerFromArgNMessage(context, 0, 0, list.size - 1) ?: return
+            if (list.isEmpty()) {
+                val msg = context.getTranslation("$root.empty")
+                sendRsp(context, msg)
+                return
+            }
 
-            val toRemove = list[index]
+            val index = getIntegerFromArgNMessage(context, 0, 1, list.size) ?: return
+
+            val toRemove = list[index - 1]
             wrapper.removePrefix(context.authorId, toRemove)
+
 
             val msg = context.getTranslation("$root.removed")
                 .withSafeVariable(PLACEHOLDER_PREFIX, toRemove)
