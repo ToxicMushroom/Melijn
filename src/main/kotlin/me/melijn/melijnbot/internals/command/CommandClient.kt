@@ -391,7 +391,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
                 // Global perms
                 val missingPermissions = command.discordPermissions.filter { permission ->
-                    !botMember.hasPermission(event.textChannel, permission)
+                    !botMember.hasPermission(permission)
                 }
 
                 if (missingPermissions.isNotEmpty()) {

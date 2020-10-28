@@ -46,6 +46,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
             context.args.size > 1 && context.args[1] == "confirm" -> {
                 val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
                 if (notEnoughPermissionsAndMessage(context, textChannel, Permission.MANAGE_CHANNEL)) return
+
                 val copy = textChannel.createCopy().reason("(clearChannel) ${context.author.asTag}").await() // TODO: fix permission manage_channel missing
                 copy.manager.setPosition(textChannel.position)
 
