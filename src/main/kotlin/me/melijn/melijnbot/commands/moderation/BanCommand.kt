@@ -46,13 +46,13 @@ class BanCommand : AbstractCommand("command.ban") {
         if (member != null) {
             if (!context.guild.selfMember.canInteract(member)) {
                 val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                    .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 sendRsp(context, msg)
                 return
             }
             if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                    .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 sendRsp(context, msg)
                 return
             }
@@ -116,16 +116,16 @@ class BanCommand : AbstractCommand("command.ban") {
             logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
             context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
-                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withVariable("reason", ban.reason)
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable("reason", ban.reason)
 
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.banning.failed")
             banningMessage?.editMessage(failedMsg)?.queue()
 
             context.getTranslation("$root.failure")
-                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withVariable("cause", t.message ?: "/")
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable("cause", t.message ?: "/")
         }
 
         sendRsp(context, msg)
@@ -155,11 +155,11 @@ fun getBanMessage(
     }
 
     description += i18n.getTranslation(language, "message.punishment.ban.description")
-        .withVariable("banAuthor", banAuthor.asTag)
+        .withSafeVariable("banAuthor", banAuthor.asTag)
         .withVariable("banAuthorId", banAuthor.id)
-        .withVariable("banned", bannedUser.asTag)
+        .withSafeVariable("banned", bannedUser.asTag)
         .withVariable("bannedId", bannedUser.id)
-        .withVariable("reason", ban.reason)
+        .withSafeVariable("reason", ban.reason)
         .withVariable("duration", banDuration)
         .withVariable("startTime", (ban.startTime.asEpochMillisToDateTime(zoneId)))
         .withVariable("endTime", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
@@ -180,7 +180,7 @@ fun getBanMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.ban.author")
-        .withVariable(PLACEHOLDER_USER, banAuthor.asTag)
+        .withSafeVariable(PLACEHOLDER_USER, banAuthor.asTag)
         .withVariable("spaces", " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B")
 
     return EmbedBuilder()

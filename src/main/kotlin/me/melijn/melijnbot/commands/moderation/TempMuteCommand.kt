@@ -154,8 +154,8 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
             mutingMessage?.editMessage(failedMsg)?.queue()
 
             val msg = context.getTranslation("$root.failure")
-                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withVariable("cause", t.message ?: "/")
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable("cause", t.message ?: "/")
             sendRsp(context, msg)
         }
     }
@@ -169,9 +169,9 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
 
         val msg = context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
-            .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+            .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
             .withVariable("endTime", mute.endTime?.asEpochMillisToDateTime(context.getTimeZoneId()) ?: "none")
-            .withVariable("reason", mute.reason)
+            .withSafeVariable("reason", mute.reason)
         sendRsp(context, msg)
     }
 }

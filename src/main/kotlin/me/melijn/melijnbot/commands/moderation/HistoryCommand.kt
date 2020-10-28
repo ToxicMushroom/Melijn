@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 
 class HistoryCommand : AbstractCommand("command.history") {
@@ -35,7 +36,7 @@ class HistoryCommand : AbstractCommand("command.history") {
         val types = PunishmentType.getMatchingTypesFromNode(context.args[0])
         if (types.isEmpty()) {
             val msg = context.getTranslation("message.unknown.punishmenttype")
-                .withVariable(PLACEHOLDER_ARG, context.args[0])
+                .withSafeVariable(PLACEHOLDER_ARG, context.args[0])
             sendRsp(context, msg)
             return
         }
@@ -93,7 +94,7 @@ class HistoryCommand : AbstractCommand("command.history") {
             }
 
             val noHistory = context.getTranslation("$root.nohistory")
-                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 .withVariable("typeList", readableList)
 
             sendRsp(context, noHistory)

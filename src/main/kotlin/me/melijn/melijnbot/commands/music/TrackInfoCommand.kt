@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import java.lang.Integer.max
 
 class TrackInfoCommand : AbstractCommand("command.trackinfo") {
@@ -44,7 +45,9 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
         val length = context.getTranslation("$root.length")
         val timeuntil = context.getTranslation("$root.timeuntil")
         val progress = context.getTranslation("$root.progress")
-        val desc = "**[${track.info.title}](${track.info.uri})**"
+        val desc = "**[%title%](${track.info.uri})**"
+            .withSafeVariable("title", track.info.title)
+
         var timeUntilTime = playingTrack.duration - trackManager.iPlayer.trackPosition
         trackManager.tracks.toList().subList(0, max(index - 1, 0)).forEach { tr -> timeUntilTime += tr.duration }
         if (trackManager.loopedTrack) timeUntilTime = Long.MAX_VALUE

@@ -6,13 +6,10 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.internals.utils.LogUtils
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
-import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import java.util.concurrent.ConcurrentHashMap
@@ -33,8 +30,6 @@ class PurgeCommand : AbstractCommand("command.purge") {
         discordChannelPermissions = arrayOf(Permission.MESSAGE_MANAGE, Permission.MESSAGE_HISTORY)
         commandCategory = CommandCategory.MODERATION
     }
-
-
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
@@ -91,7 +86,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
                     val more = if (amount > 1) ".more" else ".one"
                     val msg = context.getTranslation("$root.success$userMore$more")
                         .withVariable("amount", amount.toString())
-                        .withVariable(PLACEHOLDER_USER, targetUser?.asTag ?: "")
+                        .withSafeVariable(PLACEHOLDER_USER, targetUser?.asTag ?: "")
 
                     purgeInProgress.remove(purgePID)
                     if (!context.commandParts[1].equals(silentPurgeName, true) && !context.commandParts[1].equals(silentPruneName, true))

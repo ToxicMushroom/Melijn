@@ -6,7 +6,6 @@ import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.events.eventlisteners.MessageDeletedListener
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 class SnipeCommand : AbstractCommand("command.snipe") {
 
@@ -66,9 +65,9 @@ class SnipeCommand : AbstractCommand("command.snipe") {
             sb.append("[")
                 .append(key.moment.asEpochMillisToDateTime(context.getTimeZoneId()))
                 .append("] **")
-                .append(context.guild.retrieveMemberById(key.authorId).awaitOrNull()?.asTag ?: key.authorId)
+                .append(context.guild.retrieveMemberById(key.authorId).awaitOrNull()?.asTag?.escapeMarkdown() ?: key.authorId)
                 .append("**: ")
-                .appendLine(MarkdownSanitizer.escape(key.content))
+                .appendLine(key.content.escapeMarkdown())
         }
         sendRsp(context, sb.toString())
 

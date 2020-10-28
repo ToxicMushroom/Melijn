@@ -6,12 +6,9 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.utils.addIfNotPresent
-import me.melijn.melijnbot.internals.utils.getDurationString
-import me.melijn.melijnbot.internals.utils.listeningMembers
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.withVariable
 import kotlin.math.floor
 
 
@@ -48,7 +45,7 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
             val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
             val cTrack = iPlayer.playingTrack ?: return
             val desc = context.getTranslation("$root.playing")
-                .withVariable("track", cTrack.info.title)
+                .withSafeVariable("track", cTrack.info.title)
                 .withVariable("url", cTrack.info.uri)
                 .withVariable("position", getDurationString(iPlayer.trackPosition))
                 .withVariable("duration", getDurationString(cTrack.duration))

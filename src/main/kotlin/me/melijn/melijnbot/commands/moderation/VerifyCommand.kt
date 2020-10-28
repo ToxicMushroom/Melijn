@@ -4,12 +4,9 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.internals.utils.VerificationUtils
-import me.melijn.melijnbot.internals.utils.asTag
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.retrieveMemberByArgsNMessage
-import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Member
 
 class VerifyCommand : AbstractCommand("command.verify") {
@@ -47,7 +44,7 @@ class VerifyCommand : AbstractCommand("command.verify") {
             } else {
                 context.getTranslation("$root.all.failures")
                     .withVariable("failures", failures.joinToString("\n") { member ->
-                        member.asTag + " - " + member.id
+                        member.asTag.escapeMarkdown() + " - " + member.id
                     })
 
             }.withVariable("count", (members.size - failures.size).toString())

@@ -106,10 +106,8 @@ dependencies {
     // https://github.com/FasterXML/jackson-module-kotlin
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3")
 
-    // https://mvnrepository.com/artifact/com.google.guava/guava
-    // implementation("com.google.guava:guava:29.0-jre")
 
-
+    // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
     implementation("io.ktor:ktor:1.4.1")
     implementation("io.ktor:ktor-client-cio:1.4.1")
     implementation("io.ktor:ktor-client-okhttp:1.4.1")

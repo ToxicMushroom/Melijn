@@ -41,13 +41,13 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         if (member != null) {
             if (!context.guild.selfMember.canInteract(member)) {
                 val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .withVariable(PLACEHOLDER_USER, member.asTag)
+                    .withSafeVariable(PLACEHOLDER_USER, member.asTag)
                 sendRsp(context, msg)
                 return
             }
             if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .withVariable(PLACEHOLDER_USER, member.asTag)
+                    .withSafeVariable(PLACEHOLDER_USER, member.asTag)
                 sendRsp(context, msg)
                 return
             }
@@ -114,9 +114,9 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             val endTime = ban.endTime?.asEpochMillisToDateTime(zoneId)
 
             val msg = context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
-                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 .withVariable("endTime", endTime ?: "none")
-                .withVariable("reason", ban.reason)
+                .withSafeVariable("reason", ban.reason)
             sendRsp(context, msg)
         } catch (t: Throwable) {
 
@@ -124,8 +124,8 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             banningMessage?.editMessage(failedMsg)?.queue()
 
             val msg = context.getTranslation("$root.failure")
-                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withVariable("cause", t.message ?: "/")
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable("cause", t.message ?: "/")
             sendRsp(context, msg)
         }
     }

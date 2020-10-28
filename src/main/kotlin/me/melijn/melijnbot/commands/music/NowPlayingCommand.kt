@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 
 class NowPlayingCommand : AbstractCommand("command.nowplaying") {
@@ -30,7 +31,7 @@ class NowPlayingCommand : AbstractCommand("command.nowplaying") {
             .withVariable("status", trackStatus)
 
         val description = context.getTranslation("$root.show.description")
-            .withVariable("title", playingTrack.info.title)
+            .withSafeVariable("title", playingTrack.info.title)
             .withVariable("url", playingTrack.info.uri)
         val progressField = context.getTranslation("$root.progress")
         val thumbnail = "https://img.youtube.com/vi/${playingTrack.identifier}/hqdefault.jpg"
@@ -50,8 +51,18 @@ fun getProgressBar(playingTrack: AudioTrack, playerPosition: Long): String {
         return "**" + getDurationString(playerPosition) + " | \uD83D\uDD34 Live**"
     }
     val percent = (playerPosition.toDouble() / playingTrack.duration.toDouble() * 18.0).toInt()
+
+    val fullUrl: String = if (
+        playingTrack.info.uri.startsWith("https://www.youtube.com/watch?v=") ||
+        playingTrack.info.uri.startsWith("https://youtube.com/watch?v=")
+    ) {
+        playingTrack.info.uri + "&t=" + (playerPosition / 1000)
+    } else {
+        playingTrack.info.uri
+    }
+
     return StringBuilder("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬")
-        .insert(percent, "](${playingTrack.info.uri + "&t=" + (playerPosition / 1000)})<a:cool_nyan:490978764264570894>")
+        .insert(percent, "]($fullUrl)<a:cool_nyan:490978764264570894>")
         .append(" **").append(getDurationString(playerPosition)).append("/").append(getDurationString(playingTrack.duration)).append("**")
         .insert(0, "[")
         .toString()

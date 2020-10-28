@@ -5,6 +5,7 @@ import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.asTag
 import me.melijn.melijnbot.internals.utils.toUCSC
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.TextChannel
@@ -32,7 +33,7 @@ suspend fun sendMelijnMissingChannelPermissionMessage(textChannel: TextChannel, 
 
     val msg = i18n.getTranslation(language, "message.discordchannelpermission$more.missing")
         .withVariable("permissions", "\n" + permString)
-        .withVariable("channel", textChannel.asTag)
+        .withSafeVariable("channel", textChannel.asTag)
 
     sendRspOrMsg(textChannel, daoManager, msg)
 }

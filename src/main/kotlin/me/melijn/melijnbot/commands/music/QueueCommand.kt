@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.message.sendMelijnMissingChannelPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendPaginationModularRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 
@@ -41,10 +42,12 @@ class QueueCommand : AbstractCommand("command.queue") {
         var totalDuration = cTrack.duration
 
         val status = context.getTranslation(if (trackManager.iPlayer.paused) "paused" else "playing")
-        description += "[$status](${cTrack.info.uri}) - **${cTrack.info.title}** `[${getDurationString(trackManager.iPlayer.trackPosition)} / ${getDurationString(cTrack.duration)}]`"
+        description += "[$status](${cTrack.info.uri}) - **%title%** `[${getDurationString(trackManager.iPlayer.trackPosition)} / ${getDurationString(cTrack.duration)}]`"
+            .withSafeVariable("title", cTrack.info.title)
         for ((index, track) in allTracks.withIndex()) {
             totalDuration += track.duration
-            description += "\n[#${index + 1}](${track.info.uri}) - ${track.info.title} `[${getDurationString(track.duration)}]`"
+            description += "\n[#${index + 1}](${track.info.uri}) - %title% `[${getDurationString(track.duration)}]`"
+                .withSafeVariable("title", track.info.title)
         }
 
         val title = context.getTranslation("$root.title")

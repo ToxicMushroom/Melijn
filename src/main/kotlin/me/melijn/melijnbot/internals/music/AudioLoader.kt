@@ -138,14 +138,14 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
     private suspend fun sendMessageLoadFailed(context: CommandContext, exception: Throwable) {
         val msg = context.getTranslation("$root.loadfailed")
-            .withVariable("cause", exception.message ?: "/")
+            .withSafeVariable("cause", exception.message ?: "/")
         sendRsp(context, msg)
         exception.printStackTrace()
     }
 
     suspend fun sendMessageNoMatches(context: CommandContext, input: String) {
         val msg = context.getTranslation("$root.nomatches")
-            .withVariable("source", input)
+            .withSafeVariable("source", input)
         sendRsp(context, msg)
     }
 
@@ -155,7 +155,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             .withVariable(PLACEHOLDER_USER, context.author.asTag)
         val description = context.getTranslation("$root.addedtrack.description")
             .withVariable("position", getQueuePosition(context, audioTrack).toString())
-            .withVariable("title", audioTrack.info.title)
+            .withSafeVariable("title", audioTrack.info.title)
             .withVariable("duration", getDurationString(audioTrack.duration))
             .withVariable("url", audioTrack.info.uri)
 
@@ -168,7 +168,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
     private suspend fun sendMessageAddedTracks(context: CommandContext, audioTracks: List<AudioTrack>) {
         val title = context.getTranslation("$root.addedtracks.title")
-            .withVariable(PLACEHOLDER_USER, context.author.asTag)
+            .withSafeVariable(PLACEHOLDER_USER, context.author.asTag)
         val description = context.getTranslation("$root.addedtracks.description")
             .withVariable("size", audioTracks.size.toString())
             .withVariable("positionFirst", getQueuePosition(context, audioTracks[0]).toString())

@@ -96,15 +96,15 @@ class UnbanCommand : AbstractCommand("command.unban") {
             } catch (t: Throwable) {
                 //Sum ting wrong
                 val msg = context.getTranslation("$root.failure")
-                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
-                    .withVariable("cause", t.message ?: "/")
+                    .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+                    .withSafeVariable("cause", t.message ?: "/")
                 sendRsp(context, msg)
             }
         } catch (t: Throwable) {
             //Not banned anymore
 
             val msg = context.getTranslation("$root.notbanned")
-                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
             sendRsp(context, msg)
 
             if (activeBan != null) {
@@ -130,8 +130,8 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
 
         val success = context.getTranslation("$root.success")
-            .withVariable(PLACEHOLDER_USER, targetUser.asTag)
-            .withVariable("reason", ban.unbanReason ?: "/")
+            .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+            .withSafeVariable("reason", ban.unbanReason ?: "/")
         sendRsp(context, success)
     }
 }
@@ -156,19 +156,19 @@ fun getUnbanMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withVariable("serverName", guild.name)
+            .withSafeVariable("serverName", guild.name)
             .withVariable("serverId", guild.id)
     }
 
     val deletedAccount = i18n.getTranslation(language, "message.deleted.user")
     description += i18n.getTranslation(language, "message.punishment.unban.description")
-        .withVariable("banAuthor", banAuthor?.asTag ?: deletedAccount)
+        .withSafeVariable("banAuthor", banAuthor?.asTag ?: deletedAccount)
         .withVariable("banAuthorId", ban.banAuthorId.toString())
         .withVariable("unBanAuthorId", ban.unbanAuthorId.toString())
-        .withVariable("unBanned", bannedUser.asTag)
+        .withSafeVariable("unBanned", bannedUser.asTag)
         .withVariable("unBannedId", ban.bannedId.toString())
-        .withVariable("banReason", ban.reason)
-        .withVariable("unbanReason", ban.unbanReason ?: "/")
+        .withSafeVariable("banReason", ban.reason)
+        .withSafeVariable("unbanReason", ban.unbanReason ?: "/")
         .withVariable("duration", banDuration)
         .withVariable("startTime", (ban.startTime.asEpochMillisToDateTime(zoneId)))
         .withVariable("endTime", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))

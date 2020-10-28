@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.utils.getLongFromArgN
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import net.dv8tion.jda.api.Permission
 import java.awt.image.RenderedImage
 import java.io.ByteArrayInputStream
@@ -76,7 +77,8 @@ class BonkCommand : AbstractCommand("command.bonk") {
                     .writeToSequence(image2)
                     .close()
             }
-            sendFileRsp(context, "**bonk** ${user.asTag} \uD83D\uDD28", baos.toByteArray(), "gif")
+            val text = "**bonk** %user% \uD83D\uDD28".withSafeVariable("user", user.asTag)
+            sendFileRsp(context, text, baos.toByteArray(), "gif")
         }
 
         val baos = ByteArrayOutputStream()

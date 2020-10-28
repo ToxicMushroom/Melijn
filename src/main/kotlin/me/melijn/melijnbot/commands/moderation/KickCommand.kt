@@ -101,16 +101,16 @@ class KickCommand : AbstractCommand("command.kick") {
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, warnedMessageLc) }
 
             context.getTranslation("$root.success")
-                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
-                .withVariable("reason", kick.reason)
+                .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
+                .withSafeVariable("reason", kick.reason)
 
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.kicking.failed")
             kickingMessage?.editMessage(failedMsg)?.queue()
 
             context.getTranslation("$root.failure")
-                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
-                .withVariable("cause", t.message ?: "/")
+                .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
+                .withSafeVariable("cause", t.message ?: "/")
 
         }
         sendRsp(context, msg)
@@ -136,11 +136,11 @@ fun getKickMessage(
     }
 
     description += i18n.getTranslation(language, "message.punishment.kick.description")
-        .withVariable("kickAuthor", kickAuthor.asTag)
+        .withSafeVariable("kickAuthor", kickAuthor.asTag)
         .withVariable("kickAuthorId", kickAuthor.id)
-        .withVariable("kicked", kickedUser.asTag)
+        .withSafeVariable("kicked", kickedUser.asTag)
         .withVariable("kickedId", kickedUser.id)
-        .withVariable("reason", kick.reason)
+        .withSafeVariable("reason", kick.reason)
         .withVariable("moment", (kick.moment.asEpochMillisToDateTime(zoneId)))
         .withVariable("kickId", kick.kickId)
 
@@ -159,7 +159,7 @@ fun getKickMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.kick.author")
-        .withVariable(PLACEHOLDER_USER, kickAuthor.asTag)
+        .withSafeVariable(PLACEHOLDER_USER, kickAuthor.asTag)
         .withVariable("spaces", " ".repeat(45).substring(0, 45 - kickAuthor.name.length) + "\u200B")
 
     return EmbedBuilder()

@@ -10,7 +10,7 @@ import me.melijn.melijnbot.internals.utils.getVoiceChannelByArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import net.dv8tion.jda.api.Permission
 
 class SummonCommand : AbstractCommand("command.summon") {
@@ -43,7 +43,7 @@ class SummonCommand : AbstractCommand("command.summon") {
 
             context.lavaManager.openConnection(vc, context.getGuildMusicPlayer().groupId)
             val msg = context.getTranslation("$root.summoned.other")
-                .withVariable(PLACEHOLDER_CHANNEL, vc.name)
+                .withSafeVariable(PLACEHOLDER_CHANNEL, vc.name)
             sendRsp(context, msg)
         }
     }

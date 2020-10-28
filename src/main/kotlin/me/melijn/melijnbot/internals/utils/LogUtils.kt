@@ -61,7 +61,7 @@ object LogUtils {
 
         val title = i18n.getTranslation(language, "logging.verification.hitverificationthroughputlimit.title")
         val cause = "```LDIF" + i18n.getTranslation(language, "logging.verification.hitverificationthroughputlimit.description")
-            .withVariable(PLACEHOLDER_USER, member.asTag)
+            .withSafeVariable(PLACEHOLDER_USER, member.asTag)
             .withVariable(PLACEHOLDER_USER_ID, member.id) + "```"
 
         val eb = EmbedBuilder()
@@ -85,8 +85,8 @@ object LogUtils {
         val title = i18n.getTranslation(language, "logging.verification.failedaddingrole.title")
         val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.failedaddingrole.description")
             .withVariable(PLACEHOLDER_USER_ID, member.id)
-            .withVariable(PLACEHOLDER_USER, member.asTag)
-            .withVariable(PLACEHOLDER_ROLE, role.name)
+            .withSafeVariable(PLACEHOLDER_USER, member.asTag)
+            .withSafeVariable(PLACEHOLDER_ROLE, role.name)
             .withVariable(PLACEHOLDER_ROLE_ID, role.id) + "```"
 
         val eb = EmbedBuilder()
@@ -108,7 +108,7 @@ object LogUtils {
 
         val title = i18n.getTranslation(language, "logging.verification.failed.title")
         val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.failed.description")
-            .withVariable(PLACEHOLDER_USER, member.asTag)
+            .withSafeVariable(PLACEHOLDER_USER, member.asTag)
             .withVariable(PLACEHOLDER_USER_ID, member.id) + "```"
 
         val eb = EmbedBuilder()
@@ -129,9 +129,9 @@ object LogUtils {
             ?: return
 
         val title = i18n.getTranslation(language, "logging.verification.verified.title")
-            .withVariable("author", author.asTag)
+            .withSafeVariable("author", author.asTag)
         val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.verified.description")
-            .withVariable(PLACEHOLDER_USER, member.asTag)
+            .withSafeVariable(PLACEHOLDER_USER, member.asTag)
             .withVariable(PLACEHOLDER_USER_ID, member.id) + "```"
 
         val eb = EmbedBuilder()
@@ -158,7 +158,7 @@ object LogUtils {
         val title = i18n.getTranslation(language, "logging.music.streamurl.loadfailed.title")
         val description = "```LDIF" + i18n.getTranslation(language, "logging.music.streamurl.loadfailed.description")
             .withVariable("url", source)
-            .withVariable("cause", exception.message ?: "/") + "```"
+            .withSafeVariable("cause", exception.message ?: "/") + "```"
 
         val eb = EmbedBuilder()
             .setTitle(title)
@@ -187,7 +187,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setDescription("[${track.info.title}](${track.info.uri})")
+            .setDescription("[%title%](${track.info.uri})".withSafeVariable("title", track.info.uri))
             .addField(userTitle, context.author.asTag, true)
             .addField(userIdTitle, context.author.asTag, true)
             .addField(channel, vc.name, true)
@@ -216,7 +216,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setDescription("[${track.info.title}](${track.info.uri})")
+            .setDescription("[%title%](${track.info.uri})".withSafeVariable("title", track.info.title))
             .addField(userTitle, context.author.asTag, true)
             .addField(userIdTitle, context.author.asTag, true)
             .addField(channel, vc.name, true)
@@ -243,7 +243,7 @@ object LogUtils {
         eb.setTitle(title)
 
         val vc = Container.instance.lavaManager.getConnectedChannel(guild)
-        eb.setDescription("[${track.info.title}](${track.info.uri})")
+        eb.setDescription("[%title%](${track.info.uri})".withSafeVariable("title", track.info.title))
         eb.addField(channel, vc?.name ?: "null", true)
         eb.addField(channelId, vc?.id ?: "null", true)
         eb.addField(cause, exception.message ?: "/", false)
@@ -270,7 +270,7 @@ object LogUtils {
         val vc = context.lavaManager.getConnectedChannel(context.guild)
 
 
-        eb.setDescription("[${track.info.title}](${track.info.uri})")
+        eb.setDescription("[%title%](${track.info.uri})".withSafeVariable("title", track.info.title))
         eb.addField(userTitle, context.author.asTag, true)
         eb.addField(userIdTitle, context.author.id, true)
         eb.setColor(Color(0x2f3136))
@@ -307,7 +307,7 @@ object LogUtils {
         val channelId = i18n.getTranslation(language, "logging.music.newtrack.channelIdfield.title")
         eb.setTitle(title)
 
-        eb.setDescription("[${track.info.title}](${track.info.uri})")
+        eb.setDescription("[%title%](${track.info.uri})".withSafeVariable("title", track.info.title))
         eb.addField(userTitle, author.asTag, true)
         eb.addField(userIdTitle, author.id, true)
         eb.addField(channel, vc.name, true)
@@ -362,8 +362,8 @@ object LogUtils {
         val title = i18n.getTranslation(language, "logging.verification.failedremovingrole.title")
         val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.failedremovingrole.description")
             .withVariable(PLACEHOLDER_USER_ID, member.id)
-            .withVariable(PLACEHOLDER_USER, member.asTag)
-            .withVariable(PLACEHOLDER_ROLE, role.name)
+            .withSafeVariable(PLACEHOLDER_USER, member.asTag)
+            .withSafeVariable(PLACEHOLDER_ROLE, role.name)
             .withVariable(PLACEHOLDER_ROLE_ID, role.id) + "```"
 
         val eb = EmbedBuilder()
@@ -440,13 +440,13 @@ object LogUtils {
 
         val title = i18n.getTranslation(language, "logging.punishmentpoints.title")
         val lcBodyPart = i18n.getTranslation(language, "logging.punishmentpoints.description.extra.lc")
-            .withVariable("target", message.author.asTag)
+            .withSafeVariable("target", message.author.asTag)
             .withVariable("targetId", message.author.id)
 
         var lcBody = i18n.getTranslation(language, "logging.punishmentpoints.description")
-            .withVariable("channel", message.textChannel.asTag)
+            .withSafeVariable("channel", message.textChannel.asTag)
             .withVariable("channelId", message.textChannel.id)
-            .withVariable("message", message.contentRaw)
+            .withSafeVariable("message", message.contentRaw)
             .withVariable("messageId", message.id)
             .withVariable("points", "$pp")
             .withVariable("moment", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
@@ -455,13 +455,13 @@ object LogUtils {
         for ((key, value) in causeArgs) {
             if (value.isEmpty()) continue
             extra += i18n.getTranslation(language, "logging.punishmentpoints.cause.${key}")
-                .withVariable("word", value.joinToString()) + "\n"
+                .withSafeVariable("word", value.joinToString()) + "\n"
         }
 
         lcBody = lcBody.withVariable("extra", extra)
 
         val dmBody = i18n.getTranslation(language, "logging.punishmentpoints.description.extra.dm")
-            .withVariable("server", message.guild.name)
+            .withSafeVariable("server", message.guild.name)
             .withVariable("serverId", message.guild.id) + lcBody
 
         val eb = EmbedBuilder()
@@ -493,7 +493,7 @@ object LogUtils {
         var message = messageWrapper.getMessage(guildId, messageType)
         if (message == null) {
             val msg = i18n.getTranslation(language, "logging.birthday")
-                .withVariable("user", member.asTag)
+                .withSafeVariable("user", member.asTag)
 
             sendRspOrMsg(textChannel, daoManager, msg)
         } else {
@@ -572,7 +572,7 @@ object LogUtils {
 
         val language = getLanguage(daoManager, -1, guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.purge.log.title")
-            .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+            .withSafeVariable(PLACEHOLDER_CHANNEL, channel.asTag)
             .withVariable("amount", "${messages.size}")
 
         val description = i18n.getTranslation(language, "listener.message.purge.log.description")
@@ -604,7 +604,7 @@ object LogUtils {
 
             if (index == ebs.size - 1) {
                 val footer = i18n.getTranslation(language, "listener.message.purge.log.footer")
-                    .withVariable(PLACEHOLDER_USER, context.author.asTag)
+                    .withSafeVariable(PLACEHOLDER_USER, context.author.asTag)
                 eb.setFooter(footer, context.author.effectiveAvatarUrl)
             }
 

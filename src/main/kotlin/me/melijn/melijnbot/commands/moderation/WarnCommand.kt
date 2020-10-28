@@ -39,14 +39,14 @@ class WarnCommand : AbstractCommand("command.warn") {
         val targetMember = retrieveMemberByArgsNMessage(context, 0, true, botAllowed = false) ?: return
         if (!context.guild.selfMember.canInteract(targetMember)) {
             val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
+                .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
             sendRsp(context, msg)
             return
         }
 
         if (!context.member.canInteract(targetMember) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
             val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
+                .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
             sendRsp(context, msg)
             return
         }
@@ -100,8 +100,8 @@ class WarnCommand : AbstractCommand("command.warn") {
         }
 
         val msg = context.getTranslation("$root.success")
-            .withVariable(PLACEHOLDER_USER, targetMember.asTag)
-            .withVariable("reason", warn.reason)
+            .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
+            .withSafeVariable("reason", warn.reason)
         sendRsp(context, msg)
     }
 }
@@ -125,11 +125,11 @@ fun getWarnMessage(
     }
 
     description += i18n.getTranslation(language, "message.punishment.warn.description")
-        .withVariable("warnAuthor", warnAuthor.asTag)
+        .withSafeVariable("warnAuthor", warnAuthor.asTag)
         .withVariable("warnAuthorId", warnAuthor.id)
-        .withVariable("warned", warnedUser.asTag)
+        .withSafeVariable("warned", warnedUser.asTag)
         .withVariable("warnedId", warnedUser.id)
-        .withVariable("reason", warn.reason.take(1600))
+        .withSafeVariable("reason", warn.reason.take(1600))
         .withVariable("moment", (warn.moment.asEpochMillisToDateTime(zoneId)))
         .withVariable("warnId", warn.warnId)
 
@@ -148,7 +148,7 @@ fun getWarnMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.warn.author")
-        .withVariable(PLACEHOLDER_USER, warnAuthor.asTag)
+        .withSafeVariable(PLACEHOLDER_USER, warnAuthor.asTag)
         .withVariable("spaces", " ".repeat(45).substring(0, 45 - warnAuthor.name.length) + "\u200B")
 
     return EmbedBuilder()
