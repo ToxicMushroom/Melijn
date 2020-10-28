@@ -44,13 +44,13 @@ class MuteCommand : AbstractCommand("command.mute") {
         if (member != null) {
             if (!context.guild.selfMember.canInteract(member)) {
                 val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                    .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 sendRsp(context, msg)
                 return
             }
             if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                    .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 sendRsp(context, msg)
                 return
             }
@@ -81,7 +81,7 @@ class MuteCommand : AbstractCommand("command.mute") {
                 muteRoleAquired(context, targetUser, reason, role)
             } catch (t: Throwable) {
                 val msgFailed = context.getTranslation("message.creatingmuterole.failed")
-                    .withVariable("cause", t.message ?: "/")
+                    .withSafeVariable("cause", t.message ?: "/")
                 sendRsp(context, msgFailed)
             }
 
@@ -152,16 +152,16 @@ class MuteCommand : AbstractCommand("command.mute") {
 
 
             context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
-                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withVariable("reason", mute.reason)
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable("reason", mute.reason)
         } catch (t: Throwable) {
 
             val failedMsg = context.getTranslation("message.muting.failed")
             mutingMessage?.editMessage(failedMsg)?.queue()
 
             context.getTranslation("$root.failure")
-                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withVariable("cause", t.message ?: "/")
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable("cause", t.message ?: "/")
         }
         sendRsp(context, msg)
     }
@@ -190,11 +190,11 @@ fun getMuteMessage(
     }
 
     description += i18n.getTranslation(language, "message.punishment.mute.description")
-        .withVariable("muteAuthor", muteAuthor.asTag)
+        .withSafeVariable("muteAuthor", muteAuthor.asTag)
         .withVariable("muteAuthorId", muteAuthor.id)
-        .withVariable("muted", mutedUser.asTag)
+        .withSafeVariable("muted", mutedUser.asTag)
         .withVariable("mutedId", mutedUser.id)
-        .withVariable("reason", mute.reason)
+        .withSafeVariable("reason", mute.reason)
         .withVariable("duration", muteDuration)
         .withVariable("startTime", (mute.startTime.asEpochMillisToDateTime(zoneId)))
         .withVariable("endTime", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
@@ -215,7 +215,7 @@ fun getMuteMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.mute.author")
-        .withVariable(PLACEHOLDER_USER, muteAuthor.asTag)
+        .withSafeVariable(PLACEHOLDER_USER, muteAuthor.asTag)
         .withVariable("spaces", " ".repeat(45).substring(0, 45 - muteAuthor.name.length) + "\u200B")
 
     return EmbedBuilder()

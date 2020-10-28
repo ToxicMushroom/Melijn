@@ -11,7 +11,6 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 const val tracksLimit = 20
 const val playlistLimit = 3
@@ -107,7 +106,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
 
 
                 for (playlistName in playlistNames) {
-                    sb.append("\n[").append(playlistName).append("] - ")
+                    sb.append("\n[").append(playlistName.escapeMarkdown()).append("] - ")
                         .append(playlists[playlistName]?.size ?: 0)
                 }
                 sb.append("```")
@@ -125,7 +124,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             }
 
             val title = context.getTranslation("$root.tracks.title")
-                .withVariable("playlist", MarkdownSanitizer.escape(context.args[0]))
+                .withSafeVariable("playlist", context.args[0])
 
 
             val sb = StringBuilder()
@@ -134,7 +133,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                     .append("\n[#${index + 1}](")
                     .append(track.info.uri)
                     .append(") - ")
-                    .append(track.info.title)
+                    .append(track.info.title.escapeMarkdown())
                     .append(" `[")
                     .append(getDurationString(track.info.length))
                     .appendLine("]`")
@@ -179,12 +178,12 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
 
             val msg = if (tracks.size > 1) {
                 context.getTranslation("$root.removed.multiple")
-                    .withVariable("playlist", context.args[0])
+                    .withSafeVariable("playlist", context.args[0])
                     .withVariable("amount", tracks.size)
             } else {
                 context.getTranslation("$root.removed")
-                    .withVariable("playlist", context.args[0])
-                    .withVariable("title", tracks.first().info.title)
+                    .withSafeVariable("playlist", context.args[0])
+                    .withVariable("title", tracks.first().info.title.escapeMarkdown())
             }
 
             sendRsp(context, msg)
@@ -231,8 +230,8 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                 .set(context.authorId, context.args[0], position+1, LavalinkUtil.toMessage(audioTrack))
 
             val msg = context.getTranslation("$root.added")
-                .withVariable("title", audioTrack.info.title)
-                .withVariable("playlist", MarkdownSanitizer.escape(context.args[0]))
+                .withSafeVariable("title", audioTrack.info.title)
+                .withSafeVariable("playlist", context.args[0])
                 .withVariable("position", (tracksMap?.size ?: 0) + 1)
             sendRsp(context, msg)
         }
@@ -288,8 +287,8 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
 
             if (tracksMap == null) {
                 val msg = context.getTranslation(context.commandOrder.first().root + ".unknownplaylist")
-                    .withVariable(PLACEHOLDER_ARG, playlist)
-                    .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                    .withSafeVariable(PLACEHOLDER_ARG, playlist)
+                    .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
                 sendRsp(context, msg)
             }
 

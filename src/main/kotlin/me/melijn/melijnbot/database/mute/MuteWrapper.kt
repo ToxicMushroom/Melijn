@@ -1,10 +1,7 @@
 package me.melijn.melijnbot.database.mute
 
 import me.melijn.melijnbot.internals.command.CommandContext
-import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.internals.utils.awaitOrNull
-import me.melijn.melijnbot.internals.utils.getDurationString
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -59,15 +56,15 @@ class MuteWrapper(private val muteDao: MuteDao) {
         } ?: context.getTranslation("infinite")
 
         return context.getTranslation("message.punishmenthistory.mute")
-            .withVariable("muteAuthor", muteAuthor?.asTag ?: deletedUser)
+            .withSafeVariable("muteAuthor", muteAuthor?.asTag ?: deletedUser)
             .withVariable("muteAuthorId", "${mute.muteAuthorId}")
-            .withVariable("unmuteAuthor", if (mute.unmuteAuthorId == null) "/" else unmuteAuthor?.asTag ?: deletedUser)
+            .withSafeVariable("unmuteAuthor", if (mute.unmuteAuthorId == null) "/" else unmuteAuthor?.asTag ?: deletedUser)
             .withVariable("unmuteAuthorId", mute.unmuteAuthorId?.toString() ?: "/")
-            .withVariable("muteReason", mute.reason.substring(0, min(mute.reason.length, 830)))
-            .withVariable("unmuteReason", unmuteReason?.substring(0, min(unmuteReason.length, 830)) ?: "/")
+            .withSafeVariable("muteReason", mute.reason.substring(0, min(mute.reason.length, 830)))
+            .withSafeVariable("unmuteReason", unmuteReason?.substring(0, min(unmuteReason.length, 830)) ?: "/")
             .withVariable("startTime", mute.startTime.asEpochMillisToDateTime(zoneId))
             .withVariable("endTime", mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "/")
-            .withVariable("duration", muteDuration)
+            .withSafeVariable("duration", muteDuration)
             .withVariable("muteId", mute.muteId)
             .withVariable("active", "${mute.active}")
     }

@@ -167,7 +167,6 @@ class CommandClientBuilder(private val container: Container) {
         BirthdayMessageCommand(),
         SpamCommand(),
         GainProfileCommand(),
-        MusicNodeCommand(),
         DuckCommand(),
         AIWaifuCommand(),
         SetMusic247Command(),

@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.RunConditionUtil
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 
 class LikeCommand : AbstractCommand("command.like") {
@@ -50,7 +51,7 @@ class LikeCommand : AbstractCommand("command.like") {
             .set(context.authorId, "favourites", position+1, LavalinkUtil.toMessage(audioTrack))
 
         val msg = context.getTranslation("$root.added")
-            .withVariable("title", audioTrack.info.title)
+            .withSafeVariable("title", audioTrack.info.title)
             .withVariable("position", (tracksMap?.size ?: 0) + 1)
         sendRsp(context, msg)
     }

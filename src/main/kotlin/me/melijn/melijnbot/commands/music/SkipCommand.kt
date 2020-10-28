@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 
 class SkipCommand : AbstractCommand("command.skip") {
@@ -37,7 +38,7 @@ class SkipCommand : AbstractCommand("command.skip") {
         } else {
             context.getTranslation("$root.skip")
         }
-            .withVariable("track", cTrack.info.title)
+            .withSafeVariable("track", cTrack.info.title)
             .withVariable("url", cTrack.info.uri)
             .withVariable("position", getDurationString(trackPos))
             .withVariable("duration", getDurationString(cTrack.duration))
@@ -49,7 +50,7 @@ class SkipCommand : AbstractCommand("command.skip") {
             context.getTranslation("$root.nonext")
         } else {
             context.getTranslation("$root.next")
-                .withVariable("track", nTrack.info.title)
+                .withSafeVariable("track", nTrack.info.title)
                 .withVariable("url", nTrack.info.uri)
                 .withVariable("duration", getDurationString(nTrack.duration))
         }

@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.utils.getVoiceChannelByArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 
@@ -57,7 +58,7 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
 
             val msg = context.getTranslation("$root.moved.all")
                 .withVariable("amount", "$total")
-                .withVariable(PLACEHOLDER_CHANNEL, voiceChannelTarget.name)
+                .withSafeVariable(PLACEHOLDER_CHANNEL, voiceChannelTarget.name)
             sendRsp(context, msg)
             return
         }
@@ -72,7 +73,7 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
 
             val msg = context.getTranslation("$root.kicked")
                 .withVariable("amount", "$total")
-                .withVariable(PLACEHOLDER_CHANNEL, voiceChannel.name)
+                .withSafeVariable(PLACEHOLDER_CHANNEL, voiceChannel.name)
             sendRsp(context, msg)
             return
         }
@@ -89,8 +90,8 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
 
         val msg = context.getTranslation("$root.moved")
             .withVariable("amount", "$total")
-            .withVariable(PLACEHOLDER_CHANNEL, voiceChannel.name)
-            .withVariable("channel1", voiceChannelTarget.name)
+            .withSafeVariable(PLACEHOLDER_CHANNEL, voiceChannel.name)
+            .withSafeVariable("channel1", voiceChannelTarget.name)
         sendRsp(context, msg)
     }
 }

@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
 import me.melijn.melijnbot.internals.utils.isPositiveNumber
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import kotlin.math.roundToInt
 
 class GainProfileCommand : AbstractCommand("command.gainprofile") {
@@ -53,7 +53,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             player.setBands(floatArray)
 
             val msg = context.getTranslation("$root.loaded")
-                .withVariable("gainProfile", pair.first)
+                .withSafeVariable("gainProfile", pair.first)
             sendRsp(context, msg)
         }
     }
@@ -85,8 +85,8 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             wrapper.add(context.guildId, newName, profile.toFloatArray())
 
             val msg = context.getTranslation("$context.copied")
-                .withVariable("gainProfile1", name)
-                .withVariable("gainProfile2", newName)
+                .withSafeVariable("gainProfile1", name)
+                .withSafeVariable("gainProfile2", newName)
             sendRsp(context, msg)
         }
     }
@@ -112,7 +112,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             val name: String = pair.first
             val profile = pair.second
 
-            val msg = "```INI\n[$name]\n[bandId] - [spectrum] - [gain]\n" +
+            val msg = "```INI\n[%name%]\n[bandId] - [spectrum] - [gain]\n".withSafeVariable("name", name) +
                 "0 - [25 Hz] - ${((profile.band0 + 0.25f) * 500).roundToInt()}" +
                 "1 - [40 Hz] - ${((profile.band1 + 0.25f) * 500).roundToInt()}" +
                 "2 - [63 Hz] - ${((profile.band2 + 0.25f) * 500).roundToInt()}" +
@@ -158,7 +158,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             wrapper.remove(context.guildId, profileName)
 
             val msg = context.getTranslation("$root.removed")
-                .withVariable(PLACEHOLDER_ARG, profileName)
+                .withSafeVariable(PLACEHOLDER_ARG, profileName)
 
             sendRsp(context, msg)
         }
@@ -185,7 +185,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
 
             for ((i, name) in map.keys.sortedBy { it }.withIndex()) {
                 val profile = map[name] ?: continue
-                content += "[$name] - [$i]:\n" +
+                content += "[%name%] - [$i]:\n".withSafeVariable("name", name) +
                     "  ${profile.band0} - ${profile.band1} - ${profile.band2} - ${profile.band3} - ${profile.band4}" +
                     "  ${profile.band5} - ${profile.band6} - ${profile.band7} - ${profile.band8} - ${profile.band9}" +
                     "  ${profile.band10} - ${profile.band11} - ${profile.band12} - ${profile.band13} - ${profile.band14}"
@@ -217,7 +217,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             context.getGuildMusicPlayer().guildTrackManager.iPlayer.bands.let { wrapper.add(context.guildId, name, it) }
 
             val msg = context.getTranslation("$root.added")
-                .withVariable(PLACEHOLDER_ARG, name)
+                .withSafeVariable(PLACEHOLDER_ARG, name)
 
             sendRsp(context, msg)
         }
@@ -240,8 +240,8 @@ suspend fun getGainProfileNMessage(context: CommandContext, map: Map<String, Gai
             map[name]
         } else {
             val msg = context.getTranslation("${context.commandOrder.first().root}.notfound")
-                .withVariable(PLACEHOLDER_ARG, name)
-                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                .withSafeVariable(PLACEHOLDER_ARG, name)
+                .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
             sendRsp(context, msg)
             return null
         }

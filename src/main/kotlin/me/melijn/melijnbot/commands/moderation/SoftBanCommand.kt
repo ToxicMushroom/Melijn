@@ -44,13 +44,13 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         if (member != null) {
             if (!context.guild.selfMember.canInteract(member)) {
                 val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .withVariable(PLACEHOLDER_USER, member.asTag)
+                    .withSafeVariable(PLACEHOLDER_USER, member.asTag)
                 sendRsp(context, msg)
                 return
             }
             if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .withVariable(PLACEHOLDER_USER, member.asTag)
+                    .withSafeVariable(PLACEHOLDER_USER, member.asTag)
                 sendRsp(context, msg)
                 return
             }
@@ -125,16 +125,16 @@ class SoftBanCommand : AbstractCommand("command.softban") {
             }
 
             context.getTranslation("$root.success")
-                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withVariable("reason", softBan.reason)
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable("reason", softBan.reason)
 
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.softbanning.failed")
             softBanningMessage?.editMessage(failedMsg)?.queue()
 
             context.getTranslation("$root.failure")
-                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withVariable("cause", t.message ?: "/")
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable("cause", t.message ?: "/")
         }
         sendRsp(context, msg)
     }
@@ -161,11 +161,11 @@ fun getSoftBanMessage(
     }
 
     description += i18n.getTranslation(language, "message.punishment.softban.description")
-        .withVariable("softBanAuthor", softBanAuthor.asTag)
+        .withSafeVariable("softBanAuthor", softBanAuthor.asTag)
         .withVariable("softBanAuthorId", softBanAuthor.id)
-        .withVariable("softBanned", softBannedUser.asTag)
+        .withSafeVariable("softBanned", softBannedUser.asTag)
         .withVariable("softBannedId", softBannedUser.id)
-        .withVariable("reason", softBan.reason)
+        .withSafeVariable("reason", softBan.reason)
         .withVariable("moment", (softBan.moment.asEpochMillisToDateTime(zoneId)))
         .withVariable("softBanId", softBan.softBanId)
 
@@ -185,7 +185,7 @@ fun getSoftBanMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.softban.author")
-        .withVariable(PLACEHOLDER_USER, softBanAuthor.asTag)
+        .withSafeVariable(PLACEHOLDER_USER, softBanAuthor.asTag)
         .withVariable("spaces", " ".repeat(45).substring(0, 45 - softBanAuthor.name.length) + "\u200B")
 
     return EmbedBuilder()

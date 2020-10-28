@@ -3,7 +3,6 @@ package me.melijn.melijnbot.internals.utils
 import com.wrapper.spotify.Base64
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
-import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.nio.ByteBuffer
 import java.util.*
 import kotlin.math.pow
@@ -225,14 +224,30 @@ fun String.splitIETEL(delimiter: String): List<String> {
 fun String.withVariable(toReplace: String, obj: Any): String {
     return this.replace("%$toReplace%", obj.toString())
 }
-fun String.withSafeVariable(toReplace: String, obj: Any): String {
-    return this.replace("%$toReplace%", MarkdownSanitizer.escape(obj.toString())
-        .replace("discord.gg/", " yourFailedInviteLink ", ignoreCase = true)
+
+fun String.escapeMarkdown(): String {
+    return this.replace("*", "\\*")
+        .replace("||", "\\|\\|")
+        .replace("_", "\\_")
+        .replace("~~", "\\~\\~")
+        .replace("> ", "\\> ")
+        .replace("`", "\\`")
+}
+
+fun String.escapeDiscordInvites(): String {
+    return this.replace("discord.gg/", " yourFailedInviteLink ", ignoreCase = true)
         .replace("discord.com/invite", " yourFailedInviteLink ", ignoreCase = true)
         .replace("discordapp.com/invite", " yourFailedInviteLink ", ignoreCase = true)
-        .replace("discordapp.net/invite", " yourFailedInviteLink ", ignoreCase = true)
-        .replace("discord.media/invite", " yourFailedInviteLink ", ignoreCase = true))
+        .replace("discord.media/invite", " yourFailedInviteLink ", ignoreCase = true)
 }
+
+fun String.withSafeVariable(toReplace: String, obj: Any): String {
+    return this.replace(
+        "%$toReplace%",
+        obj.toString().escapeMarkdown()
+    ).escapeDiscordInvites()
+}
+
 fun String.toUpperWordCase(): String {
     var previous = ' '
     var newString = ""

@@ -29,7 +29,7 @@ class LavaManager(
         }
     }
 
-    suspend fun openConnection(channel: VoiceChannel, groupId: String) {
+    fun openConnection(channel: VoiceChannel, groupId: String) {
         if (jdaLavaLink == null) {
             val selfMember = channel.guild.selfMember
             if (selfMember.hasPermission(channel, Permission.VOICE_CONNECT)) {
@@ -59,7 +59,7 @@ class LavaManager(
         }
     }
 
-    suspend fun tryToConnectToVCSilent(voiceChannel: VoiceChannel, groupId: String): Boolean {
+    fun tryToConnectToVCSilent(voiceChannel: VoiceChannel, groupId: String): Boolean {
         val guild: Guild = voiceChannel.guild
         if (!guild.selfMember.hasPermission(voiceChannel, Permission.VOICE_CONNECT)) {
             return false

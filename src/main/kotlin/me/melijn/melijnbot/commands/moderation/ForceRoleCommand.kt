@@ -53,7 +53,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
                 content += if (userIds.size < 100) {
                     val member = context.shardManager.retrieveUserById(userId).awaitOrNull()
                     if (member == null) "\n- $userId"
-                    else "\n- [${member.asTag}] - $userId"
+                    else "\n- [%user%] - $userId".withSafeVariable("user", member.asTag)
                 } else {
                     "\n- $userId"
                 }
@@ -62,7 +62,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             content += "```"
 
             val msg = context.getTranslation("$root.title")
-                .withVariable(PLACEHOLDER_ROLE, role.name) + content
+                .withSafeVariable(PLACEHOLDER_ROLE, role.name) + content
             sendRspCodeBlock(context, msg, "INI", true)
         }
     }
@@ -93,7 +93,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             content += "```"
 
             val msg = context.getTranslation("$root.title")
-                .withVariable(PLACEHOLDER_USER, user.asTag) + content
+                .withSafeVariable(PLACEHOLDER_USER, user.asTag) + content
             sendRspCodeBlock(context, msg, "INI", true)
         }
     }
@@ -119,7 +119,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             if (member != null) {
                 if (!context.guild.selfMember.canInteract(member)) {
                     val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                        .withVariable(PLACEHOLDER_USER, member.asTag)
+                        .withSafeVariable(PLACEHOLDER_USER, member.asTag)
                     sendRsp(context, msg)
                     return
                 }
@@ -139,8 +139,8 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             }
 
             val msg = context.getTranslation("$root.success")
-                .withVariable(PLACEHOLDER_USER, user.asTag)
-                .withVariable(PLACEHOLDER_ROLE, role.name)
+                .withSafeVariable(PLACEHOLDER_USER, user.asTag)
+                .withSafeVariable(PLACEHOLDER_ROLE, role.name)
             sendRsp(context, msg)
         }
     }
@@ -168,8 +168,8 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             }
 
             val msg = context.getTranslation("$root.success")
-                .withVariable(PLACEHOLDER_USER, user.asTag)
-                .withVariable(PLACEHOLDER_ROLE, role.name)
+                .withSafeVariable(PLACEHOLDER_USER, user.asTag)
+                .withSafeVariable(PLACEHOLDER_ROLE, role.name)
             sendRsp(context, msg)
         }
     }
