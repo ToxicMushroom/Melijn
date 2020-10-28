@@ -122,7 +122,10 @@ class GuildTrackManager(
     }
 
     fun shuffle() {
-        val tempList = LinkedList(tracks)
+        val tempList: LinkedList<AudioTrack> = LinkedList()
+        for (el in tracks) {
+            tempList.add(el)
+        }
         tempList.shuffle()
         tracks = tempList
     }
