@@ -193,7 +193,7 @@ object AniListCommandUtil {
                 .withVariable("watched", animeStats?.count ?: 0)
                 .withVariable("epwatched", animeStats?.episodesWatched ?: 0)
                 .withVariable("meanscore", animeStats?.meanScore?.toString() ?: "--")
-                .withVariable("standardDeviation", animeStats?.standardDeviation.toString() ?: "--")
+                .withVariable("standardDeviation", animeStats?.standardDeviation?.toString() ?: "--")
         } else ""
 
         val mangaPart = mangaStatsTitle + if ((mangaStats?.count ?: 0) > 0) {
@@ -552,7 +552,7 @@ object AniListCommandUtil {
         val enddate = context.getTranslation("title.enddate")
 
 
-        eb.addField(genres, media.genres.joinToString("\n") ?: "/", true)
+        eb.addField(genres, media.genres.joinToString("\n"), true)
             .addField(othernames, alias, true)
             .addField(rating, (media.averageScore?.toString() ?: "?") + "%", true)
 

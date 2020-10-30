@@ -52,7 +52,7 @@ class QueueCommand : AbstractCommand("command.queue") {
                     description += "\n[#${index + 1}](${track.info.uri}) - %title% `[${getDurationString(track.duration)}]`"
                         .withSafeVariable("title", track.info.title)
                 } catch (t: Throwable) {
-                    t.sendInGuild(context, shouldSend = true, extra = (track?.duration?.toString() + "" + track?.info))
+                    t.sendInGuild(context, shouldSend = true, extra = (track.duration.toString() + "" + track.info))
                 }
             }
         } catch (t: Throwable) {
