@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.music
 
+import kotlinx.coroutines.sync.withLock
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -29,13 +30,17 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
             sendSyntax(context)
             return
         }
-        val index = getIntegerFromArgNMessage(context, 0, 0, trackManager.trackSize()) ?: return
 
         val playingTrack = trackManager.iPlayer.playingTrack ?: throw IllegalArgumentException("checks failed")
-        val track = if (index == 0) {
-            playingTrack
-        } else {
-            trackManager.tracks[index - 1]
+        val (index, track) = trackManager.tracks.lock.withLock {
+            val index = getIntegerFromArgNMessage(context, 0, 0, trackManager.tracks.size) ?: return
+            val track = if (index == 0) {
+                playingTrack
+            } else {
+                trackManager.tracks.get(index - 1)
+            }
+
+            Pair(index, track)
         }
 
         val trackUserData = (track.userData as TrackUserData)

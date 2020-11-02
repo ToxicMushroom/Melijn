@@ -11,6 +11,7 @@ import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.internals.threading.SafeList
 import me.melijn.melijnbot.internals.threading.Task
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.LogUtils
@@ -47,7 +48,7 @@ class GuildTrackManager(
     var loopedTrack = false
     var loopedQueue = false
 
-    var tracks: LinkedList<AudioTrack> = LinkedList()
+    var tracks: SafeList<AudioTrack> = SafeList()
     fun trackSize() = tracks.size
 
 
@@ -74,7 +75,7 @@ class GuildTrackManager(
             return
         }
 
-        val track: AudioTrack = tracks.poll() ?: return
+        val track: AudioTrack = tracks.removeAtOrNull(0) ?: return
         chekNChangeGroup(track.info.uri)
         if (track == lastTrack) {
             iPlayer.playTrack(track.makeClone())
@@ -108,10 +109,10 @@ class GuildTrackManager(
         } else {
             when (nextPos) {
                 NextSongPosition.BOTTOM -> {
-                    tracks.addLast(track)
+                    tracks.add(track)
                 }
                 NextSongPosition.TOP -> {
-                    tracks.addFirst(track)
+                    tracks.add(0, track)
                 }
                 NextSongPosition.RANDOM -> {
                     val pos = Random.nextInt(tracks.size) + 1
@@ -121,13 +122,8 @@ class GuildTrackManager(
         }
     }
 
-    fun shuffle() {
-        val tempList: LinkedList<AudioTrack> = LinkedList()
-        for (el in tracks) {
-            tempList.add(el)
-        }
-        tempList.shuffle()
-        tracks = tempList
+    suspend fun shuffle() {
+        tracks.shuffle()
     }
 
 
@@ -219,7 +215,7 @@ class GuildTrackManager(
         }
     }
 
-    fun clear() {
+    suspend fun clear() {
         tracks.clear()
     }
 
@@ -242,9 +238,10 @@ class GuildTrackManager(
 
 
     suspend fun skip(amount: Int) {
-        var nextTrack: AudioTrack? = null
+        var nextTrack: AudioTrack? = tracks.removeFirstAndGetNextOrNull(amount)
+
         for (i in 0 until amount) {
-            nextTrack = tracks.poll()
+            nextTrack = tracks.removeAtOrNull(0)
         }
         if (nextTrack == null) {
             stopAndDestroy()
@@ -259,7 +256,7 @@ class GuildTrackManager(
         iPlayer.setPaused(paused)
     }
 
-    fun removeAt(indexes: IntArray): Map<Int, AudioTrack> {
+    suspend fun removeAt(indexes: IntArray): Map<Int, AudioTrack> {
         val removed = HashMap<Int, AudioTrack>()
 
         for (index in indexes.sortedBy { it }.reversed()) {
