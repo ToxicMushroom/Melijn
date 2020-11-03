@@ -394,7 +394,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    suspend fun loadNewTrackPickerNMessage(context: CommandContext, query: String, nextPos: NextSongPosition) {
+    suspend fun loadNewTrackPickerNMessage(context: CommandContext, query: String, searchType: SearchType, nextPos: NextSongPosition) {
         val guildMusicPlayer = context.getGuildMusicPlayer()
         val rawInput = query
             .replace(YT_SELECTOR, "")
@@ -419,7 +419,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
         }
 
-        audioPlayerManager.loadItemOrdered(guildMusicPlayer, query, resultHandler)
+        ytSearch.search(rawInput, searchType, { tracks ->
+            prepareSearchMenu(context, tracks, nextPos)
+        }, {
+            sendMessageNoMatches(context, rawInput)
+        }, resultHandler)
     }
 
     private suspend fun prepareSearchMenu(context: CommandContext, trackList: List<AudioTrack>, nextPos: NextSongPosition) {

@@ -1,9 +1,8 @@
 package me.melijn.melijnbot.commands.music
 
+import me.melijn.melijnbot.enums.SearchType
 import me.melijn.melijnbot.internals.command.*
 import me.melijn.melijnbot.internals.music.LavaManager
-import me.melijn.melijnbot.internals.translation.SC_SELECTOR
-import me.melijn.melijnbot.internals.translation.YT_SELECTOR
 import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
@@ -56,7 +55,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
         val groupId = context.getGuildMusicPlayer().groupId
         if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
 
-        context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg", songPosition)
+        context.audioLoader.loadNewTrackPickerNMessage(context, songArg, SearchType.YT, songPosition)
     }
 
     class YTArg(parent: String) : AbstractCommand("$parent.yt") {
@@ -89,7 +88,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
 
             val groupId = context.getGuildMusicPlayer().groupId
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
-            context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg", songPosition)
+            context.audioLoader.loadNewTrackPickerNMessage(context, songArg, SearchType.YT, songPosition)
         }
 
     }
@@ -124,7 +123,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
 
             val groupId = context.getGuildMusicPlayer().groupId
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
-            context.audioLoader.loadNewTrackPickerNMessage(context, "$SC_SELECTOR$songArg", songPosition)
+            context.audioLoader.loadNewTrackPickerNMessage(context, songArg, SearchType.SC, songPosition)
         }
     }
 }
