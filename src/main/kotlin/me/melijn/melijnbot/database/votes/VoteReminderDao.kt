@@ -35,8 +35,24 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
         }, beforeMillis)
     }
 
+    fun removeReminder(userId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?", userId)
+    }
+
     fun removeReminders(beforeMillis: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE remindAt < ?", beforeMillis)
+    }
+
+    fun removeReminders(userIds: MutableList<Long>) {
+        driverManager.getUsableConnection { con ->
+            con.prepareStatement("DELETE FROM $table WHERE userId = ?").use { statement ->
+                for (userId in userIds) {
+                    statement.setLong(1, userId)
+                    statement.addBatch()
+                }
+                statement.executeBatch()
+            }
+        }
     }
 }
 

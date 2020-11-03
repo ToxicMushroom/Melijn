@@ -11,20 +11,24 @@ class VoteReminderService(val daoManager: DaoManager) : Service("VoteReminder", 
 
     override val service: RunnableTask = RunnableTask {
         val cMillis = System.currentTimeMillis() + 120_000
-        val votes = daoManager.voteReminderWrapper.getReminders(cMillis)
+        val voteReminderWrapper = daoManager.voteReminderWrapper
+        val votes = voteReminderWrapper.getReminders(cMillis)
         val denyVoteWrapper = daoManager.denyVoteReminderWrapper
 
+        val usersWithDeniedReminders = mutableListOf<Long>()
         for ((userId, remindAt) in votes) {
             val denied = denyVoteWrapper.contains(userId)
             if (denied) {
-
+                usersWithDeniedReminders.add(userId)
                 continue
             }
             TaskManager.asyncAfter(remindAt - System.currentTimeMillis()) {
-
+                LogUtils.sendVoteReminder(daoManager, userId)
+                voteReminderWrapper.removeReminder(userId)
             }
 
-            LogUtils.sendVoteReminder(daoManager, userId)
+
         }
+        voteReminderWrapper.bulkRemove(usersWithDeniedReminders)
     }
 }

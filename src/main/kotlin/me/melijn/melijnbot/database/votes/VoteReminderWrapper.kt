@@ -13,4 +13,12 @@ class VoteReminderWrapper(private val voteReminderDao: VoteReminderDao) {
     fun removeReminders(beforeMillis: Long) {
         voteReminderDao.removeReminders(beforeMillis)
     }
+
+    fun removeReminder(userId: Long) {
+        voteReminderDao.removeReminder(userId)
+    }
+
+    fun bulkRemove(userIds: MutableList<Long>) {
+        voteReminderDao.removeReminders(userIds)
+    }
 }
