@@ -6,7 +6,7 @@ class VoteReminderWrapper(private val voteReminderDao: VoteReminderDao) {
         voteReminderDao.addReminder(userId, remindAt)
     }
 
-    suspend fun getReminders(beforeMillis: Long): List<Long> {
+    suspend fun getReminders(beforeMillis: Long): List<VoteReminder> {
         return voteReminderDao.getReminders(beforeMillis)
     }
 

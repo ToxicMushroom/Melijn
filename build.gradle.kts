@@ -109,7 +109,6 @@ dependencies {
 
     // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
     implementation("io.ktor:ktor:1.4.1")
-    implementation("io.ktor:ktor-client-cio:1.4.1")
     implementation("io.ktor:ktor-client-okhttp:1.4.1")
     implementation("io.ktor:ktor-server-netty:1.4.1")
 

@@ -20,12 +20,15 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
             userId, remindAt, remindAt)
     }
 
-    suspend fun getReminders(beforeMillis: Long): List<Long> = suspendCoroutine {
+    suspend fun getReminders(beforeMillis: Long): List<VoteReminder> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE remindAt < ?", { rs ->
-            val list = mutableListOf<Long>()
+            val list = mutableListOf<VoteReminder>()
 
             while (rs.next()) {
-                list.add(rs.getLong("userId"))
+                list.add(VoteReminder(
+                    rs.getLong("userId"),
+                    rs.getLong("remindAt")
+                ))
             }
 
             it.resume(list)
@@ -36,3 +39,8 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeUpdate("DELETE FROM $table WHERE remindAt < ?", beforeMillis)
     }
 }
+
+data class VoteReminder(
+    val userId: Long,
+    val remindAt: Long
+)
