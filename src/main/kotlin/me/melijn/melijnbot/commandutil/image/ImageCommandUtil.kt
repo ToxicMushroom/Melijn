@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -304,6 +305,11 @@ object ImageCommandUtil {
         }
 
         val img = decoder.image
+        if (img == null) {
+            lmsg?.delete()?.queue()
+            sendRsp(context, "The .gif you provided actually doesnt point to a valid gif format. Contact support if you have any questions regarding this issue.")
+            return
+        }
 
         val imgData = DataObject.empty()
         imgDataParser(img, imgData)

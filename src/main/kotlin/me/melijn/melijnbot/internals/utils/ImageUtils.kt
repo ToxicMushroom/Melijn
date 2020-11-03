@@ -105,7 +105,7 @@ object ImageUtils {
                 arg = true
                 url = args[0]
                 try {
-                    if (!checkFormat(context, url, reqFormat)) return null
+                    if (reqFormat == "gif" && !checkFormat(context, url, reqFormat)) return null
 
                     img = downloadImage(context.webManager.proxiedHttpClient, url)
                     ByteArrayInputStream(img).use { bis ->
@@ -118,6 +118,7 @@ object ImageUtils {
                     t.printStackTrace()
                     return null
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     val msg = context.getTranslation("message.notuserorurl")
                         .withVariable(PLACEHOLDER_ARG, args[0])
                     sendRsp(context, msg)
