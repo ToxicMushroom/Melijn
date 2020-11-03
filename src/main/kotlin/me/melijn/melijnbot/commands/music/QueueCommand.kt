@@ -22,7 +22,7 @@ class QueueCommand : AbstractCommand("command.queue") {
         id = 82
         name = "queue"
         aliases = arrayOf("q", "list", "songlist", "songs", "tracks")
-        discordChannelPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_HISTORY)
         commandCategory = CommandCategory.MUSIC
     }
 
