@@ -38,7 +38,12 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
                 }
                 if (notEnoughPermissionsAndMessage(context, context.textChannel, Permission.MANAGE_CHANNEL)) return
                 val textChannel = context.textChannel
-                val copy = textChannel.createCopy().reason("(clearChannel) ${context.author.asTag}").await() // TODO: fix permision manage_channel missing
+
+                if (textChannel.parent?.channels?.size ?: 0 == 50) {
+                    sendRsp(context, "I cant create a new channel here, the limit under each category is 50 channels")
+                    return
+                }
+                val copy = textChannel.createCopy().reason("(clearChannel) ${context.author.asTag}").await()
                 copy.manager.setPosition(textChannel.position)
 
                 textChannel.delete().reason("(clearChannel) ${context.author.asTag}").queue()
@@ -47,7 +52,11 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
                 val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
                 if (notEnoughPermissionsAndMessage(context, textChannel, Permission.MANAGE_CHANNEL)) return
 
-                val copy = textChannel.createCopy().reason("(clearChannel) ${context.author.asTag}").await() // TODO: fix permission manage_channel missing
+                if (textChannel.parent?.channels?.size ?: 0 == 50) {
+                    sendRsp(context, "I cant create a new channel here, the limit under each category is 50 channels")
+                    return
+                }
+                val copy = textChannel.createCopy().reason("(clearChannel) ${context.author.asTag}").await()
                 copy.manager.setPosition(textChannel.position)
 
                 textChannel.delete().reason("(clearChannel) ${context.author.asTag}").queue()
