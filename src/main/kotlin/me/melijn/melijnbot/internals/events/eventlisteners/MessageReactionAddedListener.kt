@@ -134,16 +134,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         val starboardSettings = container.daoManager.starboardSettingsWrapper
         val starboardMessageWrapper = container.daoManager.starboardMessageWrapper
-        val channel = event.guild.getAndVerifyChannelByType(container.daoManager, ChannelType.STARBOARD, Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS)
+        val sbchannel = event.guild.getAndVerifyChannelByType(container.daoManager, ChannelType.STARBOARD, Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS)
             ?: return
         val msg = starboardMessageWrapper.getStarboardInfo(event.messageIdLong)
         if (msg == null) {
+            if (event.channel.isNSFW) return
             val reactions = event.channel.retrieveReactionUsersById(event.messageIdLong, "⭐").await().filter { !it.isBot }.size
             val ogMessage = event.channel.retrieveMessageById(event.messageIdLong).await()
             val settings = starboardSettings.getStarboardSettings(event.guild.idLong)
             if (reactions >= settings.minStars) {
                 val starboardMessage = getSendableStarboardMessage(event, reactions, ogMessage.author, event.channel) ?: return
-                val message = channel.sendMessage(starboardMessage).await()
+                val message = sbchannel.sendMessage(starboardMessage).await()
                 message.addReaction("⭐").queue()
                 starboardMessageWrapper.setStarboardInfo(event.guild.idLong, event.channel.idLong, ogMessage.author.idLong, event.messageIdLong,
                     message.idLong, reactions, false, System.currentTimeMillis())
@@ -151,12 +152,14 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         } else {
             if (msg.deleted) return
-            val partStars1 = channel.retrieveReactionUsersById(msg.starboardMessageId, "⭐").await().filter { !it.isBot }.size
+            val sbReactionUsers = sbchannel.retrieveReactionUsersById(msg.starboardMessageId, "⭐").awaitOrNull()
+                ?.filter { !it.isBot }?.map { it.idLong } ?: return
+            val partStars1 = sbReactionUsers.size
             val ogChannel = event.guild.getTextChannelById(msg.ogChannelId)
             val partStars2N = ogChannel
                 ?.retrieveReactionUsersById(msg.ogMessageId, "⭐")
                 ?.awaitOrNull()
-                ?.filter { !it.isBot }
+                ?.filter { !it.isBot && !sbReactionUsers.contains(it.idLong) }
                 ?.size
             if (partStars2N == null) {
                 starboardMessageWrapper.updateChannel(msg.ogMessageId, 0)
@@ -165,9 +168,9 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val partStars2 = partStars2N ?: 0
             val newStarCount = partStars1 + partStars2
             if (newStarCount != msg.stars) {
-                val message = channel.retrieveMessageById(msg.starboardMessageId).await()
+                val message = sbchannel.retrieveMessageById(msg.starboardMessageId).await()
                 val author = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull()
-                val newContent = getSendableStarboardMessage(event, msg.stars + 1, author, ogChannel)
+                val newContent = getSendableStarboardMessage(event, newStarCount, author, ogChannel)
                 starboardMessageWrapper.setStarboardInfo(event.guild.idLong, msg.ogChannelId, msg.authorId, msg.starboardMessageId, msg.starboardMessageId, newStarCount, msg.deleted, msg.moment)
                 newContent?.let { message.editMessage(it).queue() }
             }
@@ -195,6 +198,12 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             }
         } else {
             eb.setDescription(ogMessage.contentRaw.replace("[", "\\["))
+        }
+
+        for (attachment in ogMessage.attachments) {
+            if (attachment.isImage) {
+                eb.setImage(attachment.url)
+            }
         }
 
         val messageBuilder = MessageBuilder()
