@@ -1136,9 +1136,9 @@ fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
         permParts.last() == "*" -> (
             Pattern.quote(permParts.subList(0, permParts.size - 1)
                 .joinToString(".")) + "(..*)?"
-            ).toRegex()
+            ).toRegex(RegexOption.IGNORE_CASE)
 
-        else -> Pattern.quote(arg).toRegex()
+        else -> Pattern.quote(arg).toRegex(RegexOption.IGNORE_CASE)
     }
 
     val perms = getPermissions(commands)
