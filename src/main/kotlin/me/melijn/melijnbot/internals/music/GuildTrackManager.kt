@@ -219,11 +219,11 @@ class GuildTrackManager(
         tracks.clear()
     }
 
-    fun getPosition(audioTrack: AudioTrack): Int =
+    suspend fun getPosition(audioTrack: AudioTrack): Int =
         if (iPlayer.playingTrack == audioTrack) {
             0
         } else {
-            tracks.toList().indexOf(audioTrack) + 1
+            tracks.indexOf(audioTrack) + 1
         }
 
     //PLEASE RUN IN VOICE_SAFE

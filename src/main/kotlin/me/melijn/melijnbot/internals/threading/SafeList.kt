@@ -3,7 +3,7 @@ package me.melijn.melijnbot.internals.threading
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class SafeList<E> : MutableIterable<E> {
+class SafeList<E> {
 
     val lock = Mutex()
     private val list = ArrayList<E>()
@@ -62,11 +62,6 @@ class SafeList<E> : MutableIterable<E> {
         }
     }
 
-    // WARNING: iterating doesnt lock the list but you can access the lock and lock it yourself if required
-    override fun iterator(): MutableIterator<E> {
-        return list.iterator()
-    }
-
     suspend fun shuffle() {
         lock.withLock {
             list.shuffle()
@@ -86,6 +81,30 @@ class SafeList<E> : MutableIterable<E> {
                 else list.removeAt(0)
             }
             return list.removeFirstOrNull()
+        }
+    }
+
+    suspend fun forEach(function: (E) -> Unit) {
+        lock.withLock {
+            val size = list.size
+            for (i in 0 until size) {
+                function.invoke(list[i])
+            }
+        }
+    }
+
+    suspend fun indexedForEach(function: (Int, E) -> Unit) {
+        lock.withLock {
+            val size = list.size
+            for (i in 0 until size) {
+                function.invoke(i, list[i])
+            }
+        }
+    }
+
+    suspend fun indexOf(audioTrack: E): Int {
+        lock.withLock {
+            return list.indexOf(audioTrack)
         }
     }
 

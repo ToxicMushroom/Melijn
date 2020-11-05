@@ -181,7 +181,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         sendEmbedRsp(context, eb.build())
     }
 
-    private fun getQueuePosition(context: CommandContext, audioTrack: AudioTrack): Int =
+    private suspend fun getQueuePosition(context: CommandContext, audioTrack: AudioTrack): Int =
         context.musicPlayerManager.getGuildMusicPlayer(context.guild).guildTrackManager.getPosition(audioTrack)
 
     suspend fun loadSpotifyTrack(

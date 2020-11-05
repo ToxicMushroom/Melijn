@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.database.audio
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import kotlinx.coroutines.sync.withLock
 import me.melijn.llklient.utils.LavalinkUtil
 import me.melijn.melijnbot.internals.music.TrackUserData
 import me.melijn.melijnbot.internals.music.toMessage
@@ -42,13 +41,12 @@ class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChann
         tracksDao.set(guildId, 0, playing, udMessage)
 
         var goodIndex = 1
-        queue.lock.withLock {
-            for (track in queue) {
-                val json = LavalinkUtil.toMessage(track)
-                ud = playingTrack.userData as TrackUserData?
-                udMessage = ud?.toMessage() ?: ""
-                tracksDao.set(guildId, goodIndex++, json, udMessage)
-            }
+
+        queue.forEach { track ->
+            val json = LavalinkUtil.toMessage(track)
+            ud = playingTrack.userData as TrackUserData?
+            udMessage = ud?.toMessage() ?: ""
+            tracksDao.set(guildId, goodIndex++, json, udMessage)
         }
     }
 

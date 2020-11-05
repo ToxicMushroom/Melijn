@@ -28,7 +28,7 @@ class QueueCommand : AbstractCommand("command.queue") {
 
     override suspend fun execute(context: CommandContext) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
-        val allTracks = trackManager.tracks
+
 
         var description = ""
 
@@ -45,18 +45,16 @@ class QueueCommand : AbstractCommand("command.queue") {
         val status = context.getTranslation(if (trackManager.iPlayer.paused) "paused" else "playing")
         description += "[$status](${cTrack.info.uri}) - **%title%** `[${getDurationString(trackManager.iPlayer.trackPosition)} / ${getDurationString(cTrack.duration)}]`"
             .withSafeVariable("title", cTrack.info.title)
-        try {
-            for ((index, track) in allTracks.withIndex()) {
-                try {
-                    totalDuration += track.duration
-                    description += "\n[#${index + 1}](${track.info.uri}) - %title% `[${getDurationString(track.duration)}]`"
-                        .withSafeVariable("title", track.info.title)
-                } catch (t: Throwable) {
-                    t.sendInGuild(context, shouldSend = true, extra = (track.duration.toString() + "" + track.info))
-                }
+
+        val safeTracks = trackManager.tracks
+        safeTracks.indexedForEach { index, track ->
+            try {
+                totalDuration += track.duration
+                description += "\n[#${index + 1}](${track.info.uri}) - %title% `[${getDurationString(track.duration)}]`"
+                    .withSafeVariable("title", track.info.title)
+            } catch (t: Throwable) {
+                t.sendInGuild(context, shouldSend = true, extra = (track.duration.toString() + "" + track.info))
             }
-        } catch (t: Throwable) {
-            t.sendInGuild(context, shouldSend = true, extra = allTracks.joinToString())
         }
 
 
@@ -64,7 +62,7 @@ class QueueCommand : AbstractCommand("command.queue") {
 
         description += context.getTranslation("$root.fakefooter")
             .withVariable("duration", getDurationString(totalDuration - trackManager.iPlayer.trackPosition))
-            .withVariable("amount", (allTracks.size + 1).toString())
+            .withVariable("amount", (safeTracks.size + 1).toString())
 
         val footerPagination = context.getTranslation("message.pagination")
 
