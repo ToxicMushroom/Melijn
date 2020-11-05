@@ -22,18 +22,18 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
             jsonUser.getString("user_id"),
             jsonUser.getString("username"),
             jsonUser.getString("join_date"),
-            jsonUser.getString("playcount").toLong(),
-            jsonUser.getString("level").toFloat(),
-            jsonUser.getString("accuracy").toFloat(),
-            jsonUser.getString("count_rank_ssh").toLong(),
-            jsonUser.getString("count_rank_ss").toLong(),
-            jsonUser.getString("count_rank_sh").toLong(),
-            jsonUser.getString("count_rank_s").toLong(),
-            jsonUser.getString("count_rank_a").toLong(),
+            jsonUser.getString("playcount", "0").toLong(),
+            jsonUser.getString("level", "1").toFloat(),
+            jsonUser.getString("accuracy", "0").toFloat(),
+            jsonUser.getString("count_rank_ssh", "0").toLong(),
+            jsonUser.getString("count_rank_ss", "0").toLong(),
+            jsonUser.getString("count_rank_sh", "0").toLong(),
+            jsonUser.getString("count_rank_s", "0").toLong(),
+            jsonUser.getString("count_rank_a", "0").toLong(),
             jsonUser.getString("country"),
-            jsonUser.getString("total_seconds_played").toLong(),
-            jsonUser.getString("pp_rank").toLong(),
-            jsonUser.getString("pp_country_rank").toLong()
+            jsonUser.getString("total_seconds_played", "0").toLong(),
+            jsonUser.getString("pp_rank", "-1").toLong(),
+            jsonUser.getString("pp_country_rank", "-1").toLong()
         )
     }
 
