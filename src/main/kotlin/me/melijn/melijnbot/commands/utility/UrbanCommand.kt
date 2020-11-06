@@ -65,6 +65,7 @@ class UrbanCommand : AbstractCommand("command.urban") {
     private suspend fun getUrbanResult(webManager: WebManager, arg: String): Pair<String?, String?>? {
         val json = WebUtils.getJsonFromUrl(webManager.httpClient, "https://api.urbandictionary.com/v0/define?term=$arg")
             ?: return null
+        if (!json.hasKey("list")) return null
         val results = json.getArray("list")
         if (results.isEmpty) return Pair(null, null)
         val result = results.getObject(0)
