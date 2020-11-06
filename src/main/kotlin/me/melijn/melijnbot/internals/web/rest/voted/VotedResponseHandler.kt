@@ -110,6 +110,6 @@ object VotedResponseHandler {
             }
         }
 
-        context.call.respondText { "success" }
+        context.call.respondText(ContentType.Application.Json) { DataObject.empty().put("status", "OK").toString() }
     }
 }
