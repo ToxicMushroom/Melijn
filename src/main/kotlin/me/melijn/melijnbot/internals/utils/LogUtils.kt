@@ -612,23 +612,29 @@ object LogUtils {
         }
     }
 
-    suspend fun sendReceivedVoteRewards(container: Container, userId: Long, newBalance: Long, credits: Long, streak: Int, votes: Int) {
+    suspend fun sendReceivedVoteRewards(container: Container, userId: Long, newBalance: Long, baseMel: Long, totalMel: Long, streak: Long, votes: Long, site: String) {
         val user = MelijnBot.shardManager.retrieveUserById(userId).await()
         val pc = user.openPrivateChannel().awaitOrNull() ?: return
 
-        val extraMel = if (credits - 100 > 0) {
-            "100 + ${credits - 100}"
+        val extraMel = if (totalMel - baseMel > 0) {
+            "100 + ${totalMel - baseMel}"
         } else "100"
         val embedder = Embedder(container.daoManager, -1, userId, container.settings.botInfo.embedColor)
-            .setTitle("Vote Received")
-            .setDescription("Thanks for voting, you received **$extraMel** mel. Your new balance is **$newBalance** mel")
-            .addField("Current Streak", "$streak (${credits - 100} mel)", true)
+            .setTitle("Vote Received from $site")
+            .setDescription("Thanks for voting, you received **$extraMel** mel. Your new balance is **$newBalance** mel\n" +
+                "Note: bonus mel is calculated using: premium status, speed, weekend, total votes and streak.")
+            .addField("Current Streak", "$streak", true)
             .addField("Total Votes", votes.toString(), true)
             .build()
 
         sendEmbed(pc, embedder)
     }
 
+
+    const val VOTE_LINKS = "Site 1: [top.gg](https://top.gg/bot/melijn/vote) `12h` **Unblockable ADS**\n" +
+        "Site 2: [discordbotlist.com](https://discordbotlist.com/bots/melijn/upvote) `24h` **ReCaptcha**\n" +
+        "Site 3: [botsfordiscord.com](https://botsfordiscord.com/bot/368362411591204865/vote) `12am utc` **ReCaptcha & Checkbox to join their server (default on)**\n" +
+        "Site 4: [discord.boats](https://discord.boats/bot/368362411591204865/vote) `24h` **Recaptcha & Checkbox to join their server (default on)**"
     suspend fun sendVoteReminder(daoManager: DaoManager, userId: Long) {
         val user = MelijnBot.shardManager.retrieveUserById(userId).await()
         val pc = user.openPrivateChannel().awaitOrNull() ?: return
@@ -636,8 +642,10 @@ object LogUtils {
         val streak = daoManager.voteWrapper.getUserVote(userId)?.streak ?: 0
 
         val embedder = Embedder(daoManager, -1, userId, Container.instance.settings.botInfo.embedColor)
-            .setTitle("Your vote is ready (o゜▽゜)o☆", "https://top.gg/bot/melijn/vote")
-            .setDescription("This is a reminder that you can [vote](https://top.gg/bot/melijn/vote) again.\nIn 24 hours from receiving this message your streak will otherwise be lost :c")
+            .setTitle("Your vote is ready (o゜▽゜)o☆")
+            .setDescription("This is a reminder that you can vote again.\n" +
+                VOTE_LINKS +
+                "\nIn 36 hours from receiving this message your streak will otherwise be lost :c")
             .addField("Current Streak", "$streak", true)
             .setFooter("You can disable this reminder with >toggleVoteReminder")
             .build()
@@ -646,5 +654,15 @@ object LogUtils {
             sendEmbed(pc, embedder)
         } catch (t: Throwable) {
         }
+    }
+
+    suspend fun sendReceivedVoteTest(container: Container, userId: Long, botlist: String) {
+        val user = MelijnBot.shardManager.retrieveUserById(userId).await()
+        val pc = user.openPrivateChannel().awaitOrNull() ?: return
+        val embedder = Embedder(container.daoManager, -1, userId, container.settings.botInfo.embedColor)
+            .setTitle("TestVote Received from $botlist")
+            .build()
+
+        sendEmbed(pc, embedder)
     }
 }

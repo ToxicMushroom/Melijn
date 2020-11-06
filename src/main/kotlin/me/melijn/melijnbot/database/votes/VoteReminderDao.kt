@@ -54,6 +54,18 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
             }
         }
     }
+
+    suspend fun get(userId: Long): Long? = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", { rs ->
+            if (rs.next()) {
+                it.resume(rs.getLong("remindAt"))
+            } else {
+                it.resume(null)
+            }
+        }, userId)
+    }
+
+
 }
 
 data class VoteReminder(

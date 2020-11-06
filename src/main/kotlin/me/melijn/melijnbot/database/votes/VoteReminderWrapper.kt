@@ -21,4 +21,9 @@ class VoteReminderWrapper(private val voteReminderDao: VoteReminderDao) {
     fun bulkRemove(userIds: MutableList<Long>) {
         voteReminderDao.removeReminders(userIds)
     }
+
+    suspend fun getReminder(userId: Long): Long? {
+        return voteReminderDao.get(userId)
+    }
+
 }

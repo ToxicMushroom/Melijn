@@ -17,6 +17,7 @@ data class Settings(
     val database: Database,
     val redis: Redis,
     val emote: Emote,
+    val economy: Economy,
     val unLoggedThreads: Array<String>
 ) {
 
@@ -111,6 +112,12 @@ data class Settings(
         val slotId: Long
     )
 
+    data class Economy(
+        val baseMel: Long,
+        val premiumMultiplier: Float,
+        val streakExpireHours: Int
+    )
+
     companion object {
         private val dotenv = dotenv {
             this.filename = System.getenv("ENV_FILE") ?: ".env"
@@ -121,6 +128,7 @@ data class Settings(
             ?: throw IllegalStateException("missing env value: $path")
 
         fun getLong(path: String): Long = get(path).toLong()
+        fun getFloat(path: String): Float = get(path).toFloat()
         fun getInt(path: String): Int = get(path).toInt()
         fun getBoolean(path: String): Boolean = get(path).toBoolean()
 
@@ -208,6 +216,11 @@ data class Settings(
                 ),
                 Emote(
                     getLong("emote.slotId")
+                ),
+                Economy(
+                    getLong("economy.baseMel"),
+                    getFloat("economy.premiumMultiplier"),
+                    getInt("economy.streakExpireHours")
                 ),
                 get("unloggedThreads").splitIETEL(",").toTypedArray()
             )

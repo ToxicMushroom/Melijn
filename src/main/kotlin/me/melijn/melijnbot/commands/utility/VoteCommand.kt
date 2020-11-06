@@ -3,8 +3,9 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
-import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.LogUtils.VOTE_LINKS
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 
 const val VOTE_URL: String = "https://top.gg/bot/melijn/vote"
 
@@ -18,8 +19,8 @@ class VoteCommand : AbstractCommand("command.vote") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val msg = context.getTranslation("$root.success")
-            .withVariable("url", VOTE_URL)
-        sendRsp(context, msg)
+        val eb = Embedder(context)
+            .setDescription(VOTE_LINKS)
+        sendEmbedRsp(context, eb.build())
     }
 }
