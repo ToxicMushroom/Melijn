@@ -8,11 +8,15 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.web.RequestContext
 import net.dv8tion.jda.api.utils.data.DataObject
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.math.ln
 import kotlin.math.max
 
 object VotedResponseHandler {
+
+    val logger: Logger = LoggerFactory.getLogger(VotedResponseHandler::class.java)
     suspend fun handleVotedResponse(context: RequestContext) {
         if (context.call.request.header("Authorization") != context.restToken) {
             context.call.respondText(status = HttpStatusCode.Forbidden) { "bruh" }
@@ -20,6 +24,8 @@ object VotedResponseHandler {
         }
 
         val body = DataObject.fromJson(context.call.receiveText())
+        logger.info(body.toString())
+
         val botId = body.getString("bot").toLong()
         if (botId != context.container.settings.botInfo.id) {
             context.call.respondText(status = HttpStatusCode.Forbidden) { "bruh" }
