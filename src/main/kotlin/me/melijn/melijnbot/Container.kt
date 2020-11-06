@@ -23,7 +23,7 @@ val objectMapper = jacksonObjectMapper()
 class Container {
 
 
-    val voteReq: Boolean = true
+    var voteReq: Boolean = true
     var logToDiscord: Boolean = true
 
     // userId, roleId, cause
