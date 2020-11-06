@@ -77,7 +77,8 @@ object RunConditionUtil {
         return if (
             container.settings.botInfo.developerIds.contains(event.author.idLong) ||
             container.daoManager.supporterWrapper.getUsers().contains(event.author.idLong) ||
-            container.settings.environment == Environment.TESTING
+            container.settings.environment == Environment.TESTING ||
+            !container.voteReq
         ) {
             true
         } else {
