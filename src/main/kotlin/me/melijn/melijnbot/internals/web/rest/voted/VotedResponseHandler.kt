@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.math.ln
 import kotlin.math.max
-import kotlin.math.min
 
 object VotedResponseHandler {
 
@@ -62,7 +61,7 @@ object VotedResponseHandler {
         }
 
 
-        val speedMultiplier = min(0.0, (maxMillisToKeepStreak - millisSinceVoteReset).toDouble() / maxMillisToKeepStreak.toDouble()) + 1.0
+        val speedMultiplier = max(0.0, (maxMillisToKeepStreak - millisSinceVoteReset).toDouble() / maxMillisToKeepStreak.toDouble()) + 1.0
         val premiumMultiplier = context.container.settings.economy.premiumMultiplier
 
         TaskManager.async {
