@@ -1,13 +1,21 @@
 package me.melijn.melijnbot.database.reminder
 
-import me.melijn.melijnbot.database.votes.VoteReminder
+class ReminderWrapper(private val reminderDao: ReminderDao) {
 
-class ReminderWrapper(val reminderDao: ReminderDao) {
-    fun add(reminder: VoteReminder) {
-
+    fun add(reminder: Reminder) {
+        val (userId, remindAt, message) = reminder
+        reminderDao.add(userId, remindAt, message)
     }
 
     fun remove(userId: Long, time: Long) {
         reminderDao.remove(userId, time)
+    }
+
+    suspend fun getRemindersOfUser(userId: Long): List<Reminder> {
+        return reminderDao.getRemindersOfUser(userId)
+    }
+
+    suspend fun getReminders(cMillis: Long): List<Reminder> {
+        return reminderDao.getPastReminders(cMillis)
     }
 }

@@ -231,7 +231,7 @@ fun String.escapeMarkdown(): String {
         .replace("_", "\\_")
         .replace("~~", "\\~\\~")
         .replace("> ", "\\> ")
-        .replace("`", "\\`")
+        .replace("`", "'")
 }
 
 fun String.escapeDiscordInvites(): String {

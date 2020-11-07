@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.awt.Color
+import java.time.Instant
 import java.time.ZoneId
 
 object LogUtils {
@@ -661,6 +662,18 @@ object LogUtils {
         val pc = user.openPrivateChannel().awaitOrNull() ?: return
         val embedder = Embedder(container.daoManager, -1, userId, container.settings.botInfo.embedColor)
             .setTitle("TestVote Received from $botlist")
+            .build()
+
+        sendEmbed(pc, embedder)
+    }
+
+    suspend fun sendReminder(daoManager: DaoManager, userId: Long, remindAt: Long, message: String) {
+        val user = MelijnBot.shardManager.retrieveUserById(userId).await()
+        val pc = user.openPrivateChannel().awaitOrNull() ?: return
+        val embedder = Embedder(daoManager, -1, userId, Container.instance.settings.botInfo.embedColor)
+            .setTitle("Your Reminder")
+            .setDescription("message: $message")
+            .setTimestamp(Instant.ofEpochMilli(remindAt))
             .build()
 
         sendEmbed(pc, embedder)

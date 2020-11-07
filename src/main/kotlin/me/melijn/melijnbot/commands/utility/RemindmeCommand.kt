@@ -1,0 +1,118 @@
+package me.melijn.melijnbot.commands.utility
+
+import me.melijn.melijnbot.database.reminder.Reminder
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+
+class RemindmeCommand : AbstractCommand("command.remindme") {
+
+    init {
+        id = 226
+        name = "remindme"
+        aliases = arrayOf("remind", "reminder")
+        children = arrayOf(
+            ListArg(root),
+            RemoveAtArg(root)
+        )
+        cooldown = 2000
+        commandCategory = CommandCategory.UTILITY
+    }
+
+    class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
+
+        init {
+            name = "removeAt"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            val reminderWrapper = context.daoManager.reminderWrapper
+            val reminders = reminderWrapper.getRemindersOfUser(context.authorId)
+            if (reminders.isEmpty()) {
+                val msg = context.getTranslation("$root.empty")
+                sendRsp(context, msg)
+                return
+            }
+
+            val index = (getIntegerFromArgNMessage(context, 0, 1, reminders.size) ?: return) - 1
+            val reminderToRemove = reminders.sortedBy { it.remindAt }[index]
+
+            context.daoManager.reminderWrapper.remove(context.authorId, reminderToRemove.remindAt)
+
+            val msg = context.getTranslation("$root.removed")
+                .withSafeVariable("index", index)
+                .withSafeVariable("message", reminderToRemove.message)
+            sendRsp(context, msg)
+        }
+
+    }
+
+    class ListArg(parent: String) : AbstractCommand("$parent.list") {
+
+        init {
+            name = "list"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            val reminderWrapper = context.daoManager.reminderWrapper
+            val reminders = reminderWrapper.getRemindersOfUser(context.authorId)
+            if (reminders.isEmpty()) {
+                val msg = context.getTranslation("$root.empty")
+                sendRsp(context, msg)
+                return
+            }
+
+            var list = "Your reminders:\n```INI"
+            for ((index, reminder) in reminders.sortedBy { it.remindAt }.withIndex()) {
+                val (_, remindAt, message) = reminder
+                list += "\n${index + 1} -" +
+                    " [${getDurationString(remindAt - System.currentTimeMillis())}] -" +
+                    " [${remindAt.asEpochMillisToDateTime(context.getTimeZoneId())}]:" +
+                    " ${message.escapeMarkdown().escapeDiscordInvites().take(256)}"
+            }
+            list += "```"
+
+            sendRspCodeBlock(context, list, "INI", true)
+        }
+    }
+
+    override suspend fun execute(context: CommandContext) {
+        if (context.args.size < 2) {
+            sendSyntax(context)
+            return
+        }
+
+        val duration = getDurationByArgsNMessage(context, 0, 1) ?: return
+        val reason = context.getRawArgPart(1)
+        if (reason.isEmpty()) {
+            sendRsp(context, "I cant remind you for nothing, please write a message that you wanna be reminded about.")
+            return
+        }
+
+        if (duration < 10) {
+            sendRsp(context, "Please use brain to remind you of thing under 10 seconds.")
+            return
+        }
+        val duraionMillis = duration * 1000
+
+        context.initCooldown()
+
+        val reminderWrapper = context.daoManager.reminderWrapper
+        val reminders = reminderWrapper.getRemindersOfUser(context.authorId)
+        if (reminders.size > 5) {
+            sendRsp(context, "Reminder limit is reached")
+            return
+        }
+
+        reminderWrapper.add(Reminder(context.authorId, System.currentTimeMillis() + duraionMillis, reason))
+
+        val msg = "Reminder added, will remind you at **%time%** about `%thing%`"
+            .withSafeVariable("time", (System.currentTimeMillis() + duraionMillis).asEpochMillisToDateTime(context.getTimeZoneId()))
+            .withSafeVariable("thing", reason)
+        sendRsp(context, msg)
+    }
+}

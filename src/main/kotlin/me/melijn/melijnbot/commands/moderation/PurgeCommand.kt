@@ -92,7 +92,9 @@ class PurgeCommand : AbstractCommand("command.purge") {
                     if (!context.commandParts[1].equals(silentPurgeName, true) && !context.commandParts[1].equals(silentPruneName, true))
                         sendMsgAwaitEL(context, msg).firstOrNull()?.delete()?.queueAfter(5, TimeUnit.SECONDS)
 
-                    LogUtils.sendPurgeLog(context, messages)
+                    if (messages.isNotEmpty()) {
+                        LogUtils.sendPurgeLog(context, messages)
+                    }
                 }
             }
     }

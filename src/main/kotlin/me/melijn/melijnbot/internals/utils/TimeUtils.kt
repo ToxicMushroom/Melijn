@@ -181,12 +181,12 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, r
         val typeNorm = matcher.group(2)
         val type = typeNorm.toLowerCase()
         val multiplier = when {
+            ("M" == typeNorm || arrayOf("month", "months").contains(type)) -> 30 * 24 * 60 * 60
             arrayOf("s", "second", "seconds").contains(type) -> 1
             arrayOf("m", "minute", "minutes").contains(type) -> 60
             arrayOf("h", "hour", "hours").contains(type) -> 60 * 60
             arrayOf("d", "day", "days").contains(type) -> 24 * 60 * 60
             arrayOf("w", "week", "weeks").contains(type) -> 7 * 24 * 60 * 60
-            "M" == type || arrayOf("month", "months").contains(type) -> 30 * 24 * 60 * 60
             arrayOf("y", "year", "years").contains(type) -> 52 * 7 * 24 * 60 * 60
             else -> null
         }

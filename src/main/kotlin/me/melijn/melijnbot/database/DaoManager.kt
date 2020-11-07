@@ -51,6 +51,8 @@ import me.melijn.melijnbot.database.prefix.GuildPrefixDao
 import me.melijn.melijnbot.database.prefix.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
+import me.melijn.melijnbot.database.reminder.ReminderDao
+import me.melijn.melijnbot.database.reminder.ReminderWrapper
 import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.settings.*
 import me.melijn.melijnbot.database.starboard.StarboardMessageDao
@@ -176,6 +178,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val removeInvokeWrapper: RemoveInvokeWrapper
     val denyVoteReminderWrapper: DenyVoteReminderWrapper
     val voteReminderWrapper: VoteReminderWrapper
+    val reminderWrapper: ReminderWrapper
 
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
@@ -281,6 +284,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         removeInvokeWrapper = RemoveInvokeWrapper(RemoveInvokeDao(driverManager))
         denyVoteReminderWrapper = DenyVoteReminderWrapper(DenyVoteReminderDao(driverManager))
         voteReminderWrapper = VoteReminderWrapper(VoteReminderDao(driverManager))
+        reminderWrapper = ReminderWrapper(ReminderDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         balanceWrapper = BalanceWrapper(BalanceDao(driverManager))
