@@ -106,6 +106,7 @@ object ImageUtils {
                 url = args[0]
                 try {
                     if (reqFormat == "gif" && !checkFormat(context, url, reqFormat)) return null
+                    if (!checkValidUrl(context, url)) return null
 
                     img = downloadImage(context.webManager.proxiedHttpClient, url)
                     ByteArrayInputStream(img).use { bis ->
@@ -348,6 +349,11 @@ object ImageUtils {
             sendRsp(context, msg)
             return false
         }
+
+        return checkValidUrl(context, url)
+    }
+
+    private suspend fun checkValidUrl(context: CommandContext, url: String): Boolean {
         if (!URL_PATTERN.matches(url)) {
             val msg = context.getTranslation("message.notaurl")
                 .withVariable("url", url)

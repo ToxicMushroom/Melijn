@@ -5,11 +5,16 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresGuildPremiumMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class RemindmeCommand : AbstractCommand("command.remindme") {
+
+    private val REMINDER_LIMIT = 5
+    private val PREMIUM_REMINDER_LIMIT = 40
+    private val REMINDER_LIMIT_PATH = "premium.feature.reminders.limit"
 
     init {
         id = 226
@@ -103,8 +108,20 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
 
         val reminderWrapper = context.daoManager.reminderWrapper
         val reminders = reminderWrapper.getRemindersOfUser(context.authorId)
-        if (reminders.size > 5) {
-            sendRsp(context, "Reminder limit is reached")
+
+
+        if (reminders.size > REMINDER_LIMIT && !isPremiumUser(context)) {
+            val replaceMap = mapOf(
+                Pair("limit", "$REMINDER_LIMIT"),
+                Pair("premiumLimit", "$PREMIUM_REMINDER_LIMIT")
+            )
+
+            sendFeatureRequiresGuildPremiumMessage(context, REMINDER_LIMIT_PATH, replaceMap)
+            return
+        } else if (reminders.size >= PREMIUM_REMINDER_LIMIT) {
+            val msg = context.getTranslation("$root.limit.total")
+                .withVariable("limit", "$PREMIUM_REMINDER_LIMIT")
+            sendRsp(context, msg)
             return
         }
 
