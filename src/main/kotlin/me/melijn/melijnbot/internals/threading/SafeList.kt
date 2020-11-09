@@ -84,7 +84,7 @@ class SafeList<E> {
         }
     }
 
-    suspend fun forEach(function: (E) -> Unit) {
+    suspend fun forEach(function: suspend (E) -> Unit) {
         lock.withLock {
             val size = list.size
             for (i in 0 until size) {
