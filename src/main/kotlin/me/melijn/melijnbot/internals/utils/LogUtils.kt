@@ -18,6 +18,8 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.*
+import me.melijn.melijnbot.internals.web.rest.voted.BotList
+import me.melijn.melijnbot.internals.web.rest.voted.getBotListTimeOut
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
@@ -632,22 +634,49 @@ object LogUtils {
     }
 
 
-    const val VOTE_LINKS = "Site 1: [top.gg](https://top.gg/bot/melijn/vote) `12h` **Unblockable ADS**\n" +
-        "Site 2: [discordbotlist.com](https://discordbotlist.com/bots/melijn/upvote) `24h` **ReCaptcha**\n" +
-        "Site 3: [botsfordiscord.com](https://botsfordiscord.com/bot/368362411591204865/vote) `12am utc` **ReCaptcha & Checkbox to join their server (default on)**\n" +
-        "Site 4: [discord.boats](https://discord.boats/bot/368362411591204865/vote) `24h` **Recaptcha & Checkbox to join their server (default on)**"
+    const val VOTE_LINKS = "Site 1: [top.gg](https://top.gg/bot/melijn/vote) `12h` %statusOne%\n" +
+        "Site 2: [discordbotlist.com](https://discordbotlist.com/bots/melijn/upvote) `12h` %statusTwo%\n" +
+        "Site 3: [botsfordiscord.com](https://botsfordiscord.com/bot/368362411591204865/vote) `12am utc` %statusThree%\n" +
+        "Site 4: [discord.boats](https://discord.boats/bot/368362411591204865/vote) `24h` %statusFour%"
+
     suspend fun sendVoteReminder(daoManager: DaoManager, userId: Long) {
         val user = MelijnBot.shardManager.retrieveUserById(userId).await()
         val pc = user.openPrivateChannel().awaitOrNull() ?: return
 
-        val streak = daoManager.voteWrapper.getUserVote(userId)?.streak ?: 0
+        val userVote = daoManager.voteWrapper.getUserVote(userId) ?: return
+        val cMillis = System.currentTimeMillis()
+
+        val readyOne = getBotListTimeOut(BotList.TOP_GG) + userVote.topggLastTime - cMillis
+        val readyTwo = getBotListTimeOut(BotList.DISCORD_BOT_LIST_COM) + userVote.dblLastTime - cMillis
+        val readyThree = getBotListTimeOut(BotList.BOTS_FOR_DISCORD_COM) + userVote.bfdLastTime - cMillis
+        val readyFour = getBotListTimeOut(BotList.DISCORD_BOATS) + userVote.dboatsLastTime - cMillis
+
+        val statusOne = if (readyOne <= 1000L) "Ready" else getDurationString(readyOne)
+        val statusTwo = if (readyTwo <= 1000L) "Ready" else getDurationString(readyTwo)
+        val statusThree = if (readyThree <= 1000L) "Ready" else getDurationString(readyThree)
+        val statusFour = if (readyFour <= 1000L) "Ready" else getDurationString(readyFour)
 
         val embedder = Embedder(daoManager, -1, userId, Container.instance.settings.botInfo.embedColor)
             .setTitle("Your vote is ready (o゜▽゜)o☆")
-            .setDescription("This is a reminder that you can vote again.\n" +
-                VOTE_LINKS +
+            .setDescription("This is a reminder that you can vote again." +
                 "\nIn 36 hours from receiving this message your streak will otherwise be lost :c")
-            .addField("Current Streak", "$streak", true)
+            .addField("top.gg",
+                "[%ready%](https://top.gg/bot/melijn/vote)"
+                    .withVariable("ready", statusOne),
+                true)
+            .addField("discordbotlist.com",
+                "[%ready%](https://discordbotlist.com/bots/melijn/upvote)"
+                    .withVariable("ready", statusTwo),
+                true)
+            .addField("botsfordiscord.com",
+                "[%ready%](https://botsfordiscord.com/bot/368362411591204865/vote)"
+                    .withVariable("ready", statusThree),
+                true)
+            .addField("discord.boats",
+                "[%ready%](https://discord.boats/bot/368362411591204865/vote)"
+                    .withVariable("ready", statusFour),
+                true)
+            .addField("Current Streak", userVote.streak.toString(), true)
             .setFooter("You can disable this reminder with >toggleVoteReminder")
             .build()
 

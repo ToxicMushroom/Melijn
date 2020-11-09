@@ -47,17 +47,18 @@ object VotedResponseHandler {
         val voteType = body.getString("type", "")
 
         val oldUserVote = voteWrapper.getUserVote(userId)
-            ?: UserVote(userId, 0, 0, 0)
+            ?: UserVote(userId, 0, 0, 0, 0, 0, 0)
 
-        val millisSinceVoteReset = max(0, (System.currentTimeMillis() - oldUserVote.lastTime) - 43200000)
+        val lastTime = listOf(oldUserVote.topggLastTime, oldUserVote.bfdLastTime, oldUserVote.dblLastTime, oldUserVote.dboatsLastTime).maxOrNull() ?: return
+        val millisSinceVoteReset = max(0, (System.currentTimeMillis() - lastTime) - 43200000)
         val maxMillisToKeepStreak = context.container.settings.economy.streakExpireHours * 3600_000
         val loseStreak = maxMillisToKeepStreak - millisSinceVoteReset < 0
 
         val oldStreak = if (loseStreak) 0 else oldUserVote.streak
-        val (_, votes, streak, cTime) = if (isWeekend) {
-            UserVote(userId, oldUserVote.votes + 2, oldStreak + 2, System.currentTimeMillis())
+        val (votes, streak) = if (isWeekend) {
+            Pair(oldUserVote.votes + 2, oldStreak + 2)
         } else {
-            UserVote(userId, oldUserVote.votes + 1, oldStreak + 1, System.currentTimeMillis())
+            Pair(oldUserVote.votes + 1, oldStreak + 1)
         }
 
 
@@ -75,7 +76,8 @@ object VotedResponseHandler {
                 val extraMel = (ln(votes.toDouble()) + ln(streak.toDouble())) * 10
                 val totalMel = ((baseMel + extraMel) * multiplier).toLong()
 
-                voteWrapper.setVote(userId, votes, streak, cTime)
+                val newUserVote = newVoteFromOldAndBotList(userId, votes, streak, oldUserVote, botlist)
+                voteWrapper.setVote(newUserVote)
 
                 val newBalance = (balanceWrapper.getBalance(userId) + totalMel)
                 balanceWrapper.setBalance(userId, newBalance)
@@ -84,21 +86,7 @@ object VotedResponseHandler {
 
                 val disabledVoteReminder = daoManager.denyVoteReminderWrapper.contains(userId)
                 if (!disabledVoteReminder) {
-                    val newRemindTime = when (botlist) {
-                        "topgg" -> 12 * 3600_000
-                        "dbl" -> 24 * 3600_000
-                        "dboats" -> 24 * 3600_000
-                        "bfd" -> {
-                            val cDate = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-                            cDate.timeInMillis = System.currentTimeMillis()
-                            val nextMidnightDate = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-                            nextMidnightDate.set(cDate.get(Calendar.YEAR), cDate.get(Calendar.MONTH), cDate.get(Calendar.DAY_OF_MONTH), 23, 59, 59)
-                            val nextMidnightMillis = nextMidnightDate.time.time + 1000
-                            nextMidnightMillis - System.currentTimeMillis()
-                        }
-
-                        else -> 0
-                    } + System.currentTimeMillis()
+                    val newRemindTime = getBotListTimeOut(BotList.fromString(botlist)) + System.currentTimeMillis()
 
                     val previousRemindMillis = daoManager.voteReminderWrapper.getReminder(userId) ?: 0
                     if (previousRemindMillis < newRemindTime) {
@@ -111,5 +99,49 @@ object VotedResponseHandler {
         }
 
         context.call.respondText(ContentType.Application.Json) { DataObject.empty().put("status", "OK").toString() }
+    }
+
+    private fun newVoteFromOldAndBotList(userId: Long, votes: Long, streak: Long, oldVote: UserVote, botlist: String): UserVote {
+        val ctime = System.currentTimeMillis()
+
+        return when (botlist) {
+            "topgg" -> UserVote(userId, votes, streak, ctime, oldVote.dblLastTime, oldVote.dblLastTime, oldVote.dboatsLastTime)
+            "dbl" -> UserVote(userId, votes, streak, oldVote.topggLastTime, ctime, oldVote.bfdLastTime, oldVote.dboatsLastTime)
+            "bfd" -> UserVote(userId, votes, streak, oldVote.topggLastTime, oldVote.dblLastTime, ctime, oldVote.dboatsLastTime)
+            "dboats" -> UserVote(userId, votes, streak, oldVote.topggLastTime, oldVote.dblLastTime, oldVote.bfdLastTime, ctime)
+            else -> UserVote(userId, votes, streak, oldVote.topggLastTime, oldVote.dblLastTime, oldVote.bfdLastTime, oldVote.dboatsLastTime)
+        }
+    }
+}
+
+fun getBotListTimeOut(botList: BotList): Long {
+    return when (botList) {
+        BotList.TOP_GG -> 12 * 3600_000
+        BotList.DISCORD_BOT_LIST_COM -> 12 * 3600_000
+        BotList.DISCORD_BOATS -> 24 * 3600_000
+        BotList.BOTS_FOR_DISCORD_COM -> {
+            val cDate = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            cDate.timeInMillis = System.currentTimeMillis()
+            val nextMidnightDate = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            nextMidnightDate.set(cDate.get(Calendar.YEAR), cDate.get(Calendar.MONTH), cDate.get(Calendar.DAY_OF_MONTH), 23, 59, 59)
+            val nextMidnightMillis = nextMidnightDate.time.time + 1000
+            nextMidnightMillis - System.currentTimeMillis()
+        }
+    }
+}
+
+enum class BotList(val text: String) {
+    TOP_GG("topgg"),
+    DISCORD_BOT_LIST_COM("dbl"),
+    DISCORD_BOATS("dboats"),
+    BOTS_FOR_DISCORD_COM("bfd");
+
+    companion object {
+        fun fromString(s: String): BotList {
+            for (botList in values()) {
+                if (s.equals(botList.text, true)) return botList
+            }
+            throw IllegalArgumentException("Invalid BotList: $s")
+        }
     }
 }
