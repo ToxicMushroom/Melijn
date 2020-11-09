@@ -35,6 +35,8 @@ class PingCommand : AbstractCommand("command.ping") {
         val timeStamp1 = System.currentTimeMillis()
         eb.setDescription(part1)
         val message = sendEmbedAwaitEL(context, eb.build())
+        if (message.isEmpty()) return
+
         val timeStamp2 = System.currentTimeMillis()
 
         val msgPing = timeStamp2 - timeStamp1
