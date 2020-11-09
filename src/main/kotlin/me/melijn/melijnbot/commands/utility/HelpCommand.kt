@@ -299,8 +299,7 @@ class HelpCommand : AbstractCommand("command.help") {
 
             val title = context.getTranslation("$root.title")
 
-            //Alphabetical order
-            val categoryPathMap = mapOf(
+            val categoryPathMap = mutableMapOf(
                 Pair(CommandCategory.ADMINISTRATION, "$root.field2.title"),
                 Pair(CommandCategory.ANIMAL, "$root.field6.title"),
                 Pair(CommandCategory.ANIME, "$root.field7.title"),
@@ -310,7 +309,12 @@ class HelpCommand : AbstractCommand("command.help") {
                 Pair(CommandCategory.MODERATION, "$root.field3.title"),
                 Pair(CommandCategory.MUSIC, "$root.field4.title"),
                 Pair(CommandCategory.UTILITY, "$root.field1.title")
-            ).filter { entry ->
+            )
+
+            if (context.textChannel.isNSFW) {
+                categoryPathMap[CommandCategory.NSFW] = "$root.field10.title"
+            }
+            val categoryFiltered = categoryPathMap.filter { entry ->
                 entry.key == category || category == null
             }
 
@@ -321,7 +325,9 @@ class HelpCommand : AbstractCommand("command.help") {
                 .setTitle(title, "https://melijn.com/commands")
                 .setFooter(commandAmount, null)
 
-            categoryPathMap.forEach { entry ->
+            categoryFiltered.toSortedMap { o1, o2 ->
+                o1.toString().compareTo(o2.toString())
+            }.forEach { entry ->
                 eb.addField(context.getTranslation(entry.value), commandListString(commandList, entry.key), false)
             }
 

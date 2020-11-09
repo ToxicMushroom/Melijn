@@ -15,6 +15,7 @@ import me.melijn.melijnbot.internals.services.roles.RolesService
 import me.melijn.melijnbot.internals.services.stats.StatsService
 import me.melijn.melijnbot.internals.services.voice.VoiceScoutService
 import me.melijn.melijnbot.internals.services.voice.VoiceService
+import me.melijn.melijnbot.internals.services.votes.VoteReminderService
 import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.sharding.ShardManager
 
@@ -33,6 +34,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         slowServices.add(MuteService(shardManager, daoManager))
         slowServices.add(StatsService(shardManager, webManager.botListApi))
         slowServices.add(BirthdayService(shardManager, webManager.proxiedHttpClient, daoManager))
+        slowServices.add(VoteReminderService(daoManager))
         webManager.spotifyApi?.let { spotifyApi ->
             services.add(SpotifyService(spotifyApi))
         }

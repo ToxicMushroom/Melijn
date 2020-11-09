@@ -93,8 +93,6 @@ object VotedResponseHandler {
                         daoManager.voteReminderWrapper.addReminder(userId, newRemindTime)
                     }
                 }
-            } else {
-                context.call.respondText { "Unknown type" }
             }
         }
 

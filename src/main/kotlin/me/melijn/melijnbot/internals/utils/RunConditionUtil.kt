@@ -83,7 +83,11 @@ object RunConditionUtil {
             true
         } else {
             val vote = container.daoManager.voteWrapper.getUserVote(event.author.idLong)
-            if (vote != null && (System.currentTimeMillis() - vote.lastTime) < 86_400_000) {
+            val lastTime = listOf(vote?.bfdLastTime, vote?.topggLastTime, vote?.dblLastTime, vote?.dboatsLastTime).maxByOrNull {
+                it ?: 0
+            }
+
+            if (vote != null && lastTime != null && (System.currentTimeMillis() - lastTime) < 86_400_000) {
                 true
             } else {
                 val msg = i18n.getTranslation(language, "message.runcondition.failed.voted")
@@ -129,7 +133,7 @@ object RunConditionUtil {
     }
 
 
-    suspend fun checkPlayingTrackNotNull(container: Container, event: MessageReceivedEvent): Boolean {
+    fun checkPlayingTrackNotNull(container: Container, event: MessageReceivedEvent): Boolean {
         val trackManager = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(event.guild).guildTrackManager
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
         if (cTrack == null || event.guild.selfMember.voiceState?.inVoiceChannel() != true) {
