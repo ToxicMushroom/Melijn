@@ -10,5 +10,6 @@ enum class CommandCategory(val runCondition: Array<RunCondition> = emptyArray())
     MODERATION(arrayOf(RunCondition.GUILD)),
     ADMINISTRATION(arrayOf(RunCondition.GUILD)),
     ECONOMY,
-    GAME
+    GAME,
+    NSFW(arrayOf(RunCondition.GUILD, RunCondition.CHANNEL_NSFW))
 }
