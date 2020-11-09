@@ -106,6 +106,9 @@ dependencies {
     // https://github.com/FasterXML/jackson-module-kotlin
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3")
 
+    // https://search.maven.org/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-xml
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.3")
+
 
     // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
     implementation("io.ktor:ktor:1.4.1")
