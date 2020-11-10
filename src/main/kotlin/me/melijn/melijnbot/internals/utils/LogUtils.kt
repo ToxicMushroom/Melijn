@@ -634,10 +634,10 @@ object LogUtils {
     }
 
 
-    const val VOTE_LINKS = "Site 1: [top.gg](https://top.gg/bot/melijn/vote) `12h` %statusOne%\n" +
-        "Site 2: [discordbotlist.com](https://discordbotlist.com/bots/melijn/upvote) `12h` %statusTwo%\n" +
-        "Site 3: [botsfordiscord.com](https://botsfordiscord.com/bot/368362411591204865/vote) `12am utc` %statusThree%\n" +
-        "Site 4: [discord.boats](https://discord.boats/bot/368362411591204865/vote) `24h` %statusFour%"
+    const val VOTE_LINKS = "TopGG:  [%statusOne%](https://top.gg/bot/melijn/vote) - `12h`\n" +
+        "DiscordBotList:  [%statusTwo%](https://discordbotlist.com/bots/melijn/upvote) - `12h`\n" +
+        "BotsForDiscord:  [%statusThree%](https://botsfordiscord.com/bot/368362411591204865/vote) - `12am utc`\n" +
+        "DiscordBoats:  [%statusFour%](https://discord.boats/bot/368362411591204865/vote) - `24h`"
 
     suspend fun sendVoteReminder(daoManager: DaoManager, userId: Long) {
         val user = MelijnBot.shardManager.retrieveUserById(userId).await()

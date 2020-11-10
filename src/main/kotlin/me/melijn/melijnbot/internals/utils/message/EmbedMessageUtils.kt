@@ -6,6 +6,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
@@ -72,8 +73,12 @@ fun sendEmbedRsp(daoManager: DaoManager, textChannel: TextChannel, embed: Messag
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
         !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
         TaskManager.async(textChannel) {
-            val message = textChannel.sendMessage(embed).awaitOrNull() ?: return@async
-
+            val message = try {
+                textChannel.sendMessage(embed).await()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                return@async
+            }
             val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
             val seconds = timeMap[textChannel.idLong] ?: return@async
 

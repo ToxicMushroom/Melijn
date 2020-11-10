@@ -43,7 +43,7 @@ class PunishmentGroupDao(driverManager: DriverManager) : CacheDBDao(driverManage
     }
 
     fun remove(guildId: Long, punishGroup: String) {
-        driverManager.executeUpdate("DELETED FROM $table WHERE guildId = ? AND punishGroup = ?",
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND punishGroup = ?",
             guildId, punishGroup)
     }
 

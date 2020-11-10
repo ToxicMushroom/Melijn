@@ -311,7 +311,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 Pair(CommandCategory.UTILITY, "$root.field1.title")
             )
 
-            if (context.textChannel.isNSFW) {
+            if (context.isFromGuild && context.textChannel.isNSFW) {
                 categoryPathMap[CommandCategory.NSFW] = "$root.field10.title"
             }
             val categoryFiltered = categoryPathMap.filter { entry ->
