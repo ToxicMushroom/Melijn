@@ -33,13 +33,16 @@ class VoteCommand : AbstractCommand("command.vote") {
         val readyThree = getBotListTimeOut(BotList.BOTS_FOR_DISCORD_COM) + userVote.bfdLastTime - cMillis
         val readyFour = getBotListTimeOut(BotList.DISCORD_BOATS) + userVote.dboatsLastTime - cMillis
 
-        val statusOne = if (readyOne <= 1000L) "Ready" else getDurationString(readyOne)
-        val statusTwo = if (readyTwo <= 1000L) "Ready" else getDurationString(readyTwo)
-        val statusThree = if (readyThree <= 1000L) "Ready" else getDurationString(readyThree)
-        val statusFour = if (readyFour <= 1000L) "Ready" else getDurationString(readyFour)
+        val ready = "**vote ready**"
+        val l = 1000L
+        val statusOne = if (readyOne <= l) ready else getDurationString(readyOne)
+        val statusTwo = if (readyTwo <= l) ready else getDurationString(readyTwo)
+        val statusThree = if (readyThree <= l) ready else getDurationString(readyThree)
+        val statusFour = if (readyFour <= l) ready else getDurationString(readyFour)
 
 
         val eb = Embedder(context)
+            .setTitle("Voting Sites")
             .setDescription(VOTE_LINKS
                 .withVariable("statusOne", statusOne)
                 .withVariable("statusTwo", statusTwo)
