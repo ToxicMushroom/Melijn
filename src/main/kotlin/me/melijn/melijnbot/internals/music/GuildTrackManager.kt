@@ -240,7 +240,7 @@ class GuildTrackManager(
     suspend fun skip(amount: Int) {
         var nextTrack: AudioTrack? = tracks.removeFirstAndGetNextOrNull(amount)
 
-        for (i in 0 until amount) {
+        for (i in 1 until amount) {
             nextTrack = tracks.removeAtOrNull(0)
         }
         if (nextTrack == null) {
