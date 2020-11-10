@@ -1,30 +1,54 @@
 package me.melijn.melijnbot.commands.developer
 
-import groovy.lang.GroovyShell
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngine
+import javax.script.ScriptEngine
+import javax.script.ScriptEngineManager
 
 class EvalCommand : AbstractCommand("command.eval") {
 
-    private val groovyShell: GroovyShell
 
     init {
         id = 22
         name = "eval"
         aliases = arrayOf("evaluate")
         commandCategory = CommandCategory.DEVELOPER
-        groovyShell = GroovyShell()
     }
 
+    val engine: ScriptEngine? = ScriptEngineManager().getEngineByName("kotlin")
 
     override suspend fun execute(context: CommandContext) {
-        groovyShell.setProperty("context", context)
+        requireNotNull(engine)
+        var code = context.rawArg.removePrefix("```kt").removePrefix("```").removeSuffix("```")
+        val imports = code.lines().takeWhile { it.startsWith("import ") }
+        code = """
+			import me.melijn.melijnbot.internals.utils.*
+			import me.melijn.melijnbot.internals.threading.*
+			import me.melijn.melijnbot.internals.command.*
+            import me.melijn.melijnbot.internals.utils.message.sendRsp
+			import me.melijn.melijnbot.internals.*
+			import me.melijn.melijnbot.MelijnBot
+			import java.awt.image.BufferedImage
+			import java.io.File
+			import javax.imageio.ImageIO
+			import kotlinx.coroutines.*
+			${imports.joinToString("\n")}
+			fun exec(context: CommandContext) {
+                TaskManager.async {
+				    ${code.lines().dropWhile { it.startsWith("import ") }.joinToString("\n")}
+                }
+            }""".trimIndent()
+
 
         try {
-            val result = groovyShell.evaluate(context.rawArg)
-            sendRsp(context, "Success:\n```$result```")
+            engine.eval(code)
+            val se = engine as KotlinJsr223JvmLocalScriptEngine
+            se.invokeFunction("exec", context)
+            sendRsp(context, "Invoked")
+
         } catch (t: Throwable) {
             sendRsp(context, "ERROR:\n```${t.message}```")
         }

@@ -90,6 +90,10 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-jdk8
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.0")
 
+    implementation(kotlin("script-util"))
+    implementation(kotlin("compiler"))
+    implementation(kotlin("scripting-compiler"))
+
     // https://bintray.com/duncte123/weeb.java/weeb.java
     implementation("me.duncte123:weebJava:2.2.0_29")
 
