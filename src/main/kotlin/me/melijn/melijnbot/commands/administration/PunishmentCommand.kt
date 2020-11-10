@@ -361,10 +361,11 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             val item = getPunishmentNMessage(context, 0) ?: return
             val wrapper = context.daoManager.punishmentWrapper
 
-            wrapper.remove(context.guildId, name)
+            wrapper.remove(context.guildId, item.name)
             val msg = context.getTranslation("$root.removed")
-                .withVariable("name", item.name)
+                .withSafeVariable("name", item.name)
                 .withVariable("type", item.punishmentType.toUCC())
+                .withSafeVariable("reason", item.reason)
             sendRsp(context, msg)
         }
     }
@@ -382,8 +383,8 @@ suspend fun getPunishmentNMessage(context: CommandContext, position: Int, punish
     if (item == null || (punishmentType != null && item.punishmentType != punishmentType)) {
         val extra = if (punishmentType == null) "" else ".typed"
         val msg = context.getTranslation("command.punishment.nomatch$extra")
-            .withVariable(PLACEHOLDER_ARG, name)
-            .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+            .withSafeVariable(PLACEHOLDER_ARG, name)
+            .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
             .withVariable("type", item?.punishmentType?.toUCC() ?: "error")
         sendRsp(context, msg)
     }
