@@ -1,19 +1,19 @@
-package me.melijn.melijnbot.commands.anime
+package me.melijn.melijnbot.commands.nsfw
 
 import me.melijn.melijnbot.commandutil.anime.AnimeCommandUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 
-class NekoCommand : AbstractCommand("command.neko") {
+class NekoHCommand : AbstractCommand("command.nekoh") {
 
     init {
-        id = 107
-        name = "neko"
-        commandCategory = CommandCategory.ANIME
+        id = 228
+        name = "nekoH"
+        commandCategory = CommandCategory.NSFW
     }
 
     override suspend fun execute(context: CommandContext) {
-        AnimeCommandUtil.executeShow(context, "neko")
+        AnimeCommandUtil.executeShow(context, "neko", true)
     }
 }

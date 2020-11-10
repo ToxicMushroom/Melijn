@@ -11,6 +11,7 @@ import me.melijn.melijnbot.commands.games.SlotsCommand
 import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.commands.music.*
+import me.melijn.melijnbot.commands.nsfw.NekoHCommand
 import me.melijn.melijnbot.commands.nsfw.Rule34Command
 import me.melijn.melijnbot.commands.utility.*
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -190,6 +191,8 @@ class CommandClientBuilder(private val container: Container) {
         SetBotLogStateCommand(),
         SetRoleColorCommand(),
         AniListCommand(),
+        NekoHCommand(),
+        Rule34Command(),
         AngryCommand(),
         PngsFromGifCommand(),
         PngsToGifCommand(),
@@ -244,8 +247,7 @@ class CommandClientBuilder(private val container: Container) {
         PlaylistCommand(),
         StarboardCommand(),
         LikeCommand(),
-        RemindmeCommand(),
-        Rule34Command()
+        RemindmeCommand()
     )
 
     fun build(): CommandClient {
