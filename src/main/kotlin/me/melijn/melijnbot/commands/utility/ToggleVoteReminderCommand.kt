@@ -4,8 +4,11 @@ import me.melijn.melijnbot.database.settings.VoteReminderOption
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.getEnumFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class ToggleVoteReminderCommand : AbstractCommand("command.togglevotereminder") {
 
@@ -32,6 +35,7 @@ class ToggleVoteReminderCommand : AbstractCommand("command.togglevotereminder") 
         }
 
         val msg = context.getTranslation("$root.set.${!cState}")
+            .withVariable("option", mapVoteReminderOptionToNiceText(toggle))
         sendRsp(context, msg)
     }
 
@@ -44,11 +48,23 @@ class ToggleVoteReminderCommand : AbstractCommand("command.togglevotereminder") 
         override suspend fun execute(context: CommandContext) {
             val wrapper = context.daoManager.voteReminderStatesWrapper
             val stateMap = wrapper.contains(context.authorId)
-            var msg = ""
+            val eb = Embedder(context)
+                .setTitle("VoteReminder List")
             for ((opt, state) in stateMap) {
-                msg += "$opt: $state\n"
+                val stateMsg = if (state) "**enabled**" else "disabled"
+                eb.appendDescription("`${mapVoteReminderOptionToNiceText(opt)}`: $stateMsg\n")
             }
-            sendRsp(context, msg)
+            sendEmbedRsp(context, eb.build())
         }
+    }
+}
+
+fun mapVoteReminderOptionToNiceText(voteReminderOption: VoteReminderOption): String {
+    return when (voteReminderOption) {
+        VoteReminderOption.TOPGG -> "TopGG"
+        VoteReminderOption.DBLCOM -> "DblCom"
+        VoteReminderOption.BFDCOM -> "BfdCom"
+        VoteReminderOption.DBOATS -> "DBoats"
+        VoteReminderOption.GLOBAL -> "Global"
     }
 }

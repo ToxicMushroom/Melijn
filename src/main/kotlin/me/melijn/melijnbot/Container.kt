@@ -41,8 +41,8 @@ class Container {
         set(value) {
             if (value) {
                 serviceManager.stopServices()
-                MelijnBot.shardManager.setActivity(Activity.playing("shutting down"))
-                MelijnBot.shardManager.setStatus(OnlineStatus.DO_NOT_DISTURB)
+                MelijnBot.shardManager.setActivity(Activity.playing("updating or maintenance"))
+                MelijnBot.shardManager.setStatus(OnlineStatus.IDLE)
             }
             field = value
         }

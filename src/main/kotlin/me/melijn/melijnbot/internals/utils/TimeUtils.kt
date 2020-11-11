@@ -36,16 +36,31 @@ suspend fun getZoneId(daoManager: DaoManager?, guildId: Long? = null, userId: Lo
     val guildTimezone = guildId?.let {
         val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
         if (zoneId?.isBlank() == true) null
-        else ZoneId.of(zoneId)
+        else {
+            zoneId?.let { zid ->
+                manualSupporterTimeZone(zid)
+            } ?: ZoneId.of(zoneId)
+        }
     }
 
     val userTimezone = userId?.let {
         val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
         if (zoneId?.isBlank() == true) null
-        else ZoneId.of(zoneId)
+        else {
+            zoneId?.let { zid ->
+                manualSupporterTimeZone(zid)
+            } ?: ZoneId.of(zoneId)
+        }
     }
 
     return userTimezone ?: guildTimezone ?: ZoneId.of("GMT")
+}
+
+fun manualSupporterTimeZone(zoneId: String): ZoneId? {
+    return when (zoneId) {
+        "EST" -> ZoneId.of("GMT-5")
+        else -> null
+    }
 }
 
 suspend fun Long.asEpochMillisToDateTime(daoManager: DaoManager?, guildId: Long? = null, userId: Long? = null): String {

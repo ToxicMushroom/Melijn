@@ -9,6 +9,7 @@ import me.melijn.melijnbot.enums.DateFormat
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.entities.User
@@ -148,6 +149,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
     if (enum == null) {
         val msg = context.getTranslation(path)
             .withSafeVariable(PLACEHOLDER_ARG, enumName)
+            .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
         sendRsp(context, msg)
     }
     return enum
@@ -159,6 +161,7 @@ suspend inline fun <T> getObjectFromArgNMessage(context: CommandContext, index: 
     if (newObj == null) {
         val msg = context.getTranslation(path)
             .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
+            .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
         sendRsp(context, msg)
     }
     return newObj
