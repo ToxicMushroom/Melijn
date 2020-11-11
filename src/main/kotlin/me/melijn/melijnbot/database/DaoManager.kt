@@ -176,7 +176,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val botLogStateWrapper: BotLogStateWrapper
     val removeResponseWrapper: RemoveResponseWrapper
     val removeInvokeWrapper: RemoveInvokeWrapper
-    val denyVoteReminderWrapper: DenyVoteReminderWrapper
+    val voteReminderStatesWrapper: VoteReminderStatesWrapper
     val voteReminderWrapper: VoteReminderWrapper
     val reminderWrapper: ReminderWrapper
 
@@ -282,7 +282,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         botLogStateWrapper = BotLogStateWrapper(BotLogStateDao(driverManager))
         removeResponseWrapper = RemoveResponseWrapper(RemoveResponsesDao(driverManager))
         removeInvokeWrapper = RemoveInvokeWrapper(RemoveInvokeDao(driverManager))
-        denyVoteReminderWrapper = DenyVoteReminderWrapper(DenyVoteReminderDao(driverManager))
+        voteReminderStatesWrapper = VoteReminderStatesWrapper(me.melijn.melijnbot.database.settings.VoteReminderStatesDao(driverManager))
         voteReminderWrapper = VoteReminderWrapper(VoteReminderDao(driverManager))
         reminderWrapper = ReminderWrapper(ReminderDao(driverManager))
 

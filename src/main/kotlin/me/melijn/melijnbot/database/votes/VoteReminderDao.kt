@@ -8,16 +8,16 @@ import kotlin.coroutines.suspendCoroutine
 class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "voteReminders"
-    override val tableStructure: String = "userId bigint, remindAt bigint"
-    override val primaryKey: String = "userId"
+    override val tableStructure: String = "userId bigint, flag int, remindAt bigint"
+    override val primaryKey: String = "userId, flag"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    fun addReminder(userId: Long, remindAt: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, remindAt) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET remindAt = ?",
-            userId, remindAt, remindAt)
+    fun addReminder(userId: Long, flag: Int, remindAt: Long) {
+        driverManager.executeUpdate("INSERT INTO $table (userId, flag, remindAt) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET remindAt = ?",
+            userId, flag, remindAt, remindAt)
     }
 
     suspend fun getReminders(beforeMillis: Long): List<VoteReminder> = suspendCoroutine {
@@ -27,6 +27,7 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
             while (rs.next()) {
                 list.add(VoteReminder(
                     rs.getLong("userId"),
+                    rs.getInt("flag"),
                     rs.getLong("remindAt")
                 ))
             }
@@ -35,33 +36,39 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
         }, beforeMillis)
     }
 
-    fun removeReminder(userId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?", userId)
+    fun removeReminder(userId: Long, flag: Int) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND flag = ?",
+            userId, flag)
     }
 
     fun removeReminders(beforeMillis: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE remindAt < ?", beforeMillis)
     }
 
-    fun removeReminders(userIds: MutableList<Long>) {
+    fun removeReminders(userIds: Map<Long, List<Int>>) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("DELETE FROM $table WHERE userId = ?").use { statement ->
-                for (userId in userIds) {
+            con.prepareStatement("DELETE FROM $table WHERE userId = ? AND flag = ?").use { statement ->
+                for ((userId, flags) in userIds) {
                     statement.setLong(1, userId)
-                    statement.addBatch()
+                    for (flag in flags) {
+                        statement.setInt(2, flag)
+                        statement.addBatch()
+                    }
                 }
                 statement.executeBatch()
             }
         }
     }
 
-    suspend fun get(userId: Long): Long? = suspendCoroutine {
+    suspend fun get(userId: Long): List<VoteReminder> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", { rs ->
-            if (rs.next()) {
-                it.resume(rs.getLong("remindAt"))
-            } else {
-                it.resume(null)
+            val list = mutableListOf<VoteReminder>()
+            while (rs.next()) {
+                list.add(
+                    VoteReminder(rs.getLong("userId"), rs.getInt("flag"), rs.getLong("remindAt"))
+                )
             }
+            it.resume(list)
         }, userId)
     }
 
@@ -70,5 +77,6 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
 
 data class VoteReminder(
     val userId: Long,
+    val flag: Int,
     val remindAt: Long
 )

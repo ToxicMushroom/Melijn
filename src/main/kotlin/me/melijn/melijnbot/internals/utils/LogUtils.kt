@@ -7,6 +7,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.database.settings.VoteReminderOption
 import me.melijn.melijnbot.enums.*
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
@@ -637,9 +638,9 @@ object LogUtils {
     const val VOTE_LINKS = "TopGG:  [%statusOne%](https://top.gg/bot/melijn/vote) - `12h`\n" +
         "DiscordBotList:  [%statusTwo%](https://discordbotlist.com/bots/melijn/upvote) - `12h`\n" +
         "BotsForDiscord:  [%statusThree%](https://botsfordiscord.com/bot/368362411591204865/vote) - `12am utc`\n" +
-        "DiscordBoats:  [%statusFour%](https://discord.boats/bot/368362411591204865/vote) - `24h`"
+        "DiscordBoats:  [%statusFour%](https://discord.boats/bot/368362411591204865/vote) - `12h`"
 
-    suspend fun sendVoteReminder(daoManager: DaoManager, userId: Long) {
+    suspend fun sendVoteReminder(daoManager: DaoManager, flag: Int, userId: Long) {
         val user = MelijnBot.shardManager.retrieveUserById(userId).await()
         val pc = user.openPrivateChannel().awaitOrNull() ?: return
 
@@ -656,10 +657,10 @@ object LogUtils {
         val statusThree = if (readyThree <= 1000L) "Ready" else getDurationString(readyThree)
         val statusFour = if (readyFour <= 1000L) "Ready" else getDurationString(readyFour)
 
+        val botlist = getBotListFromFlag(VoteReminderOption.values().first { it.number == flag })
         val embedder = Embedder(daoManager, -1, userId, Container.instance.settings.botInfo.embedColor)
-            .setTitle("Your vote is ready (o゜▽゜)o☆")
-            .setDescription("This is a reminder that you can vote again." +
-                "\nIn 36 hours from receiving this message your streak will otherwise be lost :c")
+            .setTitle("Your vote for $botlist is ready (o゜▽゜)o☆")
+            .setDescription("This is a reminder that you can vote again")
             .addField("top.gg",
                 "[%ready%](https://top.gg/bot/melijn/vote)"
                     .withVariable("ready", statusOne),
@@ -683,6 +684,16 @@ object LogUtils {
         try { // Handle closed dms
             sendEmbed(pc, embedder)
         } catch (t: Throwable) {
+        }
+    }
+
+    fun getBotListFromFlag(opt: VoteReminderOption): String {
+        return when (opt) {
+            VoteReminderOption.TOPGG -> "top.gg"
+            VoteReminderOption.DBLCOM -> "discordbotlist.com"
+            VoteReminderOption.BFDCOM -> "botsfordiscord.com"
+            VoteReminderOption.DBOATS -> "discord.boats"
+            VoteReminderOption.GLOBAL -> "all sites"
         }
     }
 

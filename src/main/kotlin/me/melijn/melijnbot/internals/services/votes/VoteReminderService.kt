@@ -13,21 +13,22 @@ class VoteReminderService(val daoManager: DaoManager) : Service("VoteReminder", 
         val cMillis = System.currentTimeMillis() + 120_000
         val voteReminderWrapper = daoManager.voteReminderWrapper
         val votes = voteReminderWrapper.getReminders(cMillis)
-        val denyVoteWrapper = daoManager.denyVoteReminderWrapper
+        val voteStateWrapper = daoManager.voteReminderStatesWrapper
 
-        val usersWithDeniedReminders = mutableListOf<Long>()
-        for ((userId, remindAt) in votes) {
-            val denied = denyVoteWrapper.contains(userId)
-            if (denied) {
-                usersWithDeniedReminders.add(userId)
-                continue
+        val usersWithDeniedReminders = mutableMapOf<Long, List<Int>>()
+        for ((userId, reminders) in votes) {
+            val voteStates = voteStateWrapper.getRaw(userId)
+            for ((flag, remindAt) in reminders) {
+                if (voteStates[flag] != true) {
+                    usersWithDeniedReminders[userId] = (usersWithDeniedReminders[userId] ?: emptyList()) + flag
+                    continue
+                }
+
+                TaskManager.asyncAfter(remindAt - System.currentTimeMillis()) {
+                    LogUtils.sendVoteReminder(daoManager, flag, userId)
+                    voteReminderWrapper.removeReminder(userId, flag)
+                }
             }
-            TaskManager.asyncAfter(remindAt - System.currentTimeMillis()) {
-                LogUtils.sendVoteReminder(daoManager, userId)
-                voteReminderWrapper.removeReminder(userId)
-            }
-
-
         }
         voteReminderWrapper.bulkRemove(usersWithDeniedReminders)
     }
