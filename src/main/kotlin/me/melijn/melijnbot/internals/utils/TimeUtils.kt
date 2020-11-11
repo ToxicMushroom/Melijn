@@ -8,6 +8,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
@@ -31,25 +32,21 @@ object TimeUtils {
 //    return offsetDateTime.asLongLongGMTString()
 //}
 
-suspend fun getZoneId(daoManager: DaoManager?, guildId: Long? = null, userId: Long? = null): ZoneId {
+suspend fun getZoneId(daoManager: DaoManager, guildId: Long? = null, userId: Long? = null): ZoneId {
 
     val guildTimezone = guildId?.let {
-        val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
-        if (zoneId?.isBlank() == true) null
+        val zoneId = daoManager.timeZoneWrapper.getTimeZone(it)
+        if (zoneId.isBlank()) null
         else {
-            zoneId?.let { zid ->
-                manualSupporterTimeZone(zid)
-            } ?: ZoneId.of(zoneId)
+            TimeZone.getTimeZone(zoneId).toZoneId()
         }
     }
 
     val userTimezone = userId?.let {
-        val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
-        if (zoneId?.isBlank() == true) null
+        val zoneId = daoManager.timeZoneWrapper.getTimeZone(it)
+        if (zoneId.isBlank()) null
         else {
-            zoneId?.let { zid ->
-                manualSupporterTimeZone(zid)
-            } ?: ZoneId.of(zoneId)
+            TimeZone.getTimeZone(zoneId).toZoneId()
         }
     }
 

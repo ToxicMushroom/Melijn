@@ -14,6 +14,8 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.ZoneId
+import java.util.*
+import kotlin.collections.ArrayList
 
 class CommandContext(
     private val messageReceivedEvent: MessageReceivedEvent,
@@ -196,13 +198,13 @@ class CommandContext(
         val guildTimezone = guildN?.idLong?.let {
             val zoneId = daoManager.timeZoneWrapper.getTimeZone(it)
             if (zoneId.isBlank()) null
-            else ZoneId.of(zoneId)
+            else TimeZone.getTimeZone(zoneId).toZoneId()
         }
 
         val userTimezone = authorId.let {
             val zoneId = daoManager.timeZoneWrapper.getTimeZone(it)
             if (zoneId.isBlank()) null
-            else ZoneId.of(zoneId)
+            else TimeZone.getTimeZone(zoneId).toZoneId()
         }
 
         return userTimezone ?: guildTimezone ?: ZoneId.of("GMT")

@@ -7,7 +7,6 @@ import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_TIMEZONE
 import me.melijn.melijnbot.internals.utils.getObjectFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.withSafeVariable
-import java.time.ZoneId
 import java.util.*
 
 class SetPrivateTimeZoneCommand : AbstractCommand("command.setprivatetimezone") {
@@ -50,7 +49,7 @@ class SetPrivateTimeZoneCommand : AbstractCommand("command.setprivatetimezone") 
         } else {
             getObjectFromArgNMessage(context, 0, { s ->
                 try {
-                    TimeZone.getTimeZone(ZoneId.of(s))
+                    TimeZone.getTimeZone(s)
                 } catch (t: Throwable) {
                     null
                 }
