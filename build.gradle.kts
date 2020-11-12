@@ -71,9 +71,13 @@ dependencies {
     // implementation("com.github.Melijn:lavaplayer:18000a1479")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
-    implementation("com.github.ToxicMushroom:Lavalink-Klient:bac4b90f16")
-    // implementation("me.melijn.llklient:Lavalink-Klient:1.0.3-okhttp")
+    implementation("com.github.ToxicMushroom:Lavalink-Klient:434755ba30")
+    // implementation("me.melijn.llklient:Lavalink-Klient:1.0.4-okhttp")
 
+
+    api(kotlin("script-util"))
+    api(kotlin("compiler"))
+    api(kotlin("scripting-compiler"))
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
     implementation("com.github.ToxicMushroom:JagTag-Kotlin:0.6.4")
@@ -85,14 +89,10 @@ dependencies {
     implementation("org.postgresql:postgresql:42.2.18")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-jdk8
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.0")
-
-    implementation(kotlin("script-util"))
-    implementation(kotlin("compiler"))
-    implementation(kotlin("scripting-compiler"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.1")
 
     // https://bintray.com/duncte123/weeb.java/weeb.java
     implementation("me.duncte123:weebJava:2.2.0_29")
