@@ -415,12 +415,20 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
 
             override suspend fun playlistLoaded(playlist: AudioPlaylist) {
-                prepareSearchMenu(context, playlist.tracks, nextPos)
+                if (playlist.tracks.isEmpty()) {
+                    sendMessageNoMatches(context, rawInput)
+                } else {
+                    prepareSearchMenu(context, playlist.tracks, nextPos)
+                }
             }
         }
 
         ytSearch.search(rawInput, searchType, { tracks ->
-            prepareSearchMenu(context, tracks, nextPos)
+            if (tracks.isEmpty()) {
+                sendMessageNoMatches(context, rawInput)
+            } else {
+                prepareSearchMenu(context, tracks, nextPos)
+            }
         }, {
             sendMessageNoMatches(context, rawInput)
         }, resultHandler)
@@ -431,6 +439,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         if (guildMusicPlayer.queueIsFull(context, 1)) return
 
         val tracks = trackList.filterIndexed { index, _ -> index < 5 }.toMutableList()
+        if (tracks.isEmpty()) return
 
         for ((index, track) in tracks.withIndex()) {
             track.userData = TrackUserData(context.author)
