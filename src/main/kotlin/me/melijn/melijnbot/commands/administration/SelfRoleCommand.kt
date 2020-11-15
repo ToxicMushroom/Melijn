@@ -736,7 +736,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                if (context.args.isEmpty()){
+                if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
                 }
@@ -1038,7 +1038,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 ?: throw IllegalArgumentException("Angry boy :c")
             val index = getIntegerFromArgNMessage(context, 1, 1, guildSelfRoles.length()) ?: return
 
-            val dataEntry = guildSelfRoles.getArray(index)
+            val dataEntry = guildSelfRoles.getArray(index - 1)
             val emoteji = dataEntry.getString(0)
 
             val rolesIds = mutableListOf<Long>()
