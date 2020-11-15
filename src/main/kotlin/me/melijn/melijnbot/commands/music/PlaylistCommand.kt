@@ -28,15 +28,51 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
         aliases = arrayOf("pl", "playlists")
         children = arrayOf(
             AddArg(root),
-            SaveQueue(root),
+            SaveQueueArg(root),
             RemoveArg(root),
+            ClearArg(root),
             ListArg(root),
             LoadArg(root)
         )
         commandCategory = CommandCategory.MUSIC
     }
 
-    class SaveQueue(parent: String) : AbstractCommand("$parent.savequeue") {
+    class ClearArg(parent: String) : AbstractCommand("$parent.clear") {
+
+        init {
+            name = "clear"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val tracksMap = getPlaylistByNameNMessage(context, 0) ?: return
+
+            val trackValues = mutableListOf<String>()
+            val tracks = tracksMap.toSortedMap()
+                .map { it.value }
+                .withIndex()
+                .map {
+                    trackValues.add(it.value)
+                    LavalinkUtil.toAudioTrack(it.value)
+                }
+
+            context.daoManager.playlistWrapper.clear(context.authorId, context.args[0])
+
+            val msg = context.getTranslation("$root.cleared")
+                .withSafeVariable("playlist", context.args[0])
+                .withVariable("count", tracks.size)
+
+
+            sendRsp(context, msg)
+        }
+
+    }
+
+    class SaveQueueArg(parent: String) : AbstractCommand("$parent.savequeue") {
 
         init {
             name = "saveQueue"

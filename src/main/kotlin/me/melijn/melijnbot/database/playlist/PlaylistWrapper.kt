@@ -48,7 +48,27 @@ class PlaylistWrapper(private val playlistDao: PlaylistDao) {
         if (positions.size == 1) {
             remove(userId, playlist, positions.first())
         } else {
+            val map = getPlaylists(userId).toMutableMap()
+            val tracks = map[playlist]?.toMutableMap() ?: mutableMapOf()
+            for (i in positions) {
+                tracks.remove(i)
+            }
+
+            if (tracks.isEmpty()) {
+                map.remove(playlist)
+            } else {
+                map[playlist] = tracks
+            }
+
+            playlistDao.setCacheEntry("$userId", objectMapper.writeValueAsString(map), NORMAL_CACHE)
             playlistDao.removeByIds(userId, playlist, positions)
         }
+    }
+
+    suspend fun clear(userId: Long, playlist: String) {
+        val map = getPlaylists(userId).toMutableMap()
+        map.remove(playlist)
+        playlistDao.setCacheEntry("$userId", objectMapper.writeValueAsString(map), NORMAL_CACHE)
+        playlistDao.clear(userId, playlist)
     }
 }

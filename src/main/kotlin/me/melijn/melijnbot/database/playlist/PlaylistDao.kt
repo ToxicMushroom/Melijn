@@ -69,4 +69,9 @@ class PlaylistDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
             }
         }
     }
+
+    fun clear(userId: Long, playlist: String) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND playlist = ?",
+            userId, playlist)
+    }
 }
