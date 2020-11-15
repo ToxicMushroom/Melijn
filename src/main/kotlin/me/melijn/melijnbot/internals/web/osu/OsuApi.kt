@@ -85,7 +85,7 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
         return OsuBeatMap(
             beatMapJson.getString("approved").toInt(), // 4 = loved, 3 = qualified, 2 = approved, 1 = ranked, 0 = pending, -1 = WIP, -2 = graveyard
             beatMapJson.getString("submit_date"),
-            beatMapJson.getString("approved_date"),
+            beatMapJson.getString("approved_date", null),
             beatMapJson.getString("last_update"),
             beatMapJson.getString("artist"), // Creater of music/song
             beatMapJson.getString("beatmap_id").toLong(),
@@ -158,7 +158,7 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
 data class OsuBeatMap(
     val approved: Int,
     val submitDate: String,
-    val approvedDate: String,
+    val approvedDate: String?,
     val lastUpdateDate: String,
     val artist: String,
     val beatMapId: Long,

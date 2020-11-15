@@ -55,7 +55,7 @@ class MessageDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 data class ModularMessage(
     var messageContent: String? = null,
     var embed: MessageEmbed? = null,
-    var attachments: Map<String, String> = emptyMap(),
+    var attachments: Map<String, String> = emptyMap(), // url -> name
     var extra: Map<String, String> = emptyMap()
 ) {
 
@@ -90,7 +90,7 @@ data class ModularMessage(
 
     fun toMessage(): Message? {
         var membed = embed
-        if (messageContent == null && (membed == null || membed.isEmpty || !membed.isSendable) && attachments.isEmpty()) return null
+        if (messageContent == null && (membed == null || membed.isEmpty || !membed.isSendable)) return null
 
         // Timestamp handler
         if (membed != null && extra.containsKey("currentTimestamp")) {

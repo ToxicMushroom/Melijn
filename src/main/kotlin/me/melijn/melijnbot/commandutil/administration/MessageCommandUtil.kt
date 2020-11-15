@@ -223,14 +223,21 @@ object MessageCommandUtil {
 
     private suspend fun addAttachmentAndMessage(context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
         val newMap = modularMessage.attachments.toMutableMap()
-        newMap[context.args[0]] = context.args[1]
+        val url = context.args[0]
+        val msg = if (URL_PATTERN.matches(url)) {
+            val fileName = context.args[1]
+            newMap[url] = fileName
 
-        modularMessage.attachments = newMap.toMap()
+            modularMessage.attachments = newMap.toMap()
+            context.getTranslation("message.attachments.add")
+                .withVariable(PLACEHOLDER_TYPE, type.text)
+                .withVariable("name", fileName)
+                .withVariable("url", url)
+        } else {
+            context.getTranslation("message.embed.image.urlerror")
+                .withVariable(PLACEHOLDER_ARG, type.text)
 
-        val msg = context.getTranslation("message.attachments.add")
-            .withVariable(PLACEHOLDER_TYPE, type.text)
-            .withVariable("attachment", context.args[0])
-            .withVariable("url", context.args[1])
+        }
 
         sendRsp(context, msg)
     }
