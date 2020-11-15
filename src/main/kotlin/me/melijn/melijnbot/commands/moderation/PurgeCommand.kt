@@ -77,16 +77,21 @@ class PurgeCommand : AbstractCommand("command.purge") {
                     for (message in messages) {
                         context.container.purgedIds[message.idLong] = context.authorId
                     }
-                    val futures = context.textChannel.purgeMessages(messages)
-                    futures.forEach {
-                        it.await()
-                    }
 
-                    val userMore = if (targetUser == null) "" else ".user"
-                    val more = if (amount > 1) ".more" else ".one"
-                    val msg = context.getTranslation("$root.success$userMore$more")
-                        .withVariable("amount", amount.toString())
-                        .withSafeVariable(PLACEHOLDER_USER, targetUser?.asTag ?: "")
+                    val msg = try {
+                        val futures = context.textChannel.purgeMessages(messages)
+                        futures.forEach {
+                            it.await()
+                        }
+
+                        val userMore = if (targetUser == null) "" else ".user"
+                        val more = if (amount > 1) ".more" else ".one"
+                        context.getTranslation("$root.success$userMore$more")
+                            .withVariable("amount", amount.toString())
+                            .withSafeVariable(PLACEHOLDER_USER, targetUser?.asTag ?: "")
+                    } catch (t: Throwable) {
+                        context.getTranslation("$root.error")
+                    }
 
                     purgeInProgress.remove(purgePID)
                     if (!context.commandParts[1].equals(silentPurgeName, true) && !context.commandParts[1].equals(silentPruneName, true))
