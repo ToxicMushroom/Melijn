@@ -17,7 +17,9 @@ import java.time.Instant
 
 object MessageCommandUtil {
 
-    suspend fun removeMessageIfEmpty(guildId: Long, type: MessageType, message: ModularMessage, messageWrapper: MessageWrapper): Boolean {
+    // I dont like this file
+
+    fun removeMessageIfEmpty(guildId: Long, type: MessageType, message: ModularMessage, messageWrapper: MessageWrapper): Boolean {
         return if (messageWrapper.shouldRemove(message)) {
             messageWrapper.removeMessage(guildId, type)
             true
