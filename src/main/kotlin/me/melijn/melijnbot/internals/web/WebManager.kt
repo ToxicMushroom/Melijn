@@ -6,6 +6,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.web.bins.BinApis
+import me.melijn.melijnbot.internals.web.booru.BooruApi
 import me.melijn.melijnbot.internals.web.botlist.BotListApi
 import me.melijn.melijnbot.internals.web.kitsu.KitsuApi
 import me.melijn.melijnbot.internals.web.nsfw.Rule34Api
@@ -38,7 +39,8 @@ class WebManager(val settings: Settings) {
     var spotifyApi: MySpotifyApi? = null
 
 
-    val rule34: Rule34Api = Rule34Api(httpClient)
+    val rule34Api: Rule34Api = Rule34Api(httpClient)
+    val booruApi: BooruApi = BooruApi(httpClient)
     val binApis: BinApis = BinApis(httpClient)
     val kitsuApi: KitsuApi = KitsuApi(httpClient)
     val osuApi: OsuApi = OsuApi(proxiedHttpClient, settings.tokens.osu)

@@ -11,8 +11,7 @@ import me.melijn.melijnbot.commands.games.SlotsCommand
 import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.commands.music.*
-import me.melijn.melijnbot.commands.nsfw.NekoHCommand
-import me.melijn.melijnbot.commands.nsfw.Rule34Command
+import me.melijn.melijnbot.commands.nsfw.*
 import me.melijn.melijnbot.commands.utility.*
 import me.melijn.melijnbot.internals.threading.TaskManager
 import org.slf4j.LoggerFactory
@@ -193,6 +192,9 @@ class CommandClientBuilder(private val container: Container) {
         AniListCommand(),
         NekoHCommand(),
         Rule34Command(),
+        SafebooruCommand(),
+        TBibCommand(),
+        GelbooruCommand(),
         AngryCommand(),
         PngsFromGifCommand(),
         PngsToGifCommand(),

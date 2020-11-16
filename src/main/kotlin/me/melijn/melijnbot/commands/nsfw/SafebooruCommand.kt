@@ -10,16 +10,15 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.entities.MessageEmbed
 
-
-class Rule34Command : AbstractCommand("command.rule34") {
+class SafebooruCommand : AbstractCommand("command.safebooru") {
 
     init {
-        id = 227
-        name = "rule34"
-        aliases = arrayOf("r34")
+        id = 230
+        name = "safebooru"
         cooldown = 1000
         commandCategory = CommandCategory.NSFW
     }
+
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
@@ -30,14 +29,14 @@ class Rule34Command : AbstractCommand("command.rule34") {
 
         val search = context.fullArg.take(124)
         val tags = search.replace(SPACE_REGEX, "_").replace(",", "+")
-        val result = context.webManager.rule34Api.getRandomPost(tags)
+        val result = context.webManager.booruApi.getRandomPost("safebooru.org", tags)
         if (result == null) {
             sendRsp(context, "There were no results the tags you entered.")
             return
         }
 
         val eb = Embedder(context)
-            .setTitle("Rule34: $tags".take(MessageEmbed.TITLE_MAX_LENGTH))
+            .setTitle("SafeBooru: $tags".take(MessageEmbed.TITLE_MAX_LENGTH))
             .setImage(result.imageUrl)
             .setFooter("Requested by: " + context.authorId)
             .build()

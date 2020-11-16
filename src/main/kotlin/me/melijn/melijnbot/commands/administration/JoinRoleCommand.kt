@@ -325,8 +325,8 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 return
             }
             val index = getIntegerFromArgNMessage(context, 1, 1, ls.size) ?: return
-            val entry = ls[index-1]
-            ls.removeAt(index-1)
+            val entry = ls[index - 1]
+            ls.removeAt(index - 1)
             if (ls.isNotEmpty()) {
                 map[group.groupName] = ls
             } else {
