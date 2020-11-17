@@ -30,6 +30,14 @@ object TaskManager {
         }.run()
     }
 
+    fun asyncIgnoreEx(block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
+        try {
+            block.invoke(this)
+        } catch (t: Throwable) {
+            // ignored by design
+        }
+    }
+
     fun <T> taskValueAsync(block: suspend CoroutineScope.() -> T): Deferred<T> = CoroutineScope(dispatcher).async {
         DeferredTask {
             block.invoke(this)
