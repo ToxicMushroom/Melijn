@@ -250,7 +250,8 @@ class CommandClientBuilder(private val container: Container) {
         StarboardCommand(),
         LikeCommand(),
         RemindmeCommand(),
-        ShipCommand()
+        ShipCommand(),
+        MusicNodeCommand()
     )
 
     fun build(): CommandClient {

@@ -127,7 +127,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10")
 
     // https://github.com/GSculerlor/JikanKt/releases
-    // `implementation("com.github.GSculerlor:JikanKT:1.3.1")
+    // implementation("com.github.GSculerlor:JikanKT:1.3.1")
     implementation("com.github.Melijn:JikanKt:dd5884b643")
 
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:4.4.2")

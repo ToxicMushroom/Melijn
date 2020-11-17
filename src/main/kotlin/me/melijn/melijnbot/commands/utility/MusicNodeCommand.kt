@@ -1,21 +1,19 @@
-package me.melijn.melijnbot.commands.music
+package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 
 class MusicNodeCommand : AbstractCommand("command.musicnode") {
 
     init {
-        id = 143
+        id = 233
         name = "musicNode"
-        aliases = arrayOf("mn")
-        commandCategory = CommandCategory.MUSIC
+        commandCategory = CommandCategory.UTILITY
     }
-
 
     override suspend fun execute(context: CommandContext) {
-        // TODO show current node info
+        sendRsp(context, "" + context.lavaManager.jdaLavaLink?.getExistingLink(context.guildId)?.getNode()?.remoteUri?.port)
     }
 }
-
