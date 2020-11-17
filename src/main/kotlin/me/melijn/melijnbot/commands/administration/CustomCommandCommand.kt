@@ -188,7 +188,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 sendRsp(context, msg)
             }
 
-            val name = context.args[0]
+            val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
             var content = context.rawArg.removeFirst(name).trim()
             if (content.isBlank()) content = "empty"
 
