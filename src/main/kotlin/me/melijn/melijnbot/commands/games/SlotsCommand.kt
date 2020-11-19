@@ -74,7 +74,14 @@ class SlotsCommand : AbstractCommand("command.slots") {
                     .withVariable("slot2", slotEmote?.asMention ?: "?")
                     .withVariable("slot3", slotEmote?.asMention ?: "?")
             )
-        val msg = sendEmbedAwaitEL(context, eb.build()).last()
+
+
+        val msg = try {
+            sendEmbedAwaitEL(context, eb.build()).last()
+        } catch (t: Throwable) {
+            balanceWrapper.addBalance(context.authorId, amount)
+            return
+        }
 
 
         delay(1_000)
