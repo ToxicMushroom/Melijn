@@ -27,7 +27,6 @@ class ChannelInfoCommand : AbstractCommand("command.channelinfo") {
         }
         val text = getTextChannelByArgsN(context, 0)
         val voice = getVoiceChannelByArgsN(context, 0)
-        val selfMember = context.selfMember
         if (text != null) {
             val eb = Embedder(context)
                 .setTitle("TextChannel Info")
@@ -45,6 +44,7 @@ class ChannelInfoCommand : AbstractCommand("command.channelinfo") {
             sendEmbedRsp(context, eb.build())
 
         } else if (voice != null) {
+            val selfMember = voice.guild.selfMember
             val eb = Embedder(context)
                 .setTitle("VoiceChannel Info")
                 .setDescription("**Name** ${voice.name}\n" +
