@@ -14,10 +14,12 @@ import me.melijn.melijnbot.internals.web.rest.convert.UpgradeGuildsResponseHandl
 import me.melijn.melijnbot.internals.web.rest.info.GetGuildResponseHandler
 import me.melijn.melijnbot.internals.web.rest.info.PostGuildResponseHandler
 import me.melijn.melijnbot.internals.web.rest.member.MemberInfoResponseHandler
-import me.melijn.melijnbot.internals.web.rest.settings.GetGeneralSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.settings.GetUserSettingsResponseHandler
-import me.melijn.melijnbot.internals.web.rest.settings.PostGeneralSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.settings.PostUserSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.general.GetGeneralSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.general.PostGeneralSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.logging.GetLoggingSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.logging.PostLoggingSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.shutdown.ShutdownResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.StatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.voted.VotedResponseHandler
@@ -111,6 +113,14 @@ class RestServer(container: Container) {
 
             post("/postsettings/general/{guildId}") {
                 PostGeneralSettingsResponseHandler.handleGeneralSettingsPost(RequestContext(call, container))
+            }
+
+            post("/getsettings/logging/{guildId}") {
+                GetLoggingSettingsResponseHandler.handleGetLoggingSettings(RequestContext(call, container))
+            }
+
+            post("/setsettings/logging/{guildId}") {
+                PostLoggingSettingsResponseHandler.handleSetLoggingSettings(RequestContext(call, container))
             }
 
             get("/shutdown") {

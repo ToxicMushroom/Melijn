@@ -25,6 +25,7 @@ class ChannelInfoCommand : AbstractCommand("command.channelinfo") {
             sendSyntax(context)
             return
         }
+        
         val text = getTextChannelByArgsN(context, 0)
         val voice = getVoiceChannelByArgsN(context, 0)
         if (text != null) {

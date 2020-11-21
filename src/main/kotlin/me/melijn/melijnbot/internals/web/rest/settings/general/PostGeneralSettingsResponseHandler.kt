@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.internals.web.rest.settings
+package me.melijn.melijnbot.internals.web.rest.settings.general
 
 import io.ktor.request.*
 import kotlinx.coroutines.Job
