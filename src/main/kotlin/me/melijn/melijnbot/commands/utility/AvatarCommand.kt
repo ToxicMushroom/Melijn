@@ -14,7 +14,7 @@ class AvatarCommand : AbstractCommand("command.avatar") {
     init {
         id = 122
         name = "avatar"
-        aliases = arrayOf("profilePicture", "pf", "pfp")
+        aliases = arrayOf("ava", "pfp", "av")
         commandCategory = CommandCategory.UTILITY
     }
 
