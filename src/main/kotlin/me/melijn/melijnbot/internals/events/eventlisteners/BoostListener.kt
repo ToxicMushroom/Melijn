@@ -50,7 +50,6 @@ class BoostListener(container: Container) : AbstractListener(container) {
             } ?: return
 
 
-
         modularMessage = replaceVariablesInBoostMessage(guild, boosted, modularMessage)
 
         val message: Message? = modularMessage.toMessage()

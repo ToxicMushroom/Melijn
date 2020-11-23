@@ -1,19 +1,22 @@
-package me.melijn.melijnbot.internals.web.rest.settings.logging
+package me.melijn.melijnbot.internals.web.rest.settings.starboard
 
 import io.ktor.request.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import me.melijn.melijnbot.MelijnBot
-import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.database.starboard.StarboardSettings
+import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.web.RequestContext
 import me.melijn.melijnbot.internals.web.WebUtils.respondJson
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.utils.data.DataObject
+import kotlin.math.max
+import kotlin.math.min
 
-object PostLoggingSettingsResponseHandler {
-    suspend fun handleSetLoggingSettings(context: RequestContext) {
+object PostStarboardSettingsResponseHandler {
+    suspend fun handleSetStarboardSettings(context: RequestContext) {
         try {
             val guildId = context.call.parameters["guildId"]?.toLongOrNull() ?: return
             if (guildId < 0) return
@@ -45,18 +48,30 @@ object PostLoggingSettingsResponseHandler {
             val jobs = mutableListOf<Job>()
             val daoManager = context.daoManager
 
-            val logChannels = settings.getArray("logchannels")
+            val allChannels = guild.textChannels.map { it.idLong }
             val availableChannels = guild.textChannels.filter { it.canTalk() }.map { it.idLong }
-            for (i in 0 until logChannels.length()) {
-                val logchannel = logChannels.getObject(i)
-                val type = LogChannelType.valueOf(logchannel.getString("type"))
-                val value = logchannel.getString("value", null)?.toLongOrNull()
-                if (value == null || availableChannels.contains(value)) {
-                    jobs.add(TaskManager.async {
-                        daoManager.logChannelWrapper.setChannel(guild.idLong, type, value ?: -1)
-                    })
-                }
+            val starboardChannelId = settings.getString("starboardchanel", null)?.toLongOrNull()
+            if (starboardChannelId != null && availableChannels.contains(starboardChannelId)) {
+                jobs.add(TaskManager.async {
+                    daoManager.channelWrapper.setChannel(guild.idLong, ChannelType.STARBOARD, starboardChannelId)
+                })
+            } else {
+                daoManager.channelWrapper.removeChannel(guild.idLong, ChannelType.STARBOARD)
             }
+
+            val minStars = max(1, min(10, settings.getInt("minStars", 3)))
+            val excludedChannelIds = settings.getString("excludedChannels", null)
+                ?.split(",")
+                ?.mapNotNull {
+                    it.toLongOrNull()
+                }?.filter {
+                    allChannels.contains(it)
+                } ?: emptyList()
+            jobs.add(TaskManager.async {
+                daoManager.starboardSettingsWrapper.setStarboardSettings(guild.idLong,
+                    StarboardSettings(minStars, excludedChannelIds.joinToString(","))
+                )
+            })
 
             jobs.joinAll()
 

@@ -79,6 +79,9 @@ dependencies {
     api(kotlin("compiler"))
     api(kotlin("scripting-compiler"))
 
+    // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10")
+
     // https://github.com/ToxicMushroom/JagTag-Kotlin
     implementation("com.github.ToxicMushroom:JagTag-Kotlin:0.6.4")
 
@@ -98,7 +101,7 @@ dependencies {
     implementation("me.duncte123:weebJava:2.2.0_29")
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation("se.michaelthelin.spotify:spotify-web-api-java:6.4.0")
+    implementation("se.michaelthelin.spotify:spotify-web-api-java:6.4.1")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation("ch.qos.logback:logback-classic:1.2.3")
@@ -115,16 +118,13 @@ dependencies {
 
 
     // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
-    implementation("io.ktor:ktor:1.4.1")
-    implementation("io.ktor:ktor-client-okhttp:1.4.1")
-    implementation("io.ktor:ktor-server-netty:1.4.1")
+    implementation("io.ktor:ktor:1.4.2")
+    implementation("io.ktor:ktor-client-okhttp:1.4.2")
+    implementation("io.ktor:ktor-server-netty:1.4.2")
 
 
     implementation("com.github.ToxicMushroom:gifencoder:23b3128881")
     implementation("com.github.ToxicMushroom:animated-gif-lib-for-java:03e397e311")
-
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10")
 
     // https://github.com/GSculerlor/JikanKt/releases
     // implementation("com.github.GSculerlor:JikanKT:1.3.1")

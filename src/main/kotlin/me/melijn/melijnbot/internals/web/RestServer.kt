@@ -20,6 +20,8 @@ import me.melijn.melijnbot.internals.web.rest.settings.general.GetGeneralSetting
 import me.melijn.melijnbot.internals.web.rest.settings.general.PostGeneralSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.settings.logging.GetLoggingSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.settings.logging.PostLoggingSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.starboard.GetStarboardSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.starboard.PostStarboardSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.shutdown.ShutdownResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.StatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.voted.VotedResponseHandler
@@ -121,6 +123,14 @@ class RestServer(container: Container) {
 
             post("/setsettings/logging/{guildId}") {
                 PostLoggingSettingsResponseHandler.handleSetLoggingSettings(RequestContext(call, container))
+            }
+
+            post("/getsettings/starboard/{guildId}") {
+                GetStarboardSettingsResponseHandler.handleGetStarboardSettings(RequestContext(call, container))
+            }
+
+            post("/setsettings/starboard/{guildId}") {
+                PostStarboardSettingsResponseHandler.handleSetStarboardSettings(RequestContext(call, container))
             }
 
             get("/shutdown") {

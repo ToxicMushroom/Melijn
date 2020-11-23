@@ -171,14 +171,23 @@ class HelpCommand : AbstractCommand("command.help") {
     override suspend fun execute(context: CommandContext) {
         val args = context.args
         if (args.isEmpty()) {
+            var prefixes = (
+                context.daoManager.guildPrefixWrapper.getPrefixes(context.guildId) +
+                    context.daoManager.userPrefixWrapper.getPrefixes(context.authorId)
+                ).sortedBy { it.length }
+            if (prefixes.isEmpty()) {
+                prefixes = listOf(context.container.settings.botInfo.prefix)
+            }
             val title = context.getTranslation("$root.embed.title")
             val description = context.getTranslation("$root.embed.description")
-                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                .withSafeVariable("serverPrefix", prefixes.first())
+                .withSafeVariable(PLACEHOLDER_PREFIX, prefixes.first())
                 .withVariable("melijnMention", if (context.isFromGuild) context.selfMember.asMention else context.selfUser.asMention)
 
             val embedder = Embedder(context)
                 .setTitle(title)
                 .setDescription(description)
+                .setFooter("@${context.selfUser.asTag} is always a valid prefix")
 
             sendEmbedRsp(context, embedder.build())
             return
