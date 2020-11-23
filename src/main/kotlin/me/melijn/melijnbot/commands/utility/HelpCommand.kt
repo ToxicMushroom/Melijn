@@ -171,10 +171,14 @@ class HelpCommand : AbstractCommand("command.help") {
     override suspend fun execute(context: CommandContext) {
         val args = context.args
         if (args.isEmpty()) {
-            var prefixes = (
-                context.daoManager.guildPrefixWrapper.getPrefixes(context.guildId) +
-                    context.daoManager.userPrefixWrapper.getPrefixes(context.authorId)
-                ).sortedBy { it.length }
+            val daoManager = context.daoManager
+            var prefixes = (if (context.isFromGuild) {
+                daoManager.guildPrefixWrapper.getPrefixes(context.guildId) +
+                    daoManager.userPrefixWrapper.getPrefixes(context.authorId)
+            } else {
+                daoManager.userPrefixWrapper.getPrefixes(context.authorId)
+            }).sortedBy { it.length }
+
             if (prefixes.isEmpty()) {
                 prefixes = listOf(context.container.settings.botInfo.prefix)
             }
