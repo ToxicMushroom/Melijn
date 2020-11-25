@@ -283,7 +283,7 @@ object ImageCommandUtil {
 
     private suspend fun executeGifTransform(
         context: CommandContext,
-        transform: (decoder: GifDecoder, fps: Float?, repeat: Boolean?, argData: DataObject) -> ByteArrayOutputStream,
+        transform: suspend (decoder: GifDecoder, fps: Float?, repeat: Boolean?, argData: DataObject) -> ByteArrayOutputStream,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true
         },

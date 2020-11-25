@@ -402,7 +402,7 @@ object ImageUtils {
         }
     }
 
-    fun addEffectToGifFrames(
+    suspend fun addEffectToGifFrames(
         decoder: GifDecoder,
         fps: Float? = null,
         repeat: Boolean?,
@@ -474,12 +474,10 @@ object ImageUtils {
             })
         }
 
-        runBlocking {
-            for (job in jobs) job.join()
-        }
+        jobs.joinAll()
 
-        for (i in 0 until framesDone.size) {
-            val frame = framesDone[i] ?: continue
+        for (element in framesDone) {
+            val frame = element.value
             encoder.addImage(frame.rgbArr, frame.imageWidth, frame.options)
         }
 
