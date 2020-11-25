@@ -139,10 +139,8 @@ dependencies {
     // implementation("com.github.husnjak:IGDB-API-JVM:0.7")
     implementation("io.lettuce:lettuce-core:5.3.4.RELEASE")
 
-    implementation("org.codehaus.groovy:groovy:3.0.6")
-
-    implementation("io.github.cdimascio:java-dotenv:5.3.1")
-
+    // https://github.com/cdimascio/dotenv-kotlin
+    implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
 }
 
 tasks {
@@ -152,7 +150,7 @@ tasks {
     withType(KotlinCompile::class) {
         kotlinOptions {
             // 15 not supported at this time 25/10/2020 | latest kotlin: 1.4.10
-            jvmTarget = "14"
+            jvmTarget = "15"
         }
     }
 
