@@ -13,7 +13,7 @@ buildscript {
 plugins {
     id("application")
     id("com.github.johnrengelman.shadow") version "6.1.0"
-    id("org.jetbrains.kotlin.jvm") version "1.4.10"
+    id("org.jetbrains.kotlin.jvm") version "1.4.20"
     id("com.apollographql.apollo") version "2.4.1"
 }
 
@@ -58,7 +58,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation("net.dv8tion:JDA:4.2.0_221") {
+    implementation("net.dv8tion:JDA:4.2.0_222") {
         exclude("opus-java")
     }
 
@@ -80,7 +80,7 @@ dependencies {
     api(kotlin("scripting-compiler"))
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.20")
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
     implementation("com.github.ToxicMushroom:JagTag-Kotlin:0.6.4")
