@@ -85,7 +85,7 @@ class BirthdayService(
                     }
 
                     //send birthday message
-                    LogUtils.sendBirthdayMessage(daoManager,httpClient, textChannel, member, info.birthYear)
+                    LogUtils.sendBirthdayMessage(daoManager, httpClient, textChannel, member, info.birthYear)
                 }
             }
 

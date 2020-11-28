@@ -49,6 +49,7 @@ class BoostListener(container: Container) : AbstractListener(container) {
                 it.timeBoosted?.toInstant()?.toEpochMilli() ?: 0
             } ?: return
 
+        // Workaround for people who boost twice
         if (System.currentTimeMillis() - (boosted.timeBoosted?.toInstant()?.toEpochMilli() ?: 0) > 600_000) {
             return
         }
