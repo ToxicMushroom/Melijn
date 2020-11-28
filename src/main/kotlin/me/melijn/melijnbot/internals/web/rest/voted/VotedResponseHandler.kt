@@ -65,7 +65,7 @@ object VotedResponseHandler {
         }
 
 
-        val speedMultiplier = max(0.0, (maxMillisToKeepStreak - millisSinceVoteReset).toDouble() / maxMillisToKeepStreak.toDouble()) + 1.0
+        val speedMultiplier = max(0.0, ((maxMillisToKeepStreak - millisSinceVoteReset).toDouble() / maxMillisToKeepStreak.toDouble())) + 1.0
         val premiumMultiplier = context.container.settings.economy.premiumMultiplier
 
         TaskManager.async {
@@ -73,8 +73,11 @@ object VotedResponseHandler {
                 LogUtils.sendReceivedVoteTest(context.container, userId, botlist)
             } else if (voteType == "vote") {
 
-                val multiplier =
-                    (if (daoManager.supporterWrapper.getUsers().contains(userId)) premiumMultiplier else 1f) * speedMultiplier * (if (isWeekend) 2f else 1f)
+                val multiplier = (if (daoManager.supporterWrapper.getUsers().contains(userId)) {
+                    premiumMultiplier
+                } else {
+                    1f
+                }) * speedMultiplier * (if (isWeekend) 2f else 1f)
 
                 val extraMel = (ln(votes.toDouble()) + ln(streak.toDouble())) * 10
                 val totalMel = ((baseMel + extraMel) * multiplier).toLong()
