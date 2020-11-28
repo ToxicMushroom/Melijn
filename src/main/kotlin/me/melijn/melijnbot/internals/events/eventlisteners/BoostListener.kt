@@ -49,6 +49,10 @@ class BoostListener(container: Container) : AbstractListener(container) {
                 it.timeBoosted?.toInstant()?.toEpochMilli() ?: 0
             } ?: return
 
+        if (System.currentTimeMillis() - (boosted.timeBoosted?.toInstant()?.toEpochMilli() ?: 0) > 600_000) {
+            return
+        }
+
 
         modularMessage = replaceVariablesInBoostMessage(guild, boosted, modularMessage)
 
