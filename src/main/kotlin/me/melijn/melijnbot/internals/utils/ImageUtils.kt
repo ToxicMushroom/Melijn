@@ -402,7 +402,7 @@ object ImageUtils {
         }
     }
 
-    fun addEffectToGifFrames(
+    suspend fun addEffectToGifFrames(
         decoder: GifDecoder,
         fps: Float? = null,
         repeat: Boolean?,
@@ -474,12 +474,10 @@ object ImageUtils {
             })
         }
 
-        runBlocking {
-            for (job in jobs) job.join()
-        }
+        jobs.joinAll()
 
-        for (i in 0 until framesDone.size) {
-            val frame = framesDone[i] ?: continue
+        for (element in framesDone.entries.sortedBy { it.key }) {
+            val frame = element.value
             encoder.addImage(frame.rgbArr, frame.imageWidth, frame.options)
         }
 
@@ -662,13 +660,7 @@ object ImageUtils {
     fun blur(image: BufferedImage, radius: Int, isGif: Boolean = false) {
         val size = radius * 2 + 1
         val weight = 1.0f / (size * size)
-        val data = FloatArray(size * size)
-
-
-        for (index in data.indices) {
-            data[index] = weight
-        }
-
+        val data = FloatArray(size * size) { weight }
         val kernel = Kernel(size, size, data)
         useKernel(image, kernel, isGif)
     }

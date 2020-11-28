@@ -66,7 +66,7 @@ abstract class AbstractCommand(val root: String) {
                 for ((cmd2, ls) in aliasCache.getAliases(context.authorId)) {
                     val currentList = (context.aliasMap[cmd2] ?: emptyList()).toMutableList()
                     for (alias in ls) {
-                        currentList.addIfNotPresent(alias)
+                        currentList.addIfNotPresent(alias, true)
                     }
 
                     context.aliasMap[cmd2] = currentList
