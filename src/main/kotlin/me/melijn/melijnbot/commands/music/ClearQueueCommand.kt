@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
 
-class ClearQueueCommand : AbstractCommand("command.clearQueue") {
+class ClearQueueCommand : AbstractCommand("command.clearqueue") {
 
     init {
         id = 234
