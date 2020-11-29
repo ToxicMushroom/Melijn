@@ -26,10 +26,10 @@ class ClearQueueCommand : AbstractCommand("command.clearqueue") {
 
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val tracks = trackManager.trackSize()
-         trackManager.clear()
+        trackManager.clear()
 
         val msg = context.getTranslation("$root.cleared")
             .withVariable("count", tracks)
-       sendRsp(context, msg)
+        sendRsp(context, msg)
     }
 }
