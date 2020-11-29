@@ -26,14 +26,21 @@ object VerificationCodeResponseHandler {
         }
 
         val body = context.call.receiveText().toLongOrNull() ?: return
-        val guilds: List<Long> = context.container.daoManager.unverifiedUsersWrapper.getGuilds(body)
+        val unverifiedUsersWrapper = context.container.daoManager.unverifiedUsersWrapper
+        val guilds: List<Long> = unverifiedUsersWrapper.getGuilds(body)
 
         val guildObjectArray = DataArray.empty()
         guilds.forEach { guildId ->
             val guild = MelijnBot.shardManager.getGuildById(guildId) ?: return@forEach
+            val member = guild.retrieveMemberById(body).awaitOrNull()
+            if (member == null) {
+                unverifiedUsersWrapper.remove(guildId, body)
+                return@forEach
+            }
             val guildOjb = DataObject.empty()
             guildOjb.put("id", guild.id)
             guildOjb.put("icon", guild.iconId)
+            guildOjb.put("name", guild.name)
 
             guildObjectArray.add(
                 guildOjb
