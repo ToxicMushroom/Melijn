@@ -1,6 +1,8 @@
 package me.melijn.melijnbot.internals.web.rest.convert
 
+import io.ktor.http.*
 import io.ktor.request.*
+import io.ktor.response.*
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.web.RequestContext
 import me.melijn.melijnbot.internals.web.WebUtils.respondJson
@@ -9,6 +11,10 @@ import net.dv8tion.jda.api.utils.data.DataObject
 
 object UpgradeGuildsResponseHandler {
     suspend fun handleUpgradeGuildsResponse(context: RequestContext) {
+        if (context.call.request.header("Authorization") != context.restToken) {
+            context.call.respondText(status = HttpStatusCode.Forbidden) { "Invalid token\n" }
+            return
+        }
         val partialGuilds = DataArray.fromJson(context.call.receiveText())
         val shardManager = MelijnBot.shardManager
 

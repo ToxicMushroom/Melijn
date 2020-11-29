@@ -55,4 +55,16 @@ class UnverifiedUsersDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeUpdate("UPDATE $table SET triesAmount = ? WHERE guildId = ? AND userId = ?",
             tries, guildId, userId)
     }
+
+    suspend fun getGuilds(userId: Long): List<Long> = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", { rs ->
+            val list = mutableListOf<Long>()
+
+            while (rs.next()) {
+                list.add(rs.getLong("guildId"))
+            }
+
+            it.resume(list)
+        }, userId)
+    }
 }

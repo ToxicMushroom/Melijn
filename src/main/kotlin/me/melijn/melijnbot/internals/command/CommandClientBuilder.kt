@@ -1,3 +1,5 @@
+@file:Suppress("RemoveRedundantQualifierName")
+
 package me.melijn.melijnbot.internals.command
 
 import me.melijn.melijnbot.Container
@@ -5,7 +7,10 @@ import me.melijn.melijnbot.commands.administration.*
 import me.melijn.melijnbot.commands.animal.*
 import me.melijn.melijnbot.commands.anime.*
 import me.melijn.melijnbot.commands.developer.*
-import me.melijn.melijnbot.commands.economy.*
+import me.melijn.melijnbot.commands.economy.BalanceCommand
+import me.melijn.melijnbot.commands.economy.DailyCommand
+import me.melijn.melijnbot.commands.economy.LeaderBoardCommand
+import me.melijn.melijnbot.commands.economy.PayCommand
 import me.melijn.melijnbot.commands.games.PokerCommand
 import me.melijn.melijnbot.commands.games.SlotsCommand
 import me.melijn.melijnbot.commands.image.*
@@ -216,7 +221,7 @@ class CommandClientBuilder(private val container: Container) {
         SetRemoveResponsesCommand(),
         SetRemoveInvokeCommand(),
         ManageSupportersCommand(),
-        FlipCommand(),
+        me.melijn.melijnbot.commands.economy.FlipCommand(),
         DailyCommand(),
         PayCommand(),
         BassBoostCommand(),

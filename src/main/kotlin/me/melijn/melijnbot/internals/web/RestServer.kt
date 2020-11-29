@@ -102,8 +102,12 @@ class RestServer(container: Container) {
                 VotedResponseHandler.handleVotedResponse(RequestContext(call, container))
             }
 
-            post("/guild/verificationcodes") {
-                VerificationCodeResponseHandler.handleVerificationCodes(RequestContext(call, container))
+            post("/unverified/guilds") {
+                VerificationCodeResponseHandler.handleUnverifiedGuilds(RequestContext(call, container))
+            }
+
+            post("/unverified/verify") {
+                VerificationCodeResponseHandler.handleGuildVeriifcation(RequestContext(call, container))
             }
 
             post("/getsettings/user/{userId}") {
