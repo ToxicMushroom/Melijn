@@ -48,8 +48,8 @@ object TicTacToe {
         val wonMsg = Embedder(daoManager, -1, userId1)
             .setTitle("Won Tic-Tac-Toe!")
             .setDescription(
-                "%gameField%\nYou won **%silvers%** silvers.".withVariable(
-                    "silvers",
+                "%gameField%\nYou won **%bet%** mel.".withVariable(
+                    "bet",
                     ttt.bet
                 ).withVariable("gameField", TicTacToeCommand.renderGame(gameField))
             )
@@ -57,8 +57,8 @@ object TicTacToe {
         val lostMsg = Embedder(daoManager, -1, userId1)
             .setTitle("Lost Tic-Tac-Toe!")
             .setDescription(
-                "%gameField%\nYou lost **%silvers%** silvers.".withVariable(
-                    "silvers",
+                "%gameField%\nYou lost **%bet%** mel.".withVariable(
+                    "bet",
                     ttt.bet
                 ).withVariable("gameField", TicTacToeCommand.renderGame(gameField))
             )

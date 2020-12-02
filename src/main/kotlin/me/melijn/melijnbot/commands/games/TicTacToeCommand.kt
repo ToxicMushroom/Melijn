@@ -148,7 +148,7 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
                     context.getTranslation(
                         "$root.started"
                     )
-                }.withVariable("silvers", bet)
+                }.withVariable("bet", bet)
 
                 sendMsg(context, msg)
                 return@waitFor
