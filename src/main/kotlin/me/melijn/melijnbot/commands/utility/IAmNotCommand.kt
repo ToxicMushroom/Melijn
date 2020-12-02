@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.utils.asTag
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.getRoleByArgsNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
 
 class IAmNotCommand : AbstractCommand("command.iamnot") {
@@ -28,6 +29,10 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
     companion object {
         suspend fun doSelfRoleSelect(context: CommandContext, add: Boolean) {
             val root = context.commandOrder.first().root
+            if (context.args.isEmpty()) {
+                sendSyntax(context, "$root.syntax")
+                return
+            }
             val role = getRoleByArgsNMessage(context, 0, sameGuildAsContext = true, canInteract = true) ?: return
             val selfRolesGrouped = context.daoManager.selfRoleWrapper.getMap(context.guildId)
             val selfRoleGroups = context.daoManager.selfRoleGroupWrapper.getMap(context.guildId)
@@ -58,6 +63,10 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
                     continue
                 }
             }
+            if (selfRolesGrouped.isEmpty()) {
+                noMatchReason = "notfound"
+            }
+
             if (foundMatch) {
                 if (!context.selfMember.canInteract(context.member)) {
                     val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
@@ -83,6 +92,7 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
             } else {
                 val msg = context.getTranslation("$root.$noMatchReason")
                     .withVariable("prefix", context.usedPrefix)
+                    .withVariable("role", "@" + role.name)
                 sendRsp(context, msg)
             }
         }
