@@ -260,7 +260,8 @@ object LogUtils {
 
     suspend fun addMusicPlayerNewTrack(context: CommandContext, track: AudioTrack) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
-        val eb = Embedder(context.daoManager, context.guildId, -1, Color(0x2f3136).rgb)
+        val eb = Embedder(context.daoManager, context.guildId, -1)
+            .setColor(Color(0x2f3136))
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val title = context.getTranslation("logging.music.newtrack.title")
 
@@ -300,7 +301,8 @@ object LogUtils {
         val zoneId = getZoneId(daoManager, guild.idLong)
 
         val trackManager = lavaManager.musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager
-        val eb = Embedder(daoManager, guild.idLong, -1, Color(0x2f3136).rgb)
+        val eb = Embedder(daoManager, guild.idLong, -1)
+            .setColor(Color(0x2f3136))
 
         val title = i18n.getTranslation(language, "logging.music.newtrack.title")
 
@@ -623,7 +625,7 @@ object LogUtils {
         val extraMel = if (totalMel - baseMel > 0) {
             "100 + ${totalMel - baseMel}"
         } else "100"
-        val embedder = Embedder(container.daoManager, -1, userId, container.settings.botInfo.embedColor)
+        val embedder = Embedder(container.daoManager, -1, userId)
             .setTitle("Vote Received from $site")
             .setDescription("Thanks for voting, you received **$extraMel** mel. Your new balance is **$newBalance** mel\n" +
                 "Note: bonus mel is calculated using: premium status, speed, weekend, total votes and streak.")
@@ -658,7 +660,7 @@ object LogUtils {
         val statusFour = if (readyFour <= 1000L) "Ready" else getDurationString(readyFour)
 
         val botlist = getBotListFromFlag(VoteReminderOption.values().first { it.number == flag })
-        val embedder = Embedder(daoManager, -1, userId, Container.instance.settings.botInfo.embedColor)
+        val embedder = Embedder(daoManager, -1, userId)
             .setTitle("Your vote for $botlist is ready (o゜▽゜)o☆")
             .setDescription("This is a reminder that you can vote again")
             .addField("top.gg",
@@ -687,7 +689,7 @@ object LogUtils {
         }
     }
 
-    fun getBotListFromFlag(opt: VoteReminderOption): String {
+    private fun getBotListFromFlag(opt: VoteReminderOption): String {
         return when (opt) {
             VoteReminderOption.TOPGG -> "top.gg"
             VoteReminderOption.DBLCOM -> "discordbotlist.com"
@@ -700,7 +702,7 @@ object LogUtils {
     suspend fun sendReceivedVoteTest(container: Container, userId: Long, botlist: String) {
         val user = MelijnBot.shardManager.retrieveUserById(userId).await()
         val pc = user.openPrivateChannel().awaitOrNull() ?: return
-        val embedder = Embedder(container.daoManager, -1, userId, container.settings.botInfo.embedColor)
+        val embedder = Embedder(container.daoManager, -1, userId)
             .setTitle("TestVote Received from $botlist")
             .build()
 
@@ -710,7 +712,7 @@ object LogUtils {
     suspend fun sendReminder(daoManager: DaoManager, userId: Long, remindAt: Long, message: String) {
         val user = MelijnBot.shardManager.retrieveUserById(userId).await()
         val pc = user.openPrivateChannel().awaitOrNull() ?: return
-        val embedder = Embedder(daoManager, -1, userId, Container.instance.settings.botInfo.embedColor)
+        val embedder = Embedder(daoManager, -1, userId)
             .setTitle("Your Reminder")
             .setDescription("message: $message")
             .setTimestamp(Instant.ofEpochMilli(remindAt))

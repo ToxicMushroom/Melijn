@@ -12,7 +12,8 @@ class EventWaiter : EventListener {
 
     fun <T : Event> waitFor(
         eventType: Class<T>, condition: suspend (T) -> Boolean,
-        action: suspend (T) -> Unit, expired: (() -> Unit)? = null, seconds: Long = 120
+        action: suspend (T) -> Unit,
+        expired: (suspend () -> Unit)? = null, seconds: Long = 120
     ) {
         val newHandler = EventHandler(condition, action)
         val set = eventHandlers.getOrDefault(eventType, emptySet()).toMutableSet()

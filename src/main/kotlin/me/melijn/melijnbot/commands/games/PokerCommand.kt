@@ -79,9 +79,11 @@ class PokerCommand : AbstractCommand("command.poker") {
             )
 
             eb.addField(
-                context.getTranslation("$root.actions"), context.getTranslation(
-                "$root.actionsvalue"
-            ), false
+                context.getTranslation("$root.actions"),
+                context.getTranslation(
+                    "$root.actionsvalue"
+                ).withVariable("prefix", context.usedPrefix),
+                false
             )
 
             eb.setFooter(

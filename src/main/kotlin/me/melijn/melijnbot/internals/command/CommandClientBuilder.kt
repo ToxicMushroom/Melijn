@@ -13,6 +13,7 @@ import me.melijn.melijnbot.commands.economy.LeaderBoardCommand
 import me.melijn.melijnbot.commands.economy.PayCommand
 import me.melijn.melijnbot.commands.games.PokerCommand
 import me.melijn.melijnbot.commands.games.SlotsCommand
+import me.melijn.melijnbot.commands.games.TicTacToeCommand
 import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.commands.music.*
@@ -257,7 +258,8 @@ class CommandClientBuilder(private val container: Container) {
         RemindmeCommand(),
         ShipCommand(),
         MusicNodeCommand(),
-        ClearQueueCommand()
+        ClearQueueCommand(),
+        TicTacToeCommand()
     )
 
     fun build(): CommandClient {

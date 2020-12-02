@@ -3,6 +3,8 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.commands.games.TicTacToeCommand
+import me.melijn.melijnbot.commands.games.TicTacToeGame
 import me.melijn.melijnbot.commands.utility.HelpCommand
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.ChannelType
@@ -25,6 +27,7 @@ import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
 import java.awt.Color
 
 class MessageReceivedListener(container: Container) : AbstractListener(container) {
@@ -37,6 +40,10 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                 handleVerification(event)
                 FilterUtil.handleFilter(container, event.message)
                 // SpammingUtil.handleSpam(container, event.message)
+            }
+        } else if (event is PrivateMessageReceivedEvent) {
+            TaskManager.async {
+                checkTicTacToe(event)
             }
         }
         if (event is MessageReceivedEvent) {
@@ -207,5 +214,59 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             .setDescription(description)
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
+    }
+
+    private suspend fun checkTicTacToe(event: PrivateMessageReceivedEvent) {
+        val shardManager = event.jda.shardManager ?: return
+        val author = event.author
+        val ttt1 = TicTacToeCommand.activeGames.firstOrNull {
+            it.user1 == author.idLong && TicTacToe.isTurnUserOne(it.game)
+        }
+        if (ttt1 != null) {
+            parseFieldNMessage(event, ttt1, TicTacToeGame.TTTState.O)?.let {
+                TicTacToeCommand.activeGames.remove(ttt1)
+                ttt1.game = it
+                TicTacToeCommand.activeGames.add(ttt1)
+                TicTacToe.sendNewMenu(shardManager, container.daoManager, ttt1)
+            }
+            return
+        }
+
+        val ttt2 = TicTacToeCommand.activeGames.firstOrNull {
+            it.user2 == author.idLong && !TicTacToe.isTurnUserOne(it.game)
+        }
+        if (ttt2 != null) {
+            parseFieldNMessage(event, ttt2, TicTacToeGame.TTTState.X)?.let {
+                TicTacToeCommand.activeGames.remove(ttt2)
+                ttt2.game = it
+                TicTacToeCommand.activeGames.add(ttt2)
+                TicTacToe.sendNewMenu(shardManager, container.daoManager, ttt2)
+            }
+        }
+    }
+
+    private val coordinatePattern = Regex("([1-3])\\s*[,.\\-\\s]\\s*([1-3])")
+    private fun parseFieldNMessage(
+        event: PrivateMessageReceivedEvent,
+        ttt1: TicTacToeGame,
+        state: TicTacToeGame.TTTState
+    ): Array<TicTacToeGame.TTTState>? {
+        val content = event.message.contentRaw
+        val out = coordinatePattern.matchEntire(content)
+        if (out == null) {
+            event.channel.sendMessage("That's not the right format :/. example: `1,1`").queue()
+            return null
+        }
+
+        val x = out.groupValues[1].toInt()
+        val y = out.groupValues[2].toInt()
+        val linearIndex = (x - 1) + ((y - 1) * 3)
+        val array = ttt1.game
+        if (array[linearIndex] != TicTacToeGame.TTTState.EMPTY) {
+            event.channel.sendMessage("That coordinate has been used already.").queue()
+            return null
+        }
+        array[linearIndex] = state
+        return array
     }
 }
