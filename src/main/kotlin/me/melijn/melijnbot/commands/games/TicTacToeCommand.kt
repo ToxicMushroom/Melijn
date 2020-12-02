@@ -4,12 +4,9 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.utils.awaitOrNull
-import me.melijn.melijnbot.internals.utils.getLongFromArgNMessage
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
-import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
@@ -50,7 +47,7 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
             return
         }
 
-        val user = retrieveUserByArgsNMessage(context, 0) ?: return
+        val user = (retrieveMemberByArgsNMessage(context, 0, false, false) ?: return).user
         val bet = if (context.args.size == 1) {
             0
         } else {
@@ -86,13 +83,31 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
         val channel2 = user.openPrivateChannel().awaitOrNull()
 
         context.container.eventWaiter.waitFor(MessageReceivedEvent::class.java, { event ->
-            user.idLong == event.author.idLong
+            user.idLong == event.author.idLong &&
+                event.channel.idLong == context.channelId
         }, { event ->
             val content = event.message.contentRaw
             if (content.equals("yes", true) ||
                 content.equals("y", true) ||
                 content.equals("accept", true)
             ) {
+                val bal11 = balanceWrapper.getBalance(context.authorId)
+                val bal22 = balanceWrapper.getBalance(user.idLong)
+
+                if (bet > bal11) {
+                    val msg = context.getTranslation("$root.user1.notenoughbalance")
+                        .withVariable("bal", bal11)
+                    sendMsg(context, msg)
+                    return@waitFor
+                } else if (bet > bal22) {
+                    val msg = context.getTranslation(
+                        "$root.user2.notenoughbalance"
+                    ).withVariable("user", user.asTag)
+                        .withVariable("bal", bal22)
+                    sendMsg(context, msg)
+                    return@waitFor
+                }
+
                 val game = TicTacToeGame(
                     context.authorId,
                     user.idLong,
