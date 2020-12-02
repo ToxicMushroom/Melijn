@@ -51,7 +51,7 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
         val bet = if (context.args.size == 1) {
             0
         } else {
-            getLongFromArgNMessage(context, 1) ?: return
+            getLongFromArgNMessage(context, 1, 0) ?: return
         }
         if (user.isBot || user.idLong == context.authorId) return
         if (activeGame(context, context.author, user)) return
