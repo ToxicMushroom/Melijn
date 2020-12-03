@@ -25,7 +25,7 @@ class NightcoreCommand : AbstractCommand("command.nightcore") {
         val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
         val ts = player.filters.timescale ?: Timescale()
         if (state) {
-            ts.rate = 1.25f
+            ts.rate = 1.20f
             player.filters.timescale = ts
             player.filters.commit()
 
