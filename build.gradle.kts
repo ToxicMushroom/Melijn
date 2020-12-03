@@ -71,9 +71,7 @@ dependencies {
     // implementation("com.github.Melijn:lavaplayer:18000a1479")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
-    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.0-a5")
-    // implementation("me.melijn.llklient:Lavalink-Klient:1.0.4-okhttp")
-
+    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.0.0-b1")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))
@@ -92,35 +90,35 @@ dependencies {
     implementation("org.postgresql:postgresql:42.2.18")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-jdk8
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.2")
 
     // https://bintray.com/duncte123/weeb.java/weeb.java
     implementation("me.duncte123:weebJava:2.2.0_29")
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation("se.michaelthelin.spotify:spotify-web-api-java:6.4.1")
+    implementation("se.michaelthelin.spotify:spotify-web-api-java:6.5.0")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation("ch.qos.logback:logback-classic:1.2.3")
 
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-    implementation("com.fasterxml.jackson.core:jackson-core:2.11.3")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.12.0")
 
     // https://github.com/FasterXML/jackson-module-kotlin
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.0")
 
     // https://search.maven.org/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-xml
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.3")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.0")
 
 
     // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
-    implementation("io.ktor:ktor:1.4.2")
-    implementation("io.ktor:ktor-client-okhttp:1.4.2")
-    implementation("io.ktor:ktor-server-netty:1.4.2")
+    implementation("io.ktor:ktor:1.4.3")
+    implementation("io.ktor:ktor-client-okhttp:1.4.3")
+    implementation("io.ktor:ktor-server-netty:1.4.3")
 
 
     implementation("com.github.ToxicMushroom:gifencoder:23b3128881")
