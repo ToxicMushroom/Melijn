@@ -50,7 +50,8 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             val floatArray = profile.toFloatArray()
 
             val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
-            player.setBands(floatArray)
+            player.filters.bands = floatArray
+            player.filters.commit()
 
             val msg = context.getTranslation("$root.loaded")
                 .withSafeVariable("gainProfile", pair.first)
@@ -214,7 +215,9 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
 
             val name = getStringFromArgsNMessage(context, 0, 1, 20) ?: return
             val wrapper = context.daoManager.gainProfileWrapper
-            context.getGuildMusicPlayer().guildTrackManager.iPlayer.bands.let { wrapper.add(context.guildId, name, it) }
+            context.getGuildMusicPlayer().guildTrackManager.iPlayer.filters.bands.let {
+                wrapper.add(context.guildId, name, it)
+            }
 
             val msg = context.getTranslation("$root.added")
                 .withSafeVariable(PLACEHOLDER_ARG, name)

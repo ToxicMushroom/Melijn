@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.music
 
+import com.sedmelluq.discord.lavaplayer.filter.equalizer.Equalizer
 import me.melijn.melijnbot.database.audio.GainProfile
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -32,7 +33,8 @@ class BassBoostCommand : AbstractCommand("command.bassboost") {
             val gp = bassProfiles[id]
 
             val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
-            player.setBands(gp.toFloatArray())
+            player.filters.bands = gp.toFloatArray()
+            player.filters.commit()
 
             val mode = context.getTranslation("$root." + when (id) {
                 0 -> "normal"
@@ -49,7 +51,8 @@ class BassBoostCommand : AbstractCommand("command.bassboost") {
         } else {
 
             val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
-            player.setBands(FloatArray(15) { 0.0f })
+            player.filters.bands = FloatArray(Equalizer.BAND_COUNT)
+            player.filters.commit()
 
             val msg = context.getTranslation("$root.disabled")
             sendRsp(context, msg)

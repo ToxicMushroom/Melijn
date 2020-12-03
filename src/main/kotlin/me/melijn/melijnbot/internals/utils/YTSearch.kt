@@ -55,10 +55,10 @@ class YTSearch {
             val restClient = llink?.loadBalancer?.getRandomSocket("normal")?.restClient
             val tracks = when (searchType) {
                 SearchType.SC -> {
-                    restClient?.getSoundCloudSearchResult(query)?.await()
+                    restClient?.getSoundCloudSearchResult(query)
                 }
                 SearchType.YT -> {
-                    restClient?.getYoutubeSearchResult(query)?.await()
+                    restClient?.getYoutubeSearchResult(query)
                 }
                 else -> {
                     if (isUnknownHTTP(query)) {

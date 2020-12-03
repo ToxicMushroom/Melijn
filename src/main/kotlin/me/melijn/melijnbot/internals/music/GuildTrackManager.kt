@@ -61,7 +61,6 @@ class GuildTrackManager(
                 return
             }
 
-
             Task {
                 lavaManager.closeConnection(guildId)
             }.run()
