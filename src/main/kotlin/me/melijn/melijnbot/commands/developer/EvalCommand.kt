@@ -23,7 +23,7 @@ class EvalCommand : AbstractCommand("command.eval") {
     override suspend fun execute(context: CommandContext) {
         requireNotNull(engine)
         var code = context.rawArg.removePrefix("```kt").removePrefix("```").removeSuffix("```")
-        val imports = code.lines().takeWhile { it.startsWith("import ") }
+        val imports = code.lines().takeWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
         code = """
 			import me.melijn.melijnbot.internals.utils.*
 			import me.melijn.melijnbot.internals.threading.*
@@ -35,10 +35,10 @@ class EvalCommand : AbstractCommand("command.eval") {
 			import java.io.File
 			import javax.imageio.ImageIO
 			import kotlinx.coroutines.*
-			${imports.joinToString("\n")}
+			${imports.joinToString("\n\t\t\t")}
 			fun exec(context: CommandContext) {
                 TaskManager.async {
-				    ${code.lines().dropWhile { it.startsWith("import ") }.joinToString("\n")}
+				    ${code.lines().dropWhile { it.startsWith("import ") || it.startsWith("\nimport ") }.joinToString("\n\t\t\t\t\t")}
                 }
             }""".trimIndent()
 
