@@ -32,6 +32,7 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
             "├───╊━━━╋━━━╋━━━┫\n" +
             "│ 3 ┃ % ┃ % ┃ % ┃\n" +
             "╰───┺━━━┻━━━┻━━━┛```"
+
         fun renderGame(array: Array<TicTacToeGame.TTTState>): String {
             var out = fieldTemplate
             for (el in array) {
@@ -127,7 +128,7 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
 
                 val defaultDisabledDMsMessage = context.getTranslation("message.dmsdisabledfix")
 
-                optionMenu.setFooter("You are " + TicTacToeGame.TTTState.O.representation+ " | Please wait for your opponent.")
+                optionMenu.setFooter("You are " + TicTacToeGame.TTTState.O.representation + " | Please wait for your opponent.")
                 val msgMenu1 = channel1?.sendMessage(optionMenu.build())?.awaitOrNull()
                 if (msgMenu1 == null) {
                     val msg = defaultDisabledDMsMessage.withVariable("user", context.author.asMention)
@@ -192,7 +193,7 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
                 val msg = context.getTranslation(
                     "$root.user1.ingame",
 
-                )
+                    )
                 sendMsg(context, msg)
                 true
             }

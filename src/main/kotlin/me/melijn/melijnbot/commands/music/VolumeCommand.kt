@@ -25,7 +25,7 @@ class VolumeCommand : AbstractCommand("command.volume") {
     override suspend fun execute(context: CommandContext) {
         val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
         if (context.args.isEmpty()) {
-            val amount = iPlayer.volume
+            val amount = iPlayer.filters.volume
             val msg = context.getTranslation("$root.show")
                 .withVariable("volume", amount.toString())
             sendRsp(context, msg)
@@ -38,7 +38,8 @@ class VolumeCommand : AbstractCommand("command.volume") {
             return
         }
 
-        iPlayer.setVolume(amount)
+        iPlayer.filters.volume = amount
+        iPlayer.filters.commit()
 
         val msg = context.getTranslation("$root.set")
             .withVariable("volume", amount.toString())
