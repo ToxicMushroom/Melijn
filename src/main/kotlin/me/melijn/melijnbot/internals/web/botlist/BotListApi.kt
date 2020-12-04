@@ -24,6 +24,9 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
         val url = "$TOP_GG_URL/api/bots/${settings.botInfo.id}/stats"
         if (token.isBlank()) return
         TaskManager.asyncIgnoreEx {
+            val extra = serversArray.sum()
+            if (extra > 9999) return@asyncIgnoreEx
+
             val body = DataObject.empty()
                 .put("shards", DataArray.fromCollection(serversArray))
                 .toString()
