@@ -242,8 +242,8 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
 suspend fun getLongFromArgNMessage(
     context: CommandContext,
     index: Int,
-    min: Long = Long.MIN_VALUE,
-    max: Long = Long.MAX_VALUE,
+    min: Long = Long.MIN_VALUE, // inclusive
+    max: Long = Long.MAX_VALUE, // inclusive
     vararg ignore: String
 ): Long? {
     if (argSizeCheckFailed(context, index)) return null
@@ -419,8 +419,19 @@ suspend fun getBalanceNMessage(context: CommandContext, index: Int): Long? {
 }
 
 
-fun getLongFromArgN(context: CommandContext, index: Int, min: Long = Long.MIN_VALUE, max: Long = Long.MAX_VALUE): Long? {
-    val number = (if (context.args.size > index) context.args[index].toLongOrNull() else null) ?: return null
+suspend fun getLongFromArgN(
+    context: CommandContext,
+    index: Int,
+    min: Long = Long.MIN_VALUE,
+    max: Long = Long.MAX_VALUE,
+    vararg ignore: String
+): Long? {
+    if (argSizeCheckFailed(context, index, true)) return null
+    var arg = context.args[index]
+    for (a in ignore) {
+        arg = arg.remove(a)
+    }
+    val number = arg.toLongOrNull() ?: return null
     if (number > max || number < min) return null
     return number
 }
