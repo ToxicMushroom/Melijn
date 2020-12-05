@@ -26,7 +26,8 @@ import kotlin.random.Random
 
 val SPACE_REGEX = "\\s+".toRegex()
 
-class CommandClient(private val commandList: Set<AbstractCommand>, private val container: Container) : ListenerAdapter() {
+class CommandClient(private val commandList: Set<AbstractCommand>, private val container: Container) :
+    ListenerAdapter() {
 
     private val guildPrefixWrapper = container.daoManager.guildPrefixWrapper
     private val userPrefixWrapper = container.daoManager.userPrefixWrapper
@@ -62,7 +63,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val message = event.message
         if (message.contentRaw.isBlank()) return
 
-        if (event.channelType == ChannelType.TEXT && !event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_WRITE)) return
+        if (event.channelType == ChannelType.TEXT && !event.guild.selfMember.hasPermission(
+                event.textChannel,
+                Permission.MESSAGE_WRITE
+            )
+        ) return
 
         val prefixes = getPrefixes(event)
 
@@ -91,10 +96,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         for (prefix in prefixes) {
             if (!message.contentRaw.startsWith(prefix, true)) continue
 
-            val commandParts: ArrayList<String> = ArrayList(message.contentRaw
-                .removeFirst(prefix, ignoreCase = true)
-                .trimEnd()
-                .split(SPACE_PATTERN)
+            val commandParts: ArrayList<String> = ArrayList(
+                message.contentRaw
+                    .removeFirst(prefix, ignoreCase = true)
+                    .trimEnd()
+                    .split(SPACE_PATTERN)
             )
 
 
@@ -193,20 +199,45 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             if (command != null) {
                 val finalCommand = command ?: return
-                if (checksFailed(container, finalCommand, finalCommand.id.toString(), event, false, commandParts)) return
-                finalCommand.run(CommandContext(event, commandParts, container, commandList, spaceMap, aliasesMap, searchedAliases))
+                if (checksFailed(
+                        container,
+                        finalCommand,
+                        finalCommand.id.toString(),
+                        event,
+                        false,
+                        commandParts
+                    )
+                ) return
+                finalCommand.run(
+                    CommandContext(
+                        event,
+                        commandParts,
+                        container,
+                        commandList,
+                        spaceMap,
+                        aliasesMap,
+                        searchedAliases
+                    )
+                )
                 return
             }
         }
 
         if (ccsWithPrefixMatches.isNotEmpty()) {
-            runCustomCommandByChance(event, container.webManager.proxiedHttpClient, commandPartsGlobal, ccsWithPrefixMatches, true)
+            runCustomCommandByChance(
+                event,
+                container.webManager.proxiedHttpClient,
+                commandPartsGlobal,
+                ccsWithPrefixMatches,
+                true
+            )
             return
 
         } else {
-            val prefixLessCommandParts: ArrayList<String> = ArrayList(message.contentRaw
-                .trim()
-                .split(SPACE_PATTERN)
+            val prefixLessCommandParts: ArrayList<String> = ArrayList(
+                message.contentRaw
+                    .trim()
+                    .split(SPACE_PATTERN)
             )
 
             for (cc in ccsWithoutPrefix) {
@@ -223,13 +254,25 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
 
             if (ccsWithoutPrefixMatches.isNotEmpty()) {
-                runCustomCommandByChance(event, container.webManager.proxiedHttpClient, prefixLessCommandParts, ccsWithoutPrefixMatches, false)
+                runCustomCommandByChance(
+                    event,
+                    container.webManager.proxiedHttpClient,
+                    prefixLessCommandParts,
+                    ccsWithoutPrefixMatches,
+                    false
+                )
                 return
             }
         }
     }
 
-    private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, httpClient: HttpClient, commandParts: List<String>, ccs: List<CustomCommand>, hasPrefix: Boolean) {
+    private suspend fun runCustomCommandByChance(
+        event: MessageReceivedEvent,
+        httpClient: HttpClient,
+        commandParts: List<String>,
+        ccs: List<CustomCommand>,
+        hasPrefix: Boolean
+    ) {
         val cc: CustomCommand = if (ccs.size == 1) {
             ccs.first()
         } else {
@@ -247,7 +290,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
     }
 
-    private suspend fun executeCC(cc: CustomCommand, httpClient: HttpClient, event: MessageReceivedEvent, commandParts: List<String>, hasPrefix: Boolean) {
+    private suspend fun executeCC(
+        cc: CustomCommand,
+        httpClient: HttpClient,
+        event: MessageReceivedEvent,
+        commandParts: List<String>,
+        hasPrefix: Boolean
+    ) {
         val member = event.member ?: return
         val channel = event.textChannel
         if (!channel.canTalk()) return
@@ -275,7 +324,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val message: Message? = modularMessage.toMessage()
         when {
             message == null -> sendAttachmentsAwaitN(channel, httpClient, modularMessage.attachments)
-            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(channel, httpClient, message, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(
+                channel,
+                httpClient,
+                message,
+                modularMessage.attachments
+            )
             else -> sendMsgAwaitN(channel, message)
         }
     }
@@ -385,7 +439,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
                 if (missingChannelPermissions.isNotEmpty()) {
                     val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
-                    sendMelijnMissingChannelPermissionMessage(event.textChannel, language, container.daoManager, missingChannelPermissions)
+                    sendMelijnMissingChannelPermissionMessage(
+                        event.textChannel,
+                        language,
+                        container.daoManager,
+                        missingChannelPermissions
+                    )
                     return true
                 }
 
@@ -396,7 +455,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
                 if (missingPermissions.isNotEmpty()) {
                     val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
-                    sendMelijnMissingPermissionMessage(event.textChannel, language, container.daoManager, missingChannelPermissions)
+                    sendMelijnMissingPermissionMessage(
+                        event.textChannel,
+                        language,
+                        container.daoManager,
+                        missingPermissions
+                    )
                     return true
                 }
 
@@ -421,7 +485,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
          * [@return] returns true if the check failed
          *
          * **/
-        private suspend fun checksFailed(daoManager: DaoManager, command: CustomCommand, event: MessageReceivedEvent): Boolean {
+        private suspend fun checksFailed(
+            daoManager: DaoManager,
+            command: CustomCommand,
+            event: MessageReceivedEvent
+        ): Boolean {
             val cmdId = "cc.${command.id}"
             if (commandIsDisabled(daoManager, cmdId, event)) {
                 return true
@@ -435,7 +503,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
 
-        private suspend fun commandIsOnCooldown(daoManager: DaoManager, id: String, globalCooldown: Long, event: MessageReceivedEvent): Boolean {
+        private suspend fun commandIsOnCooldown(
+            daoManager: DaoManager,
+            id: String,
+            globalCooldown: Long,
+            event: MessageReceivedEvent
+        ): Boolean {
             val guildId = event.guild.idLong
             val userId = event.author.idLong
             val channelId = event.channel.idLong
@@ -498,7 +571,10 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 val language = getLanguage(daoManager, userId, guildId)
                 val unReplacedCooldown = i18n.getTranslation(language, "message.cooldown")
                 val msg = unReplacedCooldown
-                    .withVariable("cooldown", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
+                    .withVariable(
+                        "cooldown",
+                        ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString()
+                    )
 
                 sendRspOrMsg(event.textChannel, daoManager, msg)
             }
@@ -506,7 +582,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
 
-        private suspend fun commandIsDisabled(daoManager: DaoManager, id: String, event: MessageReceivedEvent): Boolean {
+        private suspend fun commandIsDisabled(
+            daoManager: DaoManager,
+            id: String,
+            event: MessageReceivedEvent
+        ): Boolean {
             val disabledCommandCache = daoManager.disabledCommandWrapper
             val channelCommandStateCache = daoManager.channelCommandStateWrapper
 
