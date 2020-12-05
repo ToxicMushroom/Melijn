@@ -1,43 +1,37 @@
 package me.melijn.melijnbot.database.giveaway
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
-import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.loadingCacheFrom
+
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.objectMapper
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
-class GiveawayWrapper(val taskManager: TaskManager, val giveawayDao: GiveawayDao) {
+class GiveawayWrapper(private val giveawayDao: GiveawayDao) {
 
 
-    val giveawayCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, List<Giveaway>> { key ->
-            getGiveaways(key)
-        })
-
-    private fun getGiveaways(guildId: Long): CompletableFuture<List<Giveaway>> {
-        val giveawayFuture = CompletableFuture<List<Giveaway>>()
-        taskManager.async {
-            val language = giveawayDao.getGiveaways(guildId)
-            giveawayFuture.complete(language)
+    suspend fun getGiveaways(guildId: Long): List<Giveaway> {
+        giveawayDao.getCacheEntry("$guildId", HIGHER_CACHE)?.let {
+            return objectMapper.readValue(it)
         }
-        return giveawayFuture
+
+        val list = giveawayDao.getGiveaways(guildId)
+        giveawayDao.setCacheEntry("$guildId", objectMapper.writeValueAsString(list), NORMAL_CACHE)
+        return list
     }
 
     suspend fun setGiveaway(guildId: Long, giveaway: Giveaway) {
-        val currentList = giveawayCache.get(guildId).await().toMutableList()
-        currentList.add(giveaway)
-        giveawayCache.put(guildId, CompletableFuture.completedFuture(currentList))
+        val list = getGiveaways(guildId).toMutableList()
+        list.removeIf { it.messageId == giveaway.messageId }
+        list.add(giveaway)
         giveawayDao.insertOrUpdate(guildId, giveaway)
+        giveawayDao.setCacheEntry("$guildId", objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
 
     suspend fun removeGiveaway(guildId: Long, giveaway: Giveaway) {
-        val currentList = giveawayCache.get(guildId).await().toMutableList()
-        currentList.remove(giveaway)
-        giveawayCache.put(guildId, CompletableFuture.completedFuture(currentList))
-
+        val list = getGiveaways(guildId).toMutableList()
+        list.removeIf { it.messageId == giveaway.messageId }
         giveawayDao.remove(guildId, giveaway.messageId)
+        giveawayDao.setCacheEntry("$guildId", objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
 }

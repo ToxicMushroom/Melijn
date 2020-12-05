@@ -3,7 +3,7 @@ package me.melijn.melijnbot.objects.jagtag.parsers
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Parser
 import me.melijn.melijnbot.database.giveaway.Giveaway
-import me.melijn.melijnbot.objects.jagtag.methods.DiscordMethods
+import me.melijn.melijnbot.internals.jagtag.DiscordMethods
 import me.melijn.melijnbot.objects.jagtag.methods.GiveawayMethods
 import net.dv8tion.jda.api.entities.Member
 import java.util.function.Supplier

@@ -1,15 +1,17 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.giveaway.Giveaway
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.getLanguage
-import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.getLanguage
+import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Guild
 
@@ -36,12 +38,12 @@ class GiveawayCommand : AbstractCommand("command.giveaway") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val giveaways = context.daoManager.giveawayWrapper.giveawayCache.get(context.guildId).await()
-                .sortedBy { it.messageId }
+            val giveaways = context.daoManager.giveawayWrapper.getGiveaways(context.guildId)
+
 
             if (giveaways.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 return
             }
 
@@ -55,7 +57,7 @@ class GiveawayCommand : AbstractCommand("command.giveaway") {
             }
 
             val msg = "$title$content```"
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -118,7 +120,7 @@ class GiveawayCommand : AbstractCommand("command.giveaway") {
 
             val eb = getGiveawayMessage(context.guild, context.daoManager, context.embedColor)
 
-            sendEmbed(context, eb.build())
+            sendEmbedRsp(context, eb.build())
         }
     }
 
@@ -131,7 +133,8 @@ class GiveawayCommand : AbstractCommand("command.giveaway") {
 
             val language = getLanguage(daoManager, -1, guild.idLong)
             i18n.getTranslationN(language, "message.giveaway.")
-            val eb = Embedder(daoManager, guild.idLong, -1, color)
+            val eb = Embedder(daoManager, guild.idLong, -1)
+                .setColor(color)
 
 
             return eb

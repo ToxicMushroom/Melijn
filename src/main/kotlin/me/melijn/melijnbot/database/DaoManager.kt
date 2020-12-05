@@ -28,10 +28,10 @@ import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
 import me.melijn.melijnbot.database.filter.FilterGroupWrapper
 import me.melijn.melijnbot.database.filter.FilterWrapper
-import me.melijn.melijnbot.database.giveaway.GiveawayDao
-import me.melijn.melijnbot.database.giveaway.GiveawayWrapper
 import me.melijn.melijnbot.database.games.OsuDao
 import me.melijn.melijnbot.database.games.OsuWrapper
+import me.melijn.melijnbot.database.giveaway.GiveawayDao
+import me.melijn.melijnbot.database.giveaway.GiveawayWrapper
 import me.melijn.melijnbot.database.kick.KickDao
 import me.melijn.melijnbot.database.kick.KickWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
@@ -233,7 +233,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
         guildPrefixWrapper = GuildPrefixWrapper(GuildPrefixDao(driverManager))
         userPrefixWrapper = UserPrefixWrapper(UserPrefixDao(driverManager))
-        allowSpacedPrefixWrapper = AllowSpacedPrefixWrapper(AllowSpacedPrefixDao(driverManager), PrivateAllowSpacedPrefixDao(driverManager)
+        allowSpacedPrefixWrapper = AllowSpacedPrefixWrapper(
+            AllowSpacedPrefixDao(driverManager), PrivateAllowSpacedPrefixDao(driverManager)
         )
         aliasWrapper = AliasWrapper(AliasDao(driverManager))
 
@@ -282,15 +283,15 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         birthdayHistoryWrapper = BirthdayHistoryWrapper(BirthdayHistoryDao(driverManager))
         timeZoneWrapper = TimeZoneWrapper(TimeZoneDao(driverManager))
 
-        bannedOrKickedTriggersLeaveWrapper = BannedOrKickedTriggersLeaveWrapper(taskManager, BannedOrKickedTriggersLeaveDao(driverManager))
-        botLogStateWrapper = BotLogStateWrapper(taskManager, BotLogStateDao(driverManager))
-
-        giveawayWrapper = GiveawayWrapper(taskManager, GiveawayDao(driverManager))
-        bannedOrKickedTriggersLeaveWrapper = BannedOrKickedTriggersLeaveWrapper(BannedOrKickedTriggersLeaveDao(driverManager))
+        bannedOrKickedTriggersLeaveWrapper =
+            BannedOrKickedTriggersLeaveWrapper(BannedOrKickedTriggersLeaveDao(driverManager))
         botLogStateWrapper = BotLogStateWrapper(BotLogStateDao(driverManager))
+
+        giveawayWrapper = GiveawayWrapper(GiveawayDao(driverManager))
         removeResponseWrapper = RemoveResponseWrapper(RemoveResponsesDao(driverManager))
         removeInvokeWrapper = RemoveInvokeWrapper(RemoveInvokeDao(driverManager))
-        voteReminderStatesWrapper = VoteReminderStatesWrapper(me.melijn.melijnbot.database.settings.VoteReminderStatesDao(driverManager))
+        voteReminderStatesWrapper =
+            VoteReminderStatesWrapper(me.melijn.melijnbot.database.settings.VoteReminderStatesDao(driverManager))
         voteReminderWrapper = VoteReminderWrapper(VoteReminderDao(driverManager))
         reminderWrapper = ReminderWrapper(ReminderDao(driverManager))
 
