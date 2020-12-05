@@ -30,13 +30,17 @@ class SelfRoleDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         ]
          */
 
-        driverManager.executeUpdate("INSERT INTO $table (guildId, groupName, emotejiInfo) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET emotejiInfo = ?",
-            guildId, groupName, emotejiInfo, emotejiInfo)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, groupName, emotejiInfo) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET emotejiInfo = ?",
+            guildId, groupName, emotejiInfo, emotejiInfo
+        )
     }
 
     fun clear(guildId: Long, groupName: String) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND groupName = ?",
-            guildId, groupName)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND groupName = ?",
+            guildId, groupName
+        )
     }
 
     suspend fun getMap(guildId: Long): Map<String, DataArray> = suspendCoroutine {

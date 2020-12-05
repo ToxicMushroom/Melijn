@@ -40,14 +40,23 @@ class MuteWrapper(private val muteDao: MuteDao) {
         return continueConvertingInfoToMessage(context, muteAuthor, mute)
     }
 
-    private suspend fun continueConvertingInfoToMessage(context: CommandContext, muteAuthor: User?, mute: Mute): String {
+    private suspend fun continueConvertingInfoToMessage(
+        context: CommandContext,
+        muteAuthor: User?,
+        mute: Mute
+    ): String {
         val unbanAuthorId = mute.unmuteAuthorId ?: return getMuteMessage(context, muteAuthor, null, mute)
 
         val unmuteAuthor = context.shardManager.retrieveUserById(unbanAuthorId).awaitOrNull()
         return getMuteMessage(context, muteAuthor, unmuteAuthor, mute)
     }
 
-    private suspend fun getMuteMessage(context: CommandContext, muteAuthor: User?, unmuteAuthor: User?, mute: Mute): String {
+    private suspend fun getMuteMessage(
+        context: CommandContext,
+        muteAuthor: User?,
+        unmuteAuthor: User?,
+        mute: Mute
+    ): String {
         val deletedUser = context.getTranslation("message.deleted.user")
         val unmuteReason = mute.unmuteReason
         val zoneId = context.getTimeZoneId()
@@ -58,7 +67,10 @@ class MuteWrapper(private val muteDao: MuteDao) {
         return context.getTranslation("message.punishmenthistory.mute")
             .withSafeVariable("muteAuthor", muteAuthor?.asTag ?: deletedUser)
             .withVariable("muteAuthorId", "${mute.muteAuthorId}")
-            .withSafeVariable("unmuteAuthor", if (mute.unmuteAuthorId == null) "/" else unmuteAuthor?.asTag ?: deletedUser)
+            .withSafeVariable(
+                "unmuteAuthor",
+                if (mute.unmuteAuthorId == null) "/" else unmuteAuthor?.asTag ?: deletedUser
+            )
             .withVariable("unmuteAuthorId", mute.unmuteAuthorId?.toString() ?: "/")
             .withSafeVariable("muteReason", mute.reason.substring(0, min(mute.reason.length, 830)))
             .withSafeVariable("unmuteReason", unmuteReason?.substring(0, min(unmuteReason.length, 830)) ?: "/")

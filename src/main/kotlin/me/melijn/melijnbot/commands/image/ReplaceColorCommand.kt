@@ -78,12 +78,22 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
 
                     val c2 = newAlpha shl 24 or (newColor.red shl 16) or (newColor.green shl 8) or newColor.blue
                     val newColor1 = ImageUtils.suiteColorForGif(c2)
-                    intArrayOf(newColor1 and 0xff, newColor1 shr 8 and 0xff, newColor1 shr 16 and 0xff, newColor1 shr 24 and 0xff)
+                    intArrayOf(
+                        newColor1 and 0xff,
+                        newColor1 shr 8 and 0xff,
+                        newColor1 shr 16 and 0xff,
+                        newColor1 shr 24 and 0xff
+                    )
 
                 } else {
                     val c2 = ints[3] shl 24 or (ints[2] shl 16) or (ints[1] shl 8) or ints[0]
                     val newColor1 = ImageUtils.suiteColorForGif(c2)
-                    intArrayOf(newColor1 and 0xff, newColor1 shr 8 and 0xff, newColor1 shr 16 and 0xff, newColor1 shr 24 and 0xff)
+                    intArrayOf(
+                        newColor1 and 0xff,
+                        newColor1 shr 8 and 0xff,
+                        newColor1 shr 16 and 0xff,
+                        newColor1 shr 24 and 0xff
+                    )
                 }
             }
 

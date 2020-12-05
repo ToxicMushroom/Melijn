@@ -39,7 +39,10 @@ class DonateCommand : AbstractCommand("command.donate") {
                 sendRsp(context, msg)
             } else {
                 val msg = context.getTranslation("$root.oncooldown")
-                    .withVariable("timeLeft", getDurationString(supporter.lastServerPickTime - (System.currentTimeMillis() - 1_209_600_000)))
+                    .withVariable(
+                        "timeLeft",
+                        getDurationString(supporter.lastServerPickTime - (System.currentTimeMillis() - 1_209_600_000))
+                    )
                 sendRsp(context, msg)
             }
         }

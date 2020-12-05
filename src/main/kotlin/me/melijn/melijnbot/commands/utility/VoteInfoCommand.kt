@@ -45,7 +45,12 @@ class VoteInfoCommand : AbstractCommand("command.voteinfo") {
         val statusThree = if (readyThree <= 1000L) "ready" else getDurationString(readyThree)
         val statusFour = if (readyFour <= 1000L) "ready" else getDurationString(readyFour)
 
-        val lastTime = listOf(userVote?.bfdLastTime, userVote?.topggLastTime, userVote?.dblLastTime, userVote?.dboatsLastTime).maxByOrNull {
+        val lastTime = listOf(
+            userVote?.bfdLastTime,
+            userVote?.topggLastTime,
+            userVote?.dblLastTime,
+            userVote?.dboatsLastTime
+        ).maxByOrNull {
             it ?: 0
         }
 

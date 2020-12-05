@@ -29,7 +29,8 @@ class LikeCommand : AbstractCommand("command.like") {
         val audioTrack: AudioTrack = guildMusicPlayer.guildTrackManager.playingTrack ?: return
 
         if (context.args.isNotEmpty() &&
-            !RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event)) {
+            !RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event)
+        ) {
             sendSyntax(context)
             return
         }
@@ -48,7 +49,7 @@ class LikeCommand : AbstractCommand("command.like") {
         val position = tracksMap?.maxByOrNull { it.key }?.key ?: 0
 
         context.daoManager.playlistWrapper
-            .set(context.authorId, "favourites", position+1, LavalinkUtil.toMessage(audioTrack))
+            .set(context.authorId, "favourites", position + 1, LavalinkUtil.toMessage(audioTrack))
 
         val msg = context.getTranslation("$root.added")
             .withSafeVariable("title", audioTrack.info.title)

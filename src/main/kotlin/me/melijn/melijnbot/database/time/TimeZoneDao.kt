@@ -18,8 +18,10 @@ class TimeZoneDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun put(id: Long, zoneId: String) {
-        driverManager.executeUpdate("INSERT INTO $table (id, zoneId) VALUES (?, ?) ON CONFLICT (id) DO UPDATE SET zoneId = ?",
-            id, zoneId, zoneId)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (id, zoneId) VALUES (?, ?) ON CONFLICT (id) DO UPDATE SET zoneId = ?",
+            id, zoneId, zoneId
+        )
     }
 
     fun remove(id: Long) {

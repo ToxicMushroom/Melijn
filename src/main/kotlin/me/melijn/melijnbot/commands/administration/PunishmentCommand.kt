@@ -371,7 +371,11 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
     }
 }
 
-suspend fun getPunishmentNMessage(context: CommandContext, position: Int, punishmentType: PunishmentType? = null): Punishment? {
+suspend fun getPunishmentNMessage(
+    context: CommandContext,
+    position: Int,
+    punishmentType: PunishmentType? = null
+): Punishment? {
     val name = context.args[position]
     val wrapper = context.daoManager.punishmentWrapper
     val list = wrapper.getList(context.guildId)

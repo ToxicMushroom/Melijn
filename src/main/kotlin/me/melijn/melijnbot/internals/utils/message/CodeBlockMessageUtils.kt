@@ -22,7 +22,14 @@ suspend fun sendRspCodeBlock(context: CommandContext, msg: String, lang: String,
     }
 }
 
-fun sendRspCodeBlock(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, msg: String, lang: String, shouldPaginate: Boolean) {
+fun sendRspCodeBlock(
+    textChannel: TextChannel,
+    authorId: Long,
+    daoManager: DaoManager,
+    msg: String,
+    lang: String,
+    shouldPaginate: Boolean
+) {
     if (!textChannel.canTalk()) return
     if (msg.length <= 2000) {
         TaskManager.async(textChannel) {
@@ -55,7 +62,14 @@ suspend fun sendRspCodeBlocks(
     }
 }
 
-fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, parts: List<String>, lang: String, shouldPaginate: Boolean) {
+fun sendRspCodeBlocks(
+    textChannel: TextChannel,
+    authorId: Long,
+    daoManager: DaoManager,
+    parts: List<String>,
+    lang: String,
+    shouldPaginate: Boolean
+) {
     if (shouldPaginate && parts.size > 1) {
         val paginatedParts = parts.mapIndexed { index, s ->
             when {
@@ -80,11 +94,13 @@ fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoM
     } else if (parts.size > 1) {
         TaskManager.async(textChannel) {
             parts.forEachIndexed { index, msgPart ->
-                val message = textChannel.sendMessage(when {
-                    index == 0 -> "$msgPart```"
-                    index + 1 == parts.size -> "```$lang\n$msgPart"
-                    else -> "```$lang\n$msgPart```"
-                }).awaitOrNull() ?: return@async
+                val message = textChannel.sendMessage(
+                    when {
+                        index == 0 -> "$msgPart```"
+                        index + 1 == parts.size -> "```$lang\n$msgPart"
+                        else -> "```$lang\n$msgPart```"
+                    }
+                ).awaitOrNull() ?: return@async
 
                 launch {
                     val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
@@ -120,7 +136,8 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
         if (msg.length <= 2000) {
             channel.sendMessage(msg).queue()
         } else {
-            val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length) - if (shouldPaginate) 100 else 0)
+            val parts =
+                StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length) - if (shouldPaginate) 100 else 0)
             sendMsgCodeBlocks(channel, context.authorId, parts, lang, shouldPaginate)
         }
 
@@ -136,7 +153,13 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
     }
 }
 
-suspend fun sendMsgCodeBlocks(messageChannel: MessageChannel, authorId: Long, parts: List<String>, lang: String, shouldPaginate: Boolean) {
+suspend fun sendMsgCodeBlocks(
+    messageChannel: MessageChannel,
+    authorId: Long,
+    parts: List<String>,
+    lang: String,
+    shouldPaginate: Boolean
+) {
     if (shouldPaginate && parts.size > 1) {
         val paginatedParts = parts.mapIndexed { index, s ->
             when {
@@ -156,11 +179,13 @@ suspend fun sendMsgCodeBlocks(messageChannel: MessageChannel, authorId: Long, pa
         }
     } else {
         parts.forEachIndexed { index, msgPart ->
-            messageChannel.sendMessage(when {
-                index == 0 -> "$msgPart```"
-                index + 1 == parts.size -> "```$lang\n$msgPart"
-                else -> "```$lang\n$msgPart```"
-            }).queue()
+            messageChannel.sendMessage(
+                when {
+                    index == 0 -> "$msgPart```"
+                    index + 1 == parts.size -> "```$lang\n$msgPart"
+                    else -> "```$lang\n$msgPart```"
+                }
+            ).queue()
         }
     }
 }

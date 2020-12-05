@@ -44,10 +44,12 @@ class TokenInfoCommand : AbstractCommand("command.tokeninfo") {
         val hmac = (split[2])
 
         val eb = Embedder(context)
-            .setDescription("**BotID:** ${userId}\n" +
-                "**Bot Creation Time:** ${(botCreated).asEpochMillisToDateTime(context.getTimeZoneId())} | $botCreated\n" +
-                "**Token Creation Time:** ${(tokenCreated).asEpochMillisToDateTime(context.getTimeZoneId())} | $tokenCreated\n" +
-                "**Hmac:** $hmac")
+            .setDescription(
+                "**BotID:** ${userId}\n" +
+                    "**Bot Creation Time:** ${(botCreated).asEpochMillisToDateTime(context.getTimeZoneId())} | $botCreated\n" +
+                    "**Token Creation Time:** ${(tokenCreated).asEpochMillisToDateTime(context.getTimeZoneId())} | $tokenCreated\n" +
+                    "**Hmac:** $hmac"
+            )
         if (bot != null) {
             eb.setAuthor(bot.asTag, null, bot.effectiveAvatarUrl)
         } else {

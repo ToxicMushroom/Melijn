@@ -43,7 +43,12 @@ class KickCommand : AbstractCommand("command.kick") {
             return
         }
 
-        if (!context.member.canInteract(targetMember) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+        if (!context.member.canInteract(targetMember) && !hasPermission(
+                context,
+                SpecialPermission.PUNISH_BYPASS_HIGHER.node,
+                true
+            )
+        ) {
             val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
                 .withVariable(PLACEHOLDER_USER, targetMember.asTag)
             sendRsp(context, msg)
@@ -73,7 +78,12 @@ class KickCommand : AbstractCommand("command.kick") {
         continueKicking(context, targetMember, kick, message)
     }
 
-    private suspend fun continueKicking(context: CommandContext, targetMember: Member, kick: Kick, kickingMessage: Message? = null) {
+    private suspend fun continueKicking(
+        context: CommandContext,
+        targetMember: Member,
+        kick: Kick,
+        kickingMessage: Message? = null
+    ) {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
@@ -82,7 +92,17 @@ class KickCommand : AbstractCommand("command.kick") {
         val privZoneId = getZoneId(daoManager, guild.idLong, targetMember.idLong)
 
         val kickedMessageDm = getKickMessage(language, privZoneId, guild, targetMember.user, author, kick)
-        val warnedMessageLc = getKickMessage(language, zoneId, guild, targetMember.user, author, kick, true, targetMember.user.isBot, kickingMessage != null)
+        val warnedMessageLc = getKickMessage(
+            language,
+            zoneId,
+            guild,
+            targetMember.user,
+            author,
+            kick,
+            true,
+            targetMember.user.isBot,
+            kickingMessage != null
+        )
 
         context.daoManager.kickWrapper.addKick(kick)
         val msg = try {
@@ -145,7 +165,8 @@ fun getKickMessage(
         .withVariable("kickId", kick.kickId)
 
     val extraDesc: String = if (!received || isBot) {
-        i18n.getTranslation(language,
+        i18n.getTranslation(
+            language,
             if (isBot) {
                 "message.punishment.extra.bot"
             } else {

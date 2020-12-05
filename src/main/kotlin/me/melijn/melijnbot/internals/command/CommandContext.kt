@@ -83,7 +83,10 @@ class CommandContext(
         }
 
         //Quot arg support
-        val rearg = rawArg.replace(SPACE_PATTERN, " ") + " " // this last space is needed so I don't need to hack around in the splitter for the last arg
+        val rearg = rawArg.replace(
+            SPACE_PATTERN,
+            " "
+        ) + " " // this last space is needed so I don't need to hack around in the splitter for the last arg
         val quotationIndexes = mutableListOf<Int>()
         val slashIndexes = mutableListOf<Int>()
         val spaceIndexes = mutableListOf<Int>()

@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.internals.web.kitsu
 
-import io.ktor.client.HttpClient
+import io.ktor.client.*
 import me.melijn.melijnbot.internals.web.WebUtils
 import me.melijn.melijnbot.objectMapper
 

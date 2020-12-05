@@ -17,7 +17,8 @@ class NightcoreCommand : AbstractCommand("command.nightcore") {
         id = 196
         name = "nightcore"
         aliases = arrayOf("nc")
-        runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
+        runConditions =
+            arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
         commandCategory = CommandCategory.MUSIC
     }
 

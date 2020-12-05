@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.internals.web.rest.info
 
-import io.ktor.application.*
 import io.ktor.request.*
-import io.ktor.response.*
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.isPositiveNumber
@@ -21,8 +19,10 @@ object PostGuildResponseHandler {
         val userId = context.call.receiveText()
         val member = guild?.retrieveMemberById(userId)?.awaitOrNull()
         if (member == null) {
-            context.call.respondJson(DataObject.empty()
-                .put("error", "guild invalidated"))
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("error", "guild invalidated")
+            )
             return
         }
 
@@ -31,8 +31,10 @@ object PostGuildResponseHandler {
             member.isOwner)
 
         if (!hasPerm) {
-            context.call.respondJson(DataObject.empty()
-                .put("error", "guild invalidated"))
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("error", "guild invalidated")
+            )
             return
         }
 

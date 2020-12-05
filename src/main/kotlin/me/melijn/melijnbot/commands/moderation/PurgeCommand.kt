@@ -94,7 +94,11 @@ class PurgeCommand : AbstractCommand("command.purge") {
                     }
 
                     purgeInProgress.remove(purgePID)
-                    if (!context.commandParts[1].equals(silentPurgeName, true) && !context.commandParts[1].equals(silentPruneName, true))
+                    if (!context.commandParts[1].equals(silentPurgeName, true) && !context.commandParts[1].equals(
+                            silentPruneName,
+                            true
+                        )
+                    )
                         sendMsgAwaitEL(context, msg).firstOrNull()?.delete()?.queueAfter(5, TimeUnit.SECONDS)
 
                     if (messages.isNotEmpty()) {

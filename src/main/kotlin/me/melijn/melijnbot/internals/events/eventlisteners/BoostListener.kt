@@ -35,8 +35,9 @@ class BoostListener(container: Container) : AbstractListener(container) {
         val messageType = MessageType.BOOST
         val guildId = guild.idLong
 
-        val channel = guild.getAndVerifyChannelByType(daoManager, channelType, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ)
-            ?: return
+        val channel =
+            guild.getAndVerifyChannelByType(daoManager, channelType, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ)
+                ?: return
 
         val messageWrapper = daoManager.messageWrapper
         var modularMessage = messageWrapper.getMessage(guildId, messageType) ?: return
@@ -59,13 +60,26 @@ class BoostListener(container: Container) : AbstractListener(container) {
 
         val message: Message? = modularMessage.toMessage()
         when {
-            message == null -> sendAttachments(channel, container.webManager.proxiedHttpClient, modularMessage.attachments)
-            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, container.webManager.proxiedHttpClient, message, modularMessage.attachments)
+            message == null -> sendAttachments(
+                channel,
+                container.webManager.proxiedHttpClient,
+                modularMessage.attachments
+            )
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(
+                channel,
+                container.webManager.proxiedHttpClient,
+                message,
+                modularMessage.attachments
+            )
             else -> sendMsg(channel, message)
         }
     }
 
-    private suspend fun replaceVariablesInBoostMessage(guild: Guild, booster: Member, modularMessage: ModularMessage): ModularMessage {
+    private suspend fun replaceVariablesInBoostMessage(
+        guild: Guild,
+        booster: Member,
+        modularMessage: ModularMessage
+    ): ModularMessage {
         val user = booster.user
 
         return modularMessage.mapAllStringFields {

@@ -254,8 +254,14 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 getTextChannelByArgsNMessage(context, 1)
             } ?: return
 
-            if (notEnoughPermissionsAndMessage(context, channel,
-                    Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_READ, Permission.MESSAGE_ADD_REACTION)
+            if (notEnoughPermissionsAndMessage(
+                    context,
+                    channel,
+                    Permission.MESSAGE_WRITE,
+                    Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MESSAGE_READ,
+                    Permission.MESSAGE_ADD_REACTION
+                )
             ) {
                 return
             }
@@ -303,19 +309,22 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             var alreadyEmotesAmount = 0
             val messages: List<Message> = if (size > 20 || body.length > MessageEmbed.TEXT_MAX_LENGTH) {
-                val splitted = StringUtils.splitMessageAtMaxCharAmountOrLength(body, 20, '\n', MessageEmbed.TEXT_MAX_LENGTH)
+                val splitted =
+                    StringUtils.splitMessageAtMaxCharAmountOrLength(body, 20, '\n', MessageEmbed.TEXT_MAX_LENGTH)
 
                 val messages = mutableListOf<Message>()
                 val titleFormat = context.getTranslation("$root.titleformat.part")
                 for ((index, part) in splitted.withIndex()) {
 
-                    embedder.setTitle(titleFormat
-                        .withVariable("group", group.groupName)
-                        .withVariable("part", index + 1)
+                    embedder.setTitle(
+                        titleFormat
+                            .withVariable("group", group.groupName)
+                            .withVariable("part", index + 1)
                     )
 
                     embedder.setDescription(part)
-                    val messagesPart = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build())
+                    val messagesPart =
+                        sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build())
 
                     val emoteAmount = part.count { c -> c == '\n' } / max(ratio, 1)
                     val emoteMessage = messagesPart.last()
@@ -787,7 +796,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     return
                 }
 
-                val newSr = SelfRoleGroup(name, emptyList(), -1, isEnabled = true, isSelfRoleable = true, pattern = null)
+                val newSr =
+                    SelfRoleGroup(name, emptyList(), -1, isEnabled = true, isSelfRoleable = true, pattern = null)
                 wrapper.insertOrUpdate(context.guildId, newSr)
 
                 val msg = context.getTranslation("$root.added")
@@ -831,7 +841,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     .sortedBy { it.groupName }
 
                 val title = context.getTranslation("$root.title")
-                val content = StringBuilder("```INI\n[index] - [name] - ([channelId], [channelName]) - [selfAssignable] - [enabled]")
+                val content =
+                    StringBuilder("```INI\n[index] - [name] - ([channelId], [channelName]) - [selfAssignable] - [enabled]")
 
                 for ((index, srg) in list.withIndex()) {
                     val channel = context.guild.getTextChannelById(srg.channelId)
@@ -1075,7 +1086,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             val msg = if (map.isNotEmpty()) {
                 val title = context.getTranslation("$root.title")
-                val content = StringBuilder("```ini\n[group]:\n [index] - [emoteji] - [name] -> [(chance, roleId, roleName), ...] - [getAll]")
+                val content =
+                    StringBuilder("```ini\n[group]:\n [index] - [emoteji] - [name] -> [(chance, roleId, roleName), ...] - [getAll]")
 
                 for ((group, dataArray) in map.toSortedMap()) {
                     content.append("\n${group}:")

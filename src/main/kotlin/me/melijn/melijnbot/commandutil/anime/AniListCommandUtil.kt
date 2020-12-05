@@ -520,8 +520,10 @@ object AniListCommandUtil {
         val italicRegex = "<i>(.*?)</i>".toRegex()
 
         for (res in italicRegex.findAll(description)) {
-            description = description.replace(res.groups[0]?.value
-                ?: "$$$$$$$", "*${res.groups[1]?.value}*")
+            description = description.replace(
+                res.groups[0]?.value
+                    ?: "$$$$$$$", "*${res.groups[1]?.value}*"
+            )
 
         }
 
@@ -652,8 +654,10 @@ object AniListCommandUtil {
         val italicRegex = "<i>(.*?)</i>".toRegex()
 
         for (res in italicRegex.findAll(description)) {
-            description = description.replace(res.groups[0]?.value
-                ?: "$$$$$$$", "*${res.groups[1]?.value}*")
+            description = description.replace(
+                res.groups[0]?.value
+                    ?: "$$$$$$$", "*${res.groups[1]?.value}*"
+            )
 
         }
 
@@ -744,9 +748,13 @@ object AniListCommandUtil {
                     val eb = Embedder(context)
                     val sb = StringBuilder()
                     for ((index, anime) in medias.withIndex()) {
-                        sb.append("[").append(index + 1).append("](").append(anime.siteUrl
-                            ?: "").append(") - ").append(anime.title?.romaji
-                            ?: "?").append(anime.title?.english?.let { " | $it" } ?: "").append(" ` ")
+                        sb.append("[").append(index + 1).append("](").append(
+                            anime.siteUrl
+                                ?: ""
+                        ).append(") - ").append(
+                            anime.title?.romaji
+                                ?: "?"
+                        ).append(anime.title?.english?.let { " | $it" } ?: "").append(" ` ")
                             .append(anime.favourites ?: 0).appendLine(" \uD83D\uDC97`")
                     }
 

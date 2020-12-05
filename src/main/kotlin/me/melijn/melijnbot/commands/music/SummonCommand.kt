@@ -24,7 +24,13 @@ class SummonCommand : AbstractCommand("command.summon") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            if (!RunConditionUtil.checkOtherBotAloneOrDJOrSameVC(context.container, context.event, this, context.getLanguage())) return
+            if (!RunConditionUtil.checkOtherBotAloneOrDJOrSameVC(
+                    context.container,
+                    context.event,
+                    this,
+                    context.getLanguage()
+                )
+            ) return
             val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
 
@@ -39,7 +45,13 @@ class SummonCommand : AbstractCommand("command.summon") {
                 return
             }
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
-            if (!RunConditionUtil.checkBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
+            if (!RunConditionUtil.checkBotAloneOrUserDJ(
+                    context.container,
+                    context.event,
+                    this,
+                    context.getLanguage()
+                )
+            ) return
 
             context.lavaManager.openConnection(vc, context.getGuildMusicPlayer().groupId)
             val msg = context.getTranslation("$root.summoned.other")

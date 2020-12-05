@@ -79,8 +79,10 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             return
         }
 
-        val cmdContext = CommandContext(event, listOf(usedMention, "help"), container, container.commandMap.values.toSet(),
-            mutableMapOf(), mutableMapOf(), true, "${usedMention}help")
+        val cmdContext = CommandContext(
+            event, listOf(usedMention, "help"), container, container.commandMap.values.toSet(),
+            mutableMapOf(), mutableMapOf(), true, "${usedMention}help"
+        )
         helpCmd.run(cmdContext)
     }
 
@@ -92,13 +94,18 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val member = event.member ?: return
         val dao = container.daoManager
 
-        val verificationChannel = guild.getAndVerifyChannelByType(dao, ChannelType.VERIFICATION, Permission.MESSAGE_MANAGE)
-            ?: return
+        val verificationChannel =
+            guild.getAndVerifyChannelByType(dao, ChannelType.VERIFICATION, Permission.MESSAGE_MANAGE)
+                ?: return
         if (verificationChannel.idLong != textChannel.idLong) return
 
 
         val unverifiedRole = VerificationUtils.getUnverifiedRoleN(event.channel, dao) ?: return
-        if (!dao.unverifiedUsersWrapper.contains(guild.idLong, member.idLong) && !member.roles.contains(unverifiedRole)) {
+        if (!dao.unverifiedUsersWrapper.contains(
+                guild.idLong,
+                member.idLong
+            ) && !member.roles.contains(unverifiedRole)
+        ) {
             //User is already verified
             if (!member.hasPermission(Permission.ADMINISTRATOR)) {
                 container.botDeletedMessageIds.add(event.messageIdLong)
@@ -112,8 +119,10 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             VerificationType.PASSWORD -> {
                 val password = dao.verificationPasswordWrapper.getPassword(guild.idLong)
                 if (event.message.contentRaw == password) {
-                    VerificationUtils.verify(dao, container.webManager.proxiedHttpClient,
-                        unverifiedRole, guild.selfMember.user, member)
+                    VerificationUtils.verify(
+                        dao, container.webManager.proxiedHttpClient,
+                        unverifiedRole, guild.selfMember.user, member
+                    )
                 } else {
                     VerificationUtils.failedVerification(dao, member)
                 }
@@ -122,8 +131,10 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             VerificationType.GOOGLE_RECAPTCHAV2 -> {
                 val code = dao.unverifiedUsersWrapper.getMoment(guild.idLong, member.idLong)
                 if (event.message.contentRaw == code.toString()) {
-                    VerificationUtils.verify(dao, container.webManager.proxiedHttpClient,
-                        unverifiedRole, guild.selfMember.user, member)
+                    VerificationUtils.verify(
+                        dao, container.webManager.proxiedHttpClient,
+                        unverifiedRole, guild.selfMember.user, member
+                    )
                 } else {
                     VerificationUtils.failedVerification(dao, member)
                 }
@@ -174,18 +185,24 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         }
 
         TaskManager.async(event.author, event.channel) {
-            messageWrapper.addMessage(DaoMessage(
-                guildId,
-                event.channel.idLong,
-                event.author.idLong,
-                event.messageIdLong,
-                event.message.contentRaw,
-                event.message.timeCreated.toInstant().toEpochMilli()
-            ))
+            messageWrapper.addMessage(
+                DaoMessage(
+                    guildId,
+                    event.channel.idLong,
+                    event.author.idLong,
+                    event.messageIdLong,
+                    event.message.contentRaw,
+                    event.message.timeCreated.toInstant().toEpochMilli()
+                )
+            )
         }
     }
 
-    private suspend fun postAttachmentLog(event: GuildMessageReceivedEvent, logChannel: TextChannel, attachment: Message.Attachment) {
+    private suspend fun postAttachmentLog(
+        event: GuildMessageReceivedEvent,
+        logChannel: TextChannel,
+        attachment: Message.Attachment
+    ) {
         val guild = event.guild
         val daoManager = container.daoManager
         val channel = event.channel

@@ -63,7 +63,8 @@ fun getProgressBar(playingTrack: AudioTrack, playerPosition: Long): String {
 
     return StringBuilder("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬")
         .insert(percent, "]($fullUrl)<a:cool_nyan:490978764264570894>")
-        .append(" **").append(getDurationString(playerPosition)).append("/").append(getDurationString(playingTrack.duration)).append("**")
+        .append(" **").append(getDurationString(playerPosition)).append("/")
+        .append(getDurationString(playingTrack.duration)).append("**")
         .insert(0, "[")
         .toString()
 }

@@ -11,7 +11,11 @@ class Embedder(daoManager: DaoManager, guildId: Long, userId: Long) : EmbedBuild
         var defaultColor = 0xA1B4ED
     }
 
-    constructor(context: CommandContext) : this(context.daoManager, if (context.isFromGuild) context.guildId else -1, context.authorId)
+    constructor(context: CommandContext) : this(
+        context.daoManager,
+        if (context.isFromGuild) context.guildId else -1,
+        context.authorId
+    )
 
     init {
         val embedColorWrapper = daoManager.embedColorWrapper

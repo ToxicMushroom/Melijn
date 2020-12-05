@@ -58,7 +58,14 @@ class FlipCommand : AbstractCommand("command.flip") {
         }
     }
 
-    private suspend fun flipCoin(context: CommandContext, bet: Long, cash: Long, winning: String, losing: String, winCon: Int) {
+    private suspend fun flipCoin(
+        context: CommandContext,
+        bet: Long,
+        cash: Long,
+        winning: String,
+        losing: String,
+        winCon: Int
+    ) {
         val nextInt = Random.nextInt(2)
         val balanceWrapper = context.daoManager.balanceWrapper
 

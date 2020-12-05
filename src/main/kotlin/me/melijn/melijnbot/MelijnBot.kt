@@ -97,7 +97,10 @@ class MelijnBot {
         }
     }
 
-    private suspend fun generateJdaLinkFromNodes(container: Container, nodeMap: Map<String, Array<Settings.Lavalink.LLNode>>): JDALavalink? {
+    private suspend fun generateJdaLinkFromNodes(
+        container: Container,
+        nodeMap: Map<String, Array<Settings.Lavalink.LLNode>>
+    ): JDALavalink? {
         return if (container.settings.lavalink.enabled) {
             val linkBuilder = JDALavalink(
                 container.settings.botInfo.id,

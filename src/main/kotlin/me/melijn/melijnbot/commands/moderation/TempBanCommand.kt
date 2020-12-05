@@ -45,7 +45,12 @@ class TempBanCommand : AbstractCommand("command.tempban") {
                 sendRsp(context, msg)
                 return
             }
-            if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+            if (!context.member.canInteract(member) && !hasPermission(
+                    context,
+                    SpecialPermission.PUNISH_BYPASS_HIGHER.node,
+                    true
+                )
+            ) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
                     .withSafeVariable(PLACEHOLDER_USER, member.asTag)
                 sendRsp(context, msg)
@@ -87,7 +92,13 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         continueBanning(context, targetUser, ban, activeBan, message)
     }
 
-    private suspend fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message?) {
+    private suspend fun continueBanning(
+        context: CommandContext,
+        targetUser: User,
+        ban: Ban,
+        activeBan: Ban?,
+        banningMessage: Message?
+    ) {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
@@ -96,12 +107,23 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
 
         val bannedMessageDm = getBanMessage(language, privZoneId, guild, targetUser, author, ban)
-        val bannedMessageLc = getBanMessage(language, zoneId, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
+        val bannedMessageLc = getBanMessage(
+            language,
+            zoneId,
+            guild,
+            targetUser,
+            author,
+            ban,
+            true,
+            targetUser.isBot,
+            banningMessage != null
+        )
 
 
 
         try {
-            context.guild.ban(targetUser, 7).reason("(tempBan) ${context.author.asTag}: " + ban.reason).async {daoManager.banWrapper.setBan(ban) }
+            context.guild.ban(targetUser, 7).reason("(tempBan) ${context.author.asTag}: " + ban.reason)
+                .async { daoManager.banWrapper.setBan(ban) }
             banningMessage?.editMessage(
                 bannedMessageDm
             )?.override(true)?.queue()

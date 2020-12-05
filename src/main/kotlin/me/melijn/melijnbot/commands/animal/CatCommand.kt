@@ -39,7 +39,12 @@ class CatCommand : AbstractCommand("command.cat") {
             "order" to "RANDOM"
         )
 
-        val reply = WebUtils.getJsonAFromUrl(webManager.httpClient, "https://api.thecatapi.com/v1/images/search", params, headers)
+        val reply = WebUtils.getJsonAFromUrl(
+            webManager.httpClient,
+            "https://api.thecatapi.com/v1/images/search",
+            params,
+            headers
+        )
             ?: return MISSING_IMAGE_URL
         return reply.getObject(0).getString("url", MISSING_IMAGE_URL)
     }

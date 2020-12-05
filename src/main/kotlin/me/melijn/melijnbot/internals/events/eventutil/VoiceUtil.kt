@@ -42,13 +42,27 @@ object VoiceUtil {
         if (musicChannel.id == botChannel?.id && channelUpdate.id == botChannel.id && iPlayer.playingTrack != null) {
             return
         } else if (musicChannel.id == botChannel?.id && channelUpdate.id == botChannel.id) {
-            audioLoader.loadNewTrack(daoManager, container.lavaManager, channelUpdate, guild.jda.selfUser, musicUrl, NextSongPosition.BOTTOM)
+            audioLoader.loadNewTrack(
+                daoManager,
+                container.lavaManager,
+                channelUpdate,
+                guild.jda.selfUser,
+                musicUrl,
+                NextSongPosition.BOTTOM
+            )
 
         } else if (botChannel == null && musicChannel.id == channelUpdate.id) {
             if (listeningMembers(musicChannel, container.settings.botInfo.id) > 0) {
                 val groupId = trackManager.groupId
                 if (container.lavaManager.tryToConnectToVCSilent(musicChannel, groupId)) {
-                    audioLoader.loadNewTrack(daoManager, container.lavaManager, channelUpdate, guild.jda.selfUser, musicUrl, NextSongPosition.BOTTOM)
+                    audioLoader.loadNewTrack(
+                        daoManager,
+                        container.lavaManager,
+                        channelUpdate,
+                        guild.jda.selfUser,
+                        musicUrl,
+                        NextSongPosition.BOTTOM
+                    )
                 }
             }
         }

@@ -21,7 +21,12 @@ object VerificationUtils {
     //guildId, userId, time
     private val memberJoinTimes = HashMap<Long, HashMap<Long, Long>>()
 
-    suspend fun getUnverifiedRoleNMessage(user: User?, textChannel: TextChannel, daoManager: DaoManager, prefix: String): Role? {
+    suspend fun getUnverifiedRoleNMessage(
+        user: User?,
+        textChannel: TextChannel,
+        daoManager: DaoManager,
+        prefix: String
+    ): Role? {
         val role = getUnverifiedRoleN(textChannel, daoManager)
 
         if (role == null) {
@@ -42,7 +47,12 @@ object VerificationUtils {
         }
     }
 
-    private suspend fun sendNoUnverifiedRoleIsSetMessage(daoManager: DaoManager, user: User?, textChannel: TextChannel, prefix: String) {
+    private suspend fun sendNoUnverifiedRoleIsSetMessage(
+        daoManager: DaoManager,
+        user: User?,
+        textChannel: TextChannel,
+        prefix: String
+    ) {
         val language = getLanguage(daoManager, user?.idLong ?: -1L, textChannel.guild.idLong)
         val msg = i18n.getTranslation(language, "message.notset.role.unverified")
             .withVariable("prefix", prefix)
@@ -50,7 +60,13 @@ object VerificationUtils {
         sendRspOrMsg(textChannel, daoManager, msg)
     }
 
-    suspend fun verify(daoManager: DaoManager, httpClient: HttpClient, unverifiedRole: Role, author: User, member: Member): Boolean {
+    suspend fun verify(
+        daoManager: DaoManager,
+        httpClient: HttpClient,
+        unverifiedRole: Role,
+        author: User,
+        member: Member
+    ): Boolean {
         if (hasHitThroughputLimit(daoManager, member)) {
             LogUtils.sendHitVerificationThroughputLimitLog(daoManager, member)
             return false
@@ -102,7 +118,13 @@ object VerificationUtils {
 
     suspend fun addUnverified(member: Member, httpClient: HttpClient, daoManager: DaoManager) {
         val guild = member.guild
-        JoinLeaveUtil.postWelcomeMessage(daoManager, httpClient, member, ChannelType.PRE_VERIFICATION_JOIN, MessageType.PRE_VERIFICATION_JOIN_MESSAGE)
+        JoinLeaveUtil.postWelcomeMessage(
+            daoManager,
+            httpClient,
+            member,
+            ChannelType.PRE_VERIFICATION_JOIN,
+            MessageType.PRE_VERIFICATION_JOIN_MESSAGE
+        )
 
         val role = guild.getAndVerifyRoleByType(daoManager, RoleType.UNVERIFIED, true) ?: return
 

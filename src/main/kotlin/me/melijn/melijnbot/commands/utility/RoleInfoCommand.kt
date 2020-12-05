@@ -45,7 +45,10 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
         .withVariable(PLACEHOLDER_ROLE_ID, role.id)
         .withVariable("creationTime", role.timeCreated.asLongLongGMTString())
         .withVariable("position", role.position.toString() + "/" + role.guild.roleCache.size())
-        .withVariable("members", role.guild.memberCache.stream().filter { member -> member.roles.contains(role) }.count().toString())
+        .withVariable(
+            "members",
+            role.guild.memberCache.stream().filter { member -> member.roles.contains(role) }.count().toString()
+        )
         .withVariable("isMentionable", if (role.isMentionable) yes else no)
         .withVariable("isHoisted", if (role.isHoisted) yes else no)
         .withVariable("isManaged", if (role.isManaged) yes else no)

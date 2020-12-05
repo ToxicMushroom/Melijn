@@ -16,10 +16,19 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
     WARN("Warn", arrayOf("punishment", "punishments", "wlc")),
 
     //Deleted Messages
-    OTHER_DELETED_MESSAGE("Other-Deleted-Message", arrayOf("deleted-messages", "deleted-message", "odm", "other-deleted-messages", "odmlc")),
-    SELF_DELETED_MESSAGE("Self-Deleted-Message", arrayOf("deleted-messages", "deleted-message", "sdm", "self-deleted-messages", "sdmlc")),
+    OTHER_DELETED_MESSAGE(
+        "Other-Deleted-Message",
+        arrayOf("deleted-messages", "deleted-message", "odm", "other-deleted-messages", "odmlc")
+    ),
+    SELF_DELETED_MESSAGE(
+        "Self-Deleted-Message",
+        arrayOf("deleted-messages", "deleted-message", "sdm", "self-deleted-messages", "sdmlc")
+    ),
     PURGED_MESSAGE("Purged-Message", arrayOf("deleted-messages", "deleted-message", "pm", "purged-messages", "pmlc")),
-    FILTERED_MESSAGE("Filtered-Message", arrayOf("deleted-messages", "deleted-message", "fm", "filtered-messages", "fmlc")),
+    FILTERED_MESSAGE(
+        "Filtered-Message",
+        arrayOf("deleted-messages", "deleted-message", "fm", "filtered-messages", "fmlc")
+    ),
 
     //Others
     VERIFICATION("Verification", arrayOf("v", "uv", "vlc", "uvlc")),

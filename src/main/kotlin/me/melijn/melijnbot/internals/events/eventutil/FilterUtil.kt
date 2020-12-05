@@ -17,93 +17,104 @@ import java.util.regex.Pattern
 
 object FilterUtil {
 
-    suspend fun handleFilter(container: Container, message: Message) = TaskManager.async(message.author, message.channel) {
-        if (message.author.isBot) return@async
-        val guild = message.guild
-        val member = message.member ?: return@async
-        val channel = message.textChannel
-        if (member.hasPermission(channel, Permission.MESSAGE_MANAGE)) return@async
-        if (!guild.selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)) return@async
-        val guildId = guild.idLong
-        val channelId = channel.idLong
-        val daoManager = container.daoManager
+    suspend fun handleFilter(container: Container, message: Message) =
+        TaskManager.async(message.author, message.channel) {
+            if (message.author.isBot) return@async
+            val guild = message.guild
+            val member = message.member ?: return@async
+            val channel = message.textChannel
+            if (member.hasPermission(channel, Permission.MESSAGE_MANAGE)) return@async
+            if (!guild.selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)) return@async
+            val guildId = guild.idLong
+            val channelId = channel.idLong
+            val daoManager = container.daoManager
 
-        // Filter groups for this channel
-        val groups = getFilterGroups(container, guildId, channelId)
+            // Filter groups for this channel
+            val groups = getFilterGroups(container, guildId, channelId)
 
-        var points = 0 // Points total of this message
-        val filterGroupTriggerInfoMap = mutableMapOf<FilterGroup, Map<String, List<String>>>() // Map of filtergroup -> Map of <infotype -> info>
-        val onlyTriggerInfoMap = mutableMapOf<String, List<String>>() // Map of <infotype -> info> not bound by filtergroup
-        val apWrapper = daoManager.autoPunishmentWrapper
+            var points = 0 // Points total of this message
+            val filterGroupTriggerInfoMap =
+                mutableMapOf<FilterGroup, Map<String, List<String>>>() // Map of filtergroup -> Map of <infotype -> info>
+            val onlyTriggerInfoMap =
+                mutableMapOf<String, List<String>>() // Map of <infotype -> info> not bound by filtergroup
+            val apWrapper = daoManager.autoPunishmentWrapper
 
-        // Punish points map for a user (guildId, member) -> Map<filtergroupname, points>
-        val ppMap = apWrapper.getPointsMap(guild.idLong, member.idLong)
-            .toMutableMap()
+            // Punish points map for a user (guildId, member) -> Map<filtergroupname, points>
+            val ppMap = apWrapper.getPointsMap(guild.idLong, member.idLong)
+                .toMutableMap()
 
-        // Loop through the filter groups
-        for (fg in groups) {
-            if (!fg.state) continue
-            // Detected stuff returned from the case from mode of the filtergroup
-            val map = mutableMapOf<String, List<String>>()
-            var extraPoints = 0
-            when (fg.mode) {
-                FilterMode.MUST_CONTAIN_ANY_ALLOWED -> {
-                    map["contain.any"] = mustContainAny(container, message, fg)
-                    if (map.getValue("contain.any").isNotEmpty()) {
-                        extraPoints = fg.points
+            // Loop through the filter groups
+            for (fg in groups) {
+                if (!fg.state) continue
+                // Detected stuff returned from the case from mode of the filtergroup
+                val map = mutableMapOf<String, List<String>>()
+                var extraPoints = 0
+                when (fg.mode) {
+                    FilterMode.MUST_CONTAIN_ANY_ALLOWED -> {
+                        map["contain.any"] = mustContainAny(container, message, fg)
+                        if (map.getValue("contain.any").isNotEmpty()) {
+                            extraPoints = fg.points
+                        }
+                    }
+                    FilterMode.MUST_CONTAIN_ALL_ALLOWED -> {
+                        map["contain.all"] = mustContainAll(container, message, fg)
+                        if (map.getValue("contain.all").isNotEmpty()) {
+                            extraPoints = fg.points
+                        }
+                    }
+                    FilterMode.MUST_MATCH_ALLOWED_FORMAT -> {
+                        map["must.match"] = filterMatch(container, message, fg)
+                        map["mustnot.contain"] = filterNoWrap(container, message, fg)
+                        if (map.getValue("mustnot.contain").isNotEmpty()) {
+                            extraPoints = fg.points * map.getValue("mustnot.contain").size
+                        }
+                        if (map.getValue("must.match").isNotEmpty()) {
+                            extraPoints = fg.points
+                        }
+                    }
+                    FilterMode.NO_WRAP -> {
+                        map["mustnot.contain"] = filterNoWrap(container, message, fg)
+                        if (map.getValue("mustnot.contain").isNotEmpty()) {
+                            extraPoints = fg.points * map.getValue("mustnot.contain").size
+                        }
+                    }
+                    FilterMode.DEFAULT -> {
+                        map["mustnot.contain"] = filterDefault(container, message, fg)
+                        if (map.getValue("mustnot.contain").isNotEmpty()) {
+                            extraPoints = fg.points * map.getValue("mustnot.contain").size
+                        }
+                    }
+                    FilterMode.NO_MODE, FilterMode.DISABLED -> {
                     }
                 }
-                FilterMode.MUST_CONTAIN_ALL_ALLOWED -> {
-                    map["contain.all"] = mustContainAll(container, message, fg)
-                    if (map.getValue("contain.all").isNotEmpty()) {
-                        extraPoints = fg.points
-                    }
+                filterGroupTriggerInfoMap[fg] = map // Put info in a map bound to its filter group for later use
+                for ((key, value) in map) { // Merge the total info with new info
+                    if (value.isEmpty()) continue
+                    val currentInfo = onlyTriggerInfoMap.getOrElse(key, { emptyList() })
+                    onlyTriggerInfoMap[key] = currentInfo + value
                 }
-                FilterMode.MUST_MATCH_ALLOWED_FORMAT -> {
-                    map["must.match"] = filterMatch(container, message, fg)
-                    map["mustnot.contain"] = filterNoWrap(container, message, fg)
-                    if (map.getValue("mustnot.contain").isNotEmpty()) {
-                        extraPoints = fg.points * map.getValue("mustnot.contain").size
-                    }
-                    if (map.getValue("must.match").isNotEmpty()) {
-                        extraPoints = fg.points
-                    }
-                }
-                FilterMode.NO_WRAP -> {
-                    map["mustnot.contain"] = filterNoWrap(container, message, fg)
-                    if (map.getValue("mustnot.contain").isNotEmpty()) {
-                        extraPoints = fg.points * map.getValue("mustnot.contain").size
-                    }
-                }
-                FilterMode.DEFAULT -> {
-                    map["mustnot.contain"] = filterDefault(container, message, fg)
-                    if (map.getValue("mustnot.contain").isNotEmpty()) {
-                        extraPoints = fg.points * map.getValue("mustnot.contain").size
-                    }
-                }
-                FilterMode.NO_MODE, FilterMode.DISABLED -> {
-                }
+
+                points += extraPoints // add extra points to points total of this filter check
+                ppMap[fg.filterGroupName] =
+                    ppMap.getOrDefault(fg.filterGroupName, 0) + extraPoints // save extra points to the ppMap
             }
-            filterGroupTriggerInfoMap[fg] = map // Put info in a map bound to its filter group for later use
-            for ((key, value) in map) { // Merge the total info with new info
-                if (value.isEmpty()) continue
-                val currentInfo = onlyTriggerInfoMap.getOrElse(key, { emptyList() })
-                onlyTriggerInfoMap[key] = currentInfo + value
+
+            // If something is detected
+            if (onlyTriggerInfoMap.isNotEmpty()) {
+                container.filteredMap[message.idLong] =
+                    onlyTriggerInfoMap // Store detected and notMatched reason in the filteredMap for logging the deletion reason
+                message.delete().reason("Filter detection").queue()  // delete the message
+
+                LogUtils.sendPPGainedMessageDMAndLC(
+                    container,
+                    message,
+                    PointsTriggerType.FILTERED_MESSAGE,
+                    onlyTriggerInfoMap,
+                    points
+                ) // send a dm and log the violation
+                PPUtils.updatePP(member, ppMap, container) // Update the punishment points of the user
             }
-
-            points += extraPoints // add extra points to points total of this filter check
-            ppMap[fg.filterGroupName] = ppMap.getOrDefault(fg.filterGroupName, 0) + extraPoints // save extra points to the ppMap
         }
-
-        // If something is detected
-        if (onlyTriggerInfoMap.isNotEmpty()) {
-            container.filteredMap[message.idLong] = onlyTriggerInfoMap // Store detected and notMatched reason in the filteredMap for logging the deletion reason
-            message.delete().reason("Filter detection").queue()  // delete the message
-
-            LogUtils.sendPPGainedMessageDMAndLC(container, message, PointsTriggerType.FILTERED_MESSAGE, onlyTriggerInfoMap, points) // send a dm and log the violation
-            PPUtils.updatePP(member, ppMap, container) // Update the punishment points of the user
-        }
-    }
 
     private suspend fun mustContainAll(container: Container, message: Message, fg: FilterGroup): List<String> {
         val guild = message.guild
@@ -222,7 +233,12 @@ object FilterUtil {
         return detected
     }
 
-    private suspend fun getFiltersForGroup(container: Container, guildId: Long, fg: FilterGroup, type: FilterType): List<String> {
+    private suspend fun getFiltersForGroup(
+        container: Container,
+        guildId: Long,
+        fg: FilterGroup,
+        type: FilterType
+    ): List<String> {
         return container.daoManager.filterWrapper.getFilters(guildId, fg.filterGroupName, type)
     }
 

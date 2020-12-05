@@ -65,7 +65,10 @@ class SnipeCommand : AbstractCommand("command.snipe") {
             sb.append("[")
                 .append(key.moment.asEpochMillisToDateTime(context.getTimeZoneId()))
                 .append("] **")
-                .append(context.guild.retrieveMemberById(key.authorId).awaitOrNull()?.asTag?.escapeMarkdown() ?: key.authorId)
+                .append(
+                    context.guild.retrieveMemberById(key.authorId).awaitOrNull()?.asTag?.escapeMarkdown()
+                        ?: key.authorId
+                )
                 .append("**: ")
                 .appendLine(key.content.escapeMarkdown())
         }

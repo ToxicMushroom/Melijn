@@ -123,7 +123,12 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
                     sendRsp(context, msg)
                     return
                 }
-                if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+                if (!context.member.canInteract(member) && !hasPermission(
+                        context,
+                        SpecialPermission.PUNISH_BYPASS_HIGHER.node,
+                        true
+                    )
+                ) {
                     val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
                         .withVariable(PLACEHOLDER_USER, member.asTag)
                     sendRsp(context, msg)
@@ -133,7 +138,9 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
             context.daoManager.forceRoleWrapper.add(context.guildId, user.idLong, role.idLong)
             if (member != null && !member.roles.contains(role)) {
-                if (!context.guild.addRoleToMember(member, role).reason("(forceRole add) ${context.author.asTag}").awaitBool()) {
+                if (!context.guild.addRoleToMember(member, role).reason("(forceRole add) ${context.author.asTag}")
+                        .awaitBool()
+                ) {
                     LogUtils.sendMessageFailedToAddRoleToMember(context.daoManager, member, role)
                 }
             }
@@ -162,7 +169,9 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
             context.daoManager.forceRoleWrapper.remove(context.guildId, user.idLong, role.idLong)
             if (member != null && member.roles.contains(role)) {
-                if (context.guild.removeRoleFromMember(member, role).reason("(forceRole remove) ${context.author.asTag}").awaitBool()) {
+                if (context.guild.removeRoleFromMember(member, role)
+                        .reason("(forceRole remove) ${context.author.asTag}").awaitBool()
+                ) {
                     LogUtils.sendMessageFailedToRemoveRoleFromMember(context.daoManager, member, role)
                 }
             }

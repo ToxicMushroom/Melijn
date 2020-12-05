@@ -7,7 +7,12 @@ import me.melijn.melijnbot.internals.jagtag.BirthdayParserArgs
 import net.dv8tion.jda.api.entities.Member
 
 object BirthdayUtil {
-    suspend fun replaceVariablesInBirthdayMessage(daoManager: DaoManager, member: Member, modularMessage: ModularMessage, birthYear: Int?): ModularMessage {
+    suspend fun replaceVariablesInBirthdayMessage(
+        daoManager: DaoManager,
+        member: Member,
+        modularMessage: ModularMessage,
+        birthYear: Int?
+    ): ModularMessage {
         val args = BirthdayParserArgs(daoManager, member, birthYear)
         return modularMessage.mapAllStringFields {
             if (it != null) {

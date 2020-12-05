@@ -29,7 +29,18 @@ class MuteService(
         for (mute in mutes) {
             val selfUser = shardManager.shards[0].selfUser
             val newMute = mute.run {
-                Mute(guildId, mutedId, muteAuthorId, reason, selfUser.idLong, "Mute expired", startTime, endTime, false, muteId)
+                Mute(
+                    guildId,
+                    mutedId,
+                    muteAuthorId,
+                    reason,
+                    selfUser.idLong,
+                    "Mute expired",
+                    startTime,
+                    endTime,
+                    false,
+                    muteId
+                )
             }
 
             daoManager.muteWrapper.setMute(newMute)
@@ -42,8 +53,10 @@ class MuteService(
             if (mutedMember != null && muteRole != null && mutedMember.roles.contains(muteRole)) {
                 val exception = guild.removeRoleFromMember(mutedMember, muteRole).reason("unmuted").awaitEX()
                 if (exception != null) {
-                    createAndSendFailedUnmuteMessage(guild, selfUser, muted, author, newMute, exception.message
-                        ?: "/")
+                    createAndSendFailedUnmuteMessage(
+                        guild, selfUser, muted, author, newMute, exception.message
+                            ?: "/"
+                    )
                     continue
                 }
             }
@@ -53,7 +66,13 @@ class MuteService(
     }
 
     //Sends unban message to tempban logchannel and the unbanned user
-    private suspend fun createAndSendUnmuteMessage(guild: Guild, unmuteAuthor: User, mutedUser: User?, muteAuthor: User?, mute: Mute) {
+    private suspend fun createAndSendUnmuteMessage(
+        guild: Guild,
+        unmuteAuthor: User,
+        mutedUser: User?,
+        muteAuthor: User?,
+        mute: Mute
+    ) {
         val language = getLanguage(daoManager, -1, guild.idLong)
 //        val zoneId = getZoneId(daoManager, guild.idLong)
         val privZoneId = getZoneId(daoManager, guild.idLong, mutedUser?.idLong)
@@ -70,11 +89,29 @@ class MuteService(
 //            }
 //        }
 
-        val msgLc = getUnmuteMessage(language, privZoneId, guild, mutedUser, muteAuthor, unmuteAuthor, mute, true, mutedUser?.isBot == true, true)
+        val msgLc = getUnmuteMessage(
+            language,
+            privZoneId,
+            guild,
+            mutedUser,
+            muteAuthor,
+            unmuteAuthor,
+            mute,
+            true,
+            mutedUser?.isBot == true,
+            true
+        )
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 
-    private suspend fun createAndSendFailedUnmuteMessage(guild: Guild, unmuteAuthor: User, mutedUser: User?, muteAuthor: User?, mute: Mute, cause: String) {
+    private suspend fun createAndSendFailedUnmuteMessage(
+        guild: Guild,
+        unmuteAuthor: User,
+        mutedUser: User?,
+        muteAuthor: User?,
+        mute: Mute,
+        cause: String
+    ) {
         val language = getLanguage(daoManager, -1, guild.idLong)
 //        val zoneId = getZoneId(daoManager, guild.idLong)
         val privZoneId = getZoneId(daoManager, guild.idLong, mutedUser?.idLong)
@@ -91,7 +128,19 @@ class MuteService(
 //            }
 //        }
 
-        val msgLc = getUnmuteMessage(language, privZoneId, guild, mutedUser, muteAuthor, unmuteAuthor, mute, true, mutedUser?.isBot == true, true, failedCause = cause)
+        val msgLc = getUnmuteMessage(
+            language,
+            privZoneId,
+            guild,
+            mutedUser,
+            muteAuthor,
+            unmuteAuthor,
+            mute,
+            true,
+            mutedUser?.isBot == true,
+            true,
+            failedCause = cause
+        )
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 }

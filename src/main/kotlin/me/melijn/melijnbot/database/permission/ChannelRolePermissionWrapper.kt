@@ -56,4 +56,8 @@ class ChannelRolePermissionWrapper(private val channelRolePermissionDao: Channel
             }.keys.toList(), state)
         }
     }
+
+    fun migrateChannel(oldId: Long, newId: Long) {
+        channelRolePermissionDao.migrateChannel(oldId, newId)
+    }
 }

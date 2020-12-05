@@ -23,8 +23,10 @@ object GetUserSettingsResponseHandler {
 
         val user = MelijnBot.shardManager.retrieveUserById(id).awaitOrNull()
         if (user == null) {
-            context.call.respondJson(DataObject.empty()
-                .put("error", "user invalidated"))
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("error", "user invalidated")
+            )
             return
         }
 
@@ -100,6 +102,7 @@ object GetUserSettingsResponseHandler {
             DataObject.empty()
                 .put("user", userData)
                 .put("settings", settings)
-                .put("provided", provided))
+                .put("provided", provided)
+        )
     }
 }

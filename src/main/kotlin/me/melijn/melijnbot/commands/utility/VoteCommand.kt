@@ -43,11 +43,12 @@ class VoteCommand : AbstractCommand("command.vote") {
 
         val eb = Embedder(context)
             .setTitle("Voting Sites")
-            .setDescription(VOTE_LINKS
-                .withVariable("statusOne", statusOne)
-                .withVariable("statusTwo", statusTwo)
-                .withVariable("statusThree", statusThree)
-                .withVariable("statusFour", statusFour)
+            .setDescription(
+                VOTE_LINKS
+                    .withVariable("statusOne", statusOne)
+                    .withVariable("statusTwo", statusTwo)
+                    .withVariable("statusThree", statusThree)
+                    .withVariable("statusFour", statusFour)
             )
         sendEmbedRsp(context, eb.build())
     }

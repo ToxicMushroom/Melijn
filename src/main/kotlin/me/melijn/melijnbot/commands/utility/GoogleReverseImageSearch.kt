@@ -21,11 +21,13 @@ class GoogleReverseImageSearch : AbstractCommand("command.googlereverseimagesear
         val attachment = (getImageUrlFromArgsNMessage(context, 0) ?: return).second
 
         val eb = Embedder(context)
-            .setDescription("[view result](https://www.google.com/searchbyimage?image_url=${
-                MarkdownSanitizer.escape(attachment)
-                    .replace(")", "%29")
-                    .replace("(", "%28")
-            })")
+            .setDescription(
+                "[view result](https://www.google.com/searchbyimage?image_url=${
+                    MarkdownSanitizer.escape(attachment)
+                        .replace(")", "%29")
+                        .replace("(", "%28")
+                })"
+            )
         sendEmbedRsp(context, eb.build())
     }
 }

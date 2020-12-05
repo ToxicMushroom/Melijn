@@ -29,7 +29,8 @@ class EmotesCommand : AbstractCommand("command.emotes") {
         if (context.args.isNotEmpty() && context.args[0] == "full") {
             val sb = StringBuilder("List of emotes:\n")
             for (emote in emotes) {
-                sb.append(emote.asMention).append(" | ").append(emote.id).append(" - `:").append(emote.name).appendLine(":`")
+                sb.append(emote.asMention).append(" | ").append(emote.id).append(" - `:").append(emote.name)
+                    .appendLine(":`")
             }
             sb.append(emotes.size).append("/").append(context.guild.maxEmotes)
             sendPaginationMsg(context, StringUtils.splitMessage(sb.toString()), 0)

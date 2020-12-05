@@ -20,8 +20,10 @@ class AliasDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun insert(id: Long, commandNode: String, aliases: String) {
-        driverManager.executeUpdate("INSERT INTO $table (id, command, aliases) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET aliases = ?",
-            id, commandNode, aliases, aliases)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (id, command, aliases) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET aliases = ?",
+            id, commandNode, aliases, aliases
+        )
     }
 
     fun remove(id: Long, commandNode: String) {
@@ -40,7 +42,9 @@ class AliasDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun clear(id: Long, command: String) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE id = ? AND command = ?",
-            id, command)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE id = ? AND command = ?",
+            id, command
+        )
     }
 }

@@ -18,7 +18,8 @@ class BassBoostCommand : AbstractCommand("command.bassboost") {
         id = 195
         name = "bassBoost"
         aliases = arrayOf("bb")
-        runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
+        runConditions =
+            arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
         commandCategory = CommandCategory.MUSIC
     }
 
@@ -30,7 +31,7 @@ class BassBoostCommand : AbstractCommand("command.bassboost") {
             val (bassBand1, bassBand2) = BASE_BASS
             val msg = if (band1 / bassBand1 == band2 / bassBand2) {
                 context.getTranslation("$root.show")
-                    .withVariable("value", band1 / bassBand1 * 100.0f )
+                    .withVariable("value", band1 / bassBand1 * 100.0f)
 
             } else {
                 context.getTranslation("$root.custombands")

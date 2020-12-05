@@ -60,13 +60,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
-            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
-                "⏪" -> 0
-                "⏩" -> pagination.messageList.size - 1
-                "◀️" -> pagination.currentPage - 1
-                "▶️" -> pagination.currentPage + 1
-                else -> return
-            }))
+            val newIndex = min(
+                pagination.messageList.size - 1, max(
+                    0, when (emoji) {
+                        "⏪" -> 0
+                        "⏩" -> pagination.messageList.size - 1
+                        "◀️" -> pagination.currentPage - 1
+                        "▶️" -> pagination.currentPage + 1
+                        else -> return
+                    }
+                )
+            )
 
             if (newIndex != pagination.currentPage)
                 message.editMessage(pagination.messageList[newIndex]).queue()
@@ -88,13 +92,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
-            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
-                "⏪" -> 0
-                "⏩" -> pagination.messageList.size - 1
-                "◀️" -> pagination.currentPage - 1
-                "▶️" -> pagination.currentPage + 1
-                else -> return
-            }))
+            val newIndex = min(
+                pagination.messageList.size - 1, max(
+                    0, when (emoji) {
+                        "⏪" -> 0
+                        "⏩" -> pagination.messageList.size - 1
+                        "◀️" -> pagination.currentPage - 1
+                        "▶️" -> pagination.currentPage + 1
+                        else -> return
+                    }
+                )
+            )
 
             if (newIndex != pagination.currentPage) {
                 val msg = pagination.messageList[newIndex].toMessage()
@@ -117,15 +125,16 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         }
     }
 
-    private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) = TaskManager.async(event.user, event.channel) {
-        selfRoleHandler(event)
-        postReactionAddedLog(event)
-        verificationHandler(event)
-        searchMenuHandler(event)
-        paginationHandler(event)
-        pokerHandler(event)
-        starboardHandler(event)
-    }
+    private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) =
+        TaskManager.async(event.user, event.channel) {
+            selfRoleHandler(event)
+            postReactionAddedLog(event)
+            verificationHandler(event)
+            searchMenuHandler(event)
+            paginationHandler(event)
+            pokerHandler(event)
+            starboardHandler(event)
+        }
 
     private suspend fun starboardHandler(event: GuildMessageReactionAddEvent) {
         if (event.user.isBot || event.reactionEmote.isEmote) return
@@ -134,20 +143,29 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         val starboardSettings = container.daoManager.starboardSettingsWrapper
         val starboardMessageWrapper = container.daoManager.starboardMessageWrapper
-        val sbchannel = event.guild.getAndVerifyChannelByType(container.daoManager, ChannelType.STARBOARD, Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS)
+        val sbchannel = event.guild.getAndVerifyChannelByType(
+            container.daoManager,
+            ChannelType.STARBOARD,
+            Permission.MESSAGE_WRITE,
+            Permission.MESSAGE_EMBED_LINKS
+        )
             ?: return
         val msg = starboardMessageWrapper.getStarboardInfo(event.messageIdLong)
         if (msg == null) {
             if (event.channel.isNSFW) return
-            val reactions = event.channel.retrieveReactionUsersById(event.messageIdLong, "⭐").await().filter { !it.isBot }.size
+            val reactions =
+                event.channel.retrieveReactionUsersById(event.messageIdLong, "⭐").await().filter { !it.isBot }.size
             val ogMessage = event.channel.retrieveMessageById(event.messageIdLong).await()
             val settings = starboardSettings.getStarboardSettings(event.guild.idLong)
             if (reactions >= settings.minStars) {
-                val starboardMessage = getSendableStarboardMessage(event, reactions, ogMessage.author, event.channel) ?: return
+                val starboardMessage =
+                    getSendableStarboardMessage(event, reactions, ogMessage.author, event.channel) ?: return
                 val message = sbchannel.sendMessage(starboardMessage).await()
                 message.addReaction("⭐").queue()
-                starboardMessageWrapper.setStarboardInfo(event.guild.idLong, event.channel.idLong, ogMessage.author.idLong, event.messageIdLong,
-                    message.idLong, reactions, false, System.currentTimeMillis())
+                starboardMessageWrapper.setStarboardInfo(
+                    event.guild.idLong, event.channel.idLong, ogMessage.author.idLong, event.messageIdLong,
+                    message.idLong, reactions, false, System.currentTimeMillis()
+                )
             }
 
         } else {
@@ -171,17 +189,33 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 val message = sbchannel.retrieveMessageById(msg.starboardMessageId).await()
                 val author = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull()
                 val newContent = getSendableStarboardMessage(event, newStarCount, author, ogChannel)
-                starboardMessageWrapper.setStarboardInfo(event.guild.idLong, msg.ogChannelId, msg.authorId, msg.starboardMessageId, msg.starboardMessageId, newStarCount, msg.deleted, msg.moment)
+                starboardMessageWrapper.setStarboardInfo(
+                    event.guild.idLong,
+                    msg.ogChannelId,
+                    msg.authorId,
+                    msg.starboardMessageId,
+                    msg.starboardMessageId,
+                    newStarCount,
+                    msg.deleted,
+                    msg.moment
+                )
                 newContent?.let { message.editMessage(it).queue() }
             }
         }
     }
 
-    private suspend fun getSendableStarboardMessage(event: GuildMessageReactionAddEvent, stars: Int, author: User?, channel: TextChannel?): Message? {
+    private suspend fun getSendableStarboardMessage(
+        event: GuildMessageReactionAddEvent,
+        stars: Int,
+        author: User?,
+        channel: TextChannel?
+    ): Message? {
         val ogMessage = event.channel.retrieveMessageById(event.messageIdLong).await() ?: return null
 
-        val eb = Embedder(container.daoManager, event.guild.idLong, author?.idLong
-            ?: -1)
+        val eb = Embedder(
+            container.daoManager, event.guild.idLong, author?.idLong
+                ?: -1
+        )
             .setAuthor(author?.asTag ?: "deleted_user#0000", null, author?.effectiveAvatarUrl)
         if (ogMessage.embeds.size > 0) {
             val embed = ogMessage.embeds[0]
@@ -250,13 +284,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
-            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
-                "⏪" -> 0
-                "⏩" -> pagination.messageList.size - 1
-                "◀️" -> pagination.currentPage - 1
-                "▶️" -> pagination.currentPage + 1
-                else -> return
-            }))
+            val newIndex = min(
+                pagination.messageList.size - 1, max(
+                    0, when (emoji) {
+                        "⏪" -> 0
+                        "⏩" -> pagination.messageList.size - 1
+                        "◀️" -> pagination.currentPage - 1
+                        "▶️" -> pagination.currentPage + 1
+                        else -> return
+                    }
+                )
+            )
 
             if (newIndex != pagination.currentPage)
                 message.editMessage(pagination.messageList[newIndex]).queue()
@@ -281,13 +319,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
-            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
-                "⏪" -> 0
-                "⏩" -> pagination.messageList.size - 1
-                "◀️" -> pagination.currentPage - 1
-                "▶️" -> pagination.currentPage + 1
-                else -> return
-            }))
+            val newIndex = min(
+                pagination.messageList.size - 1, max(
+                    0, when (emoji) {
+                        "⏪" -> 0
+                        "⏩" -> pagination.messageList.size - 1
+                        "◀️" -> pagination.currentPage - 1
+                        "▶️" -> pagination.currentPage + 1
+                        else -> return
+                    }
+                )
+            )
 
             if (newIndex != pagination.currentPage) {
                 val msg = pagination.messageList[newIndex].toMessage()
@@ -384,14 +426,19 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val member = event.member
         val dao = container.daoManager
 
-        val verificationChannel = guild.getAndVerifyChannelByType(dao, ChannelType.VERIFICATION, Permission.MESSAGE_MANAGE)
-            ?: return
+        val verificationChannel =
+            guild.getAndVerifyChannelByType(dao, ChannelType.VERIFICATION, Permission.MESSAGE_MANAGE)
+                ?: return
         if (verificationChannel.idLong != textChannel.idLong) return
         val verificationType = dao.verificationTypeWrapper.getType(guild.idLong)
         if (verificationType != VerificationType.REACTION) return
 
         val unverifiedRole = VerificationUtils.getUnverifiedRoleN(event.channel, dao) ?: return
-        if (!dao.unverifiedUsersWrapper.contains(guild.idLong, member.idLong) && !member.roles.contains(unverifiedRole)) {
+        if (!dao.unverifiedUsersWrapper.contains(
+                guild.idLong,
+                member.idLong
+            ) && !member.roles.contains(unverifiedRole)
+        ) {
             //User is already verified
             if (!member.hasPermission(Permission.ADMINISTRATOR)) {
                 //User doesn't have admin perms to add reaction in verification channel
@@ -408,8 +455,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                         (event.reactionEmote.isEmoji && event.reactionEmote.emoji == code) ||
                         (event.reactionEmote.isEmote && event.reactionEmote.emote.id == code)
                     ) {
-                        VerificationUtils.verify(dao, container.webManager.proxiedHttpClient,
-                            unverifiedRole, guild.selfMember.user, member)
+                        VerificationUtils.verify(
+                            dao, container.webManager.proxiedHttpClient,
+                            unverifiedRole, guild.selfMember.user, member
+                        )
                     } else {
                         VerificationUtils.failedVerification(dao, member)
                     }
@@ -446,7 +495,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             .withVariable("emoteName", event.reactionEmote.name)
             .withVariable("emoteId", if (isEmote) event.reactionEmote.id else "/")
             .withVariable("moment", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
-            .withVariable("messageUrl", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.messageId}")
+            .withVariable(
+                "messageUrl",
+                "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.messageId}"
+            )
             .withVariable("emoteUrl", if (isEmote) event.reactionEmote.emote.imageUrl else "/")
 
         val footer = i18n.getTranslation(language, "listener.message.reaction.log.footer")

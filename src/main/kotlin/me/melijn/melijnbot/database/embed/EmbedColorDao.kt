@@ -28,12 +28,16 @@ class EmbedColorDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun set(guildId: Long, color: Int) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, color) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET color = ?",
-            guildId, color, color)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, color) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET color = ?",
+            guildId, color, color
+        )
     }
 
     fun remove(guildId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?",
-            guildId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ?",
+            guildId
+        )
     }
 }

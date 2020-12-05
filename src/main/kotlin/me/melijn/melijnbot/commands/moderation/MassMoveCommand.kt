@@ -45,7 +45,13 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
             }
 
             val voiceChannelTarget = getVoiceChannelByArgNMessage(context, 1) ?: return
-            if (notEnoughPermissionsAndMessage(context, voiceChannelTarget, Permission.VOICE_CONNECT, Permission.VOICE_MOVE_OTHERS)) return
+            if (notEnoughPermissionsAndMessage(
+                    context,
+                    voiceChannelTarget,
+                    Permission.VOICE_CONNECT,
+                    Permission.VOICE_MOVE_OTHERS
+                )
+            ) return
 
             for (voiceChannel in context.guild.voiceChannels) {
                 voiceChannel.members.forEach {
@@ -79,7 +85,13 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
         }
 
         val voiceChannelTarget = getVoiceChannelByArgNMessage(context, 1) ?: return
-        if (notEnoughPermissionsAndMessage(context, voiceChannelTarget, Permission.VOICE_CONNECT, Permission.VOICE_MOVE_OTHERS)) return
+        if (notEnoughPermissionsAndMessage(
+                context,
+                voiceChannelTarget,
+                Permission.VOICE_CONNECT,
+                Permission.VOICE_MOVE_OTHERS
+            )
+        ) return
 
         voiceChannel.members.forEach {
             if (voiceChannel.idLong != voiceChannelTarget.idLong) {

@@ -75,10 +75,12 @@ class PollCommand : AbstractCommand("command.poll") {
 
             val absoluteChannel = textChannel ?: context.textChannel
             val answerList = args.subList(1, args.size)
-            val answers = answerList.withIndex().joinToString("\n") { "${getEmoji((it.index + 1).toString())} ${it.value}" }
-            val msg = sendRspAwaitEL(absoluteChannel, context.daoManager, "**${args[0]}**\n\n" + answers).firstOrNull()?:return
-            for(i in answerList.indices){
-                getEmojiraw(i+1)?.let { msg.addReaction(it).queue() }
+            val answers =
+                answerList.withIndex().joinToString("\n") { "${getEmoji((it.index + 1).toString())} ${it.value}" }
+            val msg = sendRspAwaitEL(absoluteChannel, context.daoManager, "**${args[0]}**\n\n" + answers).firstOrNull()
+                ?: return
+            for (i in answerList.indices) {
+                getEmojiraw(i + 1)?.let { msg.addReaction(it).queue() }
             }
         }
 

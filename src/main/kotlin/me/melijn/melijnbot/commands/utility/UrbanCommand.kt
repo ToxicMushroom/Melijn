@@ -49,8 +49,10 @@ class UrbanCommand : AbstractCommand("command.urban") {
             val meaning = context.getTranslation("$root.meaning")
             val example = context.getTranslation("$root.example")
 
-            val actualMeaning = if (first == null || first.isEmpty()) "/" else first.substring(0, min(1000, first.length))
-            val actualExample = if (second == null || second.isEmpty()) "/" else second.substring(0, min(1000, second.length))
+            val actualMeaning =
+                if (first == null || first.isEmpty()) "/" else first.substring(0, min(1000, first.length))
+            val actualExample =
+                if (second == null || second.isEmpty()) "/" else second.substring(0, min(1000, second.length))
 
 
             val desc = "$meaning\n$actualMeaning\n\n$example\n$actualExample"

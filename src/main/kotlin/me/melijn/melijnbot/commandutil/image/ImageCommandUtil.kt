@@ -27,7 +27,12 @@ object ImageCommandUtil {
 
 
     // needs lower and higher to be put in the imgData with imgParser arg
-    suspend fun defaultOffsetArgParser(context: CommandContext, argInt: Int, argData: DataObject, imgData: DataObject): Boolean {
+    suspend fun defaultOffsetArgParser(
+        context: CommandContext,
+        argInt: Int,
+        argData: DataObject,
+        imgData: DataObject
+    ): Boolean {
         val lower = imgData.getInt("lower")
         val higher = imgData.getInt("higher")
         return if (argInt == context.args.size) {
@@ -163,12 +168,34 @@ object ImageCommandUtil {
             val gct = gifDecoder.gct ?: emptyArray<Int>().toIntArray()
 
             for (index in 0 until gifDecoder.frameCount) {
-                addFrameToEncoderReverseThingie(gifDecoder, debug, gct, index, width, height, encoder, context, fps, false)
+                addFrameToEncoderReverseThingie(
+                    gifDecoder,
+                    debug,
+                    gct,
+                    index,
+                    width,
+                    height,
+                    encoder,
+                    context,
+                    fps,
+                    false
+                )
             }
 
             for (fakeIndex in 0 until (gifDecoder.frameCount - 1)) {
                 val index = gifDecoder.frameCount - fakeIndex - 2
-                addFrameToEncoderReverseThingie(gifDecoder, debug, gct, index, width, height, encoder, context, fps, true)
+                addFrameToEncoderReverseThingie(
+                    gifDecoder,
+                    debug,
+                    gct,
+                    index,
+                    width,
+                    height,
+                    encoder,
+                    context,
+                    fps,
+                    true
+                )
             }
 
             encoder.finishEncoding()
@@ -240,7 +267,8 @@ object ImageCommandUtil {
 
         encoder.addImage(
             gifFrame.getRGB(0, 0, width, height, Array(width * height) { 0 }.toIntArray(), 0, width),
-            width, options)
+            width, options
+        )
     }
 
 
@@ -270,7 +298,12 @@ object ImageCommandUtil {
         imgDataParser(img, imgData)
 
         val argData = DataObject.empty()
-        if (!argDataParser(argInt, argData, imgData)) { // The arg data parser will send the error message and return false
+        if (!argDataParser(
+                argInt,
+                argData,
+                imgData
+            )
+        ) { // The arg data parser will send the error message and return false
             return
         }
 
@@ -307,7 +340,10 @@ object ImageCommandUtil {
         val img = decoder.image
         if (img == null) {
             lmsg?.delete()?.queue()
-            sendRsp(context, "The .gif you provided actually doesnt point to a valid gif format. Contact support if you have any questions regarding this issue.")
+            sendRsp(
+                context,
+                "The .gif you provided actually doesnt point to a valid gif format. Contact support if you have any questions regarding this issue."
+            )
             return
         }
 
@@ -315,7 +351,12 @@ object ImageCommandUtil {
         imgDataParser(img, imgData)
 
         val argData = DataObject.empty()
-        if (!argDataParser(argInt, argData, imgData)) { // The arg data parser will send the error message and return false
+        if (!argDataParser(
+                argInt,
+                argData,
+                imgData
+            )
+        ) { // The arg data parser will send the error message and return false
             return
         }
 

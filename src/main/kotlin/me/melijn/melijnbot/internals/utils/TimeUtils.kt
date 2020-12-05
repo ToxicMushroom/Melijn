@@ -149,7 +149,12 @@ fun getDurationString(milliseconds: Double): String {
 }
 
 val holyPattern = Pattern.compile("(\\d+)([a-zA-Z]+)")
-suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, rightBound: Int, timeStamps: List<String> = context.args): Long? {
+suspend fun getDurationByArgsNMessage(
+    context: CommandContext,
+    leftBound: Int,
+    rightBound: Int,
+    timeStamps: List<String> = context.args
+): Long? {
     val corruptTimeStamps = timeStamps.subList(leftBound, rightBound).toMutableList()
     val holyTimeStamps = mutableListOf<String>()
     var totalTime = 0L

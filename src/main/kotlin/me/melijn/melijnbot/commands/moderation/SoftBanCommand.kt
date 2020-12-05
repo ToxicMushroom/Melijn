@@ -48,7 +48,12 @@ class SoftBanCommand : AbstractCommand("command.softban") {
                 sendRsp(context, msg)
                 return
             }
-            if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+            if (!context.member.canInteract(member) && !hasPermission(
+                    context,
+                    SpecialPermission.PUNISH_BYPASS_HIGHER.node,
+                    true
+                )
+            ) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
                     .withSafeVariable(PLACEHOLDER_USER, member.asTag)
                 sendRsp(context, msg)
@@ -71,12 +76,14 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         if (reason.isBlank()) reason = "/"
         reason = reason.trim()
 
-        val hasActiveSoftBan: Boolean = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong) != null
+        val hasActiveSoftBan: Boolean =
+            context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong) != null
         val ban = SoftBan(
             context.guildId,
             targetUser.idLong,
             context.authorId,
-            reason)
+            reason
+        )
 
         val softBanning = context.getTranslation("message.softbanning")
 
@@ -92,7 +99,14 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         continueBanning(context, targetUser, ban, hasActiveSoftBan, clearDays ?: 7, message)
     }
 
-    private suspend fun continueBanning(context: CommandContext, targetUser: User, softBan: SoftBan, hasActiveBan: Boolean, clearDays: Int, softBanningMessage: Message? = null) {
+    private suspend fun continueBanning(
+        context: CommandContext,
+        targetUser: User,
+        softBan: SoftBan,
+        hasActiveBan: Boolean,
+        clearDays: Int,
+        softBanningMessage: Message? = null
+    ) {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
@@ -100,7 +114,17 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         val zoneId = getZoneId(daoManager, guild.idLong)
         val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
         val softBannedMessageDm = getSoftBanMessage(language, privZoneId, guild, targetUser, author, softBan)
-        val softBannedMessageLc = getSoftBanMessage(language, zoneId, guild, targetUser, author, softBan, true, targetUser.isBot, softBanningMessage != null)
+        val softBannedMessageLc = getSoftBanMessage(
+            language,
+            zoneId,
+            guild,
+            targetUser,
+            author,
+            softBan,
+            true,
+            targetUser.isBot,
+            softBanningMessage != null
+        )
 
         daoManager.softBanWrapper.addSoftBan(softBan)
 
@@ -170,7 +194,8 @@ fun getSoftBanMessage(
         .withVariable("softBanId", softBan.softBanId)
 
     val extraDesc: String = if (!received || isBot) {
-        i18n.getTranslation(language,
+        i18n.getTranslation(
+            language,
             if (isBot) {
                 "message.punishment.extra.bot"
             } else {

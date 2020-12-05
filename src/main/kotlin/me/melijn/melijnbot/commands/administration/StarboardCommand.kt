@@ -114,7 +114,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()){
+            if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
             }
@@ -157,7 +157,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()){
+            if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
             }

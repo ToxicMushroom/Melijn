@@ -20,7 +20,11 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
         if (result != null) return result
 
         val map = selfRoleDao.getMap(guildId)
-        selfRoleDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE)
+        selfRoleDao.setCacheEntry(
+            guildId,
+            objectMapper.writeValueAsString(map.mapValues { it.value.toString() }),
+            NORMAL_CACHE
+        )
         return map
     }
 
@@ -81,7 +85,8 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
 
         map[groupName] = data
         selfRoleDao.set(guildId, groupName, data.toString())
-        selfRoleDao.setCacheEntry(guildId,
+        selfRoleDao.setCacheEntry(
+            guildId,
             objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE
         )
     }
@@ -126,7 +131,11 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
         map[groupName] = data
 
         selfRoleDao.set(guildId, groupName, data.toString())
-        selfRoleDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE)
+        selfRoleDao.setCacheEntry(
+            guildId,
+            objectMapper.writeValueAsString(map.mapValues { it.value.toString() }),
+            NORMAL_CACHE
+        )
     }
 
     suspend fun remove(guildId: Long, groupName: String, emoteji: String) {
@@ -150,7 +159,11 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
         map[groupName] = data
 
         selfRoleDao.set(guildId, groupName, data.toString())
-        selfRoleDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE)
+        selfRoleDao.setCacheEntry(
+            guildId,
+            objectMapper.writeValueAsString(map.mapValues { it.value.toString() }),
+            NORMAL_CACHE
+        )
     }
 
     suspend fun update(guildId: Long, groupName: String, data: DataArray) {
@@ -161,6 +174,10 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
         map[groupName] = data
 
         selfRoleDao.set(guildId, groupName, data.toString())
-        selfRoleDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE)
+        selfRoleDao.setCacheEntry(
+            guildId,
+            objectMapper.writeValueAsString(map.mapValues { it.value.toString() }),
+            NORMAL_CACHE
+        )
     }
 }

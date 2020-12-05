@@ -90,7 +90,8 @@ class StatsCommand : AbstractCommand("command.stats") {
 
         val embed = Embedder(context)
             .setThumbnail(context.selfUser.effectiveAvatarUrl)
-            .setDescription("""
+            .setDescription(
+                """
                 |```INI
                 |[${title1}]```$value1
                 |
@@ -99,7 +100,8 @@ class StatsCommand : AbstractCommand("command.stats") {
                 |                                
                 |```INI
                 |[${title3}]```$value3
-            """.trimMargin())
+            """.trimMargin()
+            )
             .build()
 
         sendEmbedRsp(context, embed)
@@ -133,8 +135,9 @@ class StatsCommand : AbstractCommand("command.stats") {
         .withVariable("systemUptime", uptime)
 
 
-    private fun replaceValue3Vars(value: String, cpuUsage: String, ramUsage: String, threadCount: String): String = value
-        .withVariable("jvmCPUUsage", cpuUsage)
-        .withVariable("ramUsage", ramUsage)
-        .withVariable("threadCount", threadCount)
+    private fun replaceValue3Vars(value: String, cpuUsage: String, ramUsage: String, threadCount: String): String =
+        value
+            .withVariable("jvmCPUUsage", cpuUsage)
+            .withVariable("ramUsage", ramUsage)
+            .withVariable("threadCount", threadCount)
 }

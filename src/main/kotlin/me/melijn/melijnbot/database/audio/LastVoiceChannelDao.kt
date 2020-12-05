@@ -16,8 +16,10 @@ class LastVoiceChannelDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     fun add(guildId: Long, channelId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId) VALUES (?, ?)",
-            guildId, channelId)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, channelId) VALUES (?, ?)",
+            guildId, channelId
+        )
     }
 
     suspend fun getMap(): Map<Long, Long> = suspendCoroutine {

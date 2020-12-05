@@ -49,7 +49,8 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
 
         val eb = Embedder(context)
             .setThumbnail(guild.iconUrl)
-            .setDescription("""
+            .setDescription(
+                """
                 |```INI
                 |[${title1}]```$value1
                 |
@@ -58,7 +59,8 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
                 |                                
                 |```INI
                 |[${title3}]```$value3
-            """.trimMargin())
+            """.trimMargin()
+            )
 
         sendEmbedRsp(context, eb.build())
     }
@@ -70,7 +72,13 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
         return replaceFieldVar(context.getTranslation(path), guild, isSupporter, yes, no)
     }
 
-    private suspend fun replaceFieldVar(string: String, guild: Guild, isSupporter: Boolean, yes: String, no: String): String {
+    private suspend fun replaceFieldVar(
+        string: String,
+        guild: Guild,
+        isSupporter: Boolean,
+        yes: String,
+        no: String
+    ): String {
         val botCount = guild.memberCache
             .stream()
             .filter { member -> member.user.isBot }
@@ -98,8 +106,14 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
             .withVariable("verificationLevel", guild.verificationLevel.toUCC())
             .withVariable("botCount", botCount.toString())
             .withVariable("userCount", (guild.memberCount - botCount).toString())
-            .withVariable("botPercent", (((botCount.toDouble() / guild.memberCount) * 10000).roundToLong() / 100.0).toString())
-            .withVariable("userPercent", ((((guild.memberCount - botCount.toDouble()) / guild.memberCount) * 10000).roundToLong() / 100.0).toString())
+            .withVariable(
+                "botPercent",
+                (((botCount.toDouble() / guild.memberCount) * 10000).roundToLong() / 100.0).toString()
+            )
+            .withVariable(
+                "userPercent",
+                ((((guild.memberCount - botCount.toDouble()) / guild.memberCount) * 10000).roundToLong() / 100.0).toString()
+            )
             .withVariable("mfa", guild.requiredMFALevel.toUCC())
     }
 }

@@ -14,8 +14,10 @@ object GetGuildResponseHandler {
         if (!id.isPositiveNumber()) return
         val guild = MelijnBot.shardManager.getGuildById(id)
         if (guild == null) {
-            context.call.respondJson(DataObject.empty()
-                .put("isBotMember", false))
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("isBotMember", false)
+            )
             return
         }
 
@@ -24,36 +26,41 @@ object GetGuildResponseHandler {
         val roles = DataArray.empty()
 
         guild.voiceChannelCache.forEach { voiceChannel ->
-            voiceChannels.add(DataObject.empty()
-                .put("position", voiceChannel.position)
-                .put("id", voiceChannel.idLong)
-                .put("name", voiceChannel.name)
+            voiceChannels.add(
+                DataObject.empty()
+                    .put("position", voiceChannel.position)
+                    .put("id", voiceChannel.idLong)
+                    .put("name", voiceChannel.name)
             )
         }
 
         guild.textChannelCache.forEach { textChannel ->
-            textChannels.add(DataObject.empty()
-                .put("position", textChannel.position)
-                .put("id", textChannel.idLong)
-                .put("name", textChannel.name)
+            textChannels.add(
+                DataObject.empty()
+                    .put("position", textChannel.position)
+                    .put("id", textChannel.idLong)
+                    .put("name", textChannel.name)
             )
         }
 
         guild.roleCache.forEach { role ->
-            roles.add(DataObject.empty()
-                .put("id", role.idLong)
-                .put("name", role.name)
+            roles.add(
+                DataObject.empty()
+                    .put("id", role.idLong)
+                    .put("name", role.name)
             )
         }
 
-        context.call.respondJson(DataObject.empty()
-            .put("name", guild.name)
-            .put("iconUrl", if (guild.iconUrl == null) MISSING_IMAGE_URL else guild.iconUrl)
-            .put("memberCount", guild.memberCount)
-            .put("ownerId", guild.ownerId)
-            .put("isBotMember", true)
-            .put("voiceChannels", voiceChannels)
-            .put("textChannels", textChannels)
-            .put("roles", roles))
+        context.call.respondJson(
+            DataObject.empty()
+                .put("name", guild.name)
+                .put("iconUrl", if (guild.iconUrl == null) MISSING_IMAGE_URL else guild.iconUrl)
+                .put("memberCount", guild.memberCount)
+                .put("ownerId", guild.ownerId)
+                .put("isBotMember", true)
+                .put("voiceChannels", voiceChannels)
+                .put("textChannels", textChannels)
+                .put("roles", roles)
+        )
     }
 }

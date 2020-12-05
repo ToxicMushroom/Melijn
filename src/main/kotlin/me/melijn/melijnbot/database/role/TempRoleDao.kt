@@ -8,7 +8,8 @@ import kotlin.coroutines.suspendCoroutine
 class TempRoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "tempRoles"
-    override val tableStructure: String = "guildId bigint, userId bigint, roleId bigint, start bigint, endTime bigint, added boolean"
+    override val tableStructure: String =
+        "guildId bigint, userId bigint, roleId bigint, start bigint, endTime bigint, added boolean"
     override val primaryKey: String = "userId, roleId"
 
     init {
@@ -16,13 +17,17 @@ class TempRoleDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     fun set(guildId: Long, userId: Long, roleId: Long, start: Long, end: Long, added: Boolean) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, roleId, start, endTime, added) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET endTime = ?, added = ?",
-            guildId, userId, roleId, start, end, added, end, added)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, userId, roleId, start, endTime, added) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET endTime = ?, added = ?",
+            guildId, userId, roleId, start, end, added, end, added
+        )
     }
 
     fun remove(userId: Long, roleId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND roleId = ?",
-            userId, roleId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE userId = ? AND roleId = ?",
+            userId, roleId
+        )
     }
 
     suspend fun getMap(guildId: Long): Map<String, Long> = suspendCoroutine {
@@ -39,14 +44,16 @@ class TempRoleDao(driverManager: DriverManager) : Dao(driverManager) {
         val list = mutableListOf<TempRoleInfo>()
         driverManager.executeQuery("SELECT * FROM $table WHERE endTime < ?", { rs ->
             while (rs.next()) {
-                list.add(TempRoleInfo(
-                    rs.getLong("guildId"),
-                    rs.getLong("userId"),
-                    rs.getLong("roleId"),
-                    rs.getLong("start"),
-                    rs.getLong("endTime"),
-                    rs.getBoolean("added")
-                ))
+                list.add(
+                    TempRoleInfo(
+                        rs.getLong("guildId"),
+                        rs.getLong("userId"),
+                        rs.getLong("roleId"),
+                        rs.getLong("start"),
+                        rs.getLong("endTime"),
+                        rs.getBoolean("added")
+                    )
+                )
             }
         }, endThreshold)
         it.resume(list)

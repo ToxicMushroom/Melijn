@@ -18,8 +18,10 @@ class SelfRoleModeDao(driverManager: DriverManager) : CacheDBDao(driverManager) 
     }
 
     fun setMode(guildId: Long, mode: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, mode) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET mode = ?",
-            guildId, mode, mode)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, mode) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET mode = ?",
+            guildId, mode, mode
+        )
     }
 
     fun delete(guildId: Long) {

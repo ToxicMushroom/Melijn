@@ -32,7 +32,8 @@ suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, textChannel: TextChannel
     }
 
     return if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
-        !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+        !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
+    ) {
 
 
         val message = textChannel.sendMessage(embed).awaitOrNull()
@@ -71,7 +72,8 @@ fun sendEmbedRsp(daoManager: DaoManager, textChannel: TextChannel, embed: Messag
         throw IllegalArgumentException("No permission to talk in this channel")
     }
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
-        !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+        !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
+    ) {
         TaskManager.async(textChannel) {
             val message = try {
                 textChannel.sendMessage(embed).await()
@@ -115,14 +117,19 @@ suspend fun sendEmbedAwaitEL(privateChannel: PrivateChannel, embed: MessageEmbed
 }
 
 
-suspend fun sendEmbedAwaitEL(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed): List<Message> {
+suspend fun sendEmbedAwaitEL(
+    embedDisabledWrapper: EmbedDisabledWrapper,
+    textChannel: TextChannel,
+    embed: MessageEmbed
+): List<Message> {
     val guild = textChannel.guild
     if (!textChannel.canTalk()) {
         throw IllegalArgumentException("No permission to talk in this channel")
     }
 
     return if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
-        !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+        !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
+    ) {
 
         val msg = textChannel.sendMessage(embed).awaitOrNull()
         msg?.let { listOf(it) } ?: emptyList()
@@ -138,7 +145,8 @@ fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChann
         throw IllegalArgumentException("No permission to talk in this channel")
     }
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
-        !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+        !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
+    ) {
         textChannel.sendMessage(embed).queue()
     } else {
         sendEmbedAsMessage(textChannel, embed)
@@ -197,6 +205,10 @@ suspend fun sendEmbedAsMessageAwaitEL(textChannel: TextChannel, embed: MessageEm
     return sendMsgAwaitEL(textChannel, embed.toMessage())
 }
 
-suspend fun sendEmbedAsResponseAwaitEL(textChannel: TextChannel, daoManager: DaoManager, embed: MessageEmbed): List<Message> {
+suspend fun sendEmbedAsResponseAwaitEL(
+    textChannel: TextChannel,
+    daoManager: DaoManager,
+    embed: MessageEmbed
+): List<Message> {
     return sendRspAwaitEL(textChannel, daoManager, embed.toMessage())
 }

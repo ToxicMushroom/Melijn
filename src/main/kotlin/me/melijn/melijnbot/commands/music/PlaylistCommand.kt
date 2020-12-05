@@ -158,9 +158,21 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             val guildMusicPlayer = context.musicPlayerManager.getGuildMusicPlayer(context.guild)
 
             if (context.lavaManager.getConnectedChannel(context.guild) == null) {
-                if (!RunConditionUtil.checkOtherBotAloneOrDJOrSameVC(context.container, context.event, this, context.getLanguage())) return
+                if (!RunConditionUtil.checkOtherBotAloneOrDJOrSameVC(
+                        context.container,
+                        context.event,
+                        this,
+                        context.getLanguage()
+                    )
+                ) return
                 val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
-                if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
+                if (notEnoughPermissionsAndMessage(
+                        context,
+                        vc,
+                        Permission.VOICE_SPEAK,
+                        Permission.VOICE_CONNECT
+                    )
+                ) return
 
                 context.lavaManager.openConnection(vc, context.getGuildMusicPlayer().groupId)
             }
@@ -248,9 +260,13 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             val msgs = mutableListOf<ModularMessage>()
 
             for ((index, part) in parts.withIndex()) {
-                msgs.add(ModularMessage(embed = eb.setDescription(part)
-                    .setFooter("Page ${index + 1}/${parts.size}")
-                    .build()))
+                msgs.add(
+                    ModularMessage(
+                        embed = eb.setDescription(part)
+                            .setFooter("Page ${index + 1}/${parts.size}")
+                            .build()
+                    )
+                )
             }
 
             sendPaginationModularMsg(context, msgs, 0)
@@ -320,7 +336,8 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             val audioTrack: AudioTrack = guildMusicPlayer.guildTrackManager.playingTrack ?: return
 
             if (context.args.isNotEmpty() &&
-                !RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event)) {
+                !RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event)
+            ) {
                 sendSyntax(context)
                 return
             }

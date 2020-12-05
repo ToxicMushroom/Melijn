@@ -47,7 +47,10 @@ object ImageUtils {
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
     val discordSize = "?size=2048"
 
-    suspend fun getImageBytesNMessage(context: CommandContext, reqFormat: String? = null): Triple<ByteArray, String, Boolean>? {
+    suspend fun getImageBytesNMessage(
+        context: CommandContext,
+        reqFormat: String? = null
+    ): Triple<ByteArray, String, Boolean>? {
         val args = context.args
         val attachments = context.message.attachments
 
@@ -153,7 +156,13 @@ object ImageUtils {
         return downloadImage(context.webManager.httpClient, url, doChecks, context.guildN, context)
     }
 
-    suspend fun downloadImage(httpClient: HttpClient, url: String, doChecks: Boolean = true, guild: Guild? = null, context: CommandContext? = null): ByteArray {
+    suspend fun downloadImage(
+        httpClient: HttpClient,
+        url: String,
+        doChecks: Boolean = true,
+        guild: Guild? = null,
+        context: CommandContext? = null
+    ): ByteArray {
         return if (doChecks) {
             httpClient.get<HttpStatement>(url).execute {
                 val channel = it.receive<ByteReadChannel>()
@@ -195,7 +204,10 @@ object ImageUtils {
     //ByteArray (imageData)
     //String (urls)
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
-    suspend fun getImagesBytesNMessage(context: CommandContext, reqFormat: String? = null): Triple<Map<String, ByteArray>, Pair<Int, Int>, Boolean>? {
+    suspend fun getImagesBytesNMessage(
+        context: CommandContext,
+        reqFormat: String? = null
+    ): Triple<Map<String, ByteArray>, Pair<Int, Int>, Boolean>? {
         val args = context.args
         val attachments = context.message.attachments
 
@@ -379,7 +391,12 @@ object ImageUtils {
         }
 
         return when {
-            brightness >= whiteThreshold -> if (invertOffset) intArrayOf(78, 93, 148, a) else intArrayOf(254, 254, 254, a) //wit
+            brightness >= whiteThreshold -> if (invertOffset) intArrayOf(78, 93, 148, a) else intArrayOf(
+                254,
+                254,
+                254,
+                a
+            ) //wit
             brightness >= blurpleThreshold -> intArrayOf(114, 137, 218, a) //blurple
             else -> if (invertOffset) intArrayOf(254, 254, 254, a) else intArrayOf(78, 93, 148, a) //dark blurple
         }
@@ -587,7 +604,13 @@ object ImageUtils {
         }
     }
 
-    private fun getCroppedImage(image: BufferedImage, startx: Int, starty: Int, width: Int, height: Int): BufferedImage {
+    private fun getCroppedImage(
+        image: BufferedImage,
+        startx: Int,
+        starty: Int,
+        width: Int,
+        height: Int
+    ): BufferedImage {
         var startx1 = startx
         var starty1 = starty
         var width1 = width
@@ -766,7 +789,8 @@ object ImageUtils {
 
                 }
 
-                dest.setPixel(x, y,
+                dest.setPixel(
+                    x, y,
                     floatBuffer
                 )
             }
@@ -774,7 +798,14 @@ object ImageUtils {
         image.data = dest
     }
 
-    fun putText(bufferedImage: BufferedImage, text: String, startX: Int, endX: Int, startY: Int, graphics: Graphics): BufferedImage {
+    fun putText(
+        bufferedImage: BufferedImage,
+        text: String,
+        startX: Int,
+        endX: Int,
+        startY: Int,
+        graphics: Graphics
+    ): BufferedImage {
         val fontMetrics = graphics.getFontMetrics(graphics.font)
         val lineWidth = endX - startX
         val lineHeight = fontMetrics.height

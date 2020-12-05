@@ -20,21 +20,25 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun add(warn: Warn) {
         warn.apply {
-            driverManager.executeUpdate("INSERT INTO $table (warnId, guildId, warnedId, warnAuthorId, warnReason, warnMoment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
-                warnId, guildId, warnedId, warnAuthorId, reason, moment)
+            driverManager.executeUpdate(
+                "INSERT INTO $table (warnId, guildId, warnedId, warnAuthorId, warnReason, warnMoment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
+                warnId, guildId, warnedId, warnAuthorId, reason, moment
+            )
         }
     }
 
     fun get(guildId: Long, warnedId: Long, warnMoment: Long, kick: (Warn) -> Unit) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND warnedId = ? AND warnMoment = ?", { rs ->
-            kick.invoke(Warn(
-                rs.getLong("guildId"),
-                rs.getLong("warnedId"),
-                rs.getLong("warnAuthorId"),
-                rs.getString("warnReason"),
-                rs.getLong("warnMoment"),
-                rs.getString("warnId")
-            ))
+            kick.invoke(
+                Warn(
+                    rs.getLong("guildId"),
+                    rs.getLong("warnedId"),
+                    rs.getLong("warnAuthorId"),
+                    rs.getString("warnReason"),
+                    rs.getLong("warnMoment"),
+                    rs.getString("warnId")
+                )
+            )
         }, guildId, warnedId, warnMoment)
     }
 
@@ -43,14 +47,16 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND warnedId = ?", { rs ->
             val kicks = mutableListOf<Warn>()
             while (rs.next()) {
-                kicks.add(Warn(
-                    guildId,
-                    warnedId,
-                    rs.getLong("warnAuthorId"),
-                    rs.getString("warnReason"),
-                    rs.getLong("warnMoment"),
-                    rs.getString("warnId")
-                ))
+                kicks.add(
+                    Warn(
+                        guildId,
+                        warnedId,
+                        rs.getLong("warnAuthorId"),
+                        rs.getString("warnReason"),
+                        rs.getLong("warnMoment"),
+                        rs.getString("warnId")
+                    )
+                )
             }
             it.resume(kicks)
         }, guildId, warnedId)
@@ -60,27 +66,33 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE warnId = ?", { rs ->
             val kicks = mutableListOf<Warn>()
             while (rs.next()) {
-                kicks.add(Warn(
-                    rs.getLong("guildId"),
-                    rs.getLong("warnedId"),
-                    rs.getLong("warnAuthorId"),
-                    rs.getString("warnReason"),
-                    rs.getLong("warnMoment"),
-                    warnId
-                ))
+                kicks.add(
+                    Warn(
+                        rs.getLong("guildId"),
+                        rs.getLong("warnedId"),
+                        rs.getLong("warnAuthorId"),
+                        rs.getString("warnReason"),
+                        rs.getLong("warnMoment"),
+                        warnId
+                    )
+                )
             }
             it.resume(kicks)
         }, warnId)
     }
 
     fun clear(guildId: Long, warnedId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND warnedId = ?",
-            guildId, warnedId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND warnedId = ?",
+            guildId, warnedId
+        )
     }
 
     fun remove(warn: Warn) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND warnedId = ? AND warnId = ?",
-            warn.guildId, warn.warnedId, warn.warnId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND warnedId = ? AND warnId = ?",
+            warn.guildId, warn.warnedId, warn.warnId
+        )
     }
 }
 

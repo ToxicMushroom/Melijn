@@ -16,6 +16,9 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendRsp(context, "" + context.lavaManager.jdaLavaLink?.getExistingLink(context.guildId)?.getNode()?.remoteUri?.port)
+        sendRsp(
+            context,
+            "" + context.lavaManager.jdaLavaLink?.getExistingLink(context.guildId)?.getNode()?.remoteUri?.port
+        )
     }
 }

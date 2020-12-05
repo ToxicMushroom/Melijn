@@ -27,7 +27,18 @@ class BanService(
         for (ban in bans) {
             val selfUser = shardManager.shards[0].selfUser
             val newBan = ban.run {
-                Ban(guildId, bannedId, banAuthorId, reason, selfUser.idLong, "Ban expired", startTime, endTime, false, banId)
+                Ban(
+                    guildId,
+                    bannedId,
+                    banAuthorId,
+                    reason,
+                    selfUser.idLong,
+                    "Ban expired",
+                    startTime,
+                    endTime,
+                    false,
+                    banId
+                )
             }
             daoManager.banWrapper.setBan(newBan)
             val guild = shardManager.getGuildById(ban.guildId) ?: continue
@@ -44,8 +55,10 @@ class BanService(
 
             val exception = guild.unban(bannedUser).awaitEX()
             if (exception != null) {
-                createAndSendFailedUnbanMessage(guild, selfUser, bannedUser, banAuthor, newBan, exception.message
-                    ?: "")
+                createAndSendFailedUnbanMessage(
+                    guild, selfUser, bannedUser, banAuthor, newBan, exception.message
+                        ?: ""
+                )
                 continue
             }
 
@@ -55,7 +68,13 @@ class BanService(
     }
 
     //Sends unban message to tempban logchannel and the unbanned user
-    private suspend fun createAndSendUnbanMessage(guild: Guild, unbanAuthor: User, bannedUser: User, banAuthor: User?, ban: Ban) {
+    private suspend fun createAndSendUnbanMessage(
+        guild: Guild,
+        unbanAuthor: User,
+        bannedUser: User,
+        banAuthor: User?,
+        ban: Ban
+    ) {
         val language = getLanguage(daoManager, -1, guild.idLong)
         val zoneId = getZoneId(daoManager, guild.idLong)
 //        val privZoneId = getZoneId(daoManager, guild.idLong, bannedUser.idLong)
@@ -73,11 +92,29 @@ class BanService(
 //            }
 //        }
 
-        val msgLc = getUnbanMessage(language, zoneId, guild, bannedUser, banAuthor, unbanAuthor, ban, true, bannedUser.isBot, true)
+        val msgLc = getUnbanMessage(
+            language,
+            zoneId,
+            guild,
+            bannedUser,
+            banAuthor,
+            unbanAuthor,
+            ban,
+            true,
+            bannedUser.isBot,
+            true
+        )
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 
-    private suspend fun createAndSendFailedUnbanMessage(guild: Guild, unbanAuthor: User, bannedUser: User, banAuthor: User?, ban: Ban, cause: String) {
+    private suspend fun createAndSendFailedUnbanMessage(
+        guild: Guild,
+        unbanAuthor: User,
+        bannedUser: User,
+        banAuthor: User?,
+        ban: Ban,
+        cause: String
+    ) {
         val language = getLanguage(daoManager, -1, guild.idLong)
 //        val zoneId = getZoneId(daoManager, guild.idLong)
         val privZoneId = getZoneId(daoManager, guild.idLong, bannedUser.idLong)
@@ -94,7 +131,19 @@ class BanService(
 //            }
 //        }
 
-        val msgLc = getUnbanMessage(language, privZoneId, guild, bannedUser, banAuthor, unbanAuthor, ban, true, bannedUser.isBot, true, failedCause = cause)
+        val msgLc = getUnbanMessage(
+            language,
+            privZoneId,
+            guild,
+            bannedUser,
+            banAuthor,
+            unbanAuthor,
+            ban,
+            true,
+            bannedUser.isBot,
+            true,
+            failedCause = cause
+        )
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 }

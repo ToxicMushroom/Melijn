@@ -117,6 +117,10 @@ class GuildTrackManager(
                     val pos = Random.nextInt(tracks.size) + 1
                     tracks.add(pos, track)
                 }
+                NextSongPosition.TOPSKIP -> {
+                    tracks.add(0, track)
+                    skip(1)
+                }
             }
         }
     }

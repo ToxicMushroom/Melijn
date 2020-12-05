@@ -64,8 +64,10 @@ object VerificationCodeResponseHandler {
         val unverifiedRole = guild.getAndVerifyRoleByType(context.daoManager, RoleType.UNVERIFIED) ?: return
         val member = guild.retrieveMemberById(userId).awaitOrNull() ?: return
 
-        VerificationUtils.verify(context.daoManager, context.container.webManager.proxiedHttpClient,
-            unverifiedRole, guild.selfMember.user, member)
+        VerificationUtils.verify(
+            context.daoManager, context.container.webManager.proxiedHttpClient,
+            unverifiedRole, guild.selfMember.user, member
+        )
 
         context.call.respondText { "verified" }
     }

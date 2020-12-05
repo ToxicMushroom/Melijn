@@ -17,7 +17,12 @@ import java.nio.ByteBuffer
 import java.util.*
 
 
-fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread(), extra: String? = null, shouldSend: Boolean = true) = runBlocking {
+fun Throwable.sendInGuild(
+    context: CommandContext,
+    thread: Thread = Thread.currentThread(),
+    extra: String? = null,
+    shouldSend: Boolean = true
+) = runBlocking {
     val sanitizedMessage = "Message: ${MarkdownSanitizer.escape(context.message.contentRaw)}\n" + (extra ?: "")
     sendInGuildSuspend(context.guildN, context.messageChannel, context.author, thread, sanitizedMessage, shouldSend)
 }

@@ -133,7 +133,8 @@ object DiscordMethods {
         }, { env, args ->
             val guild: Guild = env.getReifiedX("guild")
             val arg = args[0]
-            val user: User = getUserByArgsN(guild.jda.shardManager ?: return@Method "null", guild, arg
+            val user: User = getUserByArgsN(
+                guild.jda.shardManager ?: return@Method "null", guild, arg
             ) ?: return@Method "null"
 
             System.currentTimeMillis().asEpochMillisToDateTime(Container.instance.daoManager, guild.idLong, user.idLong)

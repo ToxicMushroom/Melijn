@@ -60,7 +60,12 @@ class GlobalRecolorCommand : AbstractCommand("command.globalrecolor") {
                 val c2 = ints[3] shl 24 or (chosenColor.red shl 16) or (chosenColor.green shl 8) or chosenColor.blue
                 val newColor = ImageUtils.suiteColorForGif(c2)
 
-                intArrayOf(newColor and 0xff, newColor shr 8 and 0xff, newColor shr 16 and 0xff, newColor shr 24 and 0xff)
+                intArrayOf(
+                    newColor and 0xff,
+                    newColor shr 8 and 0xff,
+                    newColor shr 16 and 0xff,
+                    newColor shr 24 and 0xff
+                )
             }
 
         }, argDataParser = { argInt: Int, argData: DataObject, _: DataObject ->

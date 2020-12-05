@@ -34,4 +34,8 @@ class ChannelCommandStateWrapper(private val channelCommandStateDao: ChannelComm
         }
         channelCommandStateDao.setCacheEntry(channelId, objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
+
+    fun migrateChannel(oldId: Long, newId: Long) {
+        channelCommandStateDao.migrateChannel(oldId, newId)
+    }
 }

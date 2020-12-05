@@ -60,13 +60,28 @@ class SettingsCommand : AbstractCommand("command.settings") {
             "\n**UnverifiedRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.UNVERIFIED)) +
             "\n**BirthDayRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.BIRTHDAY)) +
             "\n" +
-            "\n**VerificationChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.VERIFICATION)) +
+            "\n**VerificationChannel:** " + idToChannelMention(
+            channelWrapper.getChannelId(
+                guildId,
+                ChannelType.VERIFICATION
+            )
+        ) +
             "\n**JoinChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.JOIN)) +
             "\n**LeaveChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.LEAVE)) +
             "\n**SelfRoleChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.SELFROLE)) +
             "\n**BirthDayChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.BIRTHDAY)) +
-            "\n**PreVerificationJoinChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.PRE_VERIFICATION_JOIN)) +
-            "\n**PreVerificationLeaveChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId,ChannelType.PRE_VERIFICATION_LEAVE)) +
+            "\n**PreVerificationJoinChannel:** " + idToChannelMention(
+            channelWrapper.getChannelId(
+                guildId,
+                ChannelType.PRE_VERIFICATION_JOIN
+            )
+        ) +
+            "\n**PreVerificationLeaveChannel:** " + idToChannelMention(
+            channelWrapper.getChannelId(
+                guildId,
+                ChannelType.PRE_VERIFICATION_LEAVE
+            )
+        ) +
             "\n" +
             "\n$logChannels" +
             "\n" +
@@ -83,7 +98,10 @@ class SettingsCommand : AbstractCommand("command.settings") {
             daoManager.userPrefixWrapper.getPrefixes(context.authorId).joinToString { pref ->
                 "\n  - **" + MarkdownSanitizer.escape(pref) + "**"
             } +
-            "\nEmbedState: **" + booleanToString(context, !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guildId)) +
+            "\nEmbedState: **" + booleanToString(
+            context,
+            !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guildId)
+        ) +
             "\n**EmbedColor: **" + (if (ec == 0) "unset" else "#" + ec.toHexString()) +
             "\n**PrivateEmbedColor: **" + (if (pec == 0) "unset" else pec.toHexString()) +
             "\n**Language: **" + daoManager.guildLanguageWrapper.getLanguage(guildId) +

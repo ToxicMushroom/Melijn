@@ -59,12 +59,12 @@ suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = su
         { success ->
             it.resume(success)
         }, { failed ->
-        if (failure == null) {
-            it.resumeWithException(failed)
-        } else {
-            failure.invoke(failed)
-        }
-    })
+            if (failure == null) {
+                it.resumeWithException(failed)
+            } else {
+                failure.invoke(failed)
+            }
+        })
 }
 
 suspend fun <T> RestAction<T>.awaitOrNull() = suspendCoroutine<T?> {
@@ -331,7 +331,11 @@ suspend fun getStringFromArgsNMessage(
     return arg
 }
 
-suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = false): Pair<Emote?, String?>? {
+suspend fun getEmotejiByArgsNMessage(
+    context: CommandContext,
+    index: Int,
+    sameGuildAsContext: Boolean = false
+): Pair<Emote?, String?>? {
     if (argSizeCheckFailed(context, index)) return null
     val emoteji = getEmotejiByArgsN(context, index, sameGuildAsContext)
     if (emoteji == null) {
@@ -344,7 +348,11 @@ suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGu
 }
 
 
-suspend fun getEmotejiByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = false): Pair<Emote?, String?>? {
+suspend fun getEmotejiByArgsN(
+    context: CommandContext,
+    index: Int,
+    sameGuildAsContext: Boolean = false
+): Pair<Emote?, String?>? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val emoji = if (SupportedDiscordEmoji.helpMe.contains(arg)) {
@@ -475,7 +483,11 @@ fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContex
     return channel
 }
 
-suspend fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
+suspend fun getTextChannelByArgsNMessage(
+    context: CommandContext,
+    index: Int,
+    sameGuildAsContext: Boolean = true
+): TextChannel? {
     if (argSizeCheckFailed(context, index)) return null
     val textChannel = getTextChannelByArgsN(context, index, sameGuildAsContext)
     if (textChannel == null) {
@@ -509,7 +521,11 @@ fun getVoiceChannelByArgsN(context: CommandContext, index: Int, sameGuildAsConte
     return channel
 }
 
-suspend fun getVoiceChannelByArgNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): VoiceChannel? {
+suspend fun getVoiceChannelByArgNMessage(
+    context: CommandContext,
+    index: Int,
+    sameGuildAsContext: Boolean = true
+): VoiceChannel? {
     if (argSizeCheckFailed(context, index)) return null
     val voiceChannel = getVoiceChannelByArgsN(context, index, sameGuildAsContext)
     if (voiceChannel == null) {
@@ -529,7 +545,12 @@ suspend fun retrieveMemberByArgsN(guild: Guild, arg: String): Member? {
 }
 
 
-suspend fun retrieveMemberByArgsNMessage(context: CommandContext, index: Int, interactable: Boolean = false, botAllowed: Boolean = true): Member? {
+suspend fun retrieveMemberByArgsNMessage(
+    context: CommandContext,
+    index: Int,
+    interactable: Boolean = false,
+    botAllowed: Boolean = true
+): Member? {
     if (argSizeCheckFailed(context, index)) return null
     val user = retrieveUserByArgsN(context, index)
     val member =
@@ -562,12 +583,16 @@ suspend fun retrieveMemberByArgsNMessage(context: CommandContext, index: Int, in
 }
 
 
-suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: GuildChannel, vararg perms: Permission): Boolean {
+suspend fun notEnoughPermissionsAndMessage(
+    context: CommandContext,
+    channel: GuildChannel,
+    vararg perms: Permission
+): Boolean {
     val member = channel.guild.selfMember
     val result = notEnoughPermissions(member, channel, perms.toList())
     if (result.first.isNotEmpty()) {
         val more = if (result.first.size > 1) "s" else ""
-        val msg = context.getTranslation("message.discordpermission$more.missing")
+        val msg = context.getTranslation("message.discordchannelpermission$more.missing")
             .withVariable("permissions", result.first.joinToString(separator = "") { perm ->
                 "\n    ⁎ `${perm.toUCSC()}`"
             })
@@ -589,7 +614,11 @@ suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: Gui
     return false
 }
 
-fun notEnoughPermissions(member: Member, channel: GuildChannel, perms: Collection<Permission>): Pair<List<Permission>, List<Permission>> {
+fun notEnoughPermissions(
+    member: Member,
+    channel: GuildChannel,
+    perms: Collection<Permission>
+): Pair<List<Permission>, List<Permission>> {
     val missingPerms = mutableListOf<Permission>()
     for (perm in perms) {
         if (!member.hasPermission(channel, perm)) missingPerms.add(perm)
@@ -678,7 +707,11 @@ fun listeningMembers(vc: VoiceChannel, alwaysListeningUser: Long = -1L): Int {
 }
 
 
-suspend fun getTimeFromArgsNMessage(context: CommandContext, start: Long = Long.MIN_VALUE, end: Long = Long.MAX_VALUE): Long? {
+suspend fun getTimeFromArgsNMessage(
+    context: CommandContext,
+    start: Long = Long.MIN_VALUE,
+    end: Long = Long.MAX_VALUE
+): Long? {
     val parts = context.rawArg
         .replace(":", " ")
         .split(SPACE_PATTERN).toMutableList()

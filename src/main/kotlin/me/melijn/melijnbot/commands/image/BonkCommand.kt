@@ -122,7 +122,8 @@ class GifSequenceWriter(outputStream: ImageOutputStream, imageType: Int, delay: 
         child.setAttribute("authenticationCode", "2.0")
 
         val loopContinuously: Int = if (loop) 0 else 1
-        child.userObject = byteArrayOf(0x1, (loopContinuously and 0xFF).toByte(), ((loopContinuously shr 8) and 0xFF).toByte())
+        child.userObject =
+            byteArrayOf(0x1, (loopContinuously and 0xFF).toByte(), ((loopContinuously shr 8) and 0xFF).toByte())
         appExtensionNode.appendChild(child)
         metadata.setFromTree(metaFormatName, root)
     }

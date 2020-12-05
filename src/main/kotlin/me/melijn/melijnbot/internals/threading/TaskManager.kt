@@ -22,7 +22,8 @@ object TaskManager {
 
     val executorService: ExecutorService = Executors.newCachedThreadPool(threadFactory.invoke("Task"))
     val dispatcher = executorService.asCoroutineDispatcher()
-    val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(15, threadFactory.invoke("Repeater"))
+    val scheduledExecutorService: ScheduledExecutorService =
+        Executors.newScheduledThreadPool(15, threadFactory.invoke("Repeater"))
 
     fun async(block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
         Task {
@@ -74,11 +75,12 @@ object TaskManager {
         }.run()
     }
 
-    fun async(user: User, messageChannel: MessageChannel, block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
-        UserChannelTask(user, messageChannel) {
-            block.invoke(this)
-        }.run()
-    }
+    fun async(user: User, messageChannel: MessageChannel, block: suspend CoroutineScope.() -> Unit) =
+        CoroutineScope(dispatcher).launch {
+            UserChannelTask(user, messageChannel) {
+                block.invoke(this)
+            }.run()
+        }
 
     fun async(user: User, guild: Guild, block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
         UserGuildTask(user, guild) {

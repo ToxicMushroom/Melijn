@@ -35,14 +35,15 @@ class AvatarCommand : AbstractCommand("command.avatar") {
         val eb = Embedder(context)
             .setTitle(title)
             .setImage(avatar)
-            .setDescription(links + " **" +
-                "[direct](${user.effectiveAvatarUrl}) • " +
-                "[x64](${user.effectiveAvatarUrl}?size=64) • " +
-                "[x128](${user.effectiveAvatarUrl}?size=128) • " +
-                "[x256](${user.effectiveAvatarUrl}?size=256) • " +
-                "[x512](${user.effectiveAvatarUrl}?size=512) • " +
-                "[x1024](${user.effectiveAvatarUrl}?size=1024) • " +
-                "[x2048](${user.effectiveAvatarUrl}?size=2048)**"
+            .setDescription(
+                links + " **" +
+                    "[direct](${user.effectiveAvatarUrl}) • " +
+                    "[x64](${user.effectiveAvatarUrl}?size=64) • " +
+                    "[x128](${user.effectiveAvatarUrl}?size=128) • " +
+                    "[x256](${user.effectiveAvatarUrl}?size=256) • " +
+                    "[x512](${user.effectiveAvatarUrl}?size=512) • " +
+                    "[x1024](${user.effectiveAvatarUrl}?size=1024) • " +
+                    "[x2048](${user.effectiveAvatarUrl}?size=2048)**"
             )
 
         sendEmbedRsp(context, eb.build())

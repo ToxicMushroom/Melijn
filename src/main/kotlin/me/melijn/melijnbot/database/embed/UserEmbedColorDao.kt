@@ -25,12 +25,16 @@ class UserEmbedColorDao(driverManager: DriverManager) : CacheDBDao(driverManager
     }
 
     fun set(userId: Long, color: Int) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, color) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET color = ?",
-            userId, color, color)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (userId, color) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET color = ?",
+            userId, color, color
+        )
     }
 
     fun remove(userId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?",
-            userId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE userId = ?",
+            userId
+        )
     }
 }

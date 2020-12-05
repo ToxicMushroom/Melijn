@@ -48,7 +48,12 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
                 sendRsp(context, msg)
                 return
             }
-            if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+            if (!context.member.canInteract(member) && !hasPermission(
+                    context,
+                    SpecialPermission.PUNISH_BYPASS_HIGHER.node,
+                    true
+                )
+            ) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
                     .withVariable(PLACEHOLDER_USER, member.asTag)
                 sendRsp(context, msg)
@@ -94,7 +99,13 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         muteRoleAcquired(context, targetUser, reason, muteRole, muteDuration)
     }
 
-    private suspend fun muteRoleAcquired(context: CommandContext, targetUser: User, reason: String, muteRole: Role, muteDuration: Long) {
+    private suspend fun muteRoleAcquired(
+        context: CommandContext,
+        targetUser: User,
+        reason: String,
+        muteRole: Role,
+        muteDuration: Long
+    ) {
         val activeMute: Mute? = context.daoManager.muteWrapper.getActiveMute(context.guildId, targetUser.idLong)
         val mute = Mute(
             context.guildId,
@@ -123,7 +134,14 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         continueMuting(context, muteRole, targetUser, mute, activeMute, message)
     }
 
-    private suspend fun continueMuting(context: CommandContext, muteRole: Role, targetUser: User, mute: Mute, activeMute: Mute?, mutingMessage: Message?) {
+    private suspend fun continueMuting(
+        context: CommandContext,
+        muteRole: Role,
+        targetUser: User,
+        mute: Mute,
+        activeMute: Mute?,
+        mutingMessage: Message?
+    ) {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
@@ -131,7 +149,17 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val zoneId = getZoneId(daoManager, guild.idLong)
         val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
         val mutedMessageDm = getMuteMessage(language, privZoneId, guild, targetUser, author, mute)
-        val mutedMessageLc = getMuteMessage(language, zoneId, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
+        val mutedMessageLc = getMuteMessage(
+            language,
+            zoneId,
+            guild,
+            targetUser,
+            author,
+            mute,
+            true,
+            targetUser.isBot,
+            mutingMessage != null
+        )
 
         val targetMember = guild.retrieveMember(targetUser).awaitOrNull()
 
@@ -160,7 +188,15 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         }
     }
 
-    private suspend fun death(mutingMessage: Message?, mutedMessageDm: MessageEmbed, context: CommandContext, mutedMessageLc: MessageEmbed, activeMute: Mute?, mute: Mute, targetUser: User) {
+    private suspend fun death(
+        mutingMessage: Message?,
+        mutedMessageDm: MessageEmbed,
+        context: CommandContext,
+        mutedMessageLc: MessageEmbed,
+        activeMute: Mute?,
+        mute: Mute,
+        targetUser: User
+    ) {
         mutingMessage?.editMessage(
             mutedMessageDm
         )?.override(true)?.queue()

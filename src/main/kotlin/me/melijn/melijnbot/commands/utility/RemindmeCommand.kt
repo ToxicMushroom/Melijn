@@ -128,7 +128,10 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
         reminderWrapper.add(Reminder(context.authorId, System.currentTimeMillis() + duraionMillis, reason))
 
         val msg = "Reminder added, will remind you at **%time%** about `%thing%`"
-            .withSafeVariable("time", (System.currentTimeMillis() + duraionMillis).asEpochMillisToDateTime(context.getTimeZoneId()))
+            .withSafeVariable(
+                "time",
+                (System.currentTimeMillis() + duraionMillis).asEpochMillisToDateTime(context.getTimeZoneId())
+            )
             .withSafeVariable("thing", reason)
         sendRsp(context, msg)
     }

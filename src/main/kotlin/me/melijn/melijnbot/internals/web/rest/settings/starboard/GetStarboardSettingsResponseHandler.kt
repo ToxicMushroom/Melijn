@@ -25,8 +25,10 @@ object GetStarboardSettingsResponseHandler {
         val userId = context.call.receiveText()
         val member = guild?.retrieveMemberById(userId)?.awaitOrNull()
         if (member == null) {
-            context.call.respondJson(DataObject.empty()
-                .put("error", "guild invalidated"))
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("error", "guild invalidated")
+            )
             return
         }
 
@@ -35,8 +37,10 @@ object GetStarboardSettingsResponseHandler {
             member.isOwner)
 
         if (!hasPerm) {
-            context.call.respondJson(DataObject.empty()
-                .put("error", "guild invalidated"))
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("error", "guild invalidated")
+            )
             return
         }
 
@@ -93,6 +97,7 @@ object GetStarboardSettingsResponseHandler {
             DataObject.empty()
                 .put("guild", guildData)
                 .put("settings", settings)
-                .put("provided", provided))
+                .put("provided", provided)
+        )
     }
 }

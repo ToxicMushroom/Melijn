@@ -55,7 +55,8 @@ class FilterCommand : AbstractCommand("command.filter") {
     }
 
 
-    class RemoveByIndexArg(parent: String, private val filterType: FilterType) : AbstractCommand("$parent.removebyindex") {
+    class RemoveByIndexArg(parent: String, private val filterType: FilterType) :
+        AbstractCommand("$parent.removebyindex") {
 
         init {
             name = "removeByIndex"

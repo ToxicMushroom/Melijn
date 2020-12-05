@@ -96,7 +96,13 @@ object PPUtils {
         }
     }
 
-    private suspend fun applyRemoveRole(member: Member, punishment: Punishment, container: Container, duration: Long?, roleId: Long) {
+    private suspend fun applyRemoveRole(
+        member: Member,
+        punishment: Punishment,
+        container: Container,
+        duration: Long?,
+        roleId: Long
+    ) {
         val guild = member.guild
         val daoManager = container.daoManager
         val wrapper = daoManager.tempRoleWrapper
@@ -108,7 +114,13 @@ object PPUtils {
         }
     }
 
-    private suspend fun applyAddRole(member: Member, punishment: Punishment, container: Container, duration: Long?, roleId: Long) {
+    private suspend fun applyAddRole(
+        member: Member,
+        punishment: Punishment,
+        container: Container,
+        duration: Long?,
+        roleId: Long
+    ) {
         val guild = member.guild
         val daoManager = container.daoManager
         val wrapper = daoManager.tempRoleWrapper
@@ -120,7 +132,13 @@ object PPUtils {
         }
     }
 
-    private suspend fun applyBan(member: Member, punishment: Punishment, container: Container, delDays: Int, duration: Long?) {
+    private suspend fun applyBan(
+        member: Member,
+        punishment: Punishment,
+        container: Container,
+        delDays: Int,
+        duration: Long?
+    ) {
         val pc = member.user.openPrivateChannel().awaitOrNull()
         val jda = member.jda
         val guild = member.guild
@@ -152,7 +170,17 @@ object PPUtils {
         val zoneId = getZoneId(daoManager, guild.idLong)
         val privZoneId = getZoneId(daoManager, guild.idLong, member.idLong)
         val banMessageDM = getBanMessage(lang, privZoneId, guild, member.user, jda.selfUser, ban)
-        val banMessageLog = getBanMessage(lang, zoneId, guild, member.user, jda.selfUser, ban, true, member.user.isBot, banningMessage != null)
+        val banMessageLog = getBanMessage(
+            lang,
+            zoneId,
+            guild,
+            member.user,
+            jda.selfUser,
+            ban,
+            true,
+            member.user.isBot,
+            banningMessage != null
+        )
         banningMessage?.editMessage(banMessageDM)?.override(true)?.queue()
 
         val lcType = if (duration == null) LogChannelType.PERMANENT_BAN else LogChannelType.TEMP_BAN
@@ -189,7 +217,17 @@ object PPUtils {
         guild.unban(member.user).reason("softban").queue()
 
         val softBanMessageDM = getSoftBanMessage(lang, privZoneId, guild, member.user, jda.selfUser, softBan)
-        val softBanMessageLog = getSoftBanMessage(lang, zoneId, guild, member.user, jda.selfUser, softBan, true, member.user.isBot, softBanningMessage != null)
+        val softBanMessageLog = getSoftBanMessage(
+            lang,
+            zoneId,
+            guild,
+            member.user,
+            jda.selfUser,
+            softBan,
+            true,
+            member.user.isBot,
+            softBanningMessage != null
+        )
         softBanningMessage?.editMessage(softBanMessageDM)?.override(true)?.queue()
 
         val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.SOFT_BAN) ?: return
@@ -224,7 +262,17 @@ object PPUtils {
         val pc = member.user.openPrivateChannel().awaitOrNull()
         val mutedMessage = pc?.sendMessage(muteMessageDM)?.awaitOrNull()
 
-        val muteMessageLog = getMuteMessage(lang, zoneId, guild, member.user, jda.selfUser, mute, true, member.user.isBot, mutedMessage != null)
+        val muteMessageLog = getMuteMessage(
+            lang,
+            zoneId,
+            guild,
+            member.user,
+            jda.selfUser,
+            mute,
+            true,
+            member.user.isBot,
+            mutedMessage != null
+        )
 
         val lcType = if (duration == null) LogChannelType.PERMANENT_MUTE else LogChannelType.TEMP_MUTE
         val channel = guild.getAndVerifyLogChannelByType(daoManager, lcType) ?: return
@@ -258,7 +306,17 @@ object PPUtils {
         }
 
         val kickMessageDM = getKickMessage(lang, privZoneId, guild, member.user, jda.selfUser, kick)
-        val kickMessageLog = getKickMessage(lang, zoneId, guild, member.user, jda.selfUser, kick, true, member.user.isBot, kickingMessage != null)
+        val kickMessageLog = getKickMessage(
+            lang,
+            zoneId,
+            guild,
+            member.user,
+            jda.selfUser,
+            kick,
+            true,
+            member.user.isBot,
+            kickingMessage != null
+        )
         kickingMessage?.editMessage(kickMessageDM)?.override(true)?.queue()
 
         val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.KICK) ?: return
@@ -287,7 +345,17 @@ object PPUtils {
         val pc = member.user.openPrivateChannel().awaitOrNull()
         val kickedMessage = pc?.sendMessage(warnMessageDM)?.awaitOrNull()
 
-        val warnMessageLog = getWarnMessage(lang, zoneId, guild, member.user, jda.selfUser, warn, true, member.user.isBot, kickedMessage != null)
+        val warnMessageLog = getWarnMessage(
+            lang,
+            zoneId,
+            guild,
+            member.user,
+            jda.selfUser,
+            warn,
+            true,
+            member.user.isBot,
+            kickedMessage != null
+        )
 
         val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.KICK) ?: return
         sendEmbed(daoManager.embedDisabledWrapper, channel, warnMessageLog)

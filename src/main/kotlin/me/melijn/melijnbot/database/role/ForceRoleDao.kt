@@ -31,12 +31,16 @@ class ForceRoleDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun add(guildId: Long, userId: Long, roleId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, roleId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
-            guildId, userId, roleId)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, userId, roleId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
+            guildId, userId, roleId
+        )
     }
 
     fun remove(guildId: Long, userId: Long, roleId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND userId = ? AND roleId = ?",
-            guildId, userId, roleId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND userId = ? AND roleId = ?",
+            guildId, userId, roleId
+        )
     }
 }

@@ -49,25 +49,27 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
 
         for (i in 0 until data.length()) {
             val entry = data.getObject(i)
-            list.add(OsuRankedScoreResult(
-                entry.getString("beatmap_id").toLong(),
-                entry.getString("score_id").toLong(),
-                entry.getString("score").toLong(),
-                entry.getString("maxcombo").toLong(),
-                entry.getString("count50").toLong(),
-                entry.getString("count100").toLong(),
-                entry.getString("count300").toLong(),
-                entry.getString("countmiss").toLong(),
-                entry.getString("countkatu").toLong(),
-                entry.getString("countgeki").toLong(),
-                entry.getString("perfect").toBoolean(),
-                entry.getString("enabled_mods").toInt(),
-                entry.getString("user_id").toLong(),
-                entry.getString("date"),
-                entry.getString("rank"),
-                entry.getString("pp").toFloat(),
-                entry.getString("replay_available").toBoolean()
-            ))
+            list.add(
+                OsuRankedScoreResult(
+                    entry.getString("beatmap_id").toLong(),
+                    entry.getString("score_id").toLong(),
+                    entry.getString("score").toLong(),
+                    entry.getString("maxcombo").toLong(),
+                    entry.getString("count50").toLong(),
+                    entry.getString("count100").toLong(),
+                    entry.getString("count300").toLong(),
+                    entry.getString("countmiss").toLong(),
+                    entry.getString("countkatu").toLong(),
+                    entry.getString("countgeki").toLong(),
+                    entry.getString("perfect").toBoolean(),
+                    entry.getString("enabled_mods").toInt(),
+                    entry.getString("user_id").toLong(),
+                    entry.getString("date"),
+                    entry.getString("rank"),
+                    entry.getString("pp").toFloat(),
+                    entry.getString("replay_available").toBoolean()
+                )
+            )
         }
 
         return list
@@ -83,7 +85,8 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
         val beatMapJson = data.getObject(0)
 
         return OsuBeatMap(
-            beatMapJson.getString("approved").toInt(), // 4 = loved, 3 = qualified, 2 = approved, 1 = ranked, 0 = pending, -1 = WIP, -2 = graveyard
+            beatMapJson.getString("approved")
+                .toInt(), // 4 = loved, 3 = qualified, 2 = approved, 1 = ranked, 0 = pending, -1 = WIP, -2 = graveyard
             beatMapJson.getString("submit_date"),
             beatMapJson.getString("approved_date", null),
             beatMapJson.getString("last_update"),
@@ -100,8 +103,10 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
             beatMapJson.getString("diff_approach").toFloat(), // approach diff
             beatMapJson.getString("diff_drain").toFloat(), // drain diff
             beatMapJson.getString("hit_length").toLong(), // time of gameplay, breaks excluded
-            beatMapJson.getString("genre_id").toInt(), // 0 = any, 1 = unspecified, 2 = video game, 3 = anime, 4 = rock, 5 = pop, 6 = other, 7 = novelty, 9 = hip hop, 10 = electronic, 13 = folk (note that there's no 8)
-            beatMapJson.getString("language_id").toInt(), // 0 = any, 1 = other, 2 = english, 3 = japanese, 4 = chinese, 5 = instrumental, 6 = korean, 7 = french, 8 = german, 9 = swedish, 10 = spanish, 11 = italian
+            beatMapJson.getString("genre_id")
+                .toInt(), // 0 = any, 1 = unspecified, 2 = video game, 3 = anime, 4 = rock, 5 = pop, 6 = other, 7 = novelty, 9 = hip hop, 10 = electronic, 13 = folk (note that there's no 8)
+            beatMapJson.getString("language_id")
+                .toInt(), // 0 = any, 1 = other, 2 = english, 3 = japanese, 4 = chinese, 5 = instrumental, 6 = korean, 7 = french, 8 = german, 9 = swedish, 10 = spanish, 11 = italian
             beatMapJson.getString("title"),
             beatMapJson.getString("total_length").toLong(), // first until last note, including breaks
             beatMapJson.getString("version"), // difficulty name
@@ -133,22 +138,24 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
 
         for (i in 0 until data.length()) {
             val entry = data.getObject(i)
-            list.add(OsuScoreResult(
-                entry.getString("beatmap_id").toLong(),
-                entry.getString("score").toLong(),
-                entry.getString("maxcombo").toLong(),
-                entry.getString("count50").toLong(),
-                entry.getString("count100").toLong(),
-                entry.getString("count300").toLong(),
-                entry.getString("countmiss").toLong(),
-                entry.getString("countkatu").toLong(),
-                entry.getString("countgeki").toLong(),
-                entry.getString("perfect").toBoolean(),
-                entry.getString("enabled_mods").toInt(),
-                entry.getString("user_id").toLong(),
-                entry.getString("date"),
-                entry.getString("rank")
-            ))
+            list.add(
+                OsuScoreResult(
+                    entry.getString("beatmap_id").toLong(),
+                    entry.getString("score").toLong(),
+                    entry.getString("maxcombo").toLong(),
+                    entry.getString("count50").toLong(),
+                    entry.getString("count100").toLong(),
+                    entry.getString("count300").toLong(),
+                    entry.getString("countmiss").toLong(),
+                    entry.getString("countkatu").toLong(),
+                    entry.getString("countgeki").toLong(),
+                    entry.getString("perfect").toBoolean(),
+                    entry.getString("enabled_mods").toInt(),
+                    entry.getString("user_id").toLong(),
+                    entry.getString("date"),
+                    entry.getString("rank")
+                )
+            )
         }
 
         return list

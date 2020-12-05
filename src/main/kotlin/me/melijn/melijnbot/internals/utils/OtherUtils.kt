@@ -155,7 +155,12 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
     return enum
 }
 
-suspend inline fun <T> getObjectFromArgNMessage(context: CommandContext, index: Int, mapper: (String) -> T?, path: String): T? {
+suspend inline fun <T> getObjectFromArgNMessage(
+    context: CommandContext,
+    index: Int,
+    mapper: (String) -> T?,
+    path: String
+): T? {
     if (argSizeCheckFailed(context, index)) return null
     val newObj = getObjectFromArgN(context, index, mapper)
     if (newObj == null) {
@@ -276,7 +281,11 @@ suspend fun getLongFromArgNMessage(
 
 
 //Dayofyear, year
-suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, format: DateFormat = DateFormat.DMY): Pair<Int, Int?>? {
+suspend fun getBirthdayByArgsNMessage(
+    context: CommandContext,
+    index: Int,
+    format: DateFormat = DateFormat.DMY
+): Pair<Int, Int?>? {
     if (argSizeCheckFailed(context, index)) return null
     val list: List<Int> = context.args[index].split("/", "-")
         .map { value ->

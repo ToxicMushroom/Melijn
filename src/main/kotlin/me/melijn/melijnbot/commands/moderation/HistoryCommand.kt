@@ -128,9 +128,10 @@ class HistoryCommand : AbstractCommand("command.history") {
                             if (part.length + paginationPart.length < maxLength) {
                                 paginationPart.append(part)
                             } else {
-                                paginationPart.append(comment
-                                    .withVariable("page", countr++)
-                                    .withVariable("pages", pages)
+                                paginationPart.append(
+                                    comment
+                                        .withVariable("page", countr++)
+                                        .withVariable("pages", pages)
                                 )
                                 paginationPartList.add(paginationPart.toString())
                                 paginationPart.clear()
@@ -140,9 +141,10 @@ class HistoryCommand : AbstractCommand("command.history") {
                     } else continue
                 }
                 if (paginationPart.isNotEmpty()) {
-                    paginationPart.append(comment
-                        .withVariable("page", countr)
-                        .withVariable("pages", pages)
+                    paginationPart.append(
+                        comment
+                            .withVariable("page", countr)
+                            .withVariable("pages", pages)
                     )
                     paginationPartList.add(paginationPart.toString())
                     paginationPart.clear()

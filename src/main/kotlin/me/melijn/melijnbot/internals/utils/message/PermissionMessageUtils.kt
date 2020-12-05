@@ -22,30 +22,45 @@ fun sendMissingPermissionMessage(tc: TextChannel, daoManager: DaoManager, langua
 }
 
 suspend fun sendMelijnMissingChannelPermissionMessage(context: CommandContext, permissions: List<Permission>) {
-    sendMelijnMissingChannelPermissionMessage(context.textChannel, context.getLanguage(), context.daoManager, permissions)
+    sendMelijnMissingChannelPermissionMessage(
+        context.textChannel,
+        context.getLanguage(),
+        context.daoManager,
+        permissions
+    )
 }
 
-suspend fun sendMelijnMissingChannelPermissionMessage(textChannel: TextChannel, language: String, daoManager: DaoManager, permissions: List<Permission>) {
+suspend fun sendMelijnMissingChannelPermissionMessage(
+    textChannel: TextChannel,
+    language: String,
+    daoManager: DaoManager,
+    permissions: List<Permission>
+) {
     val more = if (permissions.size > 1) "s" else ""
-    val permString = permissions.joinToString("\n") {
-        "    ⁎ `${it.toUCSC()}`"
+    val permString = permissions.joinToString("") {
+        "\n    ⁎ `${it.toUCSC()}`"
     }
 
     val msg = i18n.getTranslation(language, "message.discordchannelpermission$more.missing")
-        .withVariable("permissions", "\n" + permString)
+        .withVariable("permissions", permString)
         .withSafeVariable("channel", textChannel.asTag)
 
     sendRspOrMsg(textChannel, daoManager, msg)
 }
 
-suspend fun sendMelijnMissingPermissionMessage(textChannel: TextChannel, language: String, daoManager: DaoManager, permissions: List<Permission>) {
+suspend fun sendMelijnMissingPermissionMessage(
+    textChannel: TextChannel,
+    language: String,
+    daoManager: DaoManager,
+    permissions: List<Permission>
+) {
     val more = if (permissions.size > 1) "s" else ""
-    val permString = permissions.joinToString("\n") {
-        "    ⁎ `${it.toUCSC()}`"
+    val permString = permissions.joinToString("") {
+        "\n    ⁎ `${it.toUCSC()}`"
     }
 
     val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
-        .withVariable("permissions", "\n" + permString)
+        .withVariable("permissions", permString)
 
     sendRspOrMsg(textChannel, daoManager, msg)
 }

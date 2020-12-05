@@ -28,4 +28,8 @@ class ChannelWrapper(private val channelDao: ChannelDao) {
     suspend fun getChannels(channelType: ChannelType): Map<Long, Long> {
         return channelDao.getChannels(channelType)
     }
+
+    fun migrateChannel(oldId: Long, newId: Long) {
+        channelDao.migrateChannel(oldId, newId)
+    }
 }

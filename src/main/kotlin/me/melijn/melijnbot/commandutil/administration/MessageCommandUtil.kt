@@ -19,7 +19,12 @@ object MessageCommandUtil {
 
     // I dont like this file
 
-    fun removeMessageIfEmpty(guildId: Long, type: MessageType, message: ModularMessage, messageWrapper: MessageWrapper): Boolean {
+    fun removeMessageIfEmpty(
+        guildId: Long,
+        type: MessageType,
+        message: ModularMessage,
+        messageWrapper: MessageWrapper
+    ): Boolean {
         return if (messageWrapper.shouldRemove(message)) {
             messageWrapper.removeMessage(guildId, type)
             true
@@ -49,7 +54,12 @@ object MessageCommandUtil {
         ccWrapper.update(guildId, cc)
     }
 
-    private suspend fun runCorrectSetThing(property: ModularMessageProperty, context: CommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun runCorrectSetThing(
+        property: ModularMessageProperty,
+        context: CommandContext,
+        message: ModularMessage,
+        type: MessageType
+    ) {
         when (property) {
             ModularMessageProperty.CONTENT -> setMessageContentAndMessage(context, message, type)
             ModularMessageProperty.EMBED_DESCRIPTION -> setEmbedDescriptionAndMessage(context, message, type)
@@ -80,7 +90,12 @@ object MessageCommandUtil {
         showMessage(context, property, cc.content, MessageType.CUSTOM_COMMAND)
     }
 
-    private suspend fun showMessage(context: CommandContext, property: ModularMessageProperty, message: ModularMessage?, type: MessageType) {
+    private suspend fun showMessage(
+        context: CommandContext,
+        property: ModularMessageProperty,
+        message: ModularMessage?,
+        type: MessageType
+    ) {
         var path = ""
         var pathSuffix = ""
         val string: String? = when (property) {
@@ -166,7 +181,11 @@ object MessageCommandUtil {
         ccWrapper.update(context.guildId, cc)
     }
 
-    private suspend fun clearEmbedAndMessage(context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
+    private suspend fun clearEmbedAndMessage(
+        context: CommandContext,
+        type: MessageType,
+        modularMessage: ModularMessage
+    ) {
         modularMessage.embed = null
 
         val msg = context.getTranslation("message.embed.clear")
@@ -187,7 +206,11 @@ object MessageCommandUtil {
         listAttachmentsAndMessage(context, modularMessage, MessageType.CUSTOM_COMMAND)
     }
 
-    private suspend fun listAttachmentsAndMessage(context: CommandContext, message: ModularMessage?, type: MessageType) {
+    private suspend fun listAttachmentsAndMessage(
+        context: CommandContext,
+        message: ModularMessage?,
+        type: MessageType
+    ) {
         val msg = if (message == null || message.attachments.isEmpty()) {
             context.getTranslation("message.attachments.list.empty")
                 .withVariable(PLACEHOLDER_TYPE, type.text)
@@ -223,7 +246,11 @@ object MessageCommandUtil {
     }
 
 
-    private suspend fun addAttachmentAndMessage(context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
+    private suspend fun addAttachmentAndMessage(
+        context: CommandContext,
+        type: MessageType,
+        modularMessage: ModularMessage
+    ) {
         val newMap = modularMessage.attachments.toMutableMap()
         val url = context.args[0]
         val msg = if (URL_PATTERN.matches(url)) {
@@ -261,7 +288,11 @@ object MessageCommandUtil {
         ccWrapper.update(context.guildId, cc)
     }
 
-    private suspend fun removeAttachmentAndMessage(context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
+    private suspend fun removeAttachmentAndMessage(
+        context: CommandContext,
+        type: MessageType,
+        modularMessage: ModularMessage
+    ) {
         val attachments = modularMessage.attachments.toMutableMap()
         val file = if (attachments.containsKey(context.args[0])) {
             attachments[context.args[0]]
@@ -285,7 +316,11 @@ object MessageCommandUtil {
         sendRsp(context, msg)
     }
 
-    private suspend fun setMessageContentAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setMessageContentAndMessage(
+        context: CommandContext,
+        message: ModularMessage,
+        type: MessageType
+    ) {
         val arg = context.rawArg
 
         val msg = if (arg.equals("null", true)) {
@@ -300,7 +335,11 @@ object MessageCommandUtil {
         sendRsp(context, msg)
     }
 
-    private suspend fun setEmbedDescriptionAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedDescriptionAndMessage(
+        context: CommandContext,
+        message: ModularMessage,
+        type: MessageType
+    ) {
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
 
@@ -438,7 +477,11 @@ object MessageCommandUtil {
         sendRsp(context, msg)
     }
 
-    private suspend fun setEmbedAuthorIconUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedAuthorIconUrlAndMessage(
+        context: CommandContext,
+        message: ModularMessage,
+        type: MessageType
+    ) {
         val arg = context.rawArg
         val authorName = message.embed?.author?.name
         val authorUrl = message.embed?.author?.url
@@ -491,7 +534,11 @@ object MessageCommandUtil {
         sendRsp(context, msg)
     }
 
-    private suspend fun setEmbedThumbnailAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedThumbnailAndMessage(
+        context: CommandContext,
+        message: ModularMessage,
+        type: MessageType
+    ) {
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
         val attachments = context.message.attachments
@@ -583,7 +630,11 @@ object MessageCommandUtil {
     }
 
 
-    private suspend fun setEmbedFooterIconUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedFooterIconUrlAndMessage(
+        context: CommandContext,
+        message: ModularMessage,
+        type: MessageType
+    ) {
         val arg = context.rawArg
         val footer = message.embed?.footer?.text
         val eb = EmbedBuilder(message.embed)
@@ -617,7 +668,13 @@ object MessageCommandUtil {
     }
 
 
-    suspend fun addEmbedField(title: String, value: String, inline: Boolean, context: CommandContext, type: MessageType) {
+    suspend fun addEmbedField(
+        title: String,
+        value: String,
+        inline: Boolean,
+        context: CommandContext,
+        type: MessageType
+    ) {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.getMessage(context.guildId, type)
             ?: ModularMessage()
@@ -626,7 +683,13 @@ object MessageCommandUtil {
         messageWrapper.setMessage(context.guildId, type, modularMessage)
     }
 
-    suspend fun addEmbedFieldCC(title: String, value: String, inline: Boolean, context: CommandContext, customCommand: CustomCommand) {
+    suspend fun addEmbedFieldCC(
+        title: String,
+        value: String,
+        inline: Boolean,
+        context: CommandContext,
+        customCommand: CustomCommand
+    ) {
         val ccWrapper = context.daoManager.customCommandWrapper
         val modularMessage = customCommand.content
 
@@ -634,7 +697,14 @@ object MessageCommandUtil {
         ccWrapper.update(context.guildId, customCommand)
     }
 
-    private suspend fun addEmbedFieldAndMessage(title: String, value: String, inline: Boolean, context: CommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun addEmbedFieldAndMessage(
+        title: String,
+        value: String,
+        inline: Boolean,
+        context: CommandContext,
+        message: ModularMessage,
+        type: MessageType
+    ) {
         val embedBuilder = EmbedBuilder(message.embed)
         embedBuilder.addField(title, value, inline)
         message.embed = embedBuilder.build()
@@ -661,7 +731,13 @@ object MessageCommandUtil {
         setEmbedFieldPartCC(index, "inline", inline, context, cc)
     }
 
-    private suspend fun setEmbedFieldPartCC(index: Int, partName: String, value: Any, context: CommandContext, cc: CustomCommand) {
+    private suspend fun setEmbedFieldPartCC(
+        index: Int,
+        partName: String,
+        value: Any,
+        context: CommandContext,
+        cc: CustomCommand
+    ) {
         val messageWrapper = context.daoManager.customCommandWrapper
         val modularMessage = cc.content
 
@@ -683,7 +759,13 @@ object MessageCommandUtil {
         setEmbedFieldPartJoinLeave(index, "inline", inline, context, type)
     }
 
-    private suspend fun setEmbedFieldPartJoinLeave(index: Int, partName: String, value: Any, context: CommandContext, type: MessageType) {
+    private suspend fun setEmbedFieldPartJoinLeave(
+        index: Int,
+        partName: String,
+        value: Any,
+        context: CommandContext,
+        type: MessageType
+    ) {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.getMessage(context.guildId, type)
             ?: ModularMessage()
@@ -692,7 +774,14 @@ object MessageCommandUtil {
         messageWrapper.setMessage(context.guildId, type, modularMessage)
     }
 
-    private suspend fun setEmbedFieldPartAndMessage(index: Int, partName: String, value: Any, context: CommandContext, modularMessage: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedFieldPartAndMessage(
+        index: Int,
+        partName: String,
+        value: Any,
+        context: CommandContext,
+        modularMessage: ModularMessage,
+        type: MessageType
+    ) {
         val json = DataObject.fromJson(modularMessage.toJSON())
         val embedJSON = json.getObject("embed")
         val fieldsJSON = embedJSON.getArray("fields")
@@ -738,7 +827,12 @@ object MessageCommandUtil {
         ccWrapper.update(context.guildId, cc)
     }
 
-    private suspend fun removeEmbedFieldAndMessage(index: Int, context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
+    private suspend fun removeEmbedFieldAndMessage(
+        index: Int,
+        context: CommandContext,
+        type: MessageType,
+        modularMessage: ModularMessage
+    ) {
         var modularMessage1 = modularMessage
 
         val json = DataObject.fromJson(modularMessage1.toJSON())
@@ -774,7 +868,11 @@ object MessageCommandUtil {
     }
 
 
-    private suspend fun showEmbedFieldsAndMessage(context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
+    private suspend fun showEmbedFieldsAndMessage(
+        context: CommandContext,
+        type: MessageType,
+        modularMessage: ModularMessage
+    ) {
         val fields = modularMessage.embed?.fields
 
         val msg = if (fields == null || fields.isEmpty()) {
@@ -837,7 +935,12 @@ object MessageCommandUtil {
         ccWrapper.update(context.guildId, customCommand)
     }
 
-    private suspend fun setPingableAndMessage(context: CommandContext, message: ModularMessage, type: MessageType, pingable: Boolean) {
+    private suspend fun setPingableAndMessage(
+        context: CommandContext,
+        message: ModularMessage,
+        type: MessageType,
+        pingable: Boolean
+    ) {
         val muteableMap = message.extra.toMutableMap()
         if (pingable) {
             muteableMap["isPingable"] = ""

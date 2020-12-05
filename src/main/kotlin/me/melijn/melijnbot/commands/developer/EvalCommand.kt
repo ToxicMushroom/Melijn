@@ -38,7 +38,10 @@ class EvalCommand : AbstractCommand("command.eval") {
 			${imports.joinToString("\n\t\t\t")}
 			fun exec(context: CommandContext) {
                 TaskManager.async {
-				    ${code.lines().dropWhile { it.startsWith("import ") || it.startsWith("\nimport ") }.joinToString("\n\t\t\t\t\t")}
+				    ${
+            code.lines().dropWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
+                .joinToString("\n\t\t\t\t\t")
+        }
                 }
             }""".trimIndent()
 

@@ -33,7 +33,8 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
         init {
             name = "load"
             aliases = arrayOf("l")
-            runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
+            runConditions =
+                arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -231,7 +232,11 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
     }
 }
 
-suspend fun getGainProfileNMessage(context: CommandContext, map: Map<String, GainProfile>, index: Int): Pair<String, GainProfile>? {
+suspend fun getGainProfileNMessage(
+    context: CommandContext,
+    map: Map<String, GainProfile>,
+    index: Int
+): Pair<String, GainProfile>? {
     val name: String
     val profileName = if (context.args[index].isPositiveNumber()) {
         val profileIndex = getIntegerFromArgNMessage(context, index, 0, map.size - 1) ?: return null

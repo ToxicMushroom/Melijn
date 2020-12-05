@@ -41,21 +41,25 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
 
         val eb = Embedder(context)
             .setThumbnail(user.effectiveAvatarUrl)
-            .setDescription("""
+            .setDescription(
+                """
                 |```INI
                 |[${title1}]```$value1
-            """.trimMargin())
+            """.trimMargin()
+            )
 
         if (context.isFromGuild && member != null) {
             val title2 = context.getTranslation("$root.response1.field2.title")
             val unReplacedValue2 = context.getTranslation("$root.response1.field2.value")
             val value2 = replaceMemberVar(unReplacedValue2, member, yes, no)
-            eb.appendDescription("""
+            eb.appendDescription(
+                """
                 |
                 |
                 |```INI
                 |[${title2}]```$value2
-            """.trimMargin())
+            """.trimMargin()
+            )
         }
 
         sendEmbedRsp(context, eb.build())
@@ -89,12 +93,13 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
 
     }
 
-    private fun replaceUserVar(string: String, user: User, isSupporter: Boolean, yes: String, no: String): String = string
-        .withVariable("name", user.name)
-        .withVariable(PLACEHOLDER_USER_ID, user.id)
-        .withVariable("discrim", user.discriminator)
-        .withVariable("isBot", if (user.isBot) yes else no)
-        .withVariable("supportsMelijn", if (isSupporter) yes else no)
-        .withVariable("avatarUrl", user.effectiveAvatarUrl)
-        .withVariable("creationTime", user.timeCreated.asLongLongGMTString())
+    private fun replaceUserVar(string: String, user: User, isSupporter: Boolean, yes: String, no: String): String =
+        string
+            .withVariable("name", user.name)
+            .withVariable(PLACEHOLDER_USER_ID, user.id)
+            .withVariable("discrim", user.discriminator)
+            .withVariable("isBot", if (user.isBot) yes else no)
+            .withVariable("supportsMelijn", if (isSupporter) yes else no)
+            .withVariable("avatarUrl", user.effectiveAvatarUrl)
+            .withVariable("creationTime", user.timeCreated.asLongLongGMTString())
 }

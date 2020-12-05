@@ -51,7 +51,12 @@ object VotedResponseHandler {
         val oldUserVote = voteWrapper.getUserVote(userId)
             ?: UserVote(userId, 0, 0, 0, 0, 0, 0)
 
-        val lastAnyVoteTime = listOf(oldUserVote.topggLastTime, oldUserVote.bfdLastTime, oldUserVote.dblLastTime, oldUserVote.dboatsLastTime).maxOrNull()
+        val lastAnyVoteTime = listOf(
+            oldUserVote.topggLastTime,
+            oldUserVote.bfdLastTime,
+            oldUserVote.dblLastTime,
+            oldUserVote.dboatsLastTime
+        ).maxOrNull()
             ?: return
         val millisSinceVoteReset = max(0, (System.currentTimeMillis() - lastAnyVoteTime) - 43200000)
         val maxMillisToKeepStreak = context.container.settings.economy.streakExpireHours * 3600_000
@@ -65,7 +70,10 @@ object VotedResponseHandler {
         }
 
 
-        val speedMultiplier = max(0.0, ((maxMillisToKeepStreak - millisSinceVoteReset).toDouble() / maxMillisToKeepStreak.toDouble())) + 1.0
+        val speedMultiplier = max(
+            0.0,
+            ((maxMillisToKeepStreak - millisSinceVoteReset).toDouble() / maxMillisToKeepStreak.toDouble())
+        ) + 1.0
         val premiumMultiplier = context.container.settings.economy.premiumMultiplier
 
         TaskManager.async {
@@ -88,7 +96,16 @@ object VotedResponseHandler {
                 val newBalance = (balanceWrapper.getBalance(userId) + totalMel)
                 balanceWrapper.setBalance(userId, newBalance)
 
-                LogUtils.sendReceivedVoteRewards(context.container, userId, newBalance, baseMel, totalMel, streak, votes, botlist)
+                LogUtils.sendReceivedVoteRewards(
+                    context.container,
+                    userId,
+                    newBalance,
+                    baseMel,
+                    totalMel,
+                    streak,
+                    votes,
+                    botlist
+                )
 
                 val activeReminders = daoManager.voteReminderWrapper.getReminder(userId)
                 val botListOption: VoteReminderOption = getBotListOptionFromBotList(botlist)
@@ -134,15 +151,61 @@ object VotedResponseHandler {
         }
     }
 
-    private fun newVoteFromOldAndBotList(userId: Long, votes: Long, streak: Long, oldVote: UserVote, botlist: String): UserVote {
+    private fun newVoteFromOldAndBotList(
+        userId: Long,
+        votes: Long,
+        streak: Long,
+        oldVote: UserVote,
+        botlist: String
+    ): UserVote {
         val ctime = System.currentTimeMillis()
 
         return when (botlist) {
-            "topgg" -> UserVote(userId, votes, streak, ctime, oldVote.dblLastTime, oldVote.dblLastTime, oldVote.dboatsLastTime)
-            "dbl" -> UserVote(userId, votes, streak, oldVote.topggLastTime, ctime, oldVote.bfdLastTime, oldVote.dboatsLastTime)
-            "bfd" -> UserVote(userId, votes, streak, oldVote.topggLastTime, oldVote.dblLastTime, ctime, oldVote.dboatsLastTime)
-            "dboats" -> UserVote(userId, votes, streak, oldVote.topggLastTime, oldVote.dblLastTime, oldVote.bfdLastTime, ctime)
-            else -> UserVote(userId, votes, streak, oldVote.topggLastTime, oldVote.dblLastTime, oldVote.bfdLastTime, oldVote.dboatsLastTime)
+            "topgg" -> UserVote(
+                userId,
+                votes,
+                streak,
+                ctime,
+                oldVote.dblLastTime,
+                oldVote.dblLastTime,
+                oldVote.dboatsLastTime
+            )
+            "dbl" -> UserVote(
+                userId,
+                votes,
+                streak,
+                oldVote.topggLastTime,
+                ctime,
+                oldVote.bfdLastTime,
+                oldVote.dboatsLastTime
+            )
+            "bfd" -> UserVote(
+                userId,
+                votes,
+                streak,
+                oldVote.topggLastTime,
+                oldVote.dblLastTime,
+                ctime,
+                oldVote.dboatsLastTime
+            )
+            "dboats" -> UserVote(
+                userId,
+                votes,
+                streak,
+                oldVote.topggLastTime,
+                oldVote.dblLastTime,
+                oldVote.bfdLastTime,
+                ctime
+            )
+            else -> UserVote(
+                userId,
+                votes,
+                streak,
+                oldVote.topggLastTime,
+                oldVote.dblLastTime,
+                oldVote.bfdLastTime,
+                oldVote.dboatsLastTime
+            )
         }
     }
 }
@@ -156,7 +219,14 @@ fun getBotListTimeOut(botList: BotList): Long {
             val cDate = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
             cDate.timeInMillis = System.currentTimeMillis()
             val nextMidnightDate = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-            nextMidnightDate.set(cDate.get(Calendar.YEAR), cDate.get(Calendar.MONTH), cDate.get(Calendar.DAY_OF_MONTH), 23, 59, 59)
+            nextMidnightDate.set(
+                cDate.get(Calendar.YEAR),
+                cDate.get(Calendar.MONTH),
+                cDate.get(Calendar.DAY_OF_MONTH),
+                23,
+                59,
+                59
+            )
             val nextMidnightMillis = nextMidnightDate.time.time + 1000
             nextMidnightMillis - System.currentTimeMillis()
         }

@@ -19,12 +19,18 @@ class RoleDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun set(guildId: Long, roleType: RoleType, roleId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, roleType, roleId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET roleId = ?",
-            guildId, roleType.toString(), roleId, roleId)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, roleType, roleId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET roleId = ?",
+            guildId, roleType.toString(), roleId, roleId
+        )
     }
 
     fun unset(guildId: Long, roleType: RoleType) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND roleType = ?", guildId, roleType.toString())
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND roleType = ?",
+            guildId,
+            roleType.toString()
+        )
     }
 
     suspend fun get(guildId: Long, roleType: RoleType): Long = suspendCoroutine {

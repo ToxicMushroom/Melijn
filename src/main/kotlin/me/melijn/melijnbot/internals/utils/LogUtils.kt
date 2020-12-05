@@ -30,15 +30,35 @@ import java.time.ZoneId
 
 object LogUtils {
 
-    fun sendRemovedChannelLog(language: String, zoneId: ZoneId, channelType: ChannelType, logChannel: TextChannel?, causePath: String, causeArg: String) {
+    fun sendRemovedChannelLog(
+        language: String,
+        zoneId: ZoneId,
+        channelType: ChannelType,
+        logChannel: TextChannel?,
+        causePath: String,
+        causeArg: String
+    ) {
         sendRemovedChannelLog(language, zoneId, channelType.toUCC(), logChannel, causePath, causeArg)
     }
 
-    fun sendRemovedMusicChannelLog(language: String, zoneId: ZoneId, logChannel: TextChannel?, causePath: String, causeArg: String) {
+    fun sendRemovedMusicChannelLog(
+        language: String,
+        zoneId: ZoneId,
+        logChannel: TextChannel?,
+        causePath: String,
+        causeArg: String
+    ) {
         sendRemovedChannelLog(language, zoneId, "Music", logChannel, causePath, causeArg)
     }
 
-    private fun sendRemovedChannelLog(language: String, zoneId: ZoneId, type: String, logChannel: TextChannel?, causePath: String, causeArg: String) {
+    private fun sendRemovedChannelLog(
+        language: String,
+        zoneId: ZoneId,
+        type: String,
+        logChannel: TextChannel?,
+        causePath: String,
+        causeArg: String
+    ) {
         if (logChannel == null) return
 
         val title = i18n.getTranslation(language, "logging.removed.channel.title")
@@ -64,9 +84,10 @@ object LogUtils {
             ?: return
 
         val title = i18n.getTranslation(language, "logging.verification.hitverificationthroughputlimit.title")
-        val cause = "```LDIF" + i18n.getTranslation(language, "logging.verification.hitverificationthroughputlimit.description")
-            .withSafeVariable(PLACEHOLDER_USER, member.asTag)
-            .withVariable(PLACEHOLDER_USER_ID, member.id) + "```"
+        val cause =
+            "```LDIF" + i18n.getTranslation(language, "logging.verification.hitverificationthroughputlimit.description")
+                .withSafeVariable(PLACEHOLDER_USER, member.asTag)
+                .withVariable(PLACEHOLDER_USER_ID, member.id) + "```"
 
         val eb = EmbedBuilder()
             .setTitle(title)
@@ -153,7 +174,12 @@ object LogUtils {
     // MUSIC LOG STUFF
     //
 
-    suspend fun sendFailedLoadStreamTrackLog(daoManager: DaoManager, guild: Guild, source: String, exception: FriendlyException) {
+    suspend fun sendFailedLoadStreamTrackLog(
+        daoManager: DaoManager,
+        guild: Guild,
+        source: String,
+        exception: FriendlyException
+    ) {
         val language = getLanguage(daoManager, -1, guild.idLong)
         val zoneId = getZoneId(daoManager, guild.idLong)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.MUSIC)
@@ -232,7 +258,12 @@ object LogUtils {
     }
 
 
-    suspend fun sendMusicPlayerException(daoManager: DaoManager, guild: Guild, track: AudioTrack, exception: FriendlyException) {
+    suspend fun sendMusicPlayerException(
+        daoManager: DaoManager,
+        guild: Guild,
+        track: AudioTrack,
+        exception: FriendlyException
+    ) {
         val eb = EmbedBuilder()
         val zoneId = getZoneId(daoManager, guild.idLong)
         val language = getLanguage(daoManager, -1, guild.idLong)
@@ -295,7 +326,13 @@ object LogUtils {
         }
     }
 
-    suspend fun addMusicPlayerNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User, track: AudioTrack) {
+    suspend fun addMusicPlayerNewTrack(
+        daoManager: DaoManager,
+        lavaManager: LavaManager,
+        vc: VoiceChannel,
+        author: User,
+        track: AudioTrack
+    ) {
         val guild = vc.guild
         val language = getLanguage(daoManager, -1, guild.idLong)
         val zoneId = getZoneId(daoManager, guild.idLong)
@@ -324,7 +361,14 @@ object LogUtils {
         trackManager.startMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 
-    fun sendRemovedLogChannelLog(language: String, zoneId: ZoneId, logChannelType: LogChannelType, logChannel: TextChannel?, causePath: String, causeArg: String) {
+    fun sendRemovedLogChannelLog(
+        language: String,
+        zoneId: ZoneId,
+        logChannelType: LogChannelType,
+        logChannel: TextChannel?,
+        causePath: String,
+        causeArg: String
+    ) {
         if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.logchannel.title")
             .withVariable("type", logChannelType.text)
@@ -341,7 +385,14 @@ object LogUtils {
         logChannel.sendMessage(eb.build())
     }
 
-    fun sendRemovedRoleLog(language: String, zoneId: ZoneId, roleType: RoleType, logChannel: TextChannel?, causePath: String, causeArg: String) {
+    fun sendRemovedRoleLog(
+        language: String,
+        zoneId: ZoneId,
+        roleType: RoleType,
+        logChannel: TextChannel?,
+        causePath: String,
+        causeArg: String
+    ) {
         if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.role.title")
             .withVariable("type", roleType.toUCC())
@@ -366,11 +417,12 @@ object LogUtils {
 
         val language = getLanguage(daoManager, -1, guild.idLong)
         val title = i18n.getTranslation(language, "logging.verification.failedremovingrole.title")
-        val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.failedremovingrole.description")
-            .withVariable(PLACEHOLDER_USER_ID, member.id)
-            .withSafeVariable(PLACEHOLDER_USER, member.asTag)
-            .withSafeVariable(PLACEHOLDER_ROLE, role.name)
-            .withVariable(PLACEHOLDER_ROLE_ID, role.id) + "```"
+        val description =
+            "```LDIF" + i18n.getTranslation(language, "logging.verification.failedremovingrole.description")
+                .withVariable(PLACEHOLDER_USER_ID, member.id)
+                .withSafeVariable(PLACEHOLDER_USER, member.asTag)
+                .withSafeVariable(PLACEHOLDER_ROLE, role.name)
+                .withVariable(PLACEHOLDER_ROLE_ID, role.id) + "```"
 
         val eb = EmbedBuilder()
             .setTitle(title)
@@ -437,7 +489,13 @@ object LogUtils {
 //        sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    suspend fun sendPPGainedMessageDMAndLC(container: Container, message: Message, pointsTriggerType: PointsTriggerType, causeArgs: Map<String, List<String>>, pp: Int) {
+    suspend fun sendPPGainedMessageDMAndLC(
+        container: Container,
+        message: Message,
+        pointsTriggerType: PointsTriggerType,
+        causeArgs: Map<String, List<String>>,
+        pp: Int
+    ) {
         val guild = message.guild
         val zoneId = getZoneId(container.daoManager, guild.idLong)
         val daoManager = container.daoManager
@@ -491,7 +549,13 @@ object LogUtils {
         sendEmbed(daoManager.embedDisabledWrapper, lc, eb.build())
     }
 
-    suspend fun sendBirthdayMessage(daoManager: DaoManager, httpClient: HttpClient, textChannel: TextChannel, member: Member, birthYear: Int?) {
+    suspend fun sendBirthdayMessage(
+        daoManager: DaoManager,
+        httpClient: HttpClient,
+        textChannel: TextChannel,
+        member: Member,
+        birthYear: Int?
+    ) {
         val guildId = textChannel.guild.idLong
         val messageType = MessageType.BIRTHDAY
         val language = getLanguage(daoManager, guildId)
@@ -510,13 +574,25 @@ object LogUtils {
             val msg: Message? = message.toMessage()
             when {
                 msg == null -> sendAttachments(textChannel, httpClient, message.attachments)
-                message.attachments.isNotEmpty() -> sendMsgWithAttachments(textChannel, httpClient, msg, message.attachments)
+                message.attachments.isNotEmpty() -> sendMsgWithAttachments(
+                    textChannel,
+                    httpClient,
+                    msg,
+                    message.attachments
+                )
                 else -> sendMsg(textChannel, msg, failed = { t -> t.printStackTrace() })
             }
         }
     }
 
-    fun sendRemovedSelfRoleLog(language: String, zoneId: ZoneId, emoteji: String, logChannel: TextChannel?, causePath: String, causeArg: String) {
+    fun sendRemovedSelfRoleLog(
+        language: String,
+        zoneId: ZoneId,
+        emoteji: String,
+        logChannel: TextChannel?,
+        causePath: String,
+        causeArg: String
+    ) {
         if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.selfrole.title")
             .withVariable("emoteji", emoteji)
@@ -618,7 +694,16 @@ object LogUtils {
         }
     }
 
-    suspend fun sendReceivedVoteRewards(container: Container, userId: Long, newBalance: Long, baseMel: Long, totalMel: Long, streak: Long, votes: Long, site: String) {
+    suspend fun sendReceivedVoteRewards(
+        container: Container,
+        userId: Long,
+        newBalance: Long,
+        baseMel: Long,
+        totalMel: Long,
+        streak: Long,
+        votes: Long,
+        site: String
+    ) {
         val user = MelijnBot.shardManager.retrieveUserById(userId).await()
         val pc = user.openPrivateChannel().awaitOrNull() ?: return
 
@@ -627,8 +712,10 @@ object LogUtils {
         } else "100"
         val embedder = Embedder(container.daoManager, -1, userId)
             .setTitle("Vote Received from $site")
-            .setDescription("Thanks for voting, you received **$extraMel** mel. Your new balance is **$newBalance** mel\n" +
-                "Note: bonus mel is calculated using: premium status, speed, weekend, total votes and streak.")
+            .setDescription(
+                "Thanks for voting, you received **$extraMel** mel. Your new balance is **$newBalance** mel\n" +
+                    "Note: bonus mel is calculated using: premium status, speed, weekend, total votes and streak."
+            )
             .addField("Current Streak", "$streak", true)
             .addField("Total Votes", votes.toString(), true)
             .build()
@@ -663,22 +750,30 @@ object LogUtils {
         val embedder = Embedder(daoManager, -1, userId)
             .setTitle("Your vote for $botlist is ready (o゜▽゜)o☆")
             .setDescription("This is a reminder that you can vote again")
-            .addField("top.gg",
+            .addField(
+                "top.gg",
                 "[%ready%](https://top.gg/bot/melijn/vote)"
                     .withVariable("ready", statusOne),
-                true)
-            .addField("discordbotlist.com",
+                true
+            )
+            .addField(
+                "discordbotlist.com",
                 "[%ready%](https://discordbotlist.com/bots/melijn/upvote)"
                     .withVariable("ready", statusTwo),
-                true)
-            .addField("botsfordiscord.com",
+                true
+            )
+            .addField(
+                "botsfordiscord.com",
                 "[%ready%](https://botsfordiscord.com/bot/368362411591204865/vote)"
                     .withVariable("ready", statusThree),
-                true)
-            .addField("discord.boats",
+                true
+            )
+            .addField(
+                "discord.boats",
                 "[%ready%](https://discord.boats/bot/368362411591204865/vote)"
                     .withVariable("ready", statusFour),
-                true)
+                true
+            )
             .addField("Current Streak", userVote.streak.toString(), true)
             .setFooter("You can disable this reminder with >toggleVoteReminder")
             .build()

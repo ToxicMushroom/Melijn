@@ -40,7 +40,10 @@ class InfoCommand : AbstractCommand("command.info") {
 
     private fun replaceValueThreeVars(string: String, context: CommandContext): String = string
         .withVariable("javaVersion", System.getProperty("java.version"))
-        .withVariable("kotlinVersion", "${KotlinVersion.CURRENT.major}.${KotlinVersion.CURRENT.minor}.${KotlinVersion.CURRENT.patch}")
+        .withVariable(
+            "kotlinVersion",
+            "${KotlinVersion.CURRENT.major}.${KotlinVersion.CURRENT.minor}.${KotlinVersion.CURRENT.patch}"
+        )
         .withVariable("jdaVersion", JDAInfo.VERSION)
         .withVariable("lavaplayerVersion", PlayerLibrary.VERSION)
         .withVariable("weebVersion", WeebInfo.VERSION)
@@ -48,12 +51,17 @@ class InfoCommand : AbstractCommand("command.info") {
         .withVariable("dbConnectorVersion", context.daoManager.connectorVersion)
 
     private fun replaceValueTwoVars(string: String, context: CommandContext): String = string
-        .withVariable("os", "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}")
+        .withVariable(
+            "os",
+            "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}"
+        )
         .withVariable("commandCount", context.commandList.size.toString())
 
     private suspend fun replaceValueOneVars(string: String, context: CommandContext): String = string
-        .withVariable("ownerTag", context.jda.shardManager?.retrieveUserById(231459866630291459L)?.awaitOrNull()?.asTag
-            ?: "ToxicMushroom#2610")
+        .withVariable(
+            "ownerTag", context.jda.shardManager?.retrieveUserById(231459866630291459L)?.awaitOrNull()?.asTag
+                ?: "ToxicMushroom#2610"
+        )
         .withVariable("invite", "https://discord.gg/tfQ9s7u")
         .withVariable("botInvite", "https://melijn.com/invite")
         .withVariable("website", "https://melijn.com")

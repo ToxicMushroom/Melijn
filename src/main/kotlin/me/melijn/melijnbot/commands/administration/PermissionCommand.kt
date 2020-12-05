@@ -360,7 +360,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable("permissionNode", permissionNode)
 
 
-                    val channelRole = context.daoManager.channelRolePermissionWrapper.getPermMap(channel.idLong, role.idLong)
+                    val channelRole =
+                        context.daoManager.channelRolePermissionWrapper.getPermMap(channel.idLong, role.idLong)
 
                     var content = "```INI"
                     for ((index, perm) in permissions.withIndex()) {
@@ -825,7 +826,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 sendSyntax(context)
             }
 
-            class RoleChannelCommand(private val copyParent: AbstractCommand, parentRoot: String) : AbstractCommand("$parentRoot.role") {
+            class RoleChannelCommand(private val copyParent: AbstractCommand, parentRoot: String) :
+                AbstractCommand("$parentRoot.role") {
 
                 init {
                     name = "role"
@@ -965,7 +967,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
             }
 
-            class UserChannelCommand(private val copyParent: AbstractCommand, parentRoot: String) : AbstractCommand("$parentRoot.user") {
+            class UserChannelCommand(private val copyParent: AbstractCommand, parentRoot: String) :
+                AbstractCommand("$parentRoot.user") {
 
                 init {
                     name = "user"
@@ -1134,8 +1137,10 @@ fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
     val regex: Regex = when {
         arg == "*" || category != null -> ".*".toRegex()
         permParts.last() == "*" -> (
-            Pattern.quote(permParts.subList(0, permParts.size - 1)
-                .joinToString(".")) + "(..*)?"
+            Pattern.quote(
+                permParts.subList(0, permParts.size - 1)
+                    .joinToString(".")
+            ) + "(..*)?"
             ).toRegex(RegexOption.IGNORE_CASE)
 
         else -> Pattern.quote(arg).toRegex(RegexOption.IGNORE_CASE)

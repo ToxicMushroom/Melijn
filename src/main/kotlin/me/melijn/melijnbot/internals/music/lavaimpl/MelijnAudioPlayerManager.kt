@@ -109,7 +109,11 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
         throw IllegalArgumentException("ugly, don't call")
     }
 
-    override fun loadItemOrdered(orderingKey: Any?, identifier: String?, resultHandler: AudioLoadResultHandler?): Future<Void> {
+    override fun loadItemOrdered(
+        orderingKey: Any?,
+        identifier: String?,
+        resultHandler: AudioLoadResultHandler?
+    ): Future<Void> {
         throw IllegalArgumentException("ugly, don't call")
     }
 
@@ -157,8 +161,13 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
         }
     }
 
-    private suspend fun handleLoadRejected(identifier: String, resultHandler: SuspendingAudioLoadResultHandler, e: RejectedExecutionException) {
-        val exception = FriendlyException("Cannot queue loading a track, queue is full.", FriendlyException.Severity.SUSPICIOUS, e)
+    private suspend fun handleLoadRejected(
+        identifier: String,
+        resultHandler: SuspendingAudioLoadResultHandler,
+        e: RejectedExecutionException
+    ) {
+        val exception =
+            FriendlyException("Cannot queue loading a track, queue is full.", FriendlyException.Severity.SUSPICIOUS, e)
         ExceptionTools.log(log, exception, "queueing item $identifier")
         resultHandler.loadFailed(exception)
     }
@@ -180,8 +189,16 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
         }
     }
 
-    private suspend fun dispatchItemLoadFailure(identifier: String, resultHandler: SuspendingAudioLoadResultHandler, throwable: Throwable) {
-        val exception = ExceptionTools.wrapUnfriendlyExceptions("Something went wrong when looking up the track", FriendlyException.Severity.FAULT, throwable)
+    private suspend fun dispatchItemLoadFailure(
+        identifier: String,
+        resultHandler: SuspendingAudioLoadResultHandler,
+        throwable: Throwable
+    ) {
+        val exception = ExceptionTools.wrapUnfriendlyExceptions(
+            "Something went wrong when looking up the track",
+            FriendlyException.Severity.FAULT,
+            throwable
+        )
         ExceptionTools.log(log, exception, "loading item $identifier")
         resultHandler.loadFailed(exception)
     }
@@ -210,8 +227,10 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
         } else {
             1
         }
-        val trackInfo = AudioTrackInfo(input.readUTF(), input.readUTF(), input.readLong(), input.readUTF(),
-            input.readBoolean(), if (version >= 2) DataFormatTools.readNullableText(input) else null)
+        val trackInfo = AudioTrackInfo(
+            input.readUTF(), input.readUTF(), input.readLong(), input.readUTF(),
+            input.readBoolean(), if (version >= 2) DataFormatTools.readNullableText(input) else null
+        )
         val track = decodeTrackDetails(trackInfo, input)
         val position = input.readLong()
         if (track != null) {
@@ -277,22 +296,27 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
      * @param configuration The audio configuration to use for executing
      * @param playerOptions Options of the audio player
      */
-    fun executeTrack(listener: TrackStateListener?, track: InternalAudioTrack, configuration: AudioConfiguration,
-                     playerOptions: AudioPlayerOptions) {
+    fun executeTrack(
+        listener: TrackStateListener?, track: InternalAudioTrack, configuration: AudioConfiguration,
+        playerOptions: AudioPlayerOptions
+    ) {
         val executor = createExecutorForTrack(track, configuration, playerOptions)
         track.assignExecutor(executor, true)
         executor.execute(listener)
     }
 
-    private fun createExecutorForTrack(track: InternalAudioTrack, configuration: AudioConfiguration,
-                                       playerOptions: AudioPlayerOptions): AudioTrackExecutor {
+    private fun createExecutorForTrack(
+        track: InternalAudioTrack, configuration: AudioConfiguration,
+        playerOptions: AudioPlayerOptions
+    ): AudioTrackExecutor {
 
         val customExecutor = track.createLocalExecutor(this)
         return if (customExecutor != null) {
             customExecutor
         } else {
 
-            val bufferDuration = Optional.ofNullable(playerOptions.frameBufferDuration.get()).orElse(frameBufferDuration)
+            val bufferDuration =
+                Optional.ofNullable(playerOptions.frameBufferDuration.get()).orElse(frameBufferDuration)
             LocalAudioTrackExecutor(track, configuration, playerOptions, useSeekGhosting, bufferDuration)
         }
     }
@@ -329,7 +353,11 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
         trackInfoExecutorService.maximumPoolSize = poolSize
     }
 
-    private suspend fun checkSourcesForItem(reference: AudioReference, resultHandler: SuspendingAudioLoadResultHandler, reported: BooleanArray): Boolean {
+    private suspend fun checkSourcesForItem(
+        reference: AudioReference,
+        resultHandler: SuspendingAudioLoadResultHandler,
+        reported: BooleanArray
+    ): Boolean {
         var currentReference = reference
         var redirects = 0
         while (redirects < MAXIMUM_LOAD_REDIRECTS && currentReference.identifier != null) {
@@ -345,7 +373,11 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
         return false
     }
 
-    private suspend fun checkSourcesForItemOnce(reference: AudioReference, resultHandler: SuspendingAudioLoadResultHandler, reported: BooleanArray): AudioItem? {
+    private suspend fun checkSourcesForItemOnce(
+        reference: AudioReference,
+        resultHandler: SuspendingAudioLoadResultHandler,
+        reported: BooleanArray
+    ): AudioItem? {
         for (sourceManager in sourceManagers) {
             if (reference.containerDescriptor != null && sourceManager !is ProbingAudioSourceManager) {
                 continue
@@ -354,11 +386,19 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
 
             if (item != null) {
                 if (item is AudioTrack) {
-                    log.debug("Loaded a track with identifier {} using {}.", reference.identifier, sourceManager.javaClass.simpleName)
+                    log.debug(
+                        "Loaded a track with identifier {} using {}.",
+                        reference.identifier,
+                        sourceManager.javaClass.simpleName
+                    )
                     reported[0] = true
                     resultHandler.trackLoaded(item)
                 } else if (item is AudioPlaylist) {
-                    log.debug("Loaded a playlist with identifier {} using {}.", reference.identifier, sourceManager.javaClass.simpleName)
+                    log.debug(
+                        "Loaded a playlist with identifier {} using {}.",
+                        reference.identifier,
+                        sourceManager.javaClass.simpleName
+                    )
                     reported[0] = true
                     resultHandler.playlistLoaded(item)
                 }
@@ -418,10 +458,14 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
         sourceManagers = ArrayList()
 
         // Executors
-        executor = ThreadPoolExecutor(1, Int.MAX_VALUE, 10, TimeUnit.SECONDS,
-            SynchronousQueue(), DaemonThreadFactory("playback"))
-        trackInfoExecutorService = ExecutorTools.createEagerlyScalingExecutor(1, DEFAULT_LOADER_POOL_SIZE,
-            TimeUnit.SECONDS.toMillis(30), LOADER_QUEUE_CAPACITY, DaemonThreadFactory("info-loader"))
+        executor = ThreadPoolExecutor(
+            1, Int.MAX_VALUE, 10, TimeUnit.SECONDS,
+            SynchronousQueue(), DaemonThreadFactory("playback")
+        )
+        trackInfoExecutorService = ExecutorTools.createEagerlyScalingExecutor(
+            1, DEFAULT_LOADER_POOL_SIZE,
+            TimeUnit.SECONDS.toMillis(30), LOADER_QUEUE_CAPACITY, DaemonThreadFactory("info-loader")
+        )
         scheduledExecutorService = Executors.newScheduledThreadPool(1, DaemonThreadFactory("manager"))
         orderedInfoExecutor = MelijnOrderedExecutor(trackInfoExecutorService)
 

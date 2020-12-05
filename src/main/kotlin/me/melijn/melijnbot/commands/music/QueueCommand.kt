@@ -43,7 +43,11 @@ class QueueCommand : AbstractCommand("command.queue") {
         var totalDuration = cTrack.duration
 
         val status = context.getTranslation(if (trackManager.iPlayer.paused) "paused" else "playing")
-        description += "[$status](${cTrack.info.uri}) - **%title%** `[${getDurationString(trackManager.iPlayer.trackPosition)} / ${getDurationString(cTrack.duration)}]`"
+        description += "[$status](${cTrack.info.uri}) - **%title%** `[${getDurationString(trackManager.iPlayer.trackPosition)} / ${
+            getDurationString(
+                cTrack.duration
+            )
+        }]`"
             .withSafeVariable("title", cTrack.info.title)
 
         val safeTracks = trackManager.tracks
@@ -80,9 +84,11 @@ class QueueCommand : AbstractCommand("command.queue") {
                         .withVariable("pages", queueParts.size)
                 )
             }
-            modularMessages.add(index, ModularMessage(
-                embed = eb.build()
-            ))
+            modularMessages.add(
+                index, ModularMessage(
+                    embed = eb.build()
+                )
+            )
         }
 
         if (modularMessages.size > 1) {

@@ -38,4 +38,8 @@ class LogChannelWrapper(private val logChannelDao: LogChannelDao) {
         logChannelDao.set(guildId, logChannelType, channelId)
         logChannelDao.setCacheEntry("$logChannelType:$guildId", channelId, NORMAL_CACHE)
     }
+
+    fun migrateChannel(oldId: Long, newId: Long) {
+        logChannelDao.migrateChannel(oldId, newId)
+    }
 }

@@ -186,7 +186,10 @@ class HelpCommand : AbstractCommand("command.help") {
             val description = context.getTranslation("$root.embed.description")
                 .withSafeVariable("serverPrefix", prefixes.first())
                 .withSafeVariable(PLACEHOLDER_PREFIX, prefixes.first())
-                .withVariable("melijnMention", if (context.isFromGuild) context.selfMember.asMention else context.selfUser.asMention)
+                .withVariable(
+                    "melijnMention",
+                    if (context.isFromGuild) context.selfMember.asMention else context.selfUser.asMention
+                )
 
             val embedder = Embedder(context)
                 .setTitle(title)
@@ -223,7 +226,10 @@ class HelpCommand : AbstractCommand("command.help") {
             ?.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
 
         val embedder = Embedder(context)
-            .setTitle(cmdTitle, "https://melijn.com/commands?q=${parent.name}&c=${parent.commandCategory.toString().toLowerCase()}")
+            .setTitle(
+                cmdTitle,
+                "https://melijn.com/commands?q=${parent.name}&c=${parent.commandCategory.toString().toLowerCase()}"
+            )
             .addField(
                 cmdSyntax,
                 MarkdownSanitizer.escape(
@@ -250,7 +256,10 @@ class HelpCommand : AbstractCommand("command.help") {
             while (matcher.find()) {
                 val og = matcher.group(0)
                 val path = matcher.group(1)
-                help = help.replace(og, "*" + context.getTranslation(path).withVariable(PLACEHOLDER_PREFIX, context.usedPrefix))
+                help = help.replace(
+                    og,
+                    "*" + context.getTranslation(path).withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                )
             }
             for (argumentsPart in StringUtils.splitMessage(help, splitAtLeast = 750, maxLength = 1024)) {
                 embedder.addField(cmdArguments, argumentsPart, false)

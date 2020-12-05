@@ -16,8 +16,10 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     fun addReminder(userId: Long, flag: Int, remindAt: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, flag, remindAt) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET remindAt = ?",
-            userId, flag, remindAt, remindAt)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (userId, flag, remindAt) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET remindAt = ?",
+            userId, flag, remindAt, remindAt
+        )
     }
 
     suspend fun getReminders(beforeMillis: Long): List<VoteReminder> = suspendCoroutine {
@@ -25,11 +27,13 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
             val list = mutableListOf<VoteReminder>()
 
             while (rs.next()) {
-                list.add(VoteReminder(
-                    rs.getLong("userId"),
-                    rs.getInt("flag"),
-                    rs.getLong("remindAt")
-                ))
+                list.add(
+                    VoteReminder(
+                        rs.getLong("userId"),
+                        rs.getInt("flag"),
+                        rs.getLong("remindAt")
+                    )
+                )
             }
 
             it.resume(list)
@@ -37,8 +41,10 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     fun removeReminder(userId: Long, flag: Int) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND flag = ?",
-            userId, flag)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE userId = ? AND flag = ?",
+            userId, flag
+        )
     }
 
     fun removeReminders(beforeMillis: Long) {

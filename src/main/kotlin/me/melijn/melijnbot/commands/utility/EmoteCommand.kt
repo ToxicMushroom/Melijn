@@ -69,7 +69,13 @@ class EmoteCommand : AbstractCommand("command.emote") {
     }
 
 
-    private suspend fun replaceMissingEmoteVars(string: String, context: CommandContext, id: String, name: String, animated: Boolean): String = string
+    private suspend fun replaceMissingEmoteVars(
+        string: String,
+        context: CommandContext,
+        id: String,
+        name: String,
+        animated: Boolean
+    ): String = string
         .withVariable("id", id)
         .withSafeVariable("name", name)
         .withVariable("isAnimated", context.getTranslation(if (animated) "yes" else "no"))

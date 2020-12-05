@@ -29,8 +29,10 @@ class PossumCommand : AbstractCommand("command.possum") {
     }
 
     private suspend fun getRandomPossumUrl(webManager: WebManager, token: String): String {
-        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://api.miki.bot/images/random?tags=possum",
-            headers = mapOf(Pair("Authorization", token))) ?: return MISSING_IMAGE_URL
+        val reply = WebUtils.getJsonFromUrl(
+            webManager.httpClient, "https://api.miki.bot/images/random?tags=possum",
+            headers = mapOf(Pair("Authorization", token))
+        ) ?: return MISSING_IMAGE_URL
         return reply.getString("url")
     }
 }

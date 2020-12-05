@@ -25,8 +25,10 @@ object PostLoggingSettingsResponseHandler {
             val userId = jsonBody.getLong("userId")
             val member = guild?.retrieveMemberById(userId)?.awaitOrNull()
             if (member == null) {
-                context.call.respondJson(DataObject.empty()
-                    .put("error", "guild invalidated"))
+                context.call.respondJson(
+                    DataObject.empty()
+                        .put("error", "guild invalidated")
+                )
                 return
             }
 
@@ -35,8 +37,10 @@ object PostLoggingSettingsResponseHandler {
                 member.isOwner)
 
             if (!hasPerm) {
-                context.call.respondJson(DataObject.empty()
-                    .put("error", "guild invalidated"))
+                context.call.respondJson(
+                    DataObject.empty()
+                        .put("error", "guild invalidated")
+                )
                 return
             }
 
@@ -60,12 +64,14 @@ object PostLoggingSettingsResponseHandler {
 
             jobs.joinAll()
 
-            context.call.respondJson(DataObject.empty()
-                .put("success", true)
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("success", true)
             )
         } catch (t: Throwable) {
-            context.call.respondJson(DataObject.empty()
-                .put("success", false)
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("success", false)
             )
         }
     }

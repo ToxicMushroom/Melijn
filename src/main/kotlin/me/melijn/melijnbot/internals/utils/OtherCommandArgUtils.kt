@@ -64,7 +64,12 @@ suspend fun getIntegersFromArgsNMessage(context: CommandContext, index: Int, sta
     return ints.toIntArray()
 }
 
-suspend fun getIntegerFromArgNMessage(context: CommandContext, index: Int, start: Int = Integer.MIN_VALUE, end: Int = Integer.MAX_VALUE): Int? {
+suspend fun getIntegerFromArgNMessage(
+    context: CommandContext,
+    index: Int,
+    start: Int = Integer.MIN_VALUE,
+    end: Int = Integer.MAX_VALUE
+): Int? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
 
@@ -94,7 +99,12 @@ suspend fun getIntegerFromArgNMessage(context: CommandContext, index: Int, start
     return int
 }
 
-suspend fun getFloatFromArgNMessage(context: CommandContext, index: Int, start: Float = Float.MIN_VALUE, end: Float = Float.MAX_VALUE): Float? {
+suspend fun getFloatFromArgNMessage(
+    context: CommandContext,
+    index: Int,
+    start: Float = Float.MIN_VALUE,
+    end: Float = Float.MAX_VALUE
+): Float? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
 

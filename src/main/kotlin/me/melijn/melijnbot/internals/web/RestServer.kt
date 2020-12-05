@@ -78,10 +78,12 @@ class RestServer(container: Container) {
                 val path = call.parameters["path"] ?: return@get
                 val translation = i18n.getTranslation(lang, path)
 
-                call.respondText(DataObject.empty()
-                    .put("isSame", path == translation)
-                    .put("translation", translation)
-                    .toString())
+                call.respondText(
+                    DataObject.empty()
+                        .put("isSame", path == translation)
+                        .put("translation", translation)
+                        .toString()
+                )
             }
 
             get("/translations/{language}") {

@@ -6,7 +6,6 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.web.RequestContext
-import me.melijn.melijnbot.internals.web.WebUtils.respondJson
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 

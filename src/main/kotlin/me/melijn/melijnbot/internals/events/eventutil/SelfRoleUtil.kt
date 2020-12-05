@@ -15,7 +15,10 @@ import kotlin.random.Random
 
 object SelfRoleUtil {
 
-    suspend fun getSelectedSelfRoleNByReactionEvent(event: GenericGuildMessageReactionEvent, container: Container): List<Role>? {
+    suspend fun getSelectedSelfRoleNByReactionEvent(
+        event: GenericGuildMessageReactionEvent,
+        container: Container
+    ): List<Role>? {
 
         /* INIT */
         val guild = event.guild

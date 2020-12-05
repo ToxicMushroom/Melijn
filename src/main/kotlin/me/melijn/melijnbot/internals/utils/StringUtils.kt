@@ -11,7 +11,12 @@ val SPACE_PATTERN = Regex("\\s+")
 
 object StringUtils {
     private val backTicks = "```".toRegex()
-    fun splitMessageWithCodeBlocks(message: String, nextSplitThreshold: Int = 1800, margin: Int = 30, lang: String = ""): List<String> {
+    fun splitMessageWithCodeBlocks(
+        message: String,
+        nextSplitThreshold: Int = 1800,
+        margin: Int = 30,
+        lang: String = ""
+    ): List<String> {
         var msg = message
         val messages = ArrayList<String>()
         var shouldAppendBackTicks = false
@@ -53,12 +58,13 @@ object StringUtils {
             }
 
             val index = getSplitIndex(findLastNewline, nextSplitThreshold, margin, 2000)
-            messages.add(findLastNewline.substring(0, index) +
-                if (shouldAppendBackTicks) {
-                    "```"
-                } else {
-                    ""
-                }
+            messages.add(
+                findLastNewline.substring(0, index) +
+                    if (shouldAppendBackTicks) {
+                        "```"
+                    } else {
+                        ""
+                    }
             )
 
 
@@ -127,17 +133,19 @@ object StringUtils {
             index = findLastNewline.lastIndexOf(",")
         }
         if (index < splitAtLeast) {
-            index = (maxLength-1) - margin
+            index = (maxLength - 1) - margin
         }
 
         return index
     }
 
     fun Long.toBase64(): String {
-        return Base64.encode(ByteBuffer
-            .allocate(Long.SIZE_BYTES)
-            .putLong(this)
-            .array())
+        return Base64.encode(
+            ByteBuffer
+                .allocate(Long.SIZE_BYTES)
+                .putLong(this)
+                .array()
+        )
             .remove("=")
     }
 

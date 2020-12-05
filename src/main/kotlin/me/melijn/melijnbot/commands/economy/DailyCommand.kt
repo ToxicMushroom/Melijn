@@ -24,7 +24,7 @@ class DailyCommand : AbstractCommand("command.daily") {
 
             val msg = context.getTranslation("$root.got")
                 .withVariable("daily", 100)
-                .withVariable("cash", cash+100)
+                .withVariable("cash", cash + 100)
             sendRsp(context, msg)
         }
     }

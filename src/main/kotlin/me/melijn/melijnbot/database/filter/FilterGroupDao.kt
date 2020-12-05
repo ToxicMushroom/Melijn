@@ -9,7 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "filterGroups"
-    override val tableStructure: String = "guildId bigint, filterGroupName varchar(32), channelIds varchar(2048), mode varchar(64), state boolean, points int"
+    override val tableStructure: String =
+        "guildId bigint, filterGroupName varchar(32), channelIds varchar(2048), mode varchar(64), state boolean, points int"
     override val primaryKey: String = "guildId, filterGroupName"
 
     override val cacheName: String = "filter:group"
@@ -20,9 +21,11 @@ class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     fun add(guildId: Long, group: FilterGroup) {
         group.apply {
-            val query = "INSERT INTO $table (guildId, filterGroupName, channelIds, mode, state, points) VALUES (?, ?, ?, ?, ?, ?) " +
-                "ON CONFLICT ($primaryKey) DO UPDATE SET channelIds = ?, mode = ?, state = ?, points = ?"
-            driverManager.executeUpdate(query,
+            val query =
+                "INSERT INTO $table (guildId, filterGroupName, channelIds, mode, state, points) VALUES (?, ?, ?, ?, ?, ?) " +
+                    "ON CONFLICT ($primaryKey) DO UPDATE SET channelIds = ?, mode = ?, state = ?, points = ?"
+            driverManager.executeUpdate(
+                query,
                 guildId,
                 filterGroupName,
                 group.channels.joinToString(","),
@@ -60,8 +63,10 @@ class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun remove(guildId: Long, group: FilterGroup) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND filterGroupName = ?",
-            guildId, group.filterGroupName)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND filterGroupName = ?",
+            guildId, group.filterGroupName
+        )
     }
 }
 

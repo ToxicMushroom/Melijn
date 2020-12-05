@@ -36,7 +36,8 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
             MangaArg(root),
             CharacterArg(root)
         )
-        jikanUrl = "http${(if (jikanSettings.ssl) "s" else "")}://${jikanSettings.host}:${jikanSettings.port}/public/v3/"
+        jikanUrl =
+            "http${(if (jikanSettings.ssl) "s" else "")}://${jikanSettings.host}:${jikanSettings.port}/public/v3/"
 
         JikanKt.apply {
             restClient = RestClient(false, jikanUrl, jikanSettings.key)
@@ -190,11 +191,13 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
 
 
                 val publishingValue = result.publishing?.let {
-                    context.getTranslation(if (it) {
-                        "yes"
-                    } else {
-                        "no"
-                    })
+                    context.getTranslation(
+                        if (it) {
+                            "yes"
+                        } else {
+                            "no"
+                        }
+                    )
                 } ?: context.getTranslation("unknown")
 
                 val eb = Embedder(context)
@@ -266,11 +269,13 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
                 val synopsis = context.getTranslation("title.synopsis")
 
                 val airingValue = result.airing?.let {
-                    context.getTranslation(if (it) {
-                        "yes"
-                    } else {
-                        "no"
-                    })
+                    context.getTranslation(
+                        if (it) {
+                            "yes"
+                        } else {
+                            "no"
+                        }
+                    )
                 } ?: context.getTranslation("unknown")
 
                 val eb = Embedder(context)

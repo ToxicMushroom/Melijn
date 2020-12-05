@@ -51,7 +51,8 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
         val activeBan: Ban? = daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
         val ban: Ban = activeBan
-            ?: Ban(context.guildId,
+            ?: Ban(
+                context.guildId,
                 targetUser.idLong,
                 null,
                 "/"
@@ -75,7 +76,8 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 val zoneId = getZoneId(daoManager, guild.idLong)
 
                 //Normal success path
-                val msgLc = getUnbanMessage(language, zoneId, context.guild, targetUser, banAuthor, context.author, ban, true)
+                val msgLc =
+                    getUnbanMessage(language, zoneId, context.guild, targetUser, banAuthor, context.author, ban, true)
 
 
                 val privateChannel = if (context.guild.isMember(targetUser)) {
@@ -113,7 +115,13 @@ class UnbanCommand : AbstractCommand("command.unban") {
         }
     }
 
-    private suspend fun continueUnbanning(context: CommandContext, targetUser: User, ban: Ban, banAuthor: User?, unbanningMessage: Message? = null) {
+    private suspend fun continueUnbanning(
+        context: CommandContext,
+        targetUser: User,
+        ban: Ban,
+        banAuthor: User?,
+        unbanningMessage: Message? = null
+    ) {
         val guild = context.guild
         val unbanAuthor = context.author
         val daoManager = context.daoManager
@@ -175,7 +183,8 @@ fun getUnbanMessage(
         .withVariable("banId", ban.banId)
 
     var extraDesc: String = if (!received || isBot) {
-        i18n.getTranslation(language,
+        i18n.getTranslation(
+            language,
             if (isBot) {
                 "message.punishment.extra.bot"
             } else {
@@ -187,7 +196,8 @@ fun getUnbanMessage(
     }
 
     if (failedCause != null) {
-        extraDesc += i18n.getTranslation(language,
+        extraDesc += i18n.getTranslation(
+            language,
             "message.punishment.extra.failed"
         ).withVariable("cause", failedCause)
     }
