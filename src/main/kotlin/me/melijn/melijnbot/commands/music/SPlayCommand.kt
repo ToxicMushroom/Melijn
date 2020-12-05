@@ -37,14 +37,11 @@ class SPlayCommand : AbstractCommand("command.splay") {
         val args = context.oldArgs
         var songArg = context.getRawArgPart(1, -1)
 
-        val songPosition = when {
-            args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
-            args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
-            args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
-            else -> {
-                songArg = context.rawArg.trim()
-                NextSongPosition.BOTTOM
-            }
+        val songPosition = if (context.args.isNotEmpty()) {
+            NextSongPosition.getPosByTrigger(args[0]) ?: NextSongPosition.BOTTOM
+        } else {
+            songArg = context.rawArg.trim()
+            NextSongPosition.BOTTOM
         }
 
         if (!hasPermission(context, "$root.yt")) {
@@ -53,7 +50,12 @@ class SPlayCommand : AbstractCommand("command.splay") {
         }
 
         val groupId = context.getGuildMusicPlayer().groupId
-        if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
+        if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(
+                context,
+                senderVoiceChannel,
+                groupId
+            )
+        ) return
 
         context.audioLoader.loadNewTrackPickerNMessage(context, songArg, SearchType.YT, songPosition)
     }
@@ -76,18 +78,19 @@ class SPlayCommand : AbstractCommand("command.splay") {
             val args = context.oldArgs
             var songArg = context.getRawArgPart(1, -1)
 
-            val songPosition = when {
-                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
-                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
-                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
-                else -> {
-                    songArg = context.rawArg.trim()
-                    NextSongPosition.BOTTOM
-                }
+            var songPosition = NextSongPosition.getPosByTrigger(args[0])
+            if (songPosition == null) {
+                songArg = context.rawArg.trim()
+                songPosition = NextSongPosition.BOTTOM
             }
 
             val groupId = context.getGuildMusicPlayer().groupId
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(
+                    context,
+                    senderVoiceChannel,
+                    groupId
+                )
+            ) return
             context.audioLoader.loadNewTrackPickerNMessage(context, songArg, SearchType.YT, songPosition)
         }
 
@@ -111,18 +114,19 @@ class SPlayCommand : AbstractCommand("command.splay") {
             val args = context.oldArgs
             var songArg = context.getRawArgPart(1, -1)
 
-            val songPosition = when {
-                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
-                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
-                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
-                else -> {
-                    songArg = context.rawArg.trim()
-                    NextSongPosition.BOTTOM
-                }
+            var songPosition = NextSongPosition.getPosByTrigger(args[0])
+            if (songPosition == null) {
+                songArg = context.rawArg.trim()
+                songPosition = NextSongPosition.BOTTOM
             }
 
             val groupId = context.getGuildMusicPlayer().groupId
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(
+                    context,
+                    senderVoiceChannel,
+                    groupId
+                )
+            ) return
             context.audioLoader.loadNewTrackPickerNMessage(context, songArg, SearchType.SC, songPosition)
         }
     }

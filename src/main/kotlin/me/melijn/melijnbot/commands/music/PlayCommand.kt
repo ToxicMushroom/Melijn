@@ -48,27 +48,27 @@ class PlayCommand : AbstractCommand("command.play") {
 
 
         val songPosition = if (context.args.isNotEmpty()) {
-            when {
-                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
-                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
-                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
-                else -> {
-                    songArg = context.rawArg.trim()
-                    NextSongPosition.BOTTOM
-                }
-            }
+            NextSongPosition.getPosByTrigger(args[0]) ?: NextSongPosition.BOTTOM
         } else {
             songArg = context.rawArg.trim()
             NextSongPosition.BOTTOM
         }
 
         val groupId = context.getGuildMusicPlayer().groupId
-        if (songArg.startsWith("https://") || songArg.startsWith("http://")) {
+        if (songArg.startsWith("https://") || songArg.startsWith("http://") || songArg.endsWith(">") && (
+                songArg.startsWith("<https://") || songArg.startsWith("<http://"))
+        ) {
+            songArg = songArg.removeSurrounding("<", ">")
             if (!hasPermission(context, "$root.url")) {
                 sendMissingPermissionMessage(context, "$root.url")
                 return
             }
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(
+                    context,
+                    senderVoiceChannel,
+                    groupId
+                )
+            ) return
             if (songArg.contains("open.spotify.com") && context.webManager.spotifyApi != null) {
                 spotifySearchNLoad(context.audioLoader, context, songArg, songPosition)
             } else {
@@ -79,7 +79,12 @@ class PlayCommand : AbstractCommand("command.play") {
                 sendMissingPermissionMessage(context, "$root.yt")
                 return
             }
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(
+                    context,
+                    senderVoiceChannel,
+                    groupId
+                )
+            ) return
 
             if (spotifyURIRegex.matches(songArg) && context.webManager.spotifyApi != null) {
                 spotifySearchNLoad(context.audioLoader, context, songArg, songPosition)
@@ -92,7 +97,12 @@ class PlayCommand : AbstractCommand("command.play") {
                 sendMissingPermissionMessage(context, "$root.attachment")
                 return
             }
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(
+                    context,
+                    senderVoiceChannel,
+                    groupId
+                )
+            ) return
             for (url in tracks) {
                 context.audioLoader.loadNewTrackNMessage(context, url, false, songPosition)
             }
@@ -120,14 +130,10 @@ class PlayCommand : AbstractCommand("command.play") {
             val args = context.oldArgs
             var songArg = context.getRawArgPart(1, -1)
 
-            val songPosition = when {
-                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
-                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
-                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
-                else -> {
-                    songArg = context.rawArg.trim()
-                    NextSongPosition.BOTTOM
-                }
+            var songPosition = NextSongPosition.getPosByTrigger(args[0])
+            if (songPosition == null) {
+                songArg = context.rawArg.trim()
+                songPosition = NextSongPosition.BOTTOM
             }
 
             val groupId = context.getGuildMusicPlayer().groupId
@@ -157,14 +163,10 @@ class PlayCommand : AbstractCommand("command.play") {
             val args = context.oldArgs
             var songArg = context.getRawArgPart(1, -1)
 
-            val songPosition = when {
-                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
-                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
-                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
-                else -> {
-                    songArg = context.rawArg.trim()
-                    NextSongPosition.BOTTOM
-                }
+            var songPosition = NextSongPosition.getPosByTrigger(args[0])
+            if (songPosition == null) {
+                songArg = context.rawArg.trim()
+                songPosition = NextSongPosition.BOTTOM
             }
 
             val groupId = context.getGuildMusicPlayer().groupId
@@ -193,14 +195,7 @@ class PlayCommand : AbstractCommand("command.play") {
             val args = context.args
 
             val songPosition = if (args.isNotEmpty()) {
-                when {
-                    args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
-                    args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
-                    args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
-                    else -> {
-                        NextSongPosition.BOTTOM
-                    }
-                }
+                NextSongPosition.getPosByTrigger(args[0]) ?: NextSongPosition.BOTTOM
             } else {
                 NextSongPosition.BOTTOM
             }
@@ -216,10 +211,21 @@ class PlayCommand : AbstractCommand("command.play") {
         }
     }
 
-    private suspend fun spotifySearchNLoad(audioLoader: AudioLoader, context: CommandContext, songArg: String, nextPos: NextSongPosition) {
+    private suspend fun spotifySearchNLoad(
+        audioLoader: AudioLoader,
+        context: CommandContext,
+        songArg: String,
+        nextPos: NextSongPosition
+    ) {
         context.webManager.spotifyApi?.getTracksFromSpotifyUrl(songArg,
             { track ->
-                audioLoader.loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, nextPos = nextPos)
+                audioLoader.loadSpotifyTrack(
+                    context,
+                    YT_SELECTOR + track.name,
+                    track.artists,
+                    track.durationMs,
+                    nextPos = nextPos
+                )
             },
             { trackList ->
                 audioLoader.loadSpotifyPlaylist(context, trackList, nextPos)
@@ -243,6 +249,17 @@ class PlayCommand : AbstractCommand("command.play") {
     }
 }
 
-enum class NextSongPosition {
-    BOTTOM, RANDOM, TOP
+enum class NextSongPosition(val triggers: Array<String>) {
+    BOTTOM(arrayOf("b", "bottom")),
+    RANDOM(arrayOf("r", "random")),
+    TOP(arrayOf("t", "top")),
+    TOPSKIP(arrayOf("ts", "topskip"));
+
+    companion object {
+        fun getPosByTrigger(trigger: String): NextSongPosition? {
+            return values().firstOrNull { pos ->
+                pos.triggers.any { it.equals(trigger.drop(1), true) }
+            }
+        }
+    }
 }
