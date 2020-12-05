@@ -23,7 +23,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        if (context.args.isEmpty() && context.message.attachments.isEmpty()) {
+        if (context.args.isEmpty()) {
             sendSyntax(context)
             return
         }

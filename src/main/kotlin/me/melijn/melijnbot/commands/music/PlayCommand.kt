@@ -46,7 +46,9 @@ class PlayCommand : AbstractCommand("command.play") {
         val args = context.oldArgs
         var songArg = context.getRawArgPart(1, -1)
 
-        var songPosition = NextSongPosition.getPosByTrigger(args[0])
+        var songPosition = if (context.args.isNotEmpty()) {
+            NextSongPosition.getPosByTrigger(args[0])
+        } else null
         if (songPosition == null) {
             songArg = context.fullArg.trim()
             songPosition = NextSongPosition.BOTTOM
