@@ -10,4 +10,5 @@ enum class MessageType(val text: String) {
     CUSTOM_COMMAND("CustomCommandMessage"),
     BIRTHDAY("BirthdayMessage"),
     BOOST("BoostMessage"),
+    GIVEAWAY("GiveawayMessage")
 }

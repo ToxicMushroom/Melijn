@@ -28,6 +28,8 @@ import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
 import me.melijn.melijnbot.database.filter.FilterGroupWrapper
 import me.melijn.melijnbot.database.filter.FilterWrapper
+import me.melijn.melijnbot.database.giveaway.GiveawayDao
+import me.melijn.melijnbot.database.giveaway.GiveawayWrapper
 import me.melijn.melijnbot.database.games.OsuDao
 import me.melijn.melijnbot.database.games.OsuWrapper
 import me.melijn.melijnbot.database.kick.KickDao
@@ -180,6 +182,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val voteReminderWrapper: VoteReminderWrapper
     val reminderWrapper: ReminderWrapper
 
+    val giveawayWrapper: GiveawayWrapper
+
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
     val dailyCooldownWrapper: DailyCooldownWrapper
@@ -278,6 +282,10 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         birthdayHistoryWrapper = BirthdayHistoryWrapper(BirthdayHistoryDao(driverManager))
         timeZoneWrapper = TimeZoneWrapper(TimeZoneDao(driverManager))
 
+        bannedOrKickedTriggersLeaveWrapper = BannedOrKickedTriggersLeaveWrapper(taskManager, BannedOrKickedTriggersLeaveDao(driverManager))
+        botLogStateWrapper = BotLogStateWrapper(taskManager, BotLogStateDao(driverManager))
+
+        giveawayWrapper = GiveawayWrapper(taskManager, GiveawayDao(driverManager))
         bannedOrKickedTriggersLeaveWrapper = BannedOrKickedTriggersLeaveWrapper(BannedOrKickedTriggersLeaveDao(driverManager))
         botLogStateWrapper = BotLogStateWrapper(BotLogStateDao(driverManager))
         removeResponseWrapper = RemoveResponseWrapper(RemoveResponsesDao(driverManager))
