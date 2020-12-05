@@ -32,4 +32,10 @@ class ChannelWrapper(private val channelDao: ChannelDao) {
     fun migrateChannel(oldId: Long, newId: Long) {
         channelDao.migrateChannel(oldId, newId)
     }
+
+    fun invalidate(guildId: Long) {
+        ChannelType.values().forEach { channel ->
+            channelDao.removeCacheEntry("$channel:$guildId")
+        }
+    }
 }

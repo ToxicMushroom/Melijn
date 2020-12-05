@@ -66,9 +66,18 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
     private fun migrateSettings(context: CommandContext, oldId: Long, newId: Long) {
         val daoManager = context.daoManager
         daoManager.channelWrapper.migrateChannel(oldId, newId)
+        daoManager.channelWrapper.invalidate(context.guildId)
+
         daoManager.logChannelWrapper.migrateChannel(oldId, newId)
+        daoManager.logChannelWrapper.invalidate(context.guildId)
+
+        // VVV channel bound cache, wont do harm not invalidating VVV
         daoManager.commandChannelCoolDownWrapper.migrateChannel(oldId, newId)
+        daoManager.commandChannelCoolDownWrapper.invalidate(oldId)
+
         daoManager.channelCommandStateWrapper.migrateChannel(oldId, newId)
+        daoManager.channelCommandStateWrapper.invalidate(oldId)
+
         daoManager.channelRolePermissionWrapper.migrateChannel(oldId, newId)
         daoManager.channelUserPermissionWrapper.migrateChannel(oldId, newId)
     }

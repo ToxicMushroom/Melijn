@@ -19,7 +19,12 @@ class ChannelCommandStateWrapper(private val channelCommandStateDao: ChannelComm
         return map
     }
 
-    suspend fun setCommandState(guildId: Long, channelId: Long, commandIds: Set<String>, channelCommandState: ChannelCommandState) {
+    suspend fun setCommandState(
+        guildId: Long,
+        channelId: Long,
+        commandIds: Set<String>,
+        channelCommandState: ChannelCommandState
+    ) {
         val map = getMap(channelId).toMutableMap()
         if (channelCommandState == ChannelCommandState.DEFAULT) {
             channelCommandStateDao.bulkRemove(channelId, commandIds)
@@ -37,5 +42,9 @@ class ChannelCommandStateWrapper(private val channelCommandStateDao: ChannelComm
 
     fun migrateChannel(oldId: Long, newId: Long) {
         channelCommandStateDao.migrateChannel(oldId, newId)
+    }
+
+    fun invalidate(oldId: Long) {
+        channelCommandStateDao.removeCacheEntry(oldId)
     }
 }

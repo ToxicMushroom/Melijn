@@ -39,4 +39,8 @@ class CommandChannelCooldownWrapper(private val commandChannelCooldownDao: Comma
         commandChannelCooldownDao.migrateChannel(oldId, newId)
     }
 
+    fun invalidate(channelId: Long) {
+        commandChannelCooldownDao.removeCacheEntry("$channelId")
+    }
+
 }
