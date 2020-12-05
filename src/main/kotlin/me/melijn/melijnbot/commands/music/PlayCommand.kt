@@ -46,12 +46,10 @@ class PlayCommand : AbstractCommand("command.play") {
         val args = context.oldArgs
         var songArg = context.getRawArgPart(1, -1)
 
-
-        val songPosition = if (context.args.isNotEmpty()) {
-            NextSongPosition.getPosByTrigger(args[0]) ?: NextSongPosition.BOTTOM
-        } else {
-            songArg = context.rawArg.trim()
-            NextSongPosition.BOTTOM
+        var songPosition = NextSongPosition.getPosByTrigger(args[0])
+        if (songPosition == null) {
+            songArg = context.fullArg.trim()
+            songPosition = NextSongPosition.BOTTOM
         }
 
         val groupId = context.getGuildMusicPlayer().groupId

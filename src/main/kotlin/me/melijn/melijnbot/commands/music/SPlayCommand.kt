@@ -37,11 +37,10 @@ class SPlayCommand : AbstractCommand("command.splay") {
         val args = context.oldArgs
         var songArg = context.getRawArgPart(1, -1)
 
-        val songPosition = if (context.args.isNotEmpty()) {
-            NextSongPosition.getPosByTrigger(args[0]) ?: NextSongPosition.BOTTOM
-        } else {
+        var songPosition = NextSongPosition.getPosByTrigger(args[0])
+        if (songPosition == null) {
             songArg = context.rawArg.trim()
-            NextSongPosition.BOTTOM
+            songPosition = NextSongPosition.BOTTOM
         }
 
         if (!hasPermission(context, "$root.yt")) {
