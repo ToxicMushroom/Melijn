@@ -19,6 +19,10 @@ class BalanceWrapper(private val balanceDao: BalanceDao) {
         balanceDao.setCacheEntry(userId, money, NORMAL_CACHE)
     }
 
+    suspend fun getPosition(userId: Long): Pair<Long, Long> {
+        return balanceDao.getPosition(userId)
+    }
+
     suspend fun getTop(users: Int, offset: Int): Map<Long, Long> {
         return balanceDao.getTop(users, offset)
     }

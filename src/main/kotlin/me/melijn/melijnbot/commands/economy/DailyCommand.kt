@@ -4,6 +4,7 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.isPremiumUser
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.withVariable
 
@@ -19,19 +20,21 @@ class DailyCommand : AbstractCommand("command.daily") {
         if (canDailyElseMessage(context)) {
             val balanceWrapper = context.daoManager.balanceWrapper
             val cash = balanceWrapper.getBalance(context.authorId)
-            balanceWrapper.setBalance(context.authorId, cash + 100)
-            context.daoManager.dailyCooldownWrapper.setCooldown(context.authorId, System.currentTimeMillis())
+            val premium = isPremiumUser(context, context.author)
+            val reward = if (premium) 200 else 100
+            balanceWrapper.setBalance(context.authorId, cash + reward)
+            context.daoManager.economyCooldownWrapper.setCooldown(context.authorId, name, System.currentTimeMillis())
 
             val msg = context.getTranslation("$root.got")
-                .withVariable("daily", 100)
-                .withVariable("cash", cash + 100)
+                .withVariable("daily", reward)
+                .withVariable("cash", cash + reward)
             sendRsp(context, msg)
         }
     }
 
     private suspend fun canDailyElseMessage(context: CommandContext): Boolean {
-        val dailyCooldownWrapper = context.daoManager.dailyCooldownWrapper
-        val lastTime = dailyCooldownWrapper.getCooldown(context.authorId)
+        val dailyCooldownWrapper = context.daoManager.economyCooldownWrapper
+        val lastTime = dailyCooldownWrapper.getCooldown(context.authorId, name)
         val difference = System.currentTimeMillis() - lastTime
         if (difference > 86400000) {
             return true
@@ -41,6 +44,5 @@ class DailyCommand : AbstractCommand("command.daily") {
             .withVariable("duration", getDurationString(86400000 - difference))
         sendRsp(context, msg)
         return false
-
     }
 }

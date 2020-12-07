@@ -29,13 +29,13 @@ class LeaderBoardCommand : AbstractCommand("command.leaderboard") {
 
         val wrapper = context.daoManager.balanceWrapper
         val userMap = wrapper.getTop(10, page * 10)
-
         if (userMap.isEmpty()) {
             val msg = context.getTranslation("$root.empty")
                 .withVariable("page", page + 1)
             sendRsp(context, msg)
             return
         }
+        val rowCount = wrapper.getRowCount()
 
         val tableBuilder = TableBuilder().apply {
             this.setColumns(
@@ -46,18 +46,42 @@ class LeaderBoardCommand : AbstractCommand("command.leaderboard") {
             this.seperatorOverrides[0] = " "
         }
 
+        val pos = if (!userMap.keys.contains(context.authorId)) {
+            wrapper.getPosition(context.authorId)
+        } else null
 
+
+        if (pos != null && pos.second < 1 + (10 * page)) {
+            tableBuilder.addRow(
+                Cell("${pos.second}."),
+                Cell(bigNumberFormatter.valueToString(pos.first), Alignment.RIGHT),
+                Cell(context.author.asTag)
+            )
+            tableBuilder.addSplit()
+        }
         for ((index, pair) in userMap.toList().withIndex()) {
             val user = context.shardManager.retrieveUserById(pair.first).await()
+
             tableBuilder.addRow(
                 Cell("${index + 1 + (10 * page)}."),
                 Cell(bigNumberFormatter.valueToString(pair.second), Alignment.RIGHT),
                 Cell(user.asTag)
             )
+
         }
+        if (pos != null && pos.second > 1 + (10 * page)) {
+            tableBuilder.addSplit()
+            tableBuilder.addRow(
+                Cell("${pos.second}."),
+                Cell(bigNumberFormatter.valueToString(pos.first), Alignment.RIGHT),
+                Cell(context.author.asTag)
+            )
+        }
+
+
         val msgs = tableBuilder.build(true)
 
-        val totalPageCount = ceil(wrapper.getRowCount() / 10.0).toLong()
+        val totalPageCount = ceil(rowCount / 10.0).toLong()
 
         val eb = Embedder(context)
         for (msg in msgs) {

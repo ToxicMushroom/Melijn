@@ -21,8 +21,8 @@ import me.melijn.melijnbot.database.disabled.DisabledCommandDao
 import me.melijn.melijnbot.database.disabled.DisabledCommandWrapper
 import me.melijn.melijnbot.database.economy.BalanceDao
 import me.melijn.melijnbot.database.economy.BalanceWrapper
-import me.melijn.melijnbot.database.economy.DailyCooldownDao
-import me.melijn.melijnbot.database.economy.DailyCooldownWrapper
+import me.melijn.melijnbot.database.economy.EconomyCooldownDao
+import me.melijn.melijnbot.database.economy.EconomyCooldownWrapper
 import me.melijn.melijnbot.database.embed.*
 import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
@@ -53,6 +53,8 @@ import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
 import me.melijn.melijnbot.database.reminder.ReminderDao
 import me.melijn.melijnbot.database.reminder.ReminderWrapper
+import me.melijn.melijnbot.database.rep.RepDao
+import me.melijn.melijnbot.database.rep.RepWrapper
 import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.settings.*
 import me.melijn.melijnbot.database.starboard.StarboardMessageDao
@@ -182,7 +184,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
-    val dailyCooldownWrapper: DailyCooldownWrapper
+    val repWrapper: RepWrapper
+    val economyCooldownWrapper: EconomyCooldownWrapper
     val globalCooldownWrapper: GlobalCooldownWrapper
 
     val starboardSettingsWrapper: StarboardSettingsWrapper
@@ -288,7 +291,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         balanceWrapper = BalanceWrapper(BalanceDao(driverManager))
-        dailyCooldownWrapper = DailyCooldownWrapper(DailyCooldownDao(driverManager))
+        repWrapper = RepWrapper(RepDao(driverManager))
+        economyCooldownWrapper = EconomyCooldownWrapper(EconomyCooldownDao(driverManager))
         globalCooldownWrapper = GlobalCooldownWrapper(GlobalCooldownDao(driverManager))
 
         starboardSettingsWrapper = StarboardSettingsWrapper(StarboardSettingsDao(driverManager))

@@ -28,19 +28,40 @@ class BalanceDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun setBalance(userId: Long, money: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, money) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET money=?",
-            userId, money, money)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (userId, money) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET money=?",
+            userId, money, money
+        )
+    }
+
+    suspend fun getPosition(userId: Long): Pair<Long, Long> = suspendCoroutine {
+        driverManager.executeQuery(
+            "SELECT * FROM (SELECT *, row_number() OVER (ORDER BY money DESC) as position FROM $table) x WHERE userId = ?",
+            { rs ->
+                if (rs.next()) {
+                    it.resume(Pair(rs.getLong("money"), rs.getLong("position")))
+                } else {
+                    it.resume(Pair(0, -1))
+                }
+            },
+            userId
+        )
     }
 
     suspend fun getTop(users: Int, offset: Int): Map<Long, Long> = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table ORDER BY money DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY", { rs ->
-            val map = mutableMapOf<Long, Long>()
+        driverManager.executeQuery(
+            "SELECT * FROM $table ORDER BY money DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY",
+            { rs ->
+                val map = mutableMapOf<Long, Long>()
 
-            while (rs.next()) {
-                map[rs.getLong("userId")] = rs.getLong("money")
-            }
+                while (rs.next()) {
+                    map[rs.getLong("userId")] = rs.getLong("money")
+                }
 
-            it.resume(map)
-        }, offset, users)
+                it.resume(map)
+            },
+            offset,
+            users
+        )
     }
 }
