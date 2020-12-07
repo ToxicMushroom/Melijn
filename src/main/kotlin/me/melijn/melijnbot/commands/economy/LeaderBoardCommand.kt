@@ -51,7 +51,8 @@ class LeaderBoardCommand : AbstractCommand("command.leaderboard") {
         } else null
 
 
-        if (pos != null && pos.second < 1 + (10 * page)) {
+        val last = pos?.second == -1L
+        if (pos != null && pos.second < 1 + (10 * page) && !last) {
             tableBuilder.addRow(
                 Cell("${pos.second}."),
                 Cell(bigNumberFormatter.valueToString(pos.first), Alignment.RIGHT),
@@ -69,10 +70,10 @@ class LeaderBoardCommand : AbstractCommand("command.leaderboard") {
             )
 
         }
-        if (pos != null && pos.second > 1 + (10 * page)) {
+        if (pos != null && (pos.second > 1 + (10 * page) || last)) {
             tableBuilder.addSplit()
             tableBuilder.addRow(
-                Cell("${pos.second}."),
+                Cell(if (last) "${rowCount + 1}." else "${pos.second}."),
                 Cell(bigNumberFormatter.valueToString(pos.first), Alignment.RIGHT),
                 Cell(context.author.asTag)
             )
