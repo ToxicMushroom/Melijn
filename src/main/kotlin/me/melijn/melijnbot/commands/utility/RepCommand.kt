@@ -24,7 +24,7 @@ class RepCommand : AbstractCommand("command.rep") {
         } else {
             if (!canRepElseMessage(context)) return
             val user = retrieveMemberByArgsNMessage(context, 0, false, botAllowed = false) ?: return
-            if (user.idLong == context.selfUser.idLong) {
+            if (user.idLong == context.authorId) {
                 val msg = context.getTranslation("$root.selfrep")
                 sendRsp(context, msg)
                 return
