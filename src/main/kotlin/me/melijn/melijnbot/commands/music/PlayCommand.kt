@@ -258,7 +258,7 @@ enum class NextSongPosition(val triggers: Array<String>) {
     companion object {
         fun getPosByTrigger(trigger: String): NextSongPosition? {
             return values().firstOrNull { pos ->
-                pos.triggers.any { it.equals(trigger.drop(1), true) }
+                pos.triggers.any { ("-$it").equals(trigger, true) }
             }
         }
     }

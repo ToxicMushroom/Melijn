@@ -48,6 +48,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     ) {
         track.userData = TrackUserData(context.author)
         if (guildMusicPlayer.safeQueue(context, track, nextPos)) {
+            // TODO: log the correct track position :>
             sendMessageAddedTrack(context, track)
 
             LogUtils.addMusicPlayerNewTrack(context, track)
