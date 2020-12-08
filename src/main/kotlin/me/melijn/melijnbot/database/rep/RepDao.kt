@@ -19,8 +19,8 @@ class RepDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     fun set(userId: Long, rep: Int) {
         driverManager.executeUpdate(
-            "INSERT INTO $table (userId, rep) VALUES (?, ?)",
-            userId, rep
+            "INSERT INTO $table (userId, rep) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET rep = ?",
+            userId, rep, rep
         )
     }
 
