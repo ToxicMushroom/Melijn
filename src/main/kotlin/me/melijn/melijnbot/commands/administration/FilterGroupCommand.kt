@@ -295,10 +295,10 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                         "    - *"
                     } else {
 
-                        channels.joinToString("\n    - ", prefix = "\n    - ")
+                        channels.joinToString("\n    - ", prefix = "    - ")
                     } +
                     "\n  ]\n  [\n" +
-                    fgNames.joinToString("\n    - ", "\n    - ") +
+                    fgNames.joinToString("\n    - ", "    - ") +
                     "\n  ]"
             }
             content += "```"
@@ -334,7 +334,6 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 }
 
                 val group = getSelectedFilterGroup(context) ?: return
-                val pg = getPunishmentGroupByArgNMessage(context, 0) ?: return
                 val groupNames = group.punishGroupNames.toMutableList()
                 if (groupNames.isEmpty()) {
                     val msg = context.getTranslation("$root.empty")
@@ -349,9 +348,8 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 }
                 listString += "```"
 
-                val msg = context.getTranslation("$root.list")
-                    .withVariable(PLACEHOLDER_ARG, pg.groupName)
-                    .withVariable("filter", group.filterGroupName)
+                val msg = context.getTranslation("$root.title")
+                    .withVariable("filter", group.filterGroupName) + listString
                 sendRsp(context, msg)
             }
         }

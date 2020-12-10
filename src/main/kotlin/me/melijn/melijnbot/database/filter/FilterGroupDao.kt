@@ -3,6 +3,7 @@ package me.melijn.melijnbot.database.filter
 import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.FilterMode
+import me.melijn.melijnbot.internals.utils.splitIETEL
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -49,11 +50,9 @@ class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
                 list.add(
                     FilterGroup(
                         rs.getString("filterGroupName"),
-                        rs.getString("punishGroupNames").split(","),
+                        rs.getString("punishGroupNames").splitIETEL(","),
                         rs.getBoolean("state"),
-                        if (channels.isBlank())
-                            longArrayOf()
-                        else channels.split(",")
+                        channels.splitIETEL(",")
                             .map { id ->
                                 id.toLong()
                             }
