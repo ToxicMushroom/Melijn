@@ -195,6 +195,7 @@ abstract class AbstractCommand(val root: String) {
         }
         return false
     }
+
 }
 
 suspend fun hasPermission(context: CommandContext, permission: String, required: Boolean = false): Boolean {

@@ -18,8 +18,15 @@ class RepCommand : AbstractCommand("command.rep") {
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
             val rep = context.daoManager.repWrapper.getRep(context.authorId)
+            val dailyCooldownWrapper = context.daoManager.economyCooldownWrapper
+            val lastTime = dailyCooldownWrapper.getCooldown(context.authorId, name)
+            val difference = System.currentTimeMillis() - lastTime
+            val extra = if (difference < 86400000) {
+                ". You can rep again in: `" + getDurationString(86400000 - difference) + "`"
+            } else ""
+
             val msg = context.getTranslation("$root.showrep")
-                .withVariable("rep", rep)
+                .withVariable("rep", rep) + extra
             sendRsp(context, msg)
         } else {
             if (!canRepElseMessage(context)) return

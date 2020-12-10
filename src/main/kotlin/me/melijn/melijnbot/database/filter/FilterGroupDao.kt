@@ -10,7 +10,7 @@ class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "filterGroups"
     override val tableStructure: String =
-        "guildId bigint, filterGroupName varchar(32), punishGroupNames varchar(1024), channelIds varchar(2048), mode varchar(64), state boolean, points int"
+        "guildId bigint, filterGroupName varchar(32), punishGroupNames varchar(1024), channelIds varchar(2048), mode varchar(64), state boolean, points int, deleteHit boolean"
     override val primaryKey: String = "guildId, filterGroupName"
 
     override val cacheName: String = "filter:group"
@@ -22,8 +22,8 @@ class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     fun add(guildId: Long, group: FilterGroup) {
         group.apply {
             val query =
-                "INSERT INTO $table (guildId, filterGroupName, punishGroupNames, channelIds, mode, state, points) VALUES (?, ?, ?, ?, ?, ?, ?) " +
-                    "ON CONFLICT ($primaryKey) DO UPDATE SET punishGroupNames = ?, channelIds = ?, mode = ?, state = ?, points = ?"
+                "INSERT INTO $table (guildId, filterGroupName, punishGroupNames, channelIds, mode, state, points, deleteHit) VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                    "ON CONFLICT ($primaryKey) DO UPDATE SET punishGroupNames = ?, channelIds = ?, mode = ?, state = ?, points = ?, deleteHit = ?"
             driverManager.executeUpdate(
                 query,
                 // Insert args
@@ -31,11 +31,11 @@ class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
                 filterGroupName,
                 punishGroupNames.joinToString(","),
                 group.channels.joinToString(","),
-                mode.toString(), state, points,
+                mode.toString(), state, points, deleteHit,
                 // Update Set args
                 punishGroupNames.joinToString(","),
                 group.channels.joinToString(","),
-                mode.toString(), state, points
+                mode.toString(), state, points, deleteHit
             )
         }
     }
@@ -59,7 +59,8 @@ class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
                             }
                             .toLongArray(),
                         FilterMode.valueOf(rs.getString("mode")),
-                        rs.getInt("points")
+                        rs.getInt("points"),
+                        rs.getBoolean("deleteHit")
                     )
                 )
             }
@@ -81,5 +82,6 @@ data class FilterGroup(
     var state: Boolean,
     var channels: LongArray,
     var mode: FilterMode,
-    var points: Int
+    var points: Int,
+    var deleteHit: Boolean
 )

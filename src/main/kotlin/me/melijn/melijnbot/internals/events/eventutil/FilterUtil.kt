@@ -43,6 +43,9 @@ object FilterUtil {
             // The extra points map for a user (guildId, member) -> Map<List<punishGroupName>, points>
             val extraPPMap = mutableMapOf<List<String>, Int>()
 
+            // If a will be set to true by a deleting filterGroup if needed ofc
+            var shouldDelete = false
+
             // Loop through the filter groups
             for (fg in groups) {
                 if (!fg.state) continue
@@ -87,6 +90,9 @@ object FilterUtil {
                     FilterMode.NO_MODE, FilterMode.DISABLED -> {
                     }
                 }
+                if (fg.deleteHit && map.isNotEmpty()) {
+                    shouldDelete = true
+                }
                 filterGroupTriggerInfoMap[fg] = map // Put info in a map bound to its filter group for later use
                 for ((key, value) in map) { // Merge the total info with new info
                     if (value.isEmpty()) continue
@@ -102,7 +108,9 @@ object FilterUtil {
             if (onlyTriggerInfoMap.isNotEmpty()) {
                 container.filteredMap[message.idLong] =
                     onlyTriggerInfoMap // Store detected and notMatched reason in the filteredMap for logging the deletion reason
-                message.delete().reason("Filter detection").queue()  // delete the message
+
+                if (shouldDelete)
+                    message.delete().reason("Filter detection").queue()  // delete the message
 
                 LogUtils.sendPPGainedMessageDMAndLC(
                     container,
@@ -111,7 +119,12 @@ object FilterUtil {
                     onlyTriggerInfoMap,
                     points
                 ) // send a dm and log the violation
-                PPUtils.updatePP(member, extraPPMap, container, PointsTriggerType.FILTERED_MESSAGE) // Update the punishment points of the user
+                PPUtils.updatePP(
+                    member,
+                    extraPPMap,
+                    container,
+                    PointsTriggerType.FILTERED_MESSAGE
+                ) // Update the punishment points of the user
             }
         }
 

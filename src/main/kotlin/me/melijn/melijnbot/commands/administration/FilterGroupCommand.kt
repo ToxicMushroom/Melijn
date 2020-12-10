@@ -28,12 +28,40 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             TargetArg(root),
             SelectArg(root),
             SetTriggerPoints(root),
+            SetDeleteOnHit(root),
             ChannelsArg(root),
             SetStateArg(root),
             SetMode(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
+
+    class SetDeleteOnHit(parent: String) : AbstractCommand("$parent.setdeleteonhit") {
+
+        init {
+            name = "setDeleteOnHit"
+            aliases = arrayOf("sdoh")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+            val group = getSelectedFilterGroup(context) ?: return
+            val state = getBooleanFromArgNMessage(context, 0) ?: return
+
+            group.deleteHit = state
+
+            context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
+
+            val statePath = if (state) "enabled" else "disabled"
+            val msg = context.getTranslation("$root.$statePath")
+            sendRsp(context, msg)
+        }
+
+    }
+
 
     class ChannelsArg(parent: String) : AbstractCommand("$parent.channels") {
 
@@ -205,7 +233,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             val mode: FilterMode = getEnumFromArgN(context, 2) ?: FilterMode.DEFAULT
             val state = getBooleanFromArgN(context, 3) ?: true
 
-            val newGroup = FilterGroup(name, emptyList(), state, longArrayOf(), mode, points)
+            val newGroup = FilterGroup(name, emptyList(), state, longArrayOf(), mode, points, true)
             context.daoManager.filterGroupWrapper.putGroup(context.guildId, newGroup)
 
             val stateM = context.getTranslation(if (state) "enabled" else "disabled")
@@ -258,15 +286,19 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             val disabled = context.getTranslation("disabled")
 
 
-            var content = "```INI\n[name] - [points] - [state] - [mode]\n  [\n    - channels\n  ]"
+            var content =
+                "```INI\n[name] - [points] - [state] - [mode] - [delete]\n  [\n    - channels\n  ]\n  [\n    - targets\n  ]\n"
 
-            for ((filterGroupName, fgNames, state, channels, mode, points) in groups) {
-                content += "\n[${filterGroupName}] - $points - ${if (state) enabled else disabled} - $mode\n  [\n" +
+            for ((filterGroupName, fgNames, state, channels, mode, points, deleteHit) in groups) {
+                content += "\n[${filterGroupName}] - $points - ${if (state) enabled else disabled} - $mode - $deleteHit\n  [\n" +
                     if (channels.isEmpty()) {
                         "    - *"
                     } else {
-                        channels.joinToString("\n    - ")
+
+                        channels.joinToString("\n    - ", prefix = "\n    - ")
                     } +
+                    "\n  ]\n  [\n" +
+                    fgNames.joinToString("\n    - ", "\n    - ") +
                     "\n  ]"
             }
             content += "```"
