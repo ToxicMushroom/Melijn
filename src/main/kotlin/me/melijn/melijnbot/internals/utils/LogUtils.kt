@@ -724,7 +724,7 @@ object LogUtils {
     }
 
 
-    const val VOTE_LINKS = "TopGG:  [%statusOne%](https://top.gg/bot/melijn/vote) - `12h`\n" +
+    const val VOTE_LINKS = "TopGG:  [%statusOne%](https://top.gg/bot/melijn/vote) - `12h` - use `uBlock Origin` to block/skip ads\n" +
         "DiscordBotList:  [%statusTwo%](https://discordbotlist.com/bots/melijn/upvote) - `12h`\n" +
         "BotsForDiscord:  [%statusThree%](https://botsfordiscord.com/bot/368362411591204865/vote) - `12am utc`\n" +
         "DiscordBoats:  [%statusFour%](https://discord.boats/bot/368362411591204865/vote) - `12h`"

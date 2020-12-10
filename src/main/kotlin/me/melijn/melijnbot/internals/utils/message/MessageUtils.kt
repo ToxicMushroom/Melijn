@@ -9,6 +9,7 @@ import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.internal.entities.DataMessage
@@ -16,11 +17,20 @@ import net.dv8tion.jda.internal.entities.DataMessage
 suspend fun sendSyntax(context: CommandContext, translationPath: String = context.commandOrder.last().syntax) {
     val syntax = context.getTranslation("message.command.usage")
         .withVariable(
-            "syntax", context.getTranslation(translationPath)
+            "syntax", getSyntax(context, translationPath)
                 .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
         )
     sendRsp(context, syntax)
 }
+
+suspend fun getSyntax(context: CommandContext, translationPath: String): String {
+    return "%prefix%" + context.getTranslation(translationPath)
+}
+
+fun getSyntax(lang: String, translationPath: String): String {
+    return "%prefix%" + i18n.getTranslation(lang, translationPath)
+}
+
 
 fun escapeForLog(string: String): String {
     return string

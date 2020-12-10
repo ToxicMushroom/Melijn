@@ -8,7 +8,9 @@ import kotlin.coroutines.suspendCoroutine
 class PunishmentGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "punishmentGroups"
-    override val tableStructure: String = "guildId bigint, punishGroup varchar(64), enabledTypes varchar(512), pointGoalMap varchar(512)"
+    override val tableStructure: String =
+        "guildId bigint, punishGroup varchar(64), expireTime bigint, enabledTypes varchar(512)," +
+            " pointGoalMap varchar(512)"
     override val primaryKey: String = "guildId, punishGroup"
 
     override val cacheName: String = "punishmentgroup"
@@ -17,41 +19,68 @@ class PunishmentGroupDao(driverManager: DriverManager) : CacheDBDao(driverManage
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
+    fun setExpireTime(guildId: Long, punishGroup: String, expireTime: ExpireTime) {
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, punishGroup, expireTime, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT ($primaryKey) DO UPDATE SET expireTime = ?",
+            guildId, punishGroup, expireTime, "", "", expireTime
+        )
+    }
+
+
     fun setEnabledTypes(guildId: Long, punishGroup: String, enabledTypes: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, punishGroup, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET enabledTypes = ?",
-            guildId, punishGroup, enabledTypes, "", enabledTypes)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, punishGroup, expireTime, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET enabledTypes = ?",
+            guildId, punishGroup, 0, enabledTypes, "", enabledTypes
+        )
     }
 
     fun setPointGoalMap(guildId: Long, punishGroup: String, pointGoalMap: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, punishGroup, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET pointGoalMap = ?",
-            guildId, punishGroup, "", pointGoalMap, pointGoalMap)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, punishGroup, expireTime, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET pointGoalMap = ?",
+            guildId, punishGroup, 0, "", pointGoalMap, pointGoalMap
+        )
     }
 
-    suspend fun get(guildId: Long, punishGroup: String): Pair<String, String> = suspendCoroutine {
+    suspend fun get(guildId: Long, punishGroup: String): Triple<ExpireTime, String, String> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND punishGroup = ?", { rs ->
             if (rs.next()) {
-                it.resume(Pair(rs.getString("typePointsMap"), rs.getString("pointGoalMap")))
+                it.resume(
+                    Triple(
+                        rs.getLong("expireTime"),
+                        rs.getString("typePointsMap"),
+                        rs.getString("pointGoalMap")
+                    )
+                )
             } else {
-                it.resume(Pair("", ""))
+                it.resume(Triple(0, "", ""))
             }
         }, guildId, punishGroup)
     }
 
     fun add(guildId: Long, punishGroup: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, punishGroup, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
-            guildId, punishGroup, "", "")
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, expireTime, punishGroup, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
+            guildId, 0, punishGroup, "", ""
+        )
     }
 
     fun remove(guildId: Long, punishGroup: String) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND punishGroup = ?",
-            guildId, punishGroup)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND punishGroup = ?",
+            guildId, punishGroup
+        )
     }
 
-    suspend fun getAll(guildId: Long): Map<String, Pair<String, String>> = suspendCoroutine {
+    suspend fun getAll(guildId: Long): Map<String, Triple<ExpireTime, String, String>> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
-            val map = mutableMapOf<String, Pair<String, String>>()
+            val map = mutableMapOf<String, Triple<ExpireTime, String, String>>()
             while (rs.next()) {
-                map[rs.getString("punishGroup")] = Pair(rs.getString("enabledTypes"), rs.getString("pointGoalMap"))
+                map[rs.getString("punishGroup")] = Triple(
+                    rs.getLong("expireTime"),
+                    rs.getString("enabledTypes"),
+                    rs.getString("pointGoalMap")
+                )
             }
             it.resume(map)
         }, guildId)

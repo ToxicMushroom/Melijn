@@ -44,8 +44,9 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
                     val newAlpha = if (alpha2 == -1) ints[3] else alpha2
                     val c2 = newAlpha shl 24 or (newColor.red shl 16) or (newColor.green shl 8) or newColor.blue
                     intArrayOf(c2 and 0xff, c2 shr 8 and 0xff, c2 shr 16 and 0xff, c2 shr 24 and 0xff)
+                } else {
+                    ints
                 }
-                ints
             }
         }, argDataParser = argParser@{ argInt: Int, argData: DataObject, _: DataObject ->
             val sourceColor = getColorFromArgNMessage(context, argInt) ?: return@argParser false

@@ -25,15 +25,137 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             AddArg(root),
             RemoveArg(root),
             ListArg(root),
+            TargetArg(root),
             SelectArg(root),
             SetTriggerPoints(root),
-            AddChannelArg(root),
-            RemoveChannelArg(root),
-            ListChannelsArg(root),
+            ChannelsArg(root),
             SetStateArg(root),
             SetMode(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
+    }
+
+    class ChannelsArg(parent: String) : AbstractCommand("$parent.channels") {
+
+        init {
+            name = "channels"
+            children = arrayOf(
+                AddArg(root),
+                RemoveArg(root),
+                ListArg(root)
+            )
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            sendSyntax(context)
+        }
+
+        class AddArg(parent: String) : AbstractCommand("$parent.add") {
+
+            init {
+                name = "add"
+                aliases = arrayOf("a")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val group = getSelectedFilterGroup(context) ?: return
+                val msg = if (context.args[0] == "all") {
+                    val textChannels = context.guild.textChannels.map { it.idLong }
+                    group.channels += textChannels
+                    context.getTranslation("$root.added.all")
+
+                } else {
+                    val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
+
+                    val channels = group.channels.toMutableList()
+                    channels.addIfNotPresent(textChannel.idLong)
+
+                    group.channels = channels.toLongArray()
+                    context.getTranslation("$root.added")
+                        .withVariable(PLACEHOLDER_CHANNEL, textChannel.asTag)
+                }
+
+                context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
+
+                sendRsp(context, msg)
+            }
+        }
+
+        class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
+
+            init {
+                name = "remove"
+                aliases = arrayOf("rm")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val group = getSelectedFilterGroup(context) ?: return
+                val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
+
+                val channels = group.channels.toMutableList()
+                channels.remove(textChannel.idLong)
+
+                group.channels = channels.toLongArray()
+
+                context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
+
+                val msg = context.getTranslation("$root.removed")
+                    .withVariable(PLACEHOLDER_CHANNEL, textChannel.asTag)
+
+                sendRsp(context, msg)
+            }
+        }
+
+        class ListArg(parent: String) : AbstractCommand("$parent.list") {
+
+            init {
+                name = "list"
+                aliases = arrayOf("l")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+                val group = getSelectedFilterGroup(context) ?: return
+                val channelIds = group.channels.toMutableList()
+                val channels = mutableListOf<TextChannel>()
+
+                if (channelIds.isEmpty()) {
+                    val msg = context.getTranslation("$root.empty")
+                    sendRsp(context, msg)
+                    return
+                }
+
+                val title = context.getTranslation("$root.title")
+                var content = "```INI\n[index] - [channelId] - [channelName]"
+                for (channelId in channelIds) {
+                    val textChannel = context.guild.getTextChannelById(channelId) ?: continue
+                    channels.add(textChannel)
+                }
+
+                channels.sortBy { it.position }
+
+                for ((index, channel) in channels.withIndex()) {
+                    content += "\n$index - [${channel.id}] - [${channel.asTag}]"
+                }
+
+                val msg = title + content
+                sendRsp(context, msg)
+            }
+        }
+
     }
 
     companion object {
@@ -83,7 +205,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             val mode: FilterMode = getEnumFromArgN(context, 2) ?: FilterMode.DEFAULT
             val state = getBooleanFromArgN(context, 3) ?: true
 
-            val newGroup = FilterGroup(name, state, longArrayOf(), mode, points)
+            val newGroup = FilterGroup(name, emptyList(), state, longArrayOf(), mode, points)
             context.daoManager.filterGroupWrapper.putGroup(context.guildId, newGroup)
 
             val stateM = context.getTranslation(if (state) "enabled" else "disabled")
@@ -138,7 +260,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
             var content = "```INI\n[name] - [points] - [state] - [mode]\n  [\n    - channels\n  ]"
 
-            for ((filterGroupName, state, channels, mode, points) in groups) {
+            for ((filterGroupName, fgNames, state, channels, mode, points) in groups) {
                 content += "\n[${filterGroupName}] - $points - ${if (state) enabled else disabled} - $mode\n  [\n" +
                     if (channels.isEmpty()) {
                         "    - *"
@@ -152,6 +274,145 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             val msg = title + content
             sendRsp(context, msg)
         }
+    }
+
+    class TargetArg(parent: String) : AbstractCommand("$parent.target") {
+
+        init {
+            name = "target"
+            children = arrayOf(
+                AddArg(root),
+                RemoveArg(root),
+                RemoveAtArg(root),
+                ListArg(root),
+            )
+        }
+
+        class ListArg(parent: String) : AbstractCommand("$parent.list") {
+
+            init {
+                name = "list"
+                aliases = arrayOf("ls")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val group = getSelectedFilterGroup(context) ?: return
+                val pg = getPunishmentGroupByArgNMessage(context, 0) ?: return
+                val groupNames = group.punishGroupNames.toMutableList()
+                if (groupNames.isEmpty()) {
+                    val msg = context.getTranslation("$root.empty")
+                        .withSafeVariable("filter", group.filterGroupName)
+                    sendRsp(context, msg)
+                }
+                groupNames.sort()
+
+                var listString = "```INI\n"
+                for ((index, groupName) in groupNames.withIndex()) {
+                    listString += "${index + 1} - $groupName"
+                }
+                listString += "```"
+
+                val msg = context.getTranslation("$root.list")
+                    .withVariable(PLACEHOLDER_ARG, pg.groupName)
+                    .withVariable("filter", group.filterGroupName)
+                sendRsp(context, msg)
+            }
+        }
+
+        class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
+
+            init {
+                name = "removeAt"
+                aliases = arrayOf("rma")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val group = getSelectedFilterGroup(context) ?: return
+                val index = getIntegerFromArgNMessage(context, 0, 1, group.punishGroupNames.size) ?: return
+                val groupNames = group.punishGroupNames.toMutableList()
+                groupNames.sort()
+                val groupName = groupNames.removeAt(index)
+                group.punishGroupNames = groupNames
+
+                context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
+
+                val msg = context.getTranslation("$root.removed")
+                    .withSafeVariable("filter", group.filterGroupName)
+                    .withVariable(PLACEHOLDER_ARG, groupName)
+                sendRsp(context, msg)
+            }
+        }
+
+        class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
+
+            init {
+                name = "remove"
+                aliases = arrayOf("rm")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val group = getSelectedFilterGroup(context) ?: return
+                val pg = getPunishmentGroupByArgNMessage(context, 0) ?: return
+                val groupNames = group.punishGroupNames.toMutableList()
+                groupNames.remove(pg.groupName)
+                group.punishGroupNames = groupNames
+
+                context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
+
+                val msg = context.getTranslation("$root.removed")
+                    .withSafeVariable("filter", group.filterGroupName)
+                    .withVariable(PLACEHOLDER_ARG, pg.groupName)
+                sendRsp(context, msg)
+            }
+        }
+
+        class AddArg(parent: String) : AbstractCommand("$parent.add") {
+
+            init {
+                name = "add"
+                aliases = arrayOf("a")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val group = getSelectedFilterGroup(context) ?: return
+                val pg = getPunishmentGroupByArgNMessage(context, 0) ?: return
+                val groupNames = group.punishGroupNames.toMutableList()
+                groupNames.addIfNotPresent(pg.groupName)
+                group.punishGroupNames = groupNames
+
+                context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
+
+                val msg = context.getTranslation("$root.added")
+                    .withSafeVariable("filter", group.filterGroupName)
+                    .withVariable(PLACEHOLDER_ARG, pg.groupName)
+                sendRsp(context, msg)
+            }
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            sendSyntax(context)
+        }
+
     }
 
     class SelectArg(parent: String) : AbstractCommand("$parent.select") {
@@ -197,106 +458,6 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
             val msg = context.getTranslation("$root.set")
                 .withVariable(PLACEHOLDER_ARG, "$points")
-            sendRsp(context, msg)
-        }
-    }
-
-    class AddChannelArg(parent: String) : AbstractCommand("$parent.addchannel") {
-
-        init {
-            name = "addChannel"
-            aliases = arrayOf("ac")
-        }
-
-        override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
-
-            val group = getSelectedFilterGroup(context) ?: return
-            val msg = if (context.args[0] == "all") {
-                val textChannels = context.guild.textChannels.map { it.idLong }
-                group.channels += textChannels
-                context.getTranslation("$root.added.all")
-
-            } else {
-                val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
-
-                val channels = group.channels.toMutableList()
-                channels.addIfNotPresent(textChannel.idLong)
-
-                group.channels = channels.toLongArray()
-                context.getTranslation("$root.added")
-                    .withVariable(PLACEHOLDER_CHANNEL, textChannel.asTag)
-            }
-
-            context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
-
-            sendRsp(context, msg)
-        }
-    }
-
-    class RemoveChannelArg(parent: String) : AbstractCommand("$parent.removechannel") {
-
-        init {
-            name = "removeChannel"
-            aliases = arrayOf("rc")
-        }
-
-        override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
-
-            val group = getSelectedFilterGroup(context) ?: return
-            val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
-
-            val channels = group.channels.toMutableList()
-            channels.remove(textChannel.idLong)
-
-            group.channels = channels.toLongArray()
-
-            context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
-
-            val msg = context.getTranslation("$root.removed")
-                .withVariable(PLACEHOLDER_CHANNEL, textChannel.asTag)
-
-            sendRsp(context, msg)
-        }
-    }
-
-    class ListChannelsArg(parent: String) : AbstractCommand("$parent.listchannels") {
-
-        init {
-            name = "listChannels"
-            aliases = arrayOf("lc")
-        }
-
-        override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
-            val group = getSelectedFilterGroup(context) ?: return
-            val channelIds = group.channels.toMutableList()
-            val channels = mutableListOf<TextChannel>()
-
-            val title = context.getTranslation("$root.title")
-            var content = "```INI\n[index] - [channelId] - [channelName]"
-            for (channelId in channelIds) {
-                val textChannel = context.guild.getTextChannelById(channelId) ?: continue
-                channels.add(textChannel)
-            }
-
-            channels.sortBy { it.position }
-
-            for ((index, channel) in channels.withIndex()) {
-                content += "\n$index - [${channel.id}] - [${channel.asTag}]"
-            }
-
-            val msg = title + content
             sendRsp(context, msg)
         }
     }

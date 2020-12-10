@@ -6,6 +6,7 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.getSyntax
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
@@ -102,7 +103,7 @@ class OsuCommand : AbstractCommand("command.osu") {
                 userName = if (name.isEmpty()) null else name
                 if (userName == null) {
                     val msg = context.getTranslation("$parent.guide")
-                        .withVariable("syntax", context.getTranslation(syntax))
+                        .withVariable("syntax", getSyntax(context, syntax))
                         .withSafeVariable("prefix", context.usedPrefix)
 
                     sendRsp(context, msg)
@@ -210,7 +211,7 @@ class OsuCommand : AbstractCommand("command.osu") {
                 userName = if (name.isEmpty()) null else name
                 if (userName == null) {
                     val msg = context.getTranslation("$parent.guide")
-                        .withSafeVariable("syntax", context.getTranslation(syntax))
+                        .withVariable("syntax", getSyntax(context, syntax))
                         .withSafeVariable("prefix", context.usedPrefix)
 
                     sendRsp(context, msg)
@@ -326,7 +327,7 @@ class OsuCommand : AbstractCommand("command.osu") {
                 userName = if (name.isEmpty()) null else name
                 if (userName == null) {
                     val msg = context.getTranslation("$parent.guide")
-                        .withVariable("syntax", context.getTranslation(syntax))
+                        .withVariable("syntax", getSyntax(context, syntax))
                         .withSafeVariable("prefix", context.usedPrefix)
 
                     sendRsp(context, msg)

@@ -25,6 +25,8 @@ object FilterUtil {
             val channel = message.textChannel
             if (member.hasPermission(channel, Permission.MESSAGE_MANAGE)) return@async
             if (!guild.selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)) return@async
+
+
             val guildId = guild.idLong
             val channelId = channel.idLong
             val daoManager = container.daoManager
@@ -37,11 +39,9 @@ object FilterUtil {
                 mutableMapOf<FilterGroup, Map<String, List<String>>>() // Map of filtergroup -> Map of <infotype -> info>
             val onlyTriggerInfoMap =
                 mutableMapOf<String, List<String>>() // Map of <infotype -> info> not bound by filtergroup
-            val apWrapper = daoManager.autoPunishmentWrapper
 
-            // Punish points map for a user (guildId, member) -> Map<filtergroupname, points>
-            val ppMap = apWrapper.getPointsMap(guild.idLong, member.idLong)
-                .toMutableMap()
+            // The extra points map for a user (guildId, member) -> Map<List<punishGroupName>, points>
+            val extraPPMap = mutableMapOf<List<String>, Int>()
 
             // Loop through the filter groups
             for (fg in groups) {
@@ -95,8 +95,7 @@ object FilterUtil {
                 }
 
                 points += extraPoints // add extra points to points total of this filter check
-                ppMap[fg.filterGroupName] =
-                    ppMap.getOrDefault(fg.filterGroupName, 0) + extraPoints // save extra points to the ppMap
+                extraPPMap[fg.punishGroupNames] = extraPoints // save extra points to the ppMap
             }
 
             // If something is detected
@@ -112,7 +111,7 @@ object FilterUtil {
                     onlyTriggerInfoMap,
                     points
                 ) // send a dm and log the violation
-                PPUtils.updatePP(member, ppMap, container) // Update the punishment points of the user
+                PPUtils.updatePP(member, extraPPMap, container, PointsTriggerType.FILTERED_MESSAGE) // Update the punishment points of the user
             }
         }
 

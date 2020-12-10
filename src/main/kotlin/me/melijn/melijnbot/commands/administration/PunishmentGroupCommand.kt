@@ -26,6 +26,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             RemoveArg(root),
             SelectArg(root),
             ListArg(root),
+            SetPointExpireTimeArg(root),
             SetPPTriggerArg(root),
             SetPPGoalArg(root),
             RemovePPGoalArg(root),
@@ -114,6 +115,13 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             val title = context.getTranslation("$root.title")
             val ppTrigger = context.getTranslation("$root.pptrigger")
             val ppGoal = context.getTranslation("$root.ppgoal")
+            if (list.isEmpty()) {
+                val msg = context.getTranslation("$root.empty")
+                    .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                sendRsp(context, msg)
+                return
+            }
+
             var content = "```INI"
             for ((name, pair) in list) {
                 val firstMap = pair.first
@@ -150,6 +158,25 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
                 .withVariable("group", group.groupName)
             sendRsp(context, msg)
         }
+    }
+
+    class SetPointExpireTimeArg(parent: String) : AbstractCommand("$parent.setpointexpiretime") {
+
+        init {
+            name = "setPointExpireTime"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            val pg = getSelectedPGroup(context) ?: return
+            val expireMillis = (getDurationByArgsNMessage(context, 0, context.args.size) ?: return) * 1000
+            context.daoManager.autoPunishmentGroupWrapper.setExpireTime(context.guildId, pg.groupName, expireMillis)
+
+            val msg = context.getTranslation("$root.set")
+                .withVariable("group", pg.groupName)
+                .withVariable("duration", getDurationString(expireMillis))
+            sendRsp(context, msg)
+        }
+
     }
 
     class SetPPTriggerArg(parent: String) : AbstractCommand("$parent.setpunishmentpointtrigger") {

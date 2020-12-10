@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.jagtag.DiscordMethods
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.getSyntax
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
@@ -233,7 +234,7 @@ class HelpCommand : AbstractCommand("command.help") {
             .addField(
                 cmdSyntax,
                 MarkdownSanitizer.escape(
-                    context.getTranslation(command.syntax)
+                    getSyntax(context, command.syntax)
                         .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
                 ),
                 false

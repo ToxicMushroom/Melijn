@@ -2,6 +2,9 @@ package me.melijn.melijnbot.internals.utils
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.moderation.*
+import me.melijn.melijnbot.database.autopunishment.ExpireTime
+import me.melijn.melijnbot.database.autopunishment.Points
+import me.melijn.melijnbot.database.autopunishment.PunishGroup
 import me.melijn.melijnbot.database.autopunishment.Punishment
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.database.ban.SoftBan
@@ -9,6 +12,7 @@ import me.melijn.melijnbot.database.kick.Kick
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.database.warn.Warn
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.enums.PunishmentType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.translation.getLanguage
@@ -21,32 +25,70 @@ import net.dv8tion.jda.api.entities.Member
 object PPUtils {
 
     // Updates the punishment points of the user and checks for new punishment point goal hits, then applies the goals if hit
-    suspend fun updatePP(member: Member, ppMap: Map<String, Long>, container: Container) {
+    suspend fun updatePP(
+        member: Member,
+        extraPPMap: Map<List<String>, Points>,
+        container: Container,
+        type: PointsTriggerType
+    ) {
         val guildId = member.guild.idLong
         val daoManager = container.daoManager
         val apWrapper = daoManager.autoPunishmentWrapper
-        val oldPPMap = apWrapper.getPointsMap(guildId, member.idLong)
-        apWrapper.set(guildId, member.idLong, ppMap)
+        val oldPPMap = apWrapper.getPointsMap(guildId, member.idLong).toMutableMap()
+
+        val newPPMap = mutableMapOf<ExpireTime, Map<String, Points>>()
+        newPPMap.putAll(oldPPMap)
 
         val apgWrapper = daoManager.autoPunishmentGroupWrapper
-        val pgs = apgWrapper.getList(guildId)
+
+        val pgs = apgWrapper.getList(guildId).filter { // Only need to give points for enabled punishGroups
+            it.enabledTypes.contains(type)
+        }
 
         val punishments = daoManager.punishmentWrapper.getList(guildId)
-        for (pg in pgs) {
-            val key = ppMap.keys.firstOrNull { key -> key == pg.groupName } ?: continue
-            val newPoints = ppMap[key] ?: continue
-            val oldPoints = oldPPMap.getOrDefault(pg.groupName, 0)
-            val entries = pg.pointGoalMap.filter { (tp, _) -> tp in (oldPoints + 1)..newPoints }
-
-
-            for (entry in entries) {
-                val punishment = punishments.first { (name) -> name == entry.value }
-                applyPunishment(member, punishment, container)
-                punishment.punishmentType
+        for (pg: PunishGroup in pgs) {
+            val absExpireTime = if (pg.expireTime == 0L) {
+                0
+            } else {
+                pg.expireTime + System.currentTimeMillis()
             }
 
-            pg.pointGoalMap
+            for ((pgNames, extraPoints) in extraPPMap) {
+                if (!pgNames.contains(pg.groupName)) continue
+
+                val oldPoints = oldPPMap.values.sumBy {
+                    it[pg.groupName]?.let { points: Points ->
+                        points
+                    } ?: 0
+                }
+
+                val entries = pg.pointGoalMap.filter { (tp, _) ->
+                    tp in (oldPoints + 1)..(oldPoints + extraPoints)
+                }
+
+                for (entry in entries) {
+                    val punishment = punishments.first { (name) ->
+                        name == entry.value
+                    }
+                    applyPunishment(member, punishment, container)
+                }
+
+                val processing = newPPMap[absExpireTime]?.toMutableMap()
+                if (processing != null) {
+                    val points = (processing[pg.groupName] ?: 0) + extraPoints
+                    processing[pg.groupName] = points
+                    newPPMap[absExpireTime] = processing
+                } else {
+                    newPPMap[absExpireTime] = mapOf(pg.groupName to extraPoints)
+                }
+            }
         }
+
+        val actuallyNew = newPPMap.filter { entry ->
+            !oldPPMap.containsKey(entry.key) || oldPPMap[entry.key] != entry.value
+        }
+
+        apWrapper.set(guildId, member.idLong, actuallyNew)
     }
 
     // Applies the correct punishment to the member

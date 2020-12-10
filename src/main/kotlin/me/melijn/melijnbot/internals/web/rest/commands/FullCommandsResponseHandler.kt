@@ -5,6 +5,7 @@ import io.ktor.response.*
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.message.getSyntax
 import me.melijn.melijnbot.internals.web.RequestContext
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
@@ -41,7 +42,7 @@ object FullCommandsResponseHandler {
 
             innerDataArray.add(c.name) // 0
             innerDataArray.add(i18n.getTranslation("en", c.description)) // 1
-            innerDataArray.add(i18n.getTranslation("en", c.syntax)) // 2
+            innerDataArray.add(getSyntax("en", c.syntax)) // 2
             innerDataArray.add(DataArray.fromCollection(c.aliases.toList())) // 3
             val argumentsHelp = i18n.getTranslationN("en", c.arguments, false)
             innerDataArray.add(argumentsHelp?.replace("%help\\.arg\\..*?%".toRegex()) {
