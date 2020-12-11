@@ -85,7 +85,7 @@ class YTSearch {
             consumeCallback(lpCallback).invoke(DataObject.empty()
                 .put("loadType", "LOAD_FAILED")
                 .put("exception", DataObject.empty()
-                    .put("message", t.message)
+                    .put("message", "unknown")
                     .put("severity", FriendlyException.Severity.SUSPICIOUS.toString())))
             t.printStackTrace()
         }
