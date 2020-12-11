@@ -258,7 +258,9 @@ class CommandClientBuilder(private val container: Container) {
         ClearQueueCommand(),
         TicTacToeCommand(),
         RepCommand(),
-        BegCommand()
+        BegCommand(),
+        ChickenCommand(),
+        FishCommand()
     )
 
     fun build(): CommandClient {

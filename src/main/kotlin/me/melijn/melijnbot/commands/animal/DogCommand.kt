@@ -14,7 +14,7 @@ class DogCommand : AbstractCommand("command.dog") {
     init {
         id = 47
         name = "dog"
-        aliases = arrayOf("woof")
+        aliases = arrayOf("woof", "🐕")
         commandCategory = CommandCategory.ANIMAL
     }
 
@@ -24,13 +24,15 @@ class DogCommand : AbstractCommand("command.dog") {
 
         val eb = Embedder(context)
             .setTitle(title)
-            .setImage(getRandomDogUrl(web))
+            .setImage(getRandomDogUrl(web, context.container.settings.api.imgHoard.token))
         sendEmbedRsp(context, eb.build())
     }
 
-    private suspend fun getRandomDogUrl(webManager: WebManager): String {
-        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://random.dog/woof.json")
-            ?: return MISSING_IMAGE_URL
+    private suspend fun getRandomDogUrl(webManager: WebManager, token: String): String {
+        val reply = WebUtils.getJsonFromUrl(
+            webManager.httpClient, "https://api.miki.bot/images/random?tags=dog",
+            headers = mapOf(Pair("Authorization", token))
+        ) ?: return MISSING_IMAGE_URL
         return reply.getString("url")
     }
 }
