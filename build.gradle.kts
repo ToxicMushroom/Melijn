@@ -13,7 +13,7 @@ buildscript {
 plugins {
     id("application")
     id("com.github.johnrengelman.shadow") version "6.1.0"
-    id("org.jetbrains.kotlin.jvm") version "1.4.20"
+    id("org.jetbrains.kotlin.jvm") version "1.4.21"
     id("com.apollographql.apollo") version "2.4.1"
 }
 
@@ -71,14 +71,14 @@ dependencies {
     // implementation("com.github.Melijn:lavaplayer:18000a1479")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
-    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.0.0-b1")
+    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.0.2")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))
     api(kotlin("scripting-compiler"))
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.20")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.21")
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
     implementation("com.github.ToxicMushroom:JagTag-Kotlin:0.6.4")
@@ -99,7 +99,7 @@ dependencies {
     implementation("me.duncte123:weebJava:2.2.0_29")
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation("se.michaelthelin.spotify:spotify-web-api-java:6.5.0")
+    implementation("se.michaelthelin.spotify:spotify-web-api-java:6.5.1")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation("ch.qos.logback:logback-classic:1.2.3")

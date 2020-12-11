@@ -3,7 +3,6 @@ package me.melijn.melijnbot.internals.utils
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist
-import kotlinx.coroutines.future.await
 import me.melijn.llklient.io.LavalinkRestClient
 import me.melijn.llklient.utils.LavalinkUtil
 import me.melijn.melijnbot.Container
@@ -42,49 +41,59 @@ class YTSearch {
     }
 
     private val youtubeService: ExecutorService =
-        Executors.newCachedThreadPool { r: Runnable? -> Thread(r, "Youtube-Search-Thread") }
+        Executors.newCachedThreadPool { r: Runnable -> Thread(r, "Youtube-Search-Thread") }
 
 
     fun search(
-        query: String, searchType: SearchType, audioTrackCallBack: suspend (audioTrack: List<AudioTrack>) -> Unit,
+        query: String, searchType: SearchType,
+        audioTrackCallBack: suspend (audioTrack: List<AudioTrack>) -> Unit,
         llDisabledAndNotYT: suspend () -> Unit,
         lpCallback: SuspendingAudioLoadResultHandler
     ) = youtubeService.launch {
-        val lManager = Container.instance.lavaManager
-        if (lManager.lavalinkEnabled) {
-            val llink = lManager.jdaLavaLink
+        try {
+            val lManager = Container.instance.lavaManager
+            if (lManager.lavalinkEnabled) {
+                val lLink = lManager.jdaLavaLink
 
-            val restClient = llink?.loadBalancer?.getRandomSocket("normal")?.restClient
-            val tracks = when (searchType) {
-                SearchType.SC -> {
-                    restClient?.getSoundCloudSearchResult(query)
-                }
-                SearchType.YT -> {
-                    restClient?.getYoutubeSearchResult(query)
-                }
-                else -> {
-                    if (isUnknownHTTP(query)) {
-                        val httpRestClient = llink?.loadBalancer?.getRandomSocket("http")?.restClient
-                        httpRestClient?.loadItem(query, lpCallback)
-                    } else {
-                        restClient?.loadItem(query, lpCallback)
+                val restClient = lLink?.loadBalancer?.getRandomSocket("normal")?.restClient
+                val tracks = when (searchType) {
+                    SearchType.SC -> {
+                        restClient?.getSoundCloudSearchResult(query)
                     }
+                    SearchType.YT -> {
+                        restClient?.getYoutubeSearchResult(query)
+                    }
+                    else -> {
+                        if (isUnknownHTTP(query)) {
+                            val httpRestClient = lLink?.loadBalancer?.getRandomSocket("http")?.restClient
+                            httpRestClient?.loadItem(query, lpCallback)
+                        } else {
+                            restClient?.loadItem(query, lpCallback)
+                        }
+                        return@launch
+                    }
+                }
+
+                if (tracks != null) {
+                    audioTrackCallBack(tracks)
                     return@launch
                 }
             }
 
-            if (tracks != null) {
-                audioTrackCallBack(tracks)
-                return@launch
-            }
+            llDisabledAndNotYT()
+        } catch (t: Throwable) {
+            consumeCallback(lpCallback).invoke(DataObject.empty()
+                .put("loadType", "LOAD_FAILED")
+                .put("exception", DataObject.empty()
+                    .put("message", t.message)
+                    .put("severity", FriendlyException.Severity.SUSPICIOUS.toString())))
+            t.printStackTrace()
         }
-
-        llDisabledAndNotYT()
     }
 }
 
 private suspend fun LavalinkRestClient.loadItem(query: String, lpCallback: SuspendingAudioLoadResultHandler) {
-    consumeCallback(lpCallback).invoke(load(query).await())
+    consumeCallback(lpCallback).invoke(load(query))
 }
 
 suspend fun consumeCallback(callback: SuspendingAudioLoadResultHandler): suspend (DataObject?) -> Unit {
