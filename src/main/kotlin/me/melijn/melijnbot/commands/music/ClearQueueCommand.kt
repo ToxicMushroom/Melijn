@@ -5,7 +5,6 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
 
 class ClearQueueCommand : AbstractCommand("command.clearqueue") {
@@ -19,11 +18,6 @@ class ClearQueueCommand : AbstractCommand("command.clearqueue") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        }
-
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val tracks = trackManager.trackSize()
         trackManager.clear()
