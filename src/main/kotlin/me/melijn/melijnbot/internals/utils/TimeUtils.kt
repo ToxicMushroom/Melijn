@@ -174,7 +174,7 @@ suspend fun getDurationByArgsNMessage(
     }
 
     if (holyTimeStamps.isEmpty()) {
-        val msg = context.getTranslation("message.unknown.timeduration")
+        val msg = context.getTranslation("message.unknown.duration")
             .withVariable("arg", timeStamps.joinToString(" "))
 
         sendRsp(context, msg)
