@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.utils.getBooleanFromArgNMessage
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.removeFirst
+import net.dv8tion.jda.api.Permission
 
 class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
@@ -445,6 +446,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
         init {
             name = "view"
+            discordChannelPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
             aliases = arrayOf("preview")
         }
 

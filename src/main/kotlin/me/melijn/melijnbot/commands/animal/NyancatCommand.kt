@@ -17,7 +17,6 @@ class NyancatCommand : AbstractCommand("command.nyancat") {
         id = 49
         name = "nyancat"
         aliases = arrayOf("nyan", "nya")
-        runConditions = arrayOf(RunCondition.VOTED)
         commandCategory = CommandCategory.ANIMAL
     }
 
