@@ -3,6 +3,8 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.commands.games.RockPaperScissorsCommand
+import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
 import me.melijn.melijnbot.commands.games.TicTacToeCommand
 import me.melijn.melijnbot.commands.games.TicTacToeGame
 import me.melijn.melijnbot.commands.utility.HelpCommand
@@ -44,6 +46,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         } else if (event is PrivateMessageReceivedEvent) {
             TaskManager.async {
                 checkTicTacToe(event)
+                checkRockPaperScissors(event)
             }
         }
         if (event is MessageReceivedEvent) {
@@ -52,6 +55,36 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             }
         }
     }
+
+
+    private fun checkRockPaperScissors(event: PrivateMessageReceivedEvent) {
+        val author = event.author
+        val rps1 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user1 == author.idLong && it.choice1 == null }
+        if (rps1 != null) {
+            RockPaperScissorsCommand.activeGames.remove(rps1)
+
+            rps1.choice1 = try {
+                RockPaperScissorsGame.RPS.valueOf(event.message.contentRaw.toUpperCase())
+            } catch (t: Throwable) {
+                null
+            }
+            RockPaperScissorsCommand.activeGames.add(rps1)
+            return
+        }
+
+        val rps2 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user2 == author.idLong && it.choice2 == null }
+        if (rps2 != null) {
+            RockPaperScissorsCommand.activeGames.remove(rps2)
+
+            rps2.choice2 = try {
+                RockPaperScissorsGame.RPS.valueOf(event.message.contentRaw.toUpperCase())
+            } catch (t: Throwable) {
+                null
+            }
+            RockPaperScissorsCommand.activeGames.add(rps2)
+        }
+    }
+
 
     private suspend fun handleSimpleMelijnPing(event: MessageReceivedEvent) {
         if (event.author.isBot) return
