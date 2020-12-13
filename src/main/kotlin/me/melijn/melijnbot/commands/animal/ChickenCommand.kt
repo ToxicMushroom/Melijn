@@ -9,12 +9,12 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.web.WebManager
 import me.melijn.melijnbot.internals.web.WebUtils
 
-class CatCommand : AbstractCommand("command.cat") {
+class ChickenCommand : AbstractCommand("command.chicken") {
 
     init {
-        id = 46
-        name = "cat"
-        aliases = arrayOf("meow", "🐈")
+        id = 239
+        name = "chicken"
+        aliases = arrayOf("toktok", "mist69", "kieke", "kip", "\uD83D\uDC13")
         commandCategory = CommandCategory.ANIMAL
     }
 
@@ -24,28 +24,15 @@ class CatCommand : AbstractCommand("command.cat") {
 
         val eb = Embedder(context)
             .setTitle(title)
-            .setImage(getRandomCatUrl(web, context.container.settings.tokens.randomCatApi))
+            .setImage(getRandomChickenUrl(web, context.container.settings.api.imgHoard.token))
         sendEmbedRsp(context, eb.build())
     }
 
-    private suspend fun getRandomCatUrl(webManager: WebManager, apiKey: String): String {
-        val headers = mapOf(
-            "x-api-key" to apiKey
-        )
-
-        val params = mapOf(
-            "limit" to "1",
-            "format" to "json",
-            "order" to "RANDOM"
-        )
-
-        val reply = WebUtils.getJsonAFromUrl(
-            webManager.httpClient,
-            "https://api.thecatapi.com/v1/images/search",
-            params,
-            headers
-        )
-            ?: return MISSING_IMAGE_URL
-        return reply.getObject(0).getString("url", MISSING_IMAGE_URL)
+    private suspend fun getRandomChickenUrl(webManager: WebManager, token: String): String {
+        val reply = WebUtils.getJsonFromUrl(
+            webManager.httpClient, "https://api.miki.bot/images/random?tags=chicken",
+            headers = mapOf(Pair("Authorization", token))
+        ) ?: return MISSING_IMAGE_URL
+        return reply.getString("url")
     }
 }

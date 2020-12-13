@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.services.ppexpiry.PPExpireService
 import me.melijn.melijnbot.internals.services.reddit.RedditAboutService
 import me.melijn.melijnbot.internals.services.reddit.RedditService
 import me.melijn.melijnbot.internals.services.reminders.ReminderService
+import me.melijn.melijnbot.internals.services.rockpaperscissors.RSPService
 import me.melijn.melijnbot.internals.services.roles.RolesService
 import me.melijn.melijnbot.internals.services.stats.StatsService
 import me.melijn.melijnbot.internals.services.voice.VoiceScoutService
@@ -50,6 +51,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         services.add(RedditService(webManager.httpClient, daoManager.driverManager))
         services.add(RedditAboutService(webManager.httpClient, daoManager.driverManager))
         services.add(PPExpireService(daoManager.autoPunishmentWrapper))
+        services.add(RSPService(shardManager, daoManager))
     }
 
     fun startSlowservices() {
