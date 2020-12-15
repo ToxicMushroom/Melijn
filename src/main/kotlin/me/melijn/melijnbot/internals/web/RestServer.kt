@@ -24,6 +24,7 @@ import me.melijn.melijnbot.internals.web.rest.settings.logging.PostLoggingSettin
 import me.melijn.melijnbot.internals.web.rest.settings.starboard.GetStarboardSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.settings.starboard.PostStarboardSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.shutdown.ShutdownResponseHandler
+import me.melijn.melijnbot.internals.web.rest.stats.PublicStatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.StatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.voted.VotedResponseHandler
 import net.dv8tion.jda.api.utils.data.DataArray
@@ -50,6 +51,14 @@ class RestServer(container: Container) {
             get("/stats") {
                 try {
                     StatsResponseHandler.handleStatsResponse(RequestContext(call, container))
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                    call.respondText { t.message + "\n" + t.stackTraceToString() }
+                }
+            }
+            get("/publicStats") {
+                try {
+                    PublicStatsResponseHandler.handlePublicStatsResponse(RequestContext(call, container))
                 } catch (t: Throwable) {
                     t.printStackTrace()
                     call.respondText { t.message + "\n" + t.stackTraceToString() }

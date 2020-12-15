@@ -61,15 +61,15 @@ object GetStarboardSettingsResponseHandler {
                 ChannelType.STARBOARD,
                 Permission.MESSAGE_WRITE, Permission.MESSAGE_HISTORY
             )?.idLong
-            settings.put("starboardChannel", channel)
+            settings.put("starboardChannel", channel?.toString())
         })
 
         jobs.add(TaskManager.async {
             val sbSettings = daoManager.starboardSettingsWrapper.getStarboardSettings(guild.idLong)
 
             settings
-                .put("minstarcount", sbSettings.minStars)
-                .put("excludedChannels", sbSettings.excludedChannelIds)
+                .put("minStarCount", sbSettings.minStars)
+                .put("excludedChannels", DataArray.fromCollection(sbSettings.excludedChannelIds.split(",")))
         })
 
         val channelStructure = mutableMapOf<String, DataArray>()
