@@ -39,11 +39,15 @@ class MelijnBot {
 
         val nodeMap = mutableMapOf<String, Array<Settings.Lavalink.LLNode>>()
         nodeMap["normal"] = container.settings.lavalink.verified_nodes
-        nodeMap["http"] = container.settings.lavalink.http_nodes
+        if (container.settings.lavalink.enabled_http_nodes) {
+            nodeMap["http"] = container.settings.lavalink.http_nodes
+        }
 
         logger.info("Connecting to lavalink")
         val jdaLavaLink = runBlocking {
-            TaskManager.taskValueAsync { generateJdaLinkFromNodes(container, nodeMap) }.await()
+            TaskManager.taskValueAsync {
+                generateJdaLinkFromNodes(container, nodeMap)
+            }.await()
         }
 
         container.initLava(jdaLavaLink)

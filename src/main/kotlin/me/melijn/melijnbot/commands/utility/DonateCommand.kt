@@ -51,6 +51,7 @@ class DonateCommand : AbstractCommand("command.donate") {
     override suspend fun execute(context: CommandContext) {
         val msg = context.getTranslation("$root.response")
             .withVariable("url", "https://patreon.com/melijn")
+            .withVariable("urlPaypal", "https://paypal.me/shroomish")
         sendRsp(context, msg)
     }
 }

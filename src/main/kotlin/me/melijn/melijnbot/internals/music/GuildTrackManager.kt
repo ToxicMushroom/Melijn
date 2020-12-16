@@ -7,6 +7,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import kotlinx.coroutines.delay
 import me.melijn.llklient.player.IPlayer
 import me.melijn.llklient.player.event.AudioEventAdapterWrapped
+import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
@@ -88,6 +89,7 @@ class GuildTrackManager(
     }
 
     private suspend fun chekNChangeGroup(uri: String) {
+        if (!Container.instance.settings.lavalink.enabled_http_nodes) return
         if (YTSearch.isUnknownHTTP(uri)) {
             if (groupId == "normal") {
                 lavaManager.changeGroup(guildId, "http")

@@ -73,6 +73,7 @@ data class Settings(
     data class Lavalink(
         var http_nodes: Array<LLNode>,
         var verified_nodes: Array<LLNode>,
+        var enabled_http_nodes: Boolean,
         var enabled: Boolean
     ) {
         data class LLNode(val groupId: String, val host: String, val pass: String)
@@ -186,6 +187,7 @@ data class Settings(
                 Lavalink(
                     llNodes.filter { it.groupId == "http" }.toTypedArray(),
                     llNodes.filter { it.groupId == "normal" }.toTypedArray(),
+                    getBoolean("lavalink.enabled.http.nodes"),
                     getBoolean("lavalink.enabled")
                 ),
                 Token(

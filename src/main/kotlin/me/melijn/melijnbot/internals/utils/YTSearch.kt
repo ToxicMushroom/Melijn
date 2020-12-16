@@ -64,7 +64,7 @@ class YTSearch {
                         restClient?.getYoutubeSearchResult(query)
                     }
                     else -> {
-                        if (isUnknownHTTP(query)) {
+                        if (Container.instance.settings.lavalink.enabled_http_nodes && isUnknownHTTP(query)) {
                             val httpRestClient = lLink?.loadBalancer?.getRandomSocket("http")?.restClient
                             httpRestClient?.loadItem(query, lpCallback)
                         } else {
@@ -82,11 +82,15 @@ class YTSearch {
 
             llDisabledAndNotYT()
         } catch (t: Throwable) {
-            consumeCallback(lpCallback).invoke(DataObject.empty()
-                .put("loadType", "LOAD_FAILED")
-                .put("exception", DataObject.empty()
-                    .put("message", "unknown")
-                    .put("severity", FriendlyException.Severity.SUSPICIOUS.toString())))
+            consumeCallback(lpCallback).invoke(
+                DataObject.empty()
+                    .put("loadType", "LOAD_FAILED")
+                    .put(
+                        "exception", DataObject.empty()
+                            .put("message", "unknown")
+                            .put("severity", FriendlyException.Severity.SUSPICIOUS.toString())
+                    )
+            )
             t.printStackTrace()
         }
     }
