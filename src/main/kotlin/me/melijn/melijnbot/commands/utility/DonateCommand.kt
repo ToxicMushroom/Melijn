@@ -4,7 +4,9 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
@@ -15,8 +17,19 @@ class DonateCommand : AbstractCommand("command.donate") {
         id = 97
         name = "donate"
         aliases = arrayOf("patreon", "patron", "premium", "donator", "subscribe")
-        children = arrayOf(LinkServerArg(root))
+        children = arrayOf(
+            LinkServerArg(root)
+        )
         commandCategory = CommandCategory.UTILITY
+    }
+
+    override suspend fun execute(context: CommandContext) {
+        val msg = context.getTranslation("$root.response")
+            .withVariable("url", "https://patreon.com/melijn")
+            .withVariable("urlPaypal", "https://paypal.me/shroomish")
+        val eb = Embedder(context)
+            .setDescription(msg)
+        sendEmbedRsp(context, eb.build())
     }
 
     class LinkServerArg(parent: String) : AbstractCommand("$parent.linkserver") {
@@ -48,10 +61,5 @@ class DonateCommand : AbstractCommand("command.donate") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
-        val msg = context.getTranslation("$root.response")
-            .withVariable("url", "https://patreon.com/melijn")
-            .withVariable("urlPaypal", "https://paypal.me/shroomish")
-        sendRsp(context, msg)
-    }
+
 }
