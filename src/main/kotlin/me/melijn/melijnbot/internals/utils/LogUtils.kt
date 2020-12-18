@@ -724,9 +724,7 @@ object LogUtils {
     }
 
 
-    const val VOTE_LINKS = "TopGG:  [%statusOne%](https://top.gg/bot/melijn/vote) - `12h` - use `uBlock Origin` to block/skip ads\n" +
-        "DiscordBotList:  [%statusTwo%](https://discordbotlist.com/bots/melijn/upvote) - `12h`\n" +
-        "DiscordBoats:  [%statusFour%](https://discord.boats/bot/368362411591204865/vote) - `12h`"
+    const val VOTE_LINKS = "TopGG:  %statusOne% - `12h` - use `uBlock Origin` to block/skip ads"
 
     suspend fun sendVoteReminder(daoManager: DaoManager, flag: Int, userId: Long) {
         val user = MelijnBot.shardManager.retrieveUserById(userId).await()
@@ -735,44 +733,30 @@ object LogUtils {
         val userVote = daoManager.voteWrapper.getUserVote(userId) ?: return
         val cMillis = System.currentTimeMillis()
 
-        val readyOne = getBotListTimeOut(BotList.TOP_GG) + userVote.topggLastTime - cMillis
-        val readyTwo = getBotListTimeOut(BotList.DISCORD_BOT_LIST_COM) + userVote.dblLastTime - cMillis
-        val readyThree = getBotListTimeOut(BotList.BOTS_FOR_DISCORD_COM) + userVote.bfdLastTime - cMillis
-        val readyFour = getBotListTimeOut(BotList.DISCORD_BOATS) + userVote.dboatsLastTime - cMillis
-
-        val statusOne = if (readyOne <= 1000L) "Ready" else getDurationString(readyOne)
-        val statusTwo = if (readyTwo <= 1000L) "Ready" else getDurationString(readyTwo)
-        val statusThree = if (readyThree <= 1000L) "Ready" else getDurationString(readyThree)
-        val statusFour = if (readyFour <= 1000L) "Ready" else getDurationString(readyFour)
-
         val botlist = getBotListFromFlag(VoteReminderOption.values().first { it.number == flag })
         val embedder = Embedder(daoManager, -1, userId)
             .setTitle("Your vote for $botlist is ready (o゜▽゜)o☆")
             .setDescription("This is a reminder that you can vote again")
             .addField(
                 "top.gg",
-                "[%ready%](https://top.gg/bot/melijn/vote)"
-                    .withVariable("ready", statusOne),
-                true
-            )
-            .addField(
-                "discordbotlist.com",
-                "[%ready%](https://discordbotlist.com/bots/melijn/upvote)"
-                    .withVariable("ready", statusTwo),
+                getVoteStatusForSite(VoteReminderOption.TOPGG, userVote.topggLastTime - cMillis),
                 true
             )
 //            .addField(
-//                "botsfordiscord.com",
-//                "[%ready%](https://botsfordiscord.com/bot/368362411591204865/vote)"
-//                    .withVariable("ready", statusThree),
+//                "discordbotlist.com",
+//                getVoteStatusForSite(VoteReminderOption.DBLCOM, offset),
 //                true
 //            )
-            .addField(
-                "discord.boats",
-                "[%ready%](https://discord.boats/bot/368362411591204865/vote)"
-                    .withVariable("ready", statusFour),
-                true
-            )
+//            .addField(
+//                "botsfordiscord.com",
+//                getVoteStatusForSite(VoteReminderOption.BFDCOM, offset),
+//                true
+//            )
+//            .addField(
+//                "discord.boats",
+//                getVoteStatusForSite(VoteReminderOption.DBOATS, offset),
+//                true
+//            )
             .addField("Current Streak", userVote.streak.toString(), true)
             .setFooter("You can disable this reminder with >toggleVoteReminder")
             .build()
@@ -782,6 +766,29 @@ object LogUtils {
         } catch (t: Throwable) {
         }
     }
+
+    fun getVoteStatusForSite(opt: VoteReminderOption, offset: Long): String {
+        val readyOne = getBotListTimeOut(BotList.TOP_GG) + offset
+        val voteLink = getBotListVoteLinkFromFlag(opt)
+        return "**[${
+            if (readyOne <= 1000L) {
+                "vote ready"
+            } else {
+                getDurationString(readyOne)
+            }
+        }]($voteLink)**"
+    }
+
+    private fun getBotListVoteLinkFromFlag(opt: VoteReminderOption): String {
+        return when (opt) {
+            VoteReminderOption.TOPGG -> "https://top.gg/bot/melijn/vote"
+            VoteReminderOption.DBLCOM -> "https://discordbotlist.com/bots/melijn/upvote"
+            VoteReminderOption.BFDCOM -> "https://botsfordiscord.com/bot/368362411591204865/vote"
+            VoteReminderOption.DBOATS -> "https://discord.boats/bot/368362411591204865/vote"
+            VoteReminderOption.GLOBAL -> "all sites"
+        }
+    }
+
 
     private fun getBotListFromFlag(opt: VoteReminderOption): String {
         return when (opt) {
