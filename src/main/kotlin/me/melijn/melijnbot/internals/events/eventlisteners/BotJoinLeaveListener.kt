@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.events.guild.GuildLeaveEvent
 
 class BotJoinLeaveListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildJoinEvent) {
             onBotJoinGuild(event)
         } else if (event is GuildLeaveEvent) {

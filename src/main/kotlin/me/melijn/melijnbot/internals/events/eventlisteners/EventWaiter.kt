@@ -1,12 +1,12 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
+import me.melijn.melijnbot.internals.events.SuspendListener
 import me.melijn.melijnbot.internals.threading.TaskManager
 import net.dv8tion.jda.api.events.Event
 import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.hooks.EventListener
 
 
-class EventWaiter : EventListener {
+class EventWaiter : SuspendListener() {
 
     private val eventHandlers = mutableMapOf<Class<*>, Set<EventHandler<GenericEvent>>>()
 
@@ -42,19 +42,17 @@ class EventWaiter : EventListener {
     }
 
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         val found = eventHandlers[event::class.java] ?: return
-        TaskManager.async {
-            for (handler in found) {
-                if (handler.tryRun(event)) {
-                    val set = eventHandlers.getOrDefault(event::class.java, emptySet()).toMutableSet()
+        for (handler in found) {
+            if (handler.tryRun(event)) {
+                val set = eventHandlers.getOrDefault(event::class.java, emptySet()).toMutableSet()
 
-                    tryCast<EventHandler<GenericEvent>>(handler) {
-                        set.remove(this)
-                    }
-
-                    eventHandlers[event::class.java] = set
+                tryCast<EventHandler<GenericEvent>>(handler) {
+                    set.remove(this)
                 }
+
+                eventHandlers[event::class.java] = set
             }
         }
     }

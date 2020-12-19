@@ -23,7 +23,7 @@ import java.time.temporal.ChronoUnit
 
 class JoinLeaveListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMemberJoinEvent) onGuildMemberJoin(event)
         else if (event is GuildMemberRemoveEvent) onGuildMemberLeave(event)
     }

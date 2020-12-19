@@ -3,7 +3,6 @@ package me.melijn.melijnbot.commandutil.image
 import com.madgag.gif.fmsware.GifDecoder
 import com.squareup.gifencoder.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.ImageUtils
@@ -208,7 +207,7 @@ object ImageCommandUtil {
         }, 0)
     }
 
-    private fun addFrameToEncoderReverseThingie(
+    private suspend fun addFrameToEncoderReverseThingie(
         decoder: GifDecoder,
         debug: Boolean,
         gct: IntArray,
@@ -242,27 +241,25 @@ object ImageCommandUtil {
         options.setDelay(delay, TimeUnit.MILLISECONDS)
 
         if (debug) {
-            runBlocking {
-                val lct = if (frameMeta.lct.isEmpty()) {
-                    gct
-                } else {
-                    frameMeta.lct
-                }
-
-                val bgColor = if (lct.size > frameMeta.bgIndex && frameMeta.bgIndex != -1) {
-                    Color(lct[frameMeta.bgIndex])
-                } else {
-                    null
-                }
-
-                val transColor = if (lct.size > frameMeta.transIndex && frameMeta.transIndex != -1) {
-                    Color(lct[frameMeta.transIndex])
-                } else {
-                    null
-                }
-
-                sendMsgAwaitEL(context, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
+            val lct = if (frameMeta.lct.isEmpty()) {
+                gct
+            } else {
+                frameMeta.lct
             }
+
+            val bgColor = if (lct.size > frameMeta.bgIndex && frameMeta.bgIndex != -1) {
+                Color(lct[frameMeta.bgIndex])
+            } else {
+                null
+            }
+
+            val transColor = if (lct.size > frameMeta.transIndex && frameMeta.transIndex != -1) {
+                Color(lct[frameMeta.transIndex])
+            } else {
+                null
+            }
+
+            sendMsgAwaitEL(context, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
         }
 
         encoder.addImage(

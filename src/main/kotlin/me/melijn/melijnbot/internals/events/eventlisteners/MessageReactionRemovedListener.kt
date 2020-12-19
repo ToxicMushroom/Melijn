@@ -1,9 +1,9 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.SelfRoleUtil
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.utils.awaitBool
 import me.melijn.melijnbot.internals.utils.awaitOrNull
@@ -12,13 +12,13 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemove
 
 class MessageReactionRemovedListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMessageReactionRemoveEvent) {
             onGuildMessageReactionRemove(event)
         }
     }
 
-    private fun onGuildMessageReactionRemove(event: GuildMessageReactionRemoveEvent) = runBlocking {
+    private fun onGuildMessageReactionRemove(event: GuildMessageReactionRemoveEvent) = TaskManager.async {
         selfRoleHandler(event)
     }
 

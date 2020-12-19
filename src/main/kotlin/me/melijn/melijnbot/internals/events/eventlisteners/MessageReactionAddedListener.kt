@@ -35,7 +35,7 @@ import java.lang.Integer.min
 
 class MessageReactionAddedListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMessageReactionAddEvent) onGuildMessageReactionAdd(event)
         if (event is PrivateMessageReactionAddEvent) onPrivateMessageReactionAdd(event)
     }

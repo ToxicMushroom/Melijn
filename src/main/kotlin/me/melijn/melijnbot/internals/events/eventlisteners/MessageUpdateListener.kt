@@ -19,7 +19,7 @@ import java.awt.Color
 
 class MessageUpdateListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMessageUpdateEvent) {
             TaskManager.async(event.author, event.channel) {
                 onMessageUpdate(event)

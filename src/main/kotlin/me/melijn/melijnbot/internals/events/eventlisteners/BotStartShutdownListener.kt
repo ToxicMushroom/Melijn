@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
@@ -12,9 +11,9 @@ import net.dv8tion.jda.api.events.StatusChangeEvent
 class BotStartShutdownListener(container: Container) : AbstractListener(container) {
 
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is StatusChangeEvent) {
-            runBlocking { onStatusChange(event) }
+            onStatusChange(event)
         }
     }
 
