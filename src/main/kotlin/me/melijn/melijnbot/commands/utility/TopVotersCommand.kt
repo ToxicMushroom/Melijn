@@ -35,6 +35,7 @@ class TopVotersCommand : AbstractCommand("command.topvoters") {
             sendRsp(context, msg)
             return
         }
+        val rowCount = wrapper.getRowCount()
 
         val tableBuilder = TableBuilder().apply {
             this.setColumns(
@@ -42,23 +43,51 @@ class TopVotersCommand : AbstractCommand("command.topvoters") {
                 Cell("Votes", Alignment.RIGHT),
                 Cell("User")
             )
+            this.seperatorOverrides[0] = " "
+        }
+
+        val pos = if (!userMap.keys.contains(context.authorId)) {
+            wrapper.getPosition(context.authorId)
+        } else null
+
+
+        val last = pos?.second == -1L
+        if (pos != null && pos.second < 1 + (10 * page) && !last) {
+            tableBuilder.addRow(
+                Cell("${pos.second}."),
+                Cell(bigNumberFormatter.valueToString(pos.first), Alignment.RIGHT),
+                Cell(context.author.asTag)
+            )
+            tableBuilder.addSplit()
         }
         for ((index, pair) in userMap.toList().withIndex()) {
             val user = context.shardManager.retrieveUserById(pair.first).await()
+
             tableBuilder.addRow(
                 Cell("${index + 1 + (10 * page)}."),
                 Cell(bigNumberFormatter.valueToString(pair.second), Alignment.RIGHT),
                 Cell(user.asTag)
             )
+
         }
+        if (pos != null && (pos.second > 1 + (10 * page) || last)) {
+            tableBuilder.addSplit()
+            tableBuilder.addRow(
+                Cell(if (last) "${rowCount + 1}." else "${pos.second}."),
+                Cell(bigNumberFormatter.valueToString(pos.first), Alignment.RIGHT),
+                Cell(context.author.asTag)
+            )
+        }
+
+
         val msgs = tableBuilder.build(true)
 
-        val totalPageCount = ceil(wrapper.getRowCount() / 10.0).toLong()
+        val totalPageCount = ceil(rowCount / 10.0).toLong()
+
         val eb = Embedder(context)
         for (msg in msgs) {
             eb.setDescription(msg)
             eb.setFooter("Page ${page + 1}/$totalPageCount")
-
             sendEmbedRsp(context, eb.build())
         }
     }

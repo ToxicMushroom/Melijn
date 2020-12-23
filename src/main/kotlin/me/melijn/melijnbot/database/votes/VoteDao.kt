@@ -63,6 +63,20 @@ class VoteDao(driverManager: DriverManager) : Dao(driverManager) {
             users
         )
     }
+
+    suspend fun getPosition(userId: Long): Pair<Long, Long> = suspendCoroutine {
+        driverManager.executeQuery(
+            "SELECT * FROM (SELECT *, row_number() OVER (ORDER BY votes DESC) as position FROM $table) x WHERE userId = ?",
+            { rs ->
+                if (rs.next()) {
+                    it.resume(Pair(rs.getLong("votes"), rs.getLong("position")))
+                } else {
+                    it.resume(Pair(0, -1))
+                }
+            },
+            userId
+        )
+    }
 }
 
 data class UserVote(

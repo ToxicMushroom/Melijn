@@ -18,4 +18,8 @@ class VoteWrapper(private val voteDao: VoteDao) {
         return voteDao.getRowCount()
     }
 
+    suspend fun getPosition(userId: Long): Pair<Long, Long> {
+        return voteDao.getPosition(userId)
+    }
+
 }
