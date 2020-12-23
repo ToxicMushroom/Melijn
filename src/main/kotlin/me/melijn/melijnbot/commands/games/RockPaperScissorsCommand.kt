@@ -39,19 +39,19 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
         if (activeGame(context, context.author, user)) return
 
         val balanceWrapper = context.daoManager.balanceWrapper
-        val bal1 = balanceWrapper.getBalance(context.authorId)
-        val bal2 = balanceWrapper.getBalance(user.idLong)
+        val bal11 = balanceWrapper.getBalance(context.authorId)
+        val bal22 = balanceWrapper.getBalance(user.idLong)
 
-        if (bet > bal1) {
+        if (bet > bal11) {
             val msg = context.getTranslation("$root.user1.notenoughbalance")
-                .withVariable("bal", bal1)
+                .withVariable("bal", bal11)
             sendRsp(context, msg)
             return
-        } else if (bet > bal2) {
+        } else if (bet > bal22) {
             val msg = context.getTranslation(
                 "$root.user2.notenoughbalance"
             ).withSafeVariable("user2", user.asTag)
-                .withVariable("bal", bal2)
+                .withVariable("bal", bal22)
             sendRsp(context, msg)
             return
         }
@@ -72,7 +72,22 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
                 content.equals("y", true) ||
                 content.equals("accept", true)
             ) {
+                val bal1 = balanceWrapper.getBalance(context.authorId)
+                val bal2 = balanceWrapper.getBalance(user.idLong)
 
+                if (bet > bal1) {
+                    val msg = context.getTranslation("$root.user1.notenoughbalance")
+                        .withVariable("bal", bal1)
+                    sendRsp(context, msg)
+                    return@waitFor
+                } else if (bet > bal2) {
+                    val msg = context.getTranslation(
+                        "$root.user2.notenoughbalance"
+                    ).withSafeVariable("user2", user.asTag)
+                        .withVariable("bal", bal2)
+                    sendRsp(context, msg)
+                    return@waitFor
+                }
                 val title = context.getTranslation("$root.dmmenu.title")
                 val description = context.getTranslation("$root.dmmenu.description")
                 val optionMenu = Embedder(context)
