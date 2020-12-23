@@ -113,6 +113,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val userPermissionWrapper: UserPermissionWrapper
     val channelRolePermissionWrapper: ChannelRolePermissionWrapper
     val channelUserPermissionWrapper: ChannelUserPermissionWrapper
+    val discordChannelOverridesWrapper: DiscordChannelOverridesWrapper
 
     val disabledCommandWrapper: DisabledCommandWrapper
     val channelCommandStateWrapper: ChannelCommandStateWrapper
@@ -222,6 +223,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         userPermissionWrapper = UserPermissionWrapper(UserPermissionDao(driverManager))
         channelRolePermissionWrapper = ChannelRolePermissionWrapper(ChannelRolePermissionDao(driverManager))
         channelUserPermissionWrapper = ChannelUserPermissionWrapper(ChannelUserPermissionDao(driverManager))
+        discordChannelOverridesWrapper = DiscordChannelOverridesWrapper(DiscordChannelOverridesDao(driverManager))
 
         disabledCommandWrapper = DisabledCommandWrapper(DisabledCommandDao(driverManager))
 

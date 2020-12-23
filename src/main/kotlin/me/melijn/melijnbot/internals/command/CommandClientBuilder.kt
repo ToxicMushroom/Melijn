@@ -262,7 +262,9 @@ class CommandClientBuilder(private val container: Container) {
         RepCommand(),
         BegCommand(),
         ChickenCommand(),
-        FishCommand()
+        FishCommand(),
+        LockCommand(),
+        UnlockCommand()
     )
 
     fun build(): CommandClient {
