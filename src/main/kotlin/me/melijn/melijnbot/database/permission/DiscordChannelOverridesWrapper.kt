@@ -18,4 +18,8 @@ class DiscordChannelOverridesWrapper(private val discordChannelOverridesDao: Dis
     suspend fun getAll(guildId: Long, channelId: Long): Map<Long, Pair<Long, Long>> {
         return discordChannelOverridesDao.getAll(guildId, channelId)
     }
+
+    fun removeAll(guildId: Long, list: List<Long>) {
+         discordChannelOverridesDao.removeAll(guildId, list)
+    }
 }

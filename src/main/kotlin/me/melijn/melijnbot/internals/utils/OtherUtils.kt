@@ -496,6 +496,18 @@ fun <E : Any> MutableList<E>.addIfNotPresent(value: E): Boolean {
     return false
 }
 
+// Returns amount of added values
+fun <E : Any> MutableList<E>.addAllIfNotPresent(col: Collection<E>): Int {
+    var count = 0
+    for (value in col) {
+        if (!this.contains(value)) {
+            this.add(value)
+            count++
+        }
+    }
+    return count
+}
+
 fun MutableList<String>.addIfNotPresent(value: String, ignoreCase: Boolean): Boolean {
     if (this.none { it.equals(value, ignoreCase) }) {
         this.add(value)

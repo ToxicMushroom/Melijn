@@ -70,4 +70,20 @@ class DiscordChannelOverridesDao(driverManager: DriverManager) : CacheDBDao(driv
             }, guildId, channelId
         )
     }
+
+    fun removeAll(guildId: Long, list: List<Long>) {
+        driverManager.getUsableConnection {
+            val statement = it.prepareStatement(
+                "DELETE FROM $table WHERE guild_id = ? AND channel_id = ?"
+            )
+            statement.setLong(1, guildId)
+
+            for (id in list) {
+                statement.setLong(2, id)
+                statement.addBatch()
+            }
+
+            statement.executeBatch()
+        }
+    }
 }
