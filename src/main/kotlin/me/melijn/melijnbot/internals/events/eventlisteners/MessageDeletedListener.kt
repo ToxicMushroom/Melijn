@@ -41,7 +41,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val recentDeletions = ConcurrentHashMap<Pair<Long, Long>, Map<DaoMessage, Long>>()
     }
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMessageDeleteEvent) {
             TaskManager.async(event.channel) {
                 onGuildMessageDelete(event)

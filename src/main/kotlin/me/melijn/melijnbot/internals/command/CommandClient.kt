@@ -9,6 +9,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.command.CustomCommand
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.ChannelCommandState
+import me.melijn.melijnbot.internals.events.SuspendListener
 import me.melijn.melijnbot.internals.jagtag.CCJagTagParser
 import me.melijn.melijnbot.internals.jagtag.CCJagTagParserArgs
 import me.melijn.melijnbot.internals.models.TriState
@@ -20,14 +21,14 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
 import kotlin.random.Random
 
 val SPACE_REGEX = "\\s+".toRegex()
 
 class CommandClient(private val commandList: Set<AbstractCommand>, private val container: Container) :
-    ListenerAdapter() {
+    SuspendListener() {
 
     private val guildPrefixWrapper = container.daoManager.guildPrefixWrapper
     private val userPrefixWrapper = container.daoManager.userPrefixWrapper
@@ -46,15 +47,17 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
     }
 
 
-    override fun onMessageReceived(event: MessageReceivedEvent) {
-        if (event.author.isBot) return
+    override suspend fun onEvent(event: GenericEvent) {
+        if (event is MessageReceivedEvent) {
+            if (event.author.isBot) return
 
-        CoroutineScope(Dispatchers.Default).launch {
-            try {
-                commandFinder(event)
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                t.sendInGuild(event.guild, shouldSend = false)
+            CoroutineScope(Dispatchers.Default).launch {
+                try {
+                    commandFinder(event)
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                    t.sendInGuild(event.guild, shouldSend = false)
+                }
             }
         }
     }

@@ -130,13 +130,8 @@ class UserGuildTask(
 class RunnableTask(private val func: suspend () -> Unit) : Runnable {
 
     override fun run() {
-        runBlocking {
-            try {
-                func()
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                e.sendInGuild()
-            }
+        TaskManager.async {
+            func()
         }
     }
 }

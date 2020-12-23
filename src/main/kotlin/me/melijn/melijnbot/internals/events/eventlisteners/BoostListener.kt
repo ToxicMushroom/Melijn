@@ -22,7 +22,7 @@ import net.dv8tion.jda.api.events.guild.update.GuildUpdateBoostCountEvent
 
 class BoostListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildUpdateBoostCountEvent) {
             TaskManager.async(event.guild) { onBoost(event) }
         }

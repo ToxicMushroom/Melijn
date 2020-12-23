@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.utils.LogUtils
@@ -11,7 +10,7 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleRemoveEvent
 
 class RoleRemovedListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) = runBlocking {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMemberRoleRemoveEvent) {
             logRoleRemoved(event)
         }

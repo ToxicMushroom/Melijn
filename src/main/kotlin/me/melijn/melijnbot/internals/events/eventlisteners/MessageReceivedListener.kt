@@ -34,7 +34,7 @@ import java.awt.Color
 
 class MessageReceivedListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMessageReceivedEvent) {
             TaskManager.async(event.author, event.channel) {
                 handleMessageReceivedStoring(event)

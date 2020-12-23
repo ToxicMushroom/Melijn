@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent
 
 class VoiceJoinListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildVoiceJoinEvent) {
             if (!event.member.user.isBot) {
                 TaskManager.async(event.member.user, event.guild) {

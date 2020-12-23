@@ -47,7 +47,7 @@ class MuteService(
             val guild = shardManager.getGuildById(mute.guildId) ?: continue
 
             val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE, true)
-            val author = shardManager.retrieveUserById(newMute.muteAuthorId ?: -1).awaitOrNull()
+            val author = newMute.muteAuthorId?.let { shardManager.retrieveUserById(it).awaitOrNull() }
             val muted = shardManager.retrieveUserById(newMute.mutedId).awaitOrNull()
             val mutedMember = if (muted == null) null else guild.retrieveMember(muted).awaitOrNull()
             if (mutedMember != null && muteRole != null && mutedMember.roles.contains(muteRole)) {
