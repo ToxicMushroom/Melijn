@@ -20,7 +20,7 @@ class BegCommand : AbstractCommand("command.beg") {
         if (!canBegElseMessage(context)) return
 
         val balanceWrapper = context.daoManager.balanceWrapper
-        val reward = Random.nextInt(10)
+        val reward = Random.nextInt(10) + 1 // 1-10
         val cash = balanceWrapper.getBalance(context.authorId)
 
         balanceWrapper.setBalance(context.authorId, cash + reward)
