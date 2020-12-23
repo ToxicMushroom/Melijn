@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -12,6 +13,7 @@ class RepCommand : AbstractCommand("command.rep") {
     init {
         id = 237
         name = "rep"
+        runConditions = arrayOf(RunCondition.GUILD)
         commandCategory = CommandCategory.UTILITY
     }
 
