@@ -12,6 +12,8 @@ import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.GuildChannel
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.VoiceChannel
 
 class UnlockCommand : AbstractCommand("command.unlock") {
 
@@ -19,8 +21,10 @@ class UnlockCommand : AbstractCommand("command.unlock") {
         id = 242
         name = "unlock"
         aliases = arrayOf("unlockChannel")
-        discordPermissions =
-            arrayOf(Permission.MESSAGE_WRITE) // need the server permission in order to create overrides for it
+
+        // need the server permission in order to create overrides for it
+        discordPermissions = (LockCommand.textDenyList + LockCommand.voiceDenyList).toTypedArray()
+        cooldown = 10_000
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
@@ -28,13 +32,14 @@ class UnlockCommand : AbstractCommand("command.unlock") {
         val textChannel = getTextChannelByArgsN(context, 0)
         if (textChannel != null) {
             unlockChannel(context, textChannel)
+            context.initCooldown()
             return
         }
 
         val voiceChannel = getVoiceChannelByArgsN(context, 0)
         if (voiceChannel != null) {
             unlockChannel(context, voiceChannel)
-
+            context.initCooldown()
             return
         } else {
             sendSyntax(context)
@@ -44,6 +49,8 @@ class UnlockCommand : AbstractCommand("command.unlock") {
 
     private suspend fun unlockChannel(context: CommandContext, channel: GuildChannel) {
         if (notEnoughPermissionsAndMessage(context, channel, Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES)) return
+        val denyList = if (channel is TextChannel) LockCommand.textDenyList else if (channel is VoiceChannel) LockCommand.voiceDenyList else return
+
         val overrideMap = context.daoManager.discordChannelOverridesWrapper.getAll(
             context.guildId, channel.idLong
         )
@@ -60,7 +67,7 @@ class UnlockCommand : AbstractCommand("command.unlock") {
 
             val manager = channel.upsertPermissionOverride(role)
 
-            for (perm in LockCommand.denyList) {
+            for (perm in denyList) {
                 when {
                     (flags.first and perm.rawValue) != 0L -> {
                         manager.grant(perm)
@@ -78,6 +85,8 @@ class UnlockCommand : AbstractCommand("command.unlock") {
 
         context.daoManager.discordChannelOverridesWrapper.remove(context.guildId, context.channelId)
 
-        sendRsp(context, "🔓 Unlocked **" + channel.name + "**")
+        val msg = context.getTranslation("$root.unlocked")
+            .withVariable(PLACEHOLDER_CHANNEL, channel.name)
+        sendRsp(context, msg)
     }
 }
