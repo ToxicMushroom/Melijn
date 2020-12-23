@@ -10,7 +10,6 @@ WORKDIR /opt/melijn
 COPY --from=builder ./etc/melijn/build/libs/ .
 ENTRYPOINT java \
     -Xmx3000M \
-    -XX:+UseShenandoahGC \
     -Dkotlin.script.classpath="/opt/melijn/melijn.jar" \
     -jar \
     ./melijn.jar
