@@ -42,13 +42,13 @@ class UnlockCommand : AbstractCommand("command.unlock") {
             val textChannel = getTextChannelByArgsN(context, index)
             if (textChannel != null) {
                 text.addIfNotPresent(textChannel)
-                return
+                break
             }
 
             val voiceChannel = getVoiceChannelByArgsN(context, index)
             if (voiceChannel != null) {
                 voice.addIfNotPresent(voiceChannel)
-                return
+                break
             }
 
             if (arg == "all") {
@@ -198,19 +198,19 @@ class UnlockCommand : AbstractCommand("command.unlock") {
             for (perm in denyList) {
                 when {
                     (flags.first and perm.rawValue) != 0L -> { // if the role's first state had this permission allowed
-                        if ((manager.allow and perm.rawValue) == 0L) { // if the channel doesnt already have this permission set to allowed
+                        if (((manager.allow shr perm.offset) and 0x1) == 0L) { // if the channel doesnt already have this permission set to allowed
                             manager.grant(perm)
                             permsChangedHere++
                         }
                     }
                     (flags.second and perm.rawValue) != 0L -> { // if the role's first state had this permission denied
-                        if ((manager.deny and perm.rawValue) == 0L) { // if the channel doesnt already have this permission set to denied
+                        if (((manager.deny shr perm.offset) and 0x1) == 0L) { // if the channel doesnt already have this permission set to denied
                             manager.deny(perm)
                             permsChangedHere++
                         }
                     }
                     else -> { // if the role's first state was to interhit this permission
-                        if ((manager.deny and perm.rawValue) == 0L && (manager.allow and perm.rawValue) == 0L) { // Check if a clear is needed
+                        if (!(((manager.deny shr perm.offset) and 0x1) == 0L && ((manager.allow shr perm.offset) and 0x1) == 0L)) { // Check if a clear is needed
                             manager.clear(perm)
                             permsChangedHere++
                         }

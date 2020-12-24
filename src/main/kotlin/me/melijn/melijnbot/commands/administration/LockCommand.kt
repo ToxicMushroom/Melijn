@@ -46,13 +46,13 @@ class LockCommand : AbstractCommand("command.lock") {
             val textChannel = getTextChannelByArgsN(context, index)
             if (textChannel != null) {
                 text.addIfNotPresent(textChannel)
-                return
+                break
             }
 
             val voiceChannel = getVoiceChannelByArgsN(context, index)
             if (voiceChannel != null) {
                 voice.addIfNotPresent(voiceChannel)
-                return
+                break
             }
 
             if (arg == "all") {
@@ -158,7 +158,6 @@ class LockCommand : AbstractCommand("command.lock") {
         val status = internalLock(context, channel)
         val msg = when (status.third) {
             UnlockCommand.LockStatus.SUCCESS, UnlockCommand.LockStatus.NO_OVERRIDE -> {
-                context.daoManager.discordChannelOverridesWrapper.remove(context.guildId, context.channelId)
                 context.getTranslation("$root.locked")
                     .withVariable(PLACEHOLDER_CHANNEL, channel.name)
                     .withVariable("overrides", status.first)
