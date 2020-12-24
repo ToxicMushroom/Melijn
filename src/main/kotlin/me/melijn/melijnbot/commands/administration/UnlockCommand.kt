@@ -87,11 +87,11 @@ class UnlockCommand : AbstractCommand("command.unlock") {
                 if (it.message.contentRaw == "yes") {
                     unlockMany(context, voice + text)
                 } else {
-                    val rsp = context.getTranslation("$context.manyquestion.denied")
+                    val rsp = context.getTranslation("$root.manyquestion.denied")
                     sendRsp(context, rsp)
                 }
             }, {
-                val rsp = context.getTranslation("$context.manyquestion.expired")
+                val rsp = context.getTranslation("$root.manyquestion.expired")
                 sendRsp(context, rsp)
             }, 120)
         }

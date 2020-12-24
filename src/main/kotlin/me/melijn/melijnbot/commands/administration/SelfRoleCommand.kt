@@ -678,7 +678,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
 
                     if (group.messageIds.isEmpty()) {
-                        val msg = context.getTranslation("$context.empty")
+                        val msg = context.getTranslation("$root.empty")
                             .withVariable("group", group.groupName)
                         sendRsp(context, msg)
                         return

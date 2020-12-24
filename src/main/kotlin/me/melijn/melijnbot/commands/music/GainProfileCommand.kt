@@ -86,7 +86,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
 
             wrapper.add(context.guildId, newName, profile.toFloatArray())
 
-            val msg = context.getTranslation("$context.copied")
+            val msg = context.getTranslation("$root.copied")
                 .withSafeVariable("gainProfile1", name)
                 .withSafeVariable("gainProfile2", newName)
             sendRsp(context, msg)
