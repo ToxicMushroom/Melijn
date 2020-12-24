@@ -90,6 +90,10 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
                     sendRsp(context, msg)
                     return@waitFor
                 }
+
+                balanceWrapper.removeBalance(context.authorId, bet)
+                balanceWrapper.removeBalance(user.idLong, bet)
+
                 val title = context.getTranslation("$root.dmmenu.title")
                 val description = context.getTranslation("$root.dmmenu.description")
                 val optionMenu = Embedder(context)
@@ -102,6 +106,9 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
                 if (msgMenu1 == null) {
                     val msg = defaultDisabledDMsMessage.withVariable("user", context.author.asMention)
                     sendRsp(context, msg)
+
+                    balanceWrapper.addBalance(context.authorId, bet)
+                    balanceWrapper.addBalance(user.idLong, bet)
                     return@waitFor
                 }
 
@@ -111,6 +118,9 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
 
                     val msg = defaultDisabledDMsMessage.withVariable("user", user.asMention)
                     sendRsp(context, msg)
+
+                    balanceWrapper.addBalance(context.authorId, bet)
+                    balanceWrapper.addBalance(user.idLong, bet)
                     return@waitFor
                 }
 
@@ -125,6 +135,9 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
                 if (activeGame(context, context.author, user)) {
                     msgMenu1.delete().queue()
                     msgMenu2.delete().queue()
+
+                    balanceWrapper.addBalance(context.authorId, bet)
+                    balanceWrapper.addBalance(user.idLong, bet)
                     return@waitFor
                 }
                 activeGames.add(game)
@@ -136,9 +149,6 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
                 msgMenu2.addReaction(RockPaperScissorsGame.RPS.ROCK.unicode).queue() // rock 🪨
                 msgMenu2.addReaction(RockPaperScissorsGame.RPS.PAPER.unicode).queue() // paper 📰
                 msgMenu2.addReaction(RockPaperScissorsGame.RPS.SCISSORS.unicode).queue() // scissors ✂
-
-                balanceWrapper.removeBalance(context.authorId, bet)
-                balanceWrapper.removeBalance(user.idLong, bet)
 
                 val msg = if (bet > 0) {
                     context.getTranslation(

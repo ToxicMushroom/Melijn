@@ -111,6 +111,10 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
                     return@waitFor
                 }
 
+                balanceWrapper.removeBalance(context.authorId, bet)
+                balanceWrapper.removeBalance(user.idLong, bet)
+
+
                 val game = TicTacToeGame(
                     context.authorId,
                     user.idLong,
@@ -135,6 +139,8 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
                 if (msgMenu1 == null) {
                     val msg = defaultDisabledDMsMessage.withVariable("user", context.author.asMention)
                     sendMsg(context, msg)
+                    balanceWrapper.addBalance(context.authorId, bet)
+                    balanceWrapper.addBalance(user.idLong, bet)
                     return@waitFor
                 }
 
@@ -145,18 +151,19 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
 
                     val msg = defaultDisabledDMsMessage.withVariable("user", user.asMention)
                     sendMsg(context, msg)
+                    balanceWrapper.addBalance(context.authorId, bet)
+                    balanceWrapper.addBalance(user.idLong, bet)
                     return@waitFor
                 }
 
                 if (activeGame(context, context.author, user)) {
                     msgMenu1.delete().queue()
                     msgMenu2.delete().queue()
+                    balanceWrapper.addBalance(context.authorId, bet)
+                    balanceWrapper.addBalance(user.idLong, bet)
                     return@waitFor
                 }
                 activeGames.add(game)
-
-                balanceWrapper.removeBalance(context.authorId, bet)
-                balanceWrapper.removeBalance(user.idLong, bet)
 
                 val msg = if (bet > 0) {
                     context.getTranslation(
