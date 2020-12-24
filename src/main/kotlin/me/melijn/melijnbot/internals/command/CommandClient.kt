@@ -1,9 +1,6 @@
 package me.melijn.melijnbot.internals.command
 
 import io.ktor.client.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.command.CustomCommand
@@ -51,13 +48,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         if (event is MessageReceivedEvent) {
             if (event.author.isBot) return
 
-            CoroutineScope(Dispatchers.Default).launch {
-                try {
-                    commandFinder(event)
-                } catch (t: Throwable) {
-                    t.printStackTrace()
-                    t.sendInGuild(event.guild, shouldSend = false)
-                }
+            try {
+                commandFinder(event)
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                t.sendInGuild(event.guild, shouldSend = false)
             }
         }
     }
