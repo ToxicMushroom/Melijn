@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.games
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -15,6 +16,7 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
     init {
         name = "rockPaperScissors"
         aliases = arrayOf("rps")
+        runConditions = arrayOf(RunCondition.GUILD)
         commandCategory = CommandCategory.GAME
     }
 

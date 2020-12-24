@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.games
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendMsg
@@ -16,6 +17,7 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
         id = 236
         name = "ticTacToe"
         aliases = arrayOf("ttt")
+        runConditions = arrayOf(RunCondition.GUILD)
         commandCategory = CommandCategory.GAME
     }
 
