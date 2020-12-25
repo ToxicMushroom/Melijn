@@ -20,6 +20,7 @@ plugins {
 application {
     mainClassName = "me.melijn.melijnbot.MelijnBotKt"
 }
+
 group = "me.melijn.melijnbot"
 version = "2.0.8"
 
