@@ -22,7 +22,7 @@ class ForceRoleWrapper(private val forceRoleDao: ForceRoleDao) {
 
     suspend fun add(guildId: Long, userId: Long, roleId: Long) {
         val map = getForceRoles(guildId).toMutableMap()
-        val list = map.getOrDefault(userId, emptyList()).toMutableList()
+        val list = map[userId]?.toMutableList() ?: mutableListOf()
         if (!list.contains(roleId)) {
             list.add(roleId)
             forceRoleDao.add(guildId, userId, roleId)
@@ -33,7 +33,7 @@ class ForceRoleWrapper(private val forceRoleDao: ForceRoleDao) {
 
     suspend fun remove(guildId: Long, userId: Long, roleId: Long) {
         val map = getForceRoles(guildId).toMutableMap()
-        val list = map.getOrDefault(userId, emptyList()).toMutableList()
+        val list = map[userId]?.toMutableList() ?: mutableListOf()
         if (list.contains(roleId)) {
             list.remove(roleId)
             forceRoleDao.remove(guildId, userId, roleId)

@@ -41,21 +41,22 @@ class EventManager(val container: Container) : IEventManager {
             .loadCommands()
             .build()
 
-
+        // ORDER WILL AFFECT ORDER IN WICH EVENTS ARE CALLED
+        eventListeners.add(container.eventWaiter)
         eventListeners.add(commandListener)
-        eventListeners.add(botJoinLeaveListener)
-        eventListeners.add(botStartShutdownListener)
-        eventListeners.add(messageDeletedListener)
         eventListeners.add(messageReceivedListener)
-        eventListeners.add(messageUpdateListener)
+        eventListeners.add(messageDeletedListener)
         eventListeners.add(messageReactionAddedListener)
         eventListeners.add(messageReactionRemovedListener)
+        eventListeners.add(botJoinLeaveListener)
+        eventListeners.add(botStartShutdownListener)
+        eventListeners.add(messageUpdateListener)
         eventListeners.add(joinLeaveListener)
         eventListeners.add(voiceJoinListener)
         eventListeners.add(voiceLeaveListener)
         eventListeners.add(voiceMoveListener)
         eventListeners.add(boostListener)
-        eventListeners.add(container.eventWaiter)
+
         // eventListeners.add(roleAddedListener)
         // eventListeners.add(roleRemovedListener)
 
