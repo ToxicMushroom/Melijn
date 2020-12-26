@@ -3,6 +3,7 @@ package me.melijn.melijnbot.database.role
 import com.fasterxml.jackson.module.kotlin.readValue
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.internals.utils.addIfNotPresent
 import me.melijn.melijnbot.objectMapper
 
 class ForceRoleWrapper(private val forceRoleDao: ForceRoleDao) {
@@ -23,8 +24,7 @@ class ForceRoleWrapper(private val forceRoleDao: ForceRoleDao) {
     suspend fun add(guildId: Long, userId: Long, roleId: Long) {
         val map = getForceRoles(guildId).toMutableMap()
         val list = map[userId]?.toMutableList() ?: mutableListOf()
-        if (!list.contains(roleId)) {
-            list.add(roleId)
+        if (list.addIfNotPresent(roleId)) {
             forceRoleDao.add(guildId, userId, roleId)
         }
         map[userId] = list
@@ -34,11 +34,14 @@ class ForceRoleWrapper(private val forceRoleDao: ForceRoleDao) {
     suspend fun remove(guildId: Long, userId: Long, roleId: Long) {
         val map = getForceRoles(guildId).toMutableMap()
         val list = map[userId]?.toMutableList() ?: mutableListOf()
-        if (list.contains(roleId)) {
-            list.remove(roleId)
+        if (list.remove(roleId)) {
             forceRoleDao.remove(guildId, userId, roleId)
         }
-        map[userId] = list
+        if (list.isEmpty()) {
+            map.remove(userId)
+        } else {
+            map[userId] = list
+        }
         forceRoleDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
 }
