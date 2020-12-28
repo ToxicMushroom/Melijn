@@ -9,7 +9,7 @@ class ForceRoleDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "forcedRoles"
     override val tableStructure: String = "guildId bigint, userId bigint, roleId bigint"
-    override val primaryKey: String = "roleId"
+    override val primaryKey: String = "guildId,userId,roleId"
 
     override val cacheName: String = "roles:force"
 

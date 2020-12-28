@@ -144,8 +144,7 @@ object JoinLeaveUtil {
                 wrapper.remove(guild.idLong, member.idLong, roleId)
                 continue
             }
-            if (!member.canInteract(role)) {
-                wrapper.remove(guild.idLong, member.idLong, roleId)
+            if (!guild.selfMember.canInteract(role)) {
                 continue
             }
             guild.addRoleToMember(member, role).reason("forcerole").queue()

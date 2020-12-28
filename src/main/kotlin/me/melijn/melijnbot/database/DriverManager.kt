@@ -69,13 +69,21 @@ class DriverManager(
         try {
             redisConnection = redisClient.connect()
             logger.info("Connected to redis")
+            flushdb()
+
         } catch (e: Throwable) {
             TaskManager.async {
                 logger.warn("Retrying to connect to redis..")
                 recursiveConnectRedis(host, port)
+                flushdb()
                 logger.warn("Retrying to connect to redis has succeeded!")
             }
         }
+    }
+
+    private fun flushdb() {
+        redisConnection?.sync()?.flushdb()
+        logger.info("Flushed redis")
     }
 
     private suspend fun recursiveConnectRedis(host: String, port: Int) {

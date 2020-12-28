@@ -54,6 +54,7 @@ class MelijnBot {
 
         eventManager = EventManager(container)
 
+        logger.info("Building JDA Shardmanager")
         val defaultShardManagerBuilder = DefaultShardManagerBuilder
             .create(
                 GatewayIntent.DIRECT_MESSAGES,
