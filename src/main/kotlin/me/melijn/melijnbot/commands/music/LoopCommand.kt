@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.music
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 
@@ -17,7 +17,7 @@ class LoopCommand : AbstractCommand("command.loop") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         trackManager.loopedTrack = !trackManager.loopedTrack
 

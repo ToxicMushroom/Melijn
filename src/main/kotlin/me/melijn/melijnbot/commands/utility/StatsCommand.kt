@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import com.sun.management.OperatingSystemMXBean
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -24,7 +24,7 @@ class StatsCommand : AbstractCommand("command.stats") {
     }
 
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val bean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
         val totalMem: Long
         val usedMem: Long

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresGuildPremiumMessage
@@ -43,7 +43,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val aliasMap = context.daoManager.aliasWrapper.getAliases(context.guildId)
             if (aliasMap.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
@@ -78,7 +78,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             aliases = arrayOf("ca")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -113,7 +113,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             aliases = arrayOf("c")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -139,7 +139,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             aliases = arrayOf("rma", "ra")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -177,7 +177,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             aliases = arrayOf("rm", "r")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -205,7 +205,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -263,7 +263,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -280,7 +280,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             return null
         }
 
-        suspend fun getCommandPathInfo(context: CommandContext, index: Int): CmdPathInfo? {
+        suspend fun getCommandPathInfo(context: ICommandContext, index: Int): CmdPathInfo? {
             val commandParts = context.args[index].split(SPACE_PATTERN)
             val cmd = find(context.commandList.toTypedArray(), commandParts, 0)
             if (cmd == null) {

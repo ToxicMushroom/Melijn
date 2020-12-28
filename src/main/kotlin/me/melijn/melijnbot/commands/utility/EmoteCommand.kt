@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -18,7 +18,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -71,7 +71,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
 
     private suspend fun replaceMissingEmoteVars(
         string: String,
-        context: CommandContext,
+        context: ICommandContext,
         id: String,
         name: String,
         animated: Boolean
@@ -82,7 +82,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
         .withVariable("url", "https://cdn.discordapp.com/emojis/$id." + (if (animated) "gif" else "png") + "?size=2048")
 
 
-    private suspend fun replaceEmoteVars(string: String, context: CommandContext, emote: Emote): String =
+    private suspend fun replaceEmoteVars(string: String, context: ICommandContext, emote: Emote): String =
         replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
             .withVariable("creationTime", emote.timeCreated.asEpochMillisToDate(context.getTimeZoneId()))
 

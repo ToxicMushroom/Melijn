@@ -8,7 +8,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.DateFormat
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -140,7 +140,7 @@ inline fun <reified T : Enum<*>> enumValueOrNull(name: String): T? =
         it.name.equals(name, true)
     }
 
-suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: CommandContext, index: Int, path: String): T? {
+suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: ICommandContext, index: Int, path: String): T? {
     if (argSizeCheckFailed(context, index)) return null
     val enumName = context.args[index]
     val enum = T::class.java.enumConstants.firstOrNull {
@@ -156,7 +156,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
 }
 
 suspend inline fun <T> getObjectFromArgNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     mapper: (String) -> T?,
     path: String
@@ -172,14 +172,14 @@ suspend inline fun <T> getObjectFromArgNMessage(
     return newObj
 }
 
-suspend inline fun <T> getObjectFromArgN(context: CommandContext, index: Int, mapper: (String) -> T?): T? {
+suspend inline fun <T> getObjectFromArgN(context: ICommandContext, index: Int, mapper: (String) -> T?): T? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     return mapper(arg)
 }
 
 
-suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: CommandContext, index: Int): T? {
+suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: ICommandContext, index: Int): T? {
     if (argSizeCheckFailed(context, index, true)) return null
     val enumName = context.args[index]
     return T::class.java.enumConstants.firstOrNull {
@@ -188,7 +188,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: CommandContext
 }
 
 val ccTagPattern = Pattern.compile("cc\\.(\\d+)")
-suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): Set<String>? {
+suspend fun getCommandIdsFromArgNMessage(context: ICommandContext, index: Int): Set<String>? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val category: CommandCategory? = enumValueOrNull(arg)
@@ -221,7 +221,7 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
     return commands
 }
 
-suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<AbstractCommand>? {
+suspend fun getCommandsFromArgNMessage(context: ICommandContext, index: Int): Set<AbstractCommand>? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val category: CommandCategory? = enumValueOrNull(arg)
@@ -245,7 +245,7 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
 
 
 suspend fun getLongFromArgNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     min: Long = Long.MIN_VALUE, // inclusive
     max: Long = Long.MAX_VALUE, // inclusive
@@ -282,7 +282,7 @@ suspend fun getLongFromArgNMessage(
 
 //Dayofyear, year
 suspend fun getBirthdayByArgsNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     format: DateFormat = DateFormat.DMY
 ): Pair<Int, Int?>? {
@@ -392,12 +392,12 @@ fun getBirthdayByArgsN(arg: String): Pair<Int, Int?>? {
     return Pair(localDate.dayOfYear, birthYear)
 }
 
-suspend fun isPremiumUser(context: CommandContext, user: User = context.author): Boolean {
+suspend fun isPremiumUser(context: ICommandContext, user: User = context.author): Boolean {
     return context.daoManager.supporterWrapper.getUsers().contains(user.idLong) ||
         context.container.settings.botInfo.developerIds.contains(user.idLong)
 }
 
-suspend fun isPremiumGuild(context: CommandContext): Boolean {
+suspend fun isPremiumGuild(context: ICommandContext): Boolean {
     return isPremiumGuild(context.daoManager, context.guildId)
 }
 
@@ -406,7 +406,7 @@ suspend fun isPremiumGuild(daoManager: DaoManager, guildId: Long): Boolean {
 }
 
 
-suspend fun getBalanceNMessage(context: CommandContext, index: Int): Long? {
+suspend fun getBalanceNMessage(context: ICommandContext, index: Int): Long? {
     if (argSizeCheckFailed(context, index)) return null
     val bal = context.daoManager.balanceWrapper.getBalance(context.authorId)
 
@@ -429,7 +429,7 @@ suspend fun getBalanceNMessage(context: CommandContext, index: Int): Long? {
 
 
 suspend fun getLongFromArgN(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     min: Long = Long.MIN_VALUE,
     max: Long = Long.MAX_VALUE,
@@ -445,7 +445,7 @@ suspend fun getLongFromArgN(
     return number
 }
 
-fun getIntegerFromArgN(context: CommandContext, index: Int, min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE): Int? {
+fun getIntegerFromArgN(context: ICommandContext, index: Int, min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE): Int? {
     val number = (if (context.args.size > index) context.args[index].toIntOrNull() else null) ?: return null
     if (number > max || number < min) return null
     return number

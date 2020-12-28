@@ -37,7 +37,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
                 arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -69,7 +69,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -101,7 +101,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -145,7 +145,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -174,7 +174,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.gainProfileWrapper
             val map = wrapper.getGainProfile(context.guildId)
 
@@ -208,7 +208,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -227,13 +227,13 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }
 
 suspend fun getGainProfileNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     map: Map<String, GainProfile>,
     index: Int
 ): Pair<String, GainProfile>? {

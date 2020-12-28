@@ -4,7 +4,7 @@ import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil.defaultOffsetArgParser
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
@@ -24,7 +24,7 @@ class BlurCommand : AbstractCommand("command.blur") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("blurGif", true)) {
             executeGif(context)
         } else {
@@ -32,7 +32,7 @@ class BlurCommand : AbstractCommand("command.blur") {
         }
     }
 
-    private suspend fun executeNormal(context: CommandContext) {
+    private suspend fun executeNormal(context: ICommandContext) {
         ImageCommandUtil.executeNormalEffect(context, effect = { image, argData ->
             ImageUtils.blur(image, argData.getInt("offset"))
 
@@ -48,7 +48,7 @@ class BlurCommand : AbstractCommand("command.blur") {
         })
     }
 
-    private suspend fun executeGif(context: CommandContext) {
+    private suspend fun executeGif(context: ICommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, argData ->
             ImageUtils.blur(image, argData.getInt("offset"), true)
 

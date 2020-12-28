@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.internals.utils
 
 import com.wrapper.spotify.Base64
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import java.nio.ByteBuffer
 import java.util.*
@@ -266,7 +266,7 @@ fun String.toUpperWordCase(): String {
     return newString
 }
 
-fun String.replacePrefix(context: CommandContext): String {
+fun String.replacePrefix(context: ICommandContext): String {
     return this.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
 }
 

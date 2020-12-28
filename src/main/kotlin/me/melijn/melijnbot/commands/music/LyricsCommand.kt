@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.music
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.KSOFT_SI
@@ -24,9 +24,9 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
-            if (RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event)) {
+            if (RunConditionUtil.checkPlayingTrackNotNull(context.container, context.message)) {
                 val info = context.getGuildMusicPlayer().guildTrackManager.playingTrack?.info
                     ?: throw IllegalArgumentException("angry pepe")
 
@@ -46,7 +46,7 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
         }
     }
 
-    private suspend fun formatAndSendLyrics(context: CommandContext, name: String, lyrics: String) {
+    private suspend fun formatAndSendLyrics(context: ICommandContext, name: String, lyrics: String) {
         val words = context.getTranslation("$root.words")
         val characters = context.getTranslation("$root.characters")
         val powered = context.getTranslation("$root.powered")
@@ -63,7 +63,7 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
 
     // url, lyrics
     private suspend fun getLyricsNMessage(
-        context: CommandContext,
+        context: ICommandContext,
         title: String,
         author: String?
     ): Pair<String, String>? {

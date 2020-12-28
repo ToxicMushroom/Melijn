@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.games
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.*
@@ -24,7 +24,7 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
         val activeGames: MutableList<RockPaperScissorsGame> = mutableListOf()
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -179,7 +179,7 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
         }, 60)
     }
 
-    private suspend fun activeGame(context: CommandContext, user1: User, user2: User): Boolean {
+    private suspend fun activeGame(context: ICommandContext, user1: User, user2: User): Boolean {
         return when {
             activeGames.any {
                 it.user1 == user1.idLong || it.user2 == user1.idLong

@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.internals.utils
 
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
@@ -9,7 +9,7 @@ import java.util.*
 
 
 // warning the scanned numbers are decreased by one
-suspend fun getIntegersFromArgsNMessage(context: CommandContext, index: Int, start: Int, end: Int): IntArray? {
+suspend fun getIntegersFromArgsNMessage(context: ICommandContext, index: Int, start: Int, end: Int): IntArray? {
 
     val args = context.getRawArgPart(index).remove(" ").split(",")
     val ints = mutableListOf<Int>()
@@ -65,7 +65,7 @@ suspend fun getIntegersFromArgsNMessage(context: CommandContext, index: Int, sta
 }
 
 suspend fun getIntegerFromArgNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     start: Int = Integer.MIN_VALUE,
     end: Int = Integer.MAX_VALUE
@@ -100,7 +100,7 @@ suspend fun getIntegerFromArgNMessage(
 }
 
 suspend fun getFloatFromArgNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     start: Float = Float.MIN_VALUE,
     end: Float = Float.MAX_VALUE
@@ -132,7 +132,7 @@ suspend fun getFloatFromArgNMessage(
     return float
 }
 
-suspend fun getBooleanFromArgN(context: CommandContext, index: Int): Boolean? {
+suspend fun getBooleanFromArgN(context: ICommandContext, index: Int): Boolean? {
     if (argSizeCheckFailed(context, index, true)) return null
     val arg = context.args[index]
 
@@ -143,7 +143,7 @@ suspend fun getBooleanFromArgN(context: CommandContext, index: Int): Boolean? {
     }
 }
 
-suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Boolean? {
+suspend fun getBooleanFromArgNMessage(context: ICommandContext, index: Int): Boolean? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
 
@@ -158,7 +158,7 @@ suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Bool
 }
 
 // Returns in epoch millis at UTC+0
-suspend fun getDateTimeFromArgNMessage(context: CommandContext, index: Int): Long? {
+suspend fun getDateTimeFromArgNMessage(context: ICommandContext, index: Int): Long? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
 
@@ -177,7 +177,7 @@ suspend fun getDateTimeFromArgNMessage(context: CommandContext, index: Int): Lon
 }
 
 
-fun getEpochMillisFromArgN(context: CommandContext, index: Int): Long? {
+fun getEpochMillisFromArgN(context: ICommandContext, index: Int): Long? {
     val arg = context.args[index]
     return try {
         (simpleDateTimeFormatter.parse(arg) as Date).time
@@ -186,7 +186,7 @@ fun getEpochMillisFromArgN(context: CommandContext, index: Int): Long? {
     }
 }
 
-suspend fun argSizeCheckFailed(context: CommandContext, index: Int, silent: Boolean = false): Boolean {
+suspend fun argSizeCheckFailed(context: ICommandContext, index: Int, silent: Boolean = false): Boolean {
     return if (context.args.size <= index) {
         if (!silent) sendSyntax(context, context.commandOrder.last().syntax)
         true

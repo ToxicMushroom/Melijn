@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.getCommandsFromArgNMessage
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.getTimespanFromArgNMessage
@@ -21,7 +21,7 @@ class MetricsCommand : AbstractCommand("command.metrics") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -47,7 +47,7 @@ class MetricsCommand : AbstractCommand("command.metrics") {
             aliases = arrayOf("top")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val limit = getIntegerFromArgNMessage(context, 0, 0, context.container.commandMap.size) ?: return
             val timespan: Pair<Long, Long> = getTimespanFromArgNMessage(context, 1)
             val wrapper = context.daoManager.commandUsageWrapper
@@ -69,7 +69,7 @@ class MetricsCommand : AbstractCommand("command.metrics") {
             name = "all"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val timespan: Pair<Long, Long> = getTimespanFromArgNMessage(context, 0)
             val wrapper = context.daoManager.commandUsageWrapper
             val result = wrapper.getTopUsageWithinPeriod(timespan.first, timespan.second, -1)

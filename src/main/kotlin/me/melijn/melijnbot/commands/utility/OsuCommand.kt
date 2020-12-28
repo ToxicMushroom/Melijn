@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.commandutil.game.OsuUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.getSyntax
@@ -29,7 +29,7 @@ class OsuCommand : AbstractCommand("command.osu") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -52,7 +52,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             name = "setUser"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 val currentName = context.daoManager.osuWrapper.getUserName(context.authorId)
                 val msg = if (currentName == "") {
@@ -96,7 +96,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             name = "recent"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             var userName: String? = null
             if (context.args.isEmpty()) {
                 val name = context.daoManager.osuWrapper.getUserName(context.authorId)
@@ -204,7 +204,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             aliases = arrayOf("best", "t", "b")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             var userName: String? = null
             if (context.args.isEmpty()) {
                 val name = context.daoManager.osuWrapper.getUserName(context.authorId)
@@ -320,7 +320,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             aliases = arrayOf("u", "profile", "p")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             var userName: String? = null
             if (context.args.isEmpty()) {
                 val name = context.daoManager.osuWrapper.getUserName(context.authorId)

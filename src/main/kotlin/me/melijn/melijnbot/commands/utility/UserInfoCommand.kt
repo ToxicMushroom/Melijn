@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER_ID
 import me.melijn.melijnbot.internals.utils.asLongLongGMTString
@@ -22,7 +22,7 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val user: User = if (context.args.isEmpty()) {
             context.author
         } else {

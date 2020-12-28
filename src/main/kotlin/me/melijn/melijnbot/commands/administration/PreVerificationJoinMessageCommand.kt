@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class PreVerificationJoinMessageCommand : AbstractCommand("command.preverificationjoinmessage") {
@@ -22,7 +22,7 @@ class PreVerificationJoinMessageCommand : AbstractCommand("command.preverificati
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }

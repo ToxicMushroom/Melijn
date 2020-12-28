@@ -2,18 +2,14 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.database.settings.VoteReminderOption
 import me.melijn.melijnbot.database.votes.UserVote
-import me.melijn.melijnbot.database.votes.VoteReminder
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.LogUtils.VOTE_LINKS
 import me.melijn.melijnbot.internals.utils.LogUtils.getVoteStatusForSite
-import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.withVariable
-import me.melijn.melijnbot.internals.web.rest.voted.BotList
-import me.melijn.melijnbot.internals.web.rest.voted.getBotListTimeOut
 
 const val VOTE_URL: String = "https://top.gg/bot/melijn/vote"
 
@@ -26,7 +22,7 @@ class VoteCommand : AbstractCommand("command.vote") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val cMillis = System.currentTimeMillis()
         val userVote = context.daoManager.voteWrapper.getUserVote(context.authorId)
             ?: UserVote(context.authorId, 0, 0, 0, 0, 0, 0)

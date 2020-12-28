@@ -6,7 +6,7 @@ import me.melijn.llklient.player.IPlayer
 import me.melijn.llklient.player.LavaplayerPlayerWrapper
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -50,7 +50,7 @@ class LavaManager(
      * @param channel This is the voice channel you want to join
      * @return returns true on success and false when failed
      */
-    suspend fun tryToConnectToVCNMessage(context: CommandContext, channel: VoiceChannel, groupId: String): Boolean {
+    suspend fun tryToConnectToVCNMessage(context: ICommandContext, channel: VoiceChannel, groupId: String): Boolean {
         if (notEnoughPermissionsAndMessage(context, channel, Permission.VOICE_CONNECT)) return false
         return if (channel.userLimit == 0 || channel.userLimit > channel.members.size || !notEnoughPermissionsAndMessage(
                 context,
@@ -112,5 +112,16 @@ class LavaManager(
     suspend fun changeGroup(guildId: Long, groupId: String) {
         val link = jdaLavaLink?.getLink(guildId, groupId) ?: throw IllegalArgumentException("wtf")
         link.changeGroup(groupId)
+    }
+
+    suspend fun closeConnectionForced(guildId: Long) {
+        val guild = MelijnBot.shardManager.getGuildById(guildId)
+
+        if (jdaLavaLink == null) {
+            guild?.audioManager?.closeAudioConnection()
+
+        } else {
+            jdaLavaLink.getExistingLink(guildId)?.forceDestroy()
+        }
     }
 }

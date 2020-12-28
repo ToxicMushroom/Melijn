@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
@@ -25,17 +25,17 @@ class T2eCommand : AbstractCommand("command.t2e") {
             name = "noSpace"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             t2e(context, false)
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         t2e(context, true)
     }
 
     companion object {
-        suspend fun t2e(context: CommandContext, spaces: Boolean) {
+        suspend fun t2e(context: ICommandContext, spaces: Boolean) {
             context.initCooldown()
             if (context.args.isEmpty()) {
                 sendSyntax(context)

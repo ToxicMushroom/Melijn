@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.utils.getVoiceChannelByArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -22,7 +22,7 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
         commandCategory = CommandCategory.MODERATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return

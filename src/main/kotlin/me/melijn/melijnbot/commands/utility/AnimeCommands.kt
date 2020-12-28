@@ -39,7 +39,7 @@ fun Date.toUniversalDateFormat(): String {
 //        name = "kitsu"
 //    }
 //
-//    override suspend fun execute(context: CommandContext) {
+//    override suspend fun execute(context: ICommandContext) {
 //
 //    }
 //}

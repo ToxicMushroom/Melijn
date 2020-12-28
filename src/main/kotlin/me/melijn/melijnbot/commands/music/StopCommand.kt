@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.music
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 
@@ -16,7 +16,7 @@ class StopCommand : AbstractCommand("command.stop") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val guildMusicPlayer = context.musicPlayerManager.getGuildMusicPlayer(context.guild)
         guildMusicPlayer.guildTrackManager.clear()
         guildMusicPlayer.guildTrackManager.stopAndDestroy()

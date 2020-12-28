@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.internals.threading
 
-import kotlinx.coroutines.runBlocking
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import net.dv8tion.jda.api.entities.*
 
@@ -79,7 +78,7 @@ class GuildTask(private val guild: Guild, private val func: suspend () -> Unit) 
     }
 }
 
-class ContextTask(private val context: CommandContext, private val func: suspend () -> Unit) : KTRunnable {
+class ContextTask(private val context: ICommandContext, private val func: suspend () -> Unit) : KTRunnable {
 
     override suspend fun run() {
         try {

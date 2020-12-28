@@ -4,7 +4,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.awaitOrNull
@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
 
 
-suspend fun sendRspCodeBlock(context: CommandContext, msg: String, lang: String, shouldPaginate: Boolean = false) {
+suspend fun sendRspCodeBlock(context: ICommandContext, msg: String, lang: String, shouldPaginate: Boolean = false) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendRspCodeBlock(context.textChannel, context.authorId, context.daoManager, msg, lang, shouldPaginate)
@@ -50,7 +50,7 @@ fun sendRspCodeBlock(
 }
 
 suspend fun sendRspCodeBlocks(
-    context: CommandContext,
+    context: ICommandContext,
     parts: List<String>,
     lang: String
 ) {
@@ -58,7 +58,7 @@ suspend fun sendRspCodeBlocks(
     if (premiumGuild) {
         sendRspCodeBlocks(context.textChannel, context.authorId, context.daoManager, parts, lang, true)
     } else {
-        sendMsgCodeBlocks(context.messageChannel, context.authorId, parts, lang, true)
+        sendMsgCodeBlocks(context.channel, context.authorId, parts, lang, true)
     }
 }
 
@@ -129,7 +129,7 @@ fun sendRspCodeBlocks(
     }
 }
 
-suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String, shouldPaginate: Boolean = false) {
+suspend fun sendMsgCodeBlock(context: ICommandContext, msg: String, lang: String, shouldPaginate: Boolean = false) {
     if (context.isFromGuild) {
         val channel = context.textChannel
         if (!channel.canTalk()) return

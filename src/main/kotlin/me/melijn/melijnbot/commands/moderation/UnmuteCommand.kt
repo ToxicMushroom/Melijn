@@ -32,7 +32,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -124,7 +124,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
     }
 
     private suspend fun sendUnmuteLogs(
-        context: CommandContext,
+        context: ICommandContext,
         targetUser: User,
         muteAuthor: User?,
         mute: Mute,

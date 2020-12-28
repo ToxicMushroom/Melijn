@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_TIMEZONE
 import me.melijn.melijnbot.internals.utils.getObjectFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -18,7 +18,7 @@ class SetTimeZoneCommand : AbstractCommand("command.settimezone") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendTimeZone(context)
         } else {
@@ -26,7 +26,7 @@ class SetTimeZoneCommand : AbstractCommand("command.settimezone") {
         }
     }
 
-    private suspend fun sendTimeZone(context: CommandContext) {
+    private suspend fun sendTimeZone(context: ICommandContext) {
         val dao = context.daoManager.timeZoneWrapper
         val id = dao.getTimeZone(context.guildId)
 
@@ -41,7 +41,7 @@ class SetTimeZoneCommand : AbstractCommand("command.settimezone") {
         sendRsp(context, msg)
     }
 
-    private suspend fun setTimeZone(context: CommandContext) {
+    private suspend fun setTimeZone(context: ICommandContext) {
         val shouldUnset = "null".equals(context.commandParts[2], true)
 
         val zone = if (shouldUnset) {

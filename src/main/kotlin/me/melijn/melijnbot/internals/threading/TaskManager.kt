@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.internals.threading
 
 import kotlinx.coroutines.*
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.MessageChannel
@@ -51,7 +51,7 @@ object TaskManager {
         }.run()
     }
 
-    fun async(context: CommandContext, block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
+    fun async(context: ICommandContext, block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
         ContextTask(context) {
             block.invoke(this)
         }.run()

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.*
@@ -20,7 +20,7 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         var guild = context.guild
         if (context.args.isNotEmpty()) {
             if (context.args[0].matches(Regex("\\d+"))) {
@@ -65,7 +65,7 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
         sendEmbedRsp(context, eb.build())
     }
 
-    private suspend fun replaceFieldVar(context: CommandContext, guild: Guild, path: String): String {
+    private suspend fun replaceFieldVar(context: ICommandContext, guild: Guild, path: String): String {
         val isSupporter = context.daoManager.supporterWrapper.getGuilds().contains(guild.idLong)
         val yes = context.getTranslation("yes")
         val no = context.getTranslation("no")

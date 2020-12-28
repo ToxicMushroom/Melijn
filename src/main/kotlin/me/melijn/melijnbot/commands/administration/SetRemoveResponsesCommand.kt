@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.asTag
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
@@ -22,7 +22,7 @@ class SetRemoveResponsesCommand : AbstractCommand("command.setremoveresponses") 
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -73,7 +73,7 @@ class SetRemoveResponsesCommand : AbstractCommand("command.setremoveresponses") 
             aliases = arrayOf("g")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val guildId = context.guildId
             val wrapper = context.daoManager.removeResponseWrapper
 

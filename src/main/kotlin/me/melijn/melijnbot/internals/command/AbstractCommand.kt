@@ -9,7 +9,7 @@ import me.melijn.melijnbot.internals.utils.addIfNotPresent
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.entities.Message
 import org.slf4j.LoggerFactory
 
 const val PLACEHOLDER_PREFIX = "prefix"
@@ -39,8 +39,8 @@ abstract class AbstractCommand(val root: String) {
 
     private val cmdlogger = LoggerFactory.getLogger("cmd")
 
-    protected abstract suspend fun execute(context: CommandContext)
-    suspend fun run(context: CommandContext) {
+    protected abstract suspend fun execute(context: ICommandContext)
+    suspend fun run(context: ICommandContext) {
         context.commandOrder = ArrayList(context.commandOrder + this).toList()
 
         val indexedCommand = context.commandOrder.withIndex().sortedBy { it.index }.last()
@@ -130,7 +130,7 @@ abstract class AbstractCommand(val root: String) {
                         context.container,
                         context.commandOrder.last(),
                         cmdId,
-                        context.event,
+                        context.message,
                         true,
                         context.commandParts
                     )
@@ -198,7 +198,7 @@ abstract class AbstractCommand(val root: String) {
 
 }
 
-suspend fun hasPermission(context: CommandContext, permission: String, required: Boolean = false): Boolean {
+suspend fun hasPermission(context: ICommandContext, permission: String, required: Boolean = false): Boolean {
     if (!context.isFromGuild) return true
     if (context.member.isOwner || context.member.hasPermission(Permission.ADMINISTRATOR)) return true
     val guildId = context.guildId
@@ -272,12 +272,12 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
 
 suspend fun hasPermission(
     container: Container,
-    event: MessageReceivedEvent,
+    message: Message,
     permission: String,
     category: CommandCategory? = null,
     required: Boolean = false
 ): Boolean {
-    val member = event.member ?: return true
+    val member = message.member ?: return true
     if (member.isOwner || member.hasPermission(Permission.ADMINISTRATOR)) return true
     val guild = member.guild
     val guildId = guild.idLong
@@ -286,7 +286,7 @@ suspend fun hasPermission(
     // Gives me better ability to help
     if (container.settings.botInfo.developerIds.contains(authorId)) return true
 
-    val channelId = event.textChannel.idLong
+    val channelId = message.textChannel.idLong
     val userMap = container.daoManager.userPermissionWrapper.getPermMap(guildId, authorId)
     val channelUserMap = container.daoManager.channelUserPermissionWrapper.getPermMap(channelId, authorId)
 

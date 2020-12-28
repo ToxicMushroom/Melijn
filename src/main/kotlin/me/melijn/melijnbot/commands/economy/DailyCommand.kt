@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.economy
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.isPremiumUser
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -16,7 +16,7 @@ class DailyCommand : AbstractCommand("command.daily") {
         commandCategory = CommandCategory.ECONOMY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (canDailyElseMessage(context)) {
             val balanceWrapper = context.daoManager.balanceWrapper
             val cash = balanceWrapper.getBalance(context.authorId)
@@ -32,7 +32,7 @@ class DailyCommand : AbstractCommand("command.daily") {
         }
     }
 
-    private suspend fun canDailyElseMessage(context: CommandContext): Boolean {
+    private suspend fun canDailyElseMessage(context: ICommandContext): Boolean {
         val dailyCooldownWrapper = context.daoManager.economyCooldownWrapper
         val lastTime = dailyCooldownWrapper.getCooldown(context.authorId, name)
         val difference = System.currentTimeMillis() - lastTime

@@ -5,7 +5,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
@@ -34,7 +34,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -100,7 +100,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
     }
 
     private suspend fun continueBanning(
-        context: CommandContext,
+        context: ICommandContext,
         targetUser: User,
         softBan: SoftBan,
         hasActiveBan: Boolean,

@@ -5,7 +5,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
@@ -29,7 +29,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return
@@ -93,7 +93,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
     }
 
     private suspend fun continueBanning(
-        context: CommandContext,
+        context: ICommandContext,
         targetUser: User,
         ban: Ban,
         activeBan: Ban?,

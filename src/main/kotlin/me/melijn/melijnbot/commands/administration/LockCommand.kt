@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
@@ -33,7 +33,7 @@ class LockCommand : AbstractCommand("command.lock") {
         val voiceDenyList = mutableListOf(Permission.VOICE_CONNECT)
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -102,7 +102,7 @@ class LockCommand : AbstractCommand("command.lock") {
     }
 
 
-    private suspend fun lockMany(context: CommandContext, list: List<GuildChannel>) {
+    private suspend fun lockMany(context: ICommandContext, list: List<GuildChannel>) {
         for (channel in list) {
             if (notEnoughPermissionsAndMessage(
                     context,
@@ -152,7 +152,7 @@ class LockCommand : AbstractCommand("command.lock") {
 
     }
 
-    private suspend fun lockChannel(context: CommandContext, channel: GuildChannel) {
+    private suspend fun lockChannel(context: ICommandContext, channel: GuildChannel) {
         if (notEnoughPermissionsAndMessage(context, channel, Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES)) return
 
         val status = internalLock(context, channel)
@@ -179,7 +179,7 @@ class LockCommand : AbstractCommand("command.lock") {
 
     // -> overrideCount, permissionsSwitched, status
     private suspend fun internalLock(
-        context: CommandContext,
+        context: ICommandContext,
         channel: GuildChannel
     ): Triple<Int, Int, UnlockCommand.LockStatus> {
         val denyList = when (channel) {

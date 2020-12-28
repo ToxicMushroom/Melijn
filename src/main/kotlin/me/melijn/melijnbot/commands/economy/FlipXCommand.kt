@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.economy
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.getLongFromArgNMessage
 import me.melijn.melijnbot.internals.utils.isInside
@@ -20,7 +20,7 @@ class FlipXCommand : AbstractCommand("command.flipx") {
         commandCategory = CommandCategory.ECONOMY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.size != 3) {
             sendSyntax(context)
             return
@@ -59,7 +59,7 @@ class FlipXCommand : AbstractCommand("command.flipx") {
     }
 
     private suspend fun flipCoin(
-        context: CommandContext,
+        context: ICommandContext,
         bet: Long,
         cash: Long,
         winning: String,

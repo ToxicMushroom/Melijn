@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.database.warn
 
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.withSafeVariable
@@ -14,7 +14,7 @@ class WarnWrapper(private val warnDao: WarnDao) {
         warnDao.add(warn)
     }
 
-    suspend fun getWarnMap(context: CommandContext, targetUser: User): Map<Long, String> {
+    suspend fun getWarnMap(context: ICommandContext, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val warns = warnDao.getWarns(context.guildId, targetUser.idLong)
 
@@ -29,12 +29,12 @@ class WarnWrapper(private val warnDao: WarnDao) {
         return map
     }
 
-    private suspend fun convertWarnInfoToMessage(context: CommandContext, warn: Warn): String {
+    private suspend fun convertWarnInfoToMessage(context: ICommandContext, warn: Warn): String {
         val warnAuthor = context.shardManager.retrieveUserById(warn.warnAuthorId).awaitOrNull()
         return getWarnMessage(context, warnAuthor, warn)
     }
 
-    private suspend fun getWarnMessage(context: CommandContext, warnAuthor: User?, warn: Warn): String {
+    private suspend fun getWarnMessage(context: ICommandContext, warnAuthor: User?, warn: Warn): String {
         val deletedUser = context.getTranslation("message.deleted.user")
         val zoneId = context.getTimeZoneId()
 
@@ -46,7 +46,7 @@ class WarnWrapper(private val warnDao: WarnDao) {
             .withVariable("warnId", warn.warnId)
     }
 
-    suspend fun getWarnMap(context: CommandContext, warnId: String): Map<Long, String> {
+    suspend fun getWarnMap(context: ICommandContext, warnId: String): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val warns = warnDao.getWarns(warnId)
         if (warns.isEmpty()) {

@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.filter.FilterGroup
 import me.melijn.melijnbot.enums.FilterMode
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
@@ -43,7 +43,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("sdoh")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -74,7 +74,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -85,7 +85,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("a")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -121,7 +121,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("rm")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -151,7 +151,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("l")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -188,7 +188,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
     companion object {
         val selectionMap = HashMap<Pair<Long, Long>, String>()
-        suspend fun getSelectedFilterGroup(context: CommandContext): FilterGroup? {
+        suspend fun getSelectedFilterGroup(context: ICommandContext): FilterGroup? {
             val pair = Pair(context.guildId, context.authorId)
             return if (selectionMap.containsKey(pair)) {
                 val fgn = selectionMap[pair]
@@ -211,7 +211,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -222,7 +222,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("put", "a")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -254,7 +254,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("r", "rm")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -277,7 +277,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.filterGroupWrapper
             val groups = wrapper.getGroups(context.guildId)
 
@@ -327,7 +327,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -361,7 +361,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("rma")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -390,7 +390,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("rm")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -418,7 +418,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("a")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -439,7 +439,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             }
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -452,7 +452,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("s")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -474,7 +474,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("stp")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -499,7 +499,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("ss")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -524,7 +524,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("sm")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -544,7 +544,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
     }
 }
 
-suspend fun getFilterGroupNMessage(context: CommandContext, position: Int): FilterGroup? {
+suspend fun getFilterGroupNMessage(context: ICommandContext, position: Int): FilterGroup? {
     val arg = context.args[position]
     val filterGroups = context.daoManager.filterGroupWrapper.getGroups(context.guildId)
     val filterGroup = filterGroups.firstOrNull { (filterGroupName) -> filterGroupName == arg }

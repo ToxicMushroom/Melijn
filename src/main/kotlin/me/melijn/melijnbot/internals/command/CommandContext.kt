@@ -7,10 +7,9 @@ import me.melijn.melijnbot.internals.utils.USER_MENTION
 import me.melijn.melijnbot.internals.utils.removeFirst
 import me.melijn.melijnbot.internals.utils.removePrefix
 import me.melijn.melijnbot.internals.web.WebManager
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.entities.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.ZoneId
@@ -18,30 +17,40 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class CommandContext(
-    private val messageReceivedEvent: MessageReceivedEvent,
-    val commandParts: List<String>, // rawArg split on spaces and prefix, index 0 = prefix, next index will be (part of) command invoke...
-    val container: Container,
-    val commandList: Set<AbstractCommand>, // Just the total list of commands
-    val partSpaceMap: MutableMap<String, Int>, // Only tracks spaces in the command's invoke (string is the path 45.perm.user.set or cc.101)
-    val aliasMap: MutableMap<String, List<String>>, // cmd.subcommand... -> list of aliases
-    var searchedAliases: Boolean,
-    private val contentRaw: String = messageReceivedEvent.message.contentRaw
+    override val message: Message,
+    override val commandParts: List<String>, // rawArg split on spaces and prefix, index 0 = prefix, next index will be (part of) command invoke...
+    override val container: Container,
+    override val commandList: Set<AbstractCommand>, // Just the total list of commands
+    override val partSpaceMap: MutableMap<String, Int>, // Only tracks spaces in the command's invoke (string is the path 45.perm.user.set or cc.101)
+    override val aliasMap: MutableMap<String, List<String>>, // cmd.subcommand... -> list of aliases
+    override var searchedAliases: Boolean,
+    private val contentRaw: String = message.contentRaw
 ) : ICommandContext {
 
     lateinit var logger: Logger
 
-    override val event: MessageReceivedEvent
-        get() = messageReceivedEvent
-
     override val guild: Guild
-        get() = event.guild
+        get() = message.guild
 
-    val guildN: Guild?
-        get() = if (isFromGuild) guild else null
+    override val guildN: Guild? = if (message.isFromGuild) guild else null
+    override val isFromGuild: Boolean = message.isFromGuild
+
+    override val author: User = message.author
+    override val member: Member
+        get() = message.member ?: throw IllegalStateException("Command not execute in guild")
+
+    override val jda: JDA = message.jda
+
+    override val textChannel: TextChannel
+        get() = message.textChannel
+    override val privateChannel: PrivateChannel
+        get() = message.privateChannel
+    override val channel: MessageChannel = message.channel
+    override val channelId: Long = channel.idLong
 
 
-    val webManager: WebManager = container.webManager
-    val usedPrefix: String = getNicerUsedPrefix()
+    override val webManager: WebManager = container.webManager
+    override val usedPrefix: String = getNicerUsedPrefix()
 
 
     private fun getNicerUsedPrefix(): String {
@@ -53,24 +62,23 @@ class CommandContext(
         }
     }
 
-    val embedColor: Int = container.settings.botInfo.embedColor
-    val prefix: String = container.settings.botInfo.prefix
-    var commandOrder: List<AbstractCommand> = emptyList()
-    var args: List<String> = emptyList()
-    var oldArgs: List<String> = emptyList()
-    val botDevIds: LongArray = container.settings.botInfo.developerIds
-    val daoManager = container.daoManager
-    var rawArg: String = ""
-    val contextTime = System.currentTimeMillis()
-    val lavaManager = container.lavaManager
-    val musicPlayerManager = container.lavaManager.musicPlayerManager
-    val audioLoader = container.lavaManager.musicPlayerManager.audioLoader
-    var fullArg: String = ""
+    override val prefix: String = container.settings.botInfo.prefix
+    override var commandOrder: List<AbstractCommand> = emptyList()
+    override var args: List<String> = emptyList()
+    override var oldArgs: List<String> = emptyList()
+    override val daoManager = container.daoManager
+    override var rawArg: String = ""
+    override val contextTime = System.currentTimeMillis()
+    override val lavaManager = container.lavaManager
+    override val musicPlayerManager = container.lavaManager.musicPlayerManager
+    override val audioLoader = container.lavaManager.musicPlayerManager.audioLoader
+    override var fullArg: String = ""
+    override val botDevIds: LongArray = container.settings.botInfo.developerIds
 
-    var calculatedRoot = ""
-    var calculatedCommandPartsOffset = 1
+    override var calculatedRoot = ""
+    override var calculatedCommandPartsOffset = 1
 
-    fun initArgs() {
+    override fun initArgs() {
         args = commandParts.drop(calculatedCommandPartsOffset)
         rawArg = contentRaw
             .removePrefix(commandParts[0], true)
@@ -161,25 +169,25 @@ class CommandContext(
     }
 
 
-    fun reply(something: Any) {
+    override  fun reply(something: Any) {
         require(!(isFromGuild && !selfMember.hasPermission(textChannel, Permission.MESSAGE_WRITE))) {
             "No MESSAGE_WRITE permission"
         }
-        messageChannel.sendMessage(something.toString()).queue()
+        channel.sendMessage(something.toString()).queue()
     }
 
-    fun reply(embed: MessageEmbed) {
+    override fun reply(embed: MessageEmbed) {
         require(!(isFromGuild && !selfMember.hasPermission(textChannel, Permission.MESSAGE_WRITE))) {
             "No MESSAGE_WRITE permission"
         }
-        messageChannel.sendMessage(embed).queue()
+        channel.sendMessage(embed).queue()
     }
 
-    suspend fun getLanguage(): String = me.melijn.melijnbot.internals.translation.getLanguage(this)
+    override suspend fun getLanguage(): String = me.melijn.melijnbot.internals.translation.getLanguage(this)
 
 
     //Gets part of the rawarg by using regex and args
-    fun getRawArgPart(beginIndex: Int, endIndex: Int = -1): String {
+    override  fun getRawArgPart(beginIndex: Int, endIndex: Int): String {
         if (beginIndex > args.size) return ""
         var newString = fullArg
         for (i in 0 until beginIndex) {
@@ -196,8 +204,8 @@ class CommandContext(
         return newString
     }
 
-    suspend fun getTranslation(path: String): String = i18n.getTranslation(this, path)
-    suspend fun getTimeZoneId(): ZoneId {
+    override suspend fun getTranslation(path: String): String = i18n.getTranslation(this, path)
+    override suspend fun getTimeZoneId(): ZoneId {
         val guildTimezone = guildN?.idLong?.let {
             val zoneId = daoManager.timeZoneWrapper.getTimeZone(it)
             if (zoneId.isBlank()) null
@@ -214,8 +222,8 @@ class CommandContext(
     }
 
 
-    fun getGuildMusicPlayer() = musicPlayerManager.getGuildMusicPlayer(guild)
-    fun initCooldown() {
+    override fun getGuildMusicPlayer() = musicPlayerManager.getGuildMusicPlayer(guild)
+    override fun initCooldown() {
         val idPath = commandOrder.first().id.toString() + commandOrder.drop(1).joinToString(".") { it.name }
         daoManager.globalCooldownWrapper.setLastExecuted(authorId, idPath, System.currentTimeMillis())
     }

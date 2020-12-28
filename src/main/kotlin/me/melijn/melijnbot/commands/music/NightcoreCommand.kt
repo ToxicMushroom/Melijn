@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.music
 import me.melijn.llklient.io.filters.Timescale
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.getBooleanFromArgN
 import me.melijn.melijnbot.internals.utils.getLongFromArgN
@@ -23,7 +23,7 @@ class NightcoreCommand : AbstractCommand("command.nightcore") {
     }
 
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
             val ts = player.filters.timescale ?: Timescale()

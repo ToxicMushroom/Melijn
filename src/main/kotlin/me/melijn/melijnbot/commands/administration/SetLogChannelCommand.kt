@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.utils.asTag
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
@@ -21,7 +21,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -38,7 +38,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
     }
 
-    private suspend fun handleEnum(context: CommandContext, logChannelType: LogChannelType) {
+    private suspend fun handleEnum(context: ICommandContext, logChannelType: LogChannelType) {
         if (context.args.size > 1) {
             setChannel(context, logChannelType)
         } else {
@@ -46,7 +46,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         }
     }
 
-    private suspend fun displayChannel(context: CommandContext, logChannelType: LogChannelType) {
+    private suspend fun displayChannel(context: ICommandContext, logChannelType: LogChannelType) {
         val daoManager = context.daoManager
         val channel = context.guild.getAndVerifyLogChannelByType(daoManager, logChannelType)
 
@@ -61,7 +61,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
     }
 
 
-    private suspend fun setChannel(context: CommandContext, logChannelType: LogChannelType) {
+    private suspend fun setChannel(context: ICommandContext, logChannelType: LogChannelType) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return
@@ -85,7 +85,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         sendRsp(context, msg)
     }
 
-    private suspend fun handleEnums(context: CommandContext, logChannelTypes: List<LogChannelType>) {
+    private suspend fun handleEnums(context: ICommandContext, logChannelTypes: List<LogChannelType>) {
         if (context.args.size > 1) {
             setChannels(context, logChannelTypes)
         } else {
@@ -93,7 +93,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         }
     }
 
-    private suspend fun displayChannels(context: CommandContext, logChannelTypes: List<LogChannelType>) {
+    private suspend fun displayChannels(context: ICommandContext, logChannelTypes: List<LogChannelType>) {
         val daoManager = context.daoManager
         val title = context.getTranslation("$root.show.multiple")
             .withVariable("channelCount", logChannelTypes.size.toString())
@@ -111,7 +111,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         sendRsp(context, msg)
     }
 
-    private suspend fun setChannels(context: CommandContext, logChannelTypes: List<LogChannelType>) {
+    private suspend fun setChannels(context: ICommandContext, logChannelTypes: List<LogChannelType>) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return

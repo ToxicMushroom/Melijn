@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
@@ -37,7 +37,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             aliases = arrayOf("roleInfo")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -74,7 +74,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             aliases = arrayOf("userInfo")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -98,7 +98,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -108,7 +108,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             name = "add"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -158,7 +158,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             name = "remove"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -189,7 +189,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             name = "list"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val userRolesMap = context.daoManager.forceRoleWrapper.getForceRoles(context.guildId)
             val reverseMap = mutableMapOf<Long, Int>()
 

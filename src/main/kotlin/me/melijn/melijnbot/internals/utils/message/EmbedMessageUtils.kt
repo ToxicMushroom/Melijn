@@ -4,7 +4,7 @@ import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.awaitOrNull
@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.entities.TextChannel
 import java.time.format.DateTimeFormatter
 
 
-suspend fun sendEmbedRspAwaitEL(context: CommandContext, embed: MessageEmbed): List<Message> {
+suspend fun sendEmbedRspAwaitEL(context: ICommandContext, embed: MessageEmbed): List<Message> {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     return if (premiumGuild) {
         sendEmbedRspAwaitEL(context.daoManager, context.textChannel, embed)
@@ -49,7 +49,7 @@ suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, textChannel: TextChannel
     }
 }
 
-fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
+fun sendEmbed(context: ICommandContext, embed: MessageEmbed) {
     if (context.isFromGuild) {
         sendEmbed(context.daoManager.embedDisabledWrapper, context.textChannel, embed)
     } else {
@@ -57,7 +57,7 @@ fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
     }
 }
 
-suspend fun sendEmbedRsp(context: CommandContext, embed: MessageEmbed) {
+suspend fun sendEmbedRsp(context: ICommandContext, embed: MessageEmbed) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendEmbedRsp(context.daoManager, context.textChannel, embed)
@@ -95,7 +95,7 @@ fun sendEmbedRsp(daoManager: DaoManager, textChannel: TextChannel, embed: Messag
     }
 }
 
-suspend fun sendEmbedAwaitEL(context: CommandContext, embed: MessageEmbed): List<Message> {
+suspend fun sendEmbedAwaitEL(context: ICommandContext, embed: MessageEmbed): List<Message> {
     return if (context.isFromGuild) {
         sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, context.textChannel, embed)
     } else {

@@ -201,14 +201,14 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         container,
                         finalCommand,
                         finalCommand.id.toString(),
-                        event,
+                        message,
                         false,
                         commandParts
                     )
                 ) return
                 finalCommand.run(
                     CommandContext(
-                        event,
+                        message,
                         commandParts,
                         container,
                         commandList,
@@ -223,7 +223,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         if (ccsWithPrefixMatches.isNotEmpty()) {
             runCustomCommandByChance(
-                event,
+                message,
                 container.webManager.proxiedHttpClient,
                 commandPartsGlobal,
                 ccsWithPrefixMatches,
@@ -253,7 +253,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             if (ccsWithoutPrefixMatches.isNotEmpty()) {
                 runCustomCommandByChance(
-                    event,
+                    message,
                     container.webManager.proxiedHttpClient,
                     prefixLessCommandParts,
                     ccsWithoutPrefixMatches,
@@ -265,7 +265,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
     }
 
     private suspend fun runCustomCommandByChance(
-        event: MessageReceivedEvent,
+        message: Message,
         httpClient: HttpClient,
         commandParts: List<String>,
         ccs: List<CustomCommand>,
@@ -277,26 +277,26 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             getCustomCommandByChance(ccs)
         }
 
-        if (checksFailed(container.daoManager, cc, event)) return
+        if (checksFailed(container.daoManager, cc, message)) return
 
-        if (hasPermission(container, event, "cc.${cc.id}")) {
+        if (hasPermission(container, message, "cc.${cc.id}")) {
             val cParts = commandParts.toMutableList()
-            executeCC(cc, httpClient, event, cParts, hasPrefix)
+            executeCC(cc, httpClient, message, cParts, hasPrefix)
         } else {
-            val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
-            sendMissingPermissionMessage(event.textChannel, container.daoManager, language, "cc.${cc.id}")
+            val language = getLanguage(container.daoManager, message.author.idLong, message.guild.idLong)
+            sendMissingPermissionMessage(message.textChannel, container.daoManager, language, "cc.${cc.id}")
         }
     }
 
     private suspend fun executeCC(
         cc: CustomCommand,
         httpClient: HttpClient,
-        event: MessageReceivedEvent,
+        message: Message,
         commandParts: List<String>,
         hasPrefix: Boolean
     ) {
-        val member = event.member ?: return
-        val channel = event.textChannel
+        val member = message.member ?: return
+        val channel = message.textChannel
         if (!channel.canTalk()) return
 
         //registering execution
@@ -312,7 +312,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         map2["cc." + cc.id] = System.currentTimeMillis()
         container.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
 
-        val rawArg = event.message.contentRaw
+        val rawArg = message.contentRaw
             .removeFirst(commandParts[0])
             .trim()
             .removeFirst(if (hasPrefix) commandParts[1] else "")
@@ -411,11 +411,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             container: Container,
             command: AbstractCommand,
             cmdId: String,
-            event: MessageReceivedEvent,
+            message: Message,
             isSubCommand: Boolean,
             commandParts: List<String>
         ): Boolean {
-            if (event.isFromGuild && commandIsDisabled(container.daoManager, cmdId, event)) {
+            if (message.isFromGuild && commandIsDisabled(container.daoManager, cmdId, message)) {
                 return true
             }
 
@@ -424,21 +424,21 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             addConditions(conditions, command.runConditions)
 
             conditions.forEach {
-                if (!RunConditionUtil.runConditionCheckPassed(container, it, event, command, commandParts)) return true
+                if (!RunConditionUtil.runConditionCheckPassed(container, it, message, command, commandParts)) return true
             }
 
-            if (event.isFromGuild && !isSubCommand) {
-                val botMember = event.guild.selfMember
+            if (message.isFromGuild && !isSubCommand) {
+                val botMember = message.guild.selfMember
 
                 // Channel perms
                 val missingChannelPermissions = command.discordChannelPermissions.filter { permission ->
-                    !botMember.hasPermission(event.textChannel, permission)
+                    !botMember.hasPermission(message.textChannel, permission)
                 }
 
                 if (missingChannelPermissions.isNotEmpty()) {
-                    val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+                    val language = getLanguage(container.daoManager, message.author.idLong, message.guild.idLong)
                     sendMelijnMissingChannelPermissionMessage(
-                        event.textChannel,
+                        message.textChannel,
                         language,
                         container.daoManager,
                         missingChannelPermissions
@@ -452,9 +452,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 }
 
                 if (missingPermissions.isNotEmpty()) {
-                    val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+                    val language = getLanguage(container.daoManager, message.author.idLong, message.guild.idLong)
                     sendMelijnMissingPermissionMessage(
-                        event.textChannel,
+                        message.textChannel,
                         language,
                         container.daoManager,
                         missingPermissions
@@ -462,7 +462,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     return true
                 }
 
-                if (commandIsOnCooldown(container.daoManager, cmdId, command.cooldown, event)) {
+                if (commandIsOnCooldown(container.daoManager, cmdId, command.cooldown, message)) {
                     return true
                 }
             }
@@ -486,14 +486,14 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         private suspend fun checksFailed(
             daoManager: DaoManager,
             command: CustomCommand,
-            event: MessageReceivedEvent
+            message: Message
         ): Boolean {
             val cmdId = "cc.${command.id}"
-            if (commandIsDisabled(daoManager, cmdId, event)) {
+            if (commandIsDisabled(daoManager, cmdId, message)) {
                 return true
             }
 
-            if (commandIsOnCooldown(daoManager, cmdId, 0, event)) {
+            if (commandIsOnCooldown(daoManager, cmdId, 0, message)) {
                 return true
             }
 
@@ -505,11 +505,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             daoManager: DaoManager,
             id: String,
             globalCooldown: Long,
-            event: MessageReceivedEvent
+            message: Message
         ): Boolean {
-            val guildId = event.guild.idLong
-            val userId = event.author.idLong
-            val channelId = event.channel.idLong
+            val guildId = message.guild.idLong
+            val userId = message.author.idLong
+            val channelId = message.channel.idLong
 
             val commandCooldownWrapper = daoManager.commandCooldownWrapper
             val commandChannelCoolDownWrapper = daoManager.commandChannelCoolDownWrapper
@@ -574,7 +574,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString()
                     )
 
-                sendRspOrMsg(event.textChannel, daoManager, msg)
+                sendRspOrMsg(message.textChannel, daoManager, msg)
             }
             return bool
         }
@@ -583,12 +583,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         private suspend fun commandIsDisabled(
             daoManager: DaoManager,
             id: String,
-            event: MessageReceivedEvent
+            message: Message
         ): Boolean {
             val disabledCommandCache = daoManager.disabledCommandWrapper
             val channelCommandStateCache = daoManager.channelCommandStateWrapper
 
-            val disabledChannelCommands = channelCommandStateCache.getMap(event.channel.idLong)
+            val disabledChannelCommands = channelCommandStateCache.getMap(message.channel.idLong)
             if (disabledChannelCommands.contains(id)) {
                 if (disabledChannelCommands[id] == ChannelCommandState.ENABLED) {
                     return false
@@ -597,7 +597,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 }
             }
 
-            val disabledCommands = disabledCommandCache.getSet(event.guild.idLong)
+            val disabledCommands = disabledCommandCache.getSet(message.guild.idLong)
             if (disabledCommands.contains(id)) return true
 
             return false

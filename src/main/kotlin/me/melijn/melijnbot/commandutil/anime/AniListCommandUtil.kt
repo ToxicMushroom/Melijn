@@ -6,7 +6,7 @@ import com.apollographql.apollo.exception.ApolloException
 import me.melijn.melijnbot.anilist.*
 import me.melijn.melijnbot.anilist.fragment.*
 import me.melijn.melijnbot.anilist.type.MediaType
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.models.*
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -24,7 +24,7 @@ object AniListCommandUtil {
 
 
     // User methods
-    suspend fun searchUser(context: CommandContext) {
+    suspend fun searchUser(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -86,7 +86,7 @@ object AniListCommandUtil {
         })
     }
 
-    fun getUserByName(context: CommandContext, name: String) {
+    fun getUserByName(context: ICommandContext, name: String) {
         context.webManager.aniListApolloClient.query(
             FindUserQuery(name)
         ).enqueue(object : ApolloCall.Callback<FindUserQuery.Data>() {
@@ -107,7 +107,7 @@ object AniListCommandUtil {
         })
     }
 
-    fun getUserById(context: CommandContext, id: Int) {
+    fun getUserById(context: ICommandContext, id: Int) {
         context.webManager.aniListApolloClient.query(
             GetUserQuery(id)
         ).enqueue(object : ApolloCall.Callback<GetUserQuery.Data>() {
@@ -128,7 +128,7 @@ object AniListCommandUtil {
         })
     }
 
-    suspend fun foundUser(context: CommandContext, user: UserFragment) {
+    suspend fun foundUser(context: ICommandContext, user: UserFragment) {
         val daoManager = context.daoManager
         val root = context.commandOrder.first().root + ".user"
         val embedColorWrapper = daoManager.embedColorWrapper
@@ -139,7 +139,7 @@ object AniListCommandUtil {
         val defaultColor = when {
             userColor != 0 -> userColor
             guildColor != 0 -> guildColor
-            else -> context.embedColor
+            else -> context.container.settings.botInfo.embedColor
         }
 
         val eb = Embedder(context) // We're using custom colors below
@@ -262,7 +262,7 @@ object AniListCommandUtil {
 
 
     // Character methods
-    suspend fun searchCharacter(context: CommandContext) {
+    suspend fun searchCharacter(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -325,7 +325,7 @@ object AniListCommandUtil {
         })
     }
 
-    fun getCharacterByName(context: CommandContext, name: String) {
+    fun getCharacterByName(context: ICommandContext, name: String) {
         context.webManager.aniListApolloClient.query(
             FindCharacterQuery(name)
         ).enqueue(object : ApolloCall.Callback<FindCharacterQuery.Data>() {
@@ -346,7 +346,7 @@ object AniListCommandUtil {
         })
     }
 
-    fun getCharacterById(context: CommandContext, id: Int) {
+    fun getCharacterById(context: ICommandContext, id: Int) {
         context.webManager.aniListApolloClient.query(
             GetCharacterQuery(id)
         ).enqueue(object : ApolloCall.Callback<GetCharacterQuery.Data>() {
@@ -367,7 +367,7 @@ object AniListCommandUtil {
         })
     }
 
-    suspend fun foundCharacter(context: CommandContext, character: CharacterFragment) {
+    suspend fun foundCharacter(context: ICommandContext, character: CharacterFragment) {
         val nameList = mutableListOf<String>()
         character.name?.first?.let { nameList.add(it) }
         character.name?.last?.let { nameList.add(it) }
@@ -450,7 +450,7 @@ object AniListCommandUtil {
     }
 
     // Anime methods
-    suspend fun searchAnime(context: CommandContext) {
+    suspend fun searchAnime(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -460,7 +460,7 @@ object AniListCommandUtil {
         getAnimeByName(context, animeName)
     }
 
-    fun getAnimeByName(context: CommandContext, name: String) {
+    fun getAnimeByName(context: ICommandContext, name: String) {
         context.webManager.aniListApolloClient.query(
             FindAnimeQuery(name)
         ).enqueue(object : ApolloCall.Callback<FindAnimeQuery.Data>() {
@@ -482,7 +482,7 @@ object AniListCommandUtil {
         })
     }
 
-    fun getAnimeById(context: CommandContext, id: Int) {
+    fun getAnimeById(context: ICommandContext, id: Int) {
         context.webManager.aniListApolloClient.query(
             GetAnimeQuery(id)
 
@@ -504,7 +504,7 @@ object AniListCommandUtil {
         })
     }
 
-    suspend fun foundAnime(context: CommandContext, animeMedia: AnilistAnimeMedia) {
+    suspend fun foundAnime(context: ICommandContext, animeMedia: AnilistAnimeMedia) {
         val media = animeMedia.media
         if (media.nsfw == true && context.isFromGuild && !context.textChannel.isNSFW) {
             val msg = context.getTranslation("${context.commandOrder.last().root}.nsfw")
@@ -585,7 +585,7 @@ object AniListCommandUtil {
     }
 
     // Manga methods
-    suspend fun searchManga(context: CommandContext) {
+    suspend fun searchManga(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -595,7 +595,7 @@ object AniListCommandUtil {
         getMangaByName(context, animeName)
     }
 
-    fun getMangaByName(context: CommandContext, name: String) {
+    fun getMangaByName(context: ICommandContext, name: String) {
         context.webManager.aniListApolloClient.query(
             FindMangaQuery(name)
         ).enqueue(object : ApolloCall.Callback<FindMangaQuery.Data>() {
@@ -616,7 +616,7 @@ object AniListCommandUtil {
         })
     }
 
-    fun getMangaById(context: CommandContext, id: Int) {
+    fun getMangaById(context: ICommandContext, id: Int) {
         context.webManager.aniListApolloClient.query(
             GetMangaQuery(id)
         ).enqueue(object : ApolloCall.Callback<GetMangaQuery.Data>() {
@@ -637,7 +637,7 @@ object AniListCommandUtil {
         })
     }
 
-    suspend fun foundManga(context: CommandContext, mangaMedia: AnilistMangaMedia) {
+    suspend fun foundManga(context: ICommandContext, mangaMedia: AnilistMangaMedia) {
         val media = mangaMedia.media
         if (media.nsfw == true && context.isFromGuild && !context.textChannel.isNSFW) {
             val msg = context.getTranslation("${context.commandOrder.last().root}.nsfw")
@@ -718,7 +718,7 @@ object AniListCommandUtil {
 
 
     // Media methods
-    suspend fun searchMedia(context: CommandContext, mediaType: MediaType) {
+    suspend fun searchMedia(context: ICommandContext, mediaType: MediaType) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return

@@ -10,7 +10,7 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
@@ -32,7 +32,7 @@ class RedditCommand : AbstractCommand("command.reddit") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -79,7 +79,7 @@ class RedditCommand : AbstractCommand("command.reddit") {
 
     companion object {
         suspend fun getRandomRedditResultNMessage(
-            context: CommandContext,
+            context: ICommandContext,
             subreddit: String,
             arg: String,
             time: String

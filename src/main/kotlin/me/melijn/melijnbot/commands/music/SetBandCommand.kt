@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.music
 import com.sedmelluq.discord.lavaplayer.filter.equalizer.Equalizer.BAND_COUNT
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -27,7 +27,7 @@ class SetBandCommand : AbstractCommand("command.setband") {
         )
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -64,7 +64,7 @@ class SetBandCommand : AbstractCommand("command.setband") {
             name = "all"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
             if (context.args.isEmpty()) {
                 val title = context.getTranslation("$root.show")

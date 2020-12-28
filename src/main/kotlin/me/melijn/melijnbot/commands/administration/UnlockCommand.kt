@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
@@ -29,7 +29,7 @@ class UnlockCommand : AbstractCommand("command.unlock") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -97,7 +97,7 @@ class UnlockCommand : AbstractCommand("command.unlock") {
         }
     }
 
-    private suspend fun unlockMany(context: CommandContext, list: List<GuildChannel>) {
+    private suspend fun unlockMany(context: ICommandContext, list: List<GuildChannel>) {
         for (channel in list) {
             if (notEnoughPermissionsAndMessage(
                     context,
@@ -148,7 +148,7 @@ class UnlockCommand : AbstractCommand("command.unlock") {
 
     }
 
-    private suspend fun unlockChannel(context: CommandContext, channel: GuildChannel) {
+    private suspend fun unlockChannel(context: ICommandContext, channel: GuildChannel) {
         if (notEnoughPermissionsAndMessage(context, channel, Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES)) return
 
         val status = internalUnlock(context, channel)
@@ -172,7 +172,7 @@ class UnlockCommand : AbstractCommand("command.unlock") {
     }
 
     // -> overrideCount, permissionsSwitched, status
-    private suspend fun internalUnlock(context: CommandContext, channel: GuildChannel): Triple<Int, Int, LockStatus> {
+    private suspend fun internalUnlock(context: ICommandContext, channel: GuildChannel): Triple<Int, Int, LockStatus> {
         val denyList = when (channel) {
             is TextChannel -> LockCommand.textDenyList
             is VoiceChannel -> LockCommand.voiceDenyList

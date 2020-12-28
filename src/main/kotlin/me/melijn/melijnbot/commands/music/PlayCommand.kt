@@ -31,7 +31,7 @@ class PlayCommand : AbstractCommand("command.play") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if ((context.args.isEmpty() || context.rawArg.isBlank()) && context.message.attachments.isEmpty()) {
             sendSyntax(context)
             return
@@ -117,7 +117,7 @@ class PlayCommand : AbstractCommand("command.play") {
         }
 
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -151,7 +151,7 @@ class PlayCommand : AbstractCommand("command.play") {
         }
 
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -182,7 +182,7 @@ class PlayCommand : AbstractCommand("command.play") {
             aliases = arrayOf("file")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.message.attachments.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -213,7 +213,7 @@ class PlayCommand : AbstractCommand("command.play") {
 
     private suspend fun spotifySearchNLoad(
         audioLoader: AudioLoader,
-        context: CommandContext,
+        context: ICommandContext,
         songArg: String,
         nextPos: NextSongPosition
     ) {

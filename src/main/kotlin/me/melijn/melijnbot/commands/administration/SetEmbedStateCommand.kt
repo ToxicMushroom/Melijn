@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.boolFromStateArg
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
@@ -17,7 +17,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         when {
             context.args.isEmpty() -> {
                 sendCurrentEmbedState(context)
@@ -29,7 +29,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         }
     }
 
-    private suspend fun sendCurrentEmbedState(context: CommandContext) {
+    private suspend fun sendCurrentEmbedState(context: ICommandContext) {
         val dao = context.daoManager.embedDisabledWrapper
         val disabled = dao.embedDisabledCache.contains(context.guildId)
 
@@ -39,7 +39,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         sendRsp(context, msg)
     }
 
-    private suspend fun setEmbedStateState(context: CommandContext) {
+    private suspend fun setEmbedStateState(context: ICommandContext) {
         val state: Boolean? = boolFromStateArg(context.args[0].toLowerCase())
         if (state == null) {
             sendSyntax(context)

@@ -9,7 +9,7 @@ import io.ktor.client.statement.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.streams.*
 import kotlinx.coroutines.*
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -48,7 +48,7 @@ object ImageUtils {
     val discordSize = "?size=2048"
 
     suspend fun getImageBytesNMessage(
-        context: CommandContext,
+        context: ICommandContext,
         reqFormat: String? = null
     ): Triple<ByteArray, String, Boolean>? {
         val args = context.args
@@ -152,7 +152,7 @@ object ImageUtils {
         return Triple(nonnullImage, url, arg)
     }
 
-    suspend fun downloadImage(context: CommandContext, url: String, doChecks: Boolean = true): ByteArray {
+    suspend fun downloadImage(context: ICommandContext, url: String, doChecks: Boolean = true): ByteArray {
         return downloadImage(context.webManager.httpClient, url, doChecks, context.guildN, context)
     }
 
@@ -161,7 +161,7 @@ object ImageUtils {
         url: String,
         doChecks: Boolean = true,
         guild: Guild? = null,
-        context: CommandContext? = null
+        context: ICommandContext? = null
     ): ByteArray {
         return if (doChecks) {
             httpClient.get<HttpStatement>(url).execute {
@@ -205,7 +205,7 @@ object ImageUtils {
     //String (urls)
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
     suspend fun getImagesBytesNMessage(
-        context: CommandContext,
+        context: ICommandContext,
         reqFormat: String? = null
     ): Triple<Map<String, ByteArray>, Pair<Int, Int>, Boolean>? {
         val args = context.args
@@ -354,7 +354,7 @@ object ImageUtils {
         return Triple(imgMap, Pair(maxWidth, maxHeight), arg)
     }
 
-    private suspend fun checkFormat(context: CommandContext, url: String, reqFormat: String?): Boolean {
+    private suspend fun checkFormat(context: ICommandContext, url: String, reqFormat: String?): Boolean {
         if (reqFormat != null && !url.contains(reqFormat)) {
             val msg = context.getTranslation("message.notagif")
                 .withVariable("url", url)
@@ -365,7 +365,7 @@ object ImageUtils {
         return checkValidUrl(context, url)
     }
 
-    private suspend fun checkValidUrl(context: CommandContext, url: String): Boolean {
+    private suspend fun checkValidUrl(context: ICommandContext, url: String): Boolean {
         if (!URL_PATTERN.matches(url)) {
             val msg = context.getTranslation("message.notaurl")
                 .withVariable("url", url)
@@ -415,7 +415,7 @@ object ImageUtils {
         } else {
             val i = offset.absoluteValue
             if (brightness >= i) intArrayOf(50, 50, 50, a) //DARK #323232
-            else intArrayOf(255, 128, 0, a) //ORANGE #FF8000
+            else intArrayOf(255, 128, 0, a) //ORANGE #FF8000jd
         }
     }
 
@@ -424,7 +424,7 @@ object ImageUtils {
         fps: Float? = null,
         repeat: Boolean?,
         effect: (BufferedImage) -> Unit,
-        frameDebug: CommandContext? = null
+        frameDebug: ICommandContext? = null
     ): ByteArrayOutputStream {
         val outputStream = ByteArrayOutputStream()
         val repeatCount = if (repeat != null && repeat == true) {

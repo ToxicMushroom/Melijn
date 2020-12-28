@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.anime
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import kotlin.random.Random
@@ -15,7 +15,7 @@ class AIWaifuCommand : AbstractCommand("command.aiwaifu") {
         commandCategory = CommandCategory.ANIME
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val title = context.getTranslation("$root.title")
 
         val eb = Embedder(context)

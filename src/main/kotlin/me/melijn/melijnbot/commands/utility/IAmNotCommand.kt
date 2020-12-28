@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
@@ -22,12 +22,12 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         doSelfRoleSelect(context, false)
     }
 
     companion object {
-        suspend fun doSelfRoleSelect(context: CommandContext, add: Boolean) {
+        suspend fun doSelfRoleSelect(context: ICommandContext, add: Boolean) {
             val root = context.commandOrder.first().root
             if (context.args.isEmpty()) {
                 sendSyntax(context, "$root.syntax")

@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.internals.utils
 
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -150,7 +150,7 @@ fun getDurationString(milliseconds: Double): String {
 
 val holyPattern = Pattern.compile("(\\d+)([a-zA-Z]+)")
 suspend fun getDurationByArgsNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     leftBound: Int,
     rightBound: Int,
     timeStamps: List<String> = context.args

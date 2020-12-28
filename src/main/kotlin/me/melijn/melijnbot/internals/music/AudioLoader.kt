@@ -11,7 +11,7 @@ import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.audio.SongCacheWrapper
 import me.melijn.melijnbot.enums.SearchType
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
@@ -39,7 +39,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
 
     suspend fun foundSingleTrack(
-        context: CommandContext,
+        context: ICommandContext,
         guildMusicPlayer: GuildMusicPlayer,
         wrapper: SongCacheWrapper,
         track: AudioTrack,
@@ -57,7 +57,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     suspend fun foundTracks(
-        context: CommandContext,
+        context: ICommandContext,
         guildMusicPlayer: GuildMusicPlayer,
         wrapper: SongCacheWrapper,
         tracks: List<AudioTrack>,
@@ -83,7 +83,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     suspend fun loadNewTrackNMessage(
-        context: CommandContext,
+        context: ICommandContext,
         source: String,
         isPlaylist: Boolean = false,
         nextPos: NextSongPosition
@@ -142,21 +142,21 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
 
-    private suspend fun sendMessageLoadFailed(context: CommandContext, exception: Throwable) {
+    private suspend fun sendMessageLoadFailed(context: ICommandContext, exception: Throwable) {
         val msg = context.getTranslation("$root.loadfailed")
             .withSafeVariable("cause", exception.message ?: "/")
         sendRsp(context, msg)
         exception.printStackTrace()
     }
 
-    suspend fun sendMessageNoMatches(context: CommandContext, input: String) {
+    suspend fun sendMessageNoMatches(context: ICommandContext, input: String) {
         val msg = context.getTranslation("$root.nomatches")
             .withSafeVariable("source", input)
         sendRsp(context, msg)
     }
 
 
-    suspend fun sendMessageAddedTrack(context: CommandContext, audioTrack: AudioTrack) {
+    suspend fun sendMessageAddedTrack(context: ICommandContext, audioTrack: AudioTrack) {
         val title = context.getTranslation("$root.addedtrack.title")
             .withVariable(PLACEHOLDER_USER, context.author.asTag)
         val description = context.getTranslation("$root.addedtrack.description")
@@ -172,7 +172,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         sendEmbedRsp(context, eb.build())
     }
 
-    private suspend fun sendMessageAddedTracks(context: CommandContext, audioTracks: List<AudioTrack>) {
+    private suspend fun sendMessageAddedTracks(context: ICommandContext, audioTracks: List<AudioTrack>) {
         val title = context.getTranslation("$root.addedtracks.title")
             .withSafeVariable(PLACEHOLDER_USER, context.author.asTag)
         val description = context.getTranslation("$root.addedtracks.description")
@@ -187,11 +187,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         sendEmbedRsp(context, eb.build())
     }
 
-    private suspend fun getQueuePosition(context: CommandContext, audioTrack: AudioTrack): Int =
+    private suspend fun getQueuePosition(context: ICommandContext, audioTrack: AudioTrack): Int =
         context.musicPlayerManager.getGuildMusicPlayer(context.guild).guildTrackManager.getPosition(audioTrack)
 
     suspend fun loadSpotifyTrack(
-        context: CommandContext,
+        context: ICommandContext,
         query: String,
         artists: Array<ArtistSimplified>?,
         durationMs: Int,
@@ -312,7 +312,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     private suspend fun loadSpotifyTrackOther(
-        context: CommandContext,
+        context: ICommandContext,
         query: String,
         artists: Array<ArtistSimplified>?,
         durationMs: Int,
@@ -353,7 +353,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    suspend fun loadSpotifyPlaylist(context: CommandContext, tracks: Array<Track>, nextPos: NextSongPosition) {
+    suspend fun loadSpotifyPlaylist(context: ICommandContext, tracks: Array<Track>, nextPos: NextSongPosition) {
         val limit = if (isPremiumGuild(context)) QUEUE_LIMIT else DONATE_QUEUE_LIMIT
         val slotsLeft = limit - context.getGuildMusicPlayer().guildTrackManager.trackSize()
 
@@ -384,7 +384,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     suspend fun loadSpotifyAlbum(
-        context: CommandContext,
+        context: ICommandContext,
         simpleTracks: Array<TrackSimplified>,
         nextPos: NextSongPosition
     ) {
@@ -419,7 +419,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     suspend fun loadNewTrackPickerNMessage(
-        context: CommandContext,
+        context: ICommandContext,
         query: String,
         searchType: SearchType,
         nextPos: NextSongPosition
@@ -464,7 +464,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     private suspend fun prepareSearchMenu(
-        context: CommandContext,
+        context: ICommandContext,
         trackList: List<AudioTrack>,
         nextPos: NextSongPosition
     ) {
@@ -493,7 +493,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    private suspend fun sendMessageSearchMenu(context: CommandContext, tracks: List<AudioTrack>): List<Message> {
+    private suspend fun sendMessageSearchMenu(context: ICommandContext, tracks: List<AudioTrack>): List<Message> {
         val title = context.getTranslation("$root.searchmenu")
         var menu = ""
         for ((index, track) in tracks.withIndex()) {

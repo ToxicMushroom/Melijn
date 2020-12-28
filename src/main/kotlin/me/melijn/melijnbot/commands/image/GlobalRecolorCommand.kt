@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.image
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.getColorFromArgNMessage
@@ -23,7 +23,7 @@ class GlobalRecolorCommand : AbstractCommand("command.globalrecolor") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("globalRecolorGif", true)) {
             executeGif(context)
         } else {
@@ -31,7 +31,7 @@ class GlobalRecolorCommand : AbstractCommand("command.globalrecolor") {
         }
     }
 
-    private suspend fun executeNormal(context: CommandContext) {
+    private suspend fun executeNormal(context: ICommandContext) {
         ImageCommandUtil.executeNormalEffect(context, effect = { image, argData ->
             val chosenColor = Color(argData.getInt("color"))
             ImageUtils.recolorPixelSingleOffset(image, 0) { ints: IntArray ->
@@ -53,7 +53,7 @@ class GlobalRecolorCommand : AbstractCommand("command.globalrecolor") {
         })
     }
 
-    private suspend fun executeGif(context: CommandContext) {
+    private suspend fun executeGif(context: ICommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, argData ->
             val chosenColor = Color(argData.getInt("color"))
             ImageUtils.recolorPixelSingleOffset(image, 0) { ints: IntArray ->

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -22,7 +22,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val textChannel = if (context.args.isEmpty()) {
             context.textChannel
         } else {
@@ -63,7 +63,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
         })
     }
 
-    private fun migrateSettings(context: CommandContext, oldId: Long, newId: Long) {
+    private fun migrateSettings(context: ICommandContext, oldId: Long, newId: Long) {
         val daoManager = context.daoManager
         daoManager.channelWrapper.migrateChannel(oldId, newId)
         daoManager.channelWrapper.invalidate(context.guildId)

@@ -5,7 +5,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
@@ -30,7 +30,7 @@ class WarnCommand : AbstractCommand("command.warn") {
         commandCategory = CommandCategory.MODERATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -84,7 +84,7 @@ class WarnCommand : AbstractCommand("command.warn") {
     }
 
     private suspend fun continueWarning(
-        context: CommandContext,
+        context: ICommandContext,
         targetMember: Member,
         warn: Warn,
         warningMessage: Message? = null

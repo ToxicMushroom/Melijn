@@ -4,14 +4,14 @@ import io.ktor.client.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.ModularPaginationInfo
 import me.melijn.melijnbot.internals.utils.PaginationInfo
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
 
-suspend fun sendPaginationModularRsp(context: CommandContext, modularMessages: List<ModularMessage>, index: Int) {
+suspend fun sendPaginationModularRsp(context: ICommandContext, modularMessages: List<ModularMessage>, index: Int) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendPaginationModularRsp(
@@ -42,7 +42,7 @@ suspend fun sendPaginationModularRsp(
     registerPaginationModularMessage(textChannel, authorId, message, modularMessages, index)
 }
 
-suspend fun sendPaginationMsg(context: CommandContext, msgList: List<String>, index: Int) {
+suspend fun sendPaginationMsg(context: ICommandContext, msgList: List<String>, index: Int) {
     val msg = msgList[index]
     if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
 
@@ -55,7 +55,7 @@ suspend fun sendPaginationMsg(context: CommandContext, msgList: List<String>, in
     }
 }
 
-suspend fun sendPaginationModularMsg(context: CommandContext, msgList: List<ModularMessage>, index: Int) {
+suspend fun sendPaginationModularMsg(context: ICommandContext, msgList: List<ModularMessage>, index: Int) {
     val msg = msgList[index]
 
     if (context.isFromGuild) {

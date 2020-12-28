@@ -4,7 +4,7 @@ import com.madgag.gif.fmsware.GifDecoder
 import com.squareup.gifencoder.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.getBooleanFromArgN
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
@@ -27,7 +27,7 @@ object ImageCommandUtil {
 
     // needs lower and higher to be put in the imgData with imgParser arg
     suspend fun defaultOffsetArgParser(
-        context: CommandContext,
+        context: ICommandContext,
         argInt: Int,
         argData: DataObject,
         imgData: DataObject
@@ -51,7 +51,7 @@ object ImageCommandUtil {
 
     // arg data must contain "offset" -> Int (-255 -> 255)
     suspend fun executeNormalRecolorSingleOffset(
-        context: CommandContext,
+        context: ICommandContext,
         recolor: (ints: IntArray) -> IntArray
     ) {
         executeNormalEffect(context, { image, argData ->
@@ -78,7 +78,7 @@ object ImageCommandUtil {
 
     // arg data must contain "offset" -> Int (-255 -> 255)
     suspend fun executeGifRecolorSingleOffset(
-        context: CommandContext,
+        context: ICommandContext,
         recolor: (ints: IntArray) -> IntArray, // ints: r, g, b, offset (def: 255)
         debug: Boolean = false
     ) {
@@ -108,7 +108,7 @@ object ImageCommandUtil {
 
     // EFFECTS
     suspend fun executeNormalEffect(
-        context: CommandContext,
+        context: ICommandContext,
         effect: (image: BufferedImage, argData: DataObject) -> Unit,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true
@@ -123,7 +123,7 @@ object ImageCommandUtil {
     }
 
     suspend fun executeGifEffect(
-        context: CommandContext,
+        context: ICommandContext,
         effect: (image: BufferedImage, argData: DataObject) -> Unit,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true
@@ -146,7 +146,7 @@ object ImageCommandUtil {
 
     // FRAME APPENDER THING
     suspend fun executeGifFrameAppend(
-        context: CommandContext,
+        context: ICommandContext,
         debug: Boolean = false
     ) {
         executeGifTransform(context, { gifDecoder, fps, repeat, _ ->
@@ -215,7 +215,7 @@ object ImageCommandUtil {
         width: Int,
         height: Int,
         encoder: GifEncoder,
-        context: CommandContext,
+        context: ICommandContext,
         fps: Float?,
         isSecondIteration: Boolean
     ) {
@@ -271,7 +271,7 @@ object ImageCommandUtil {
 
     // ROOT TRANSFORM THING
     private suspend fun executeNormalTransform(
-        context: CommandContext,
+        context: ICommandContext,
         transform: (byteArray: ByteArray, argData: DataObject) -> ByteArrayOutputStream,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true
@@ -312,7 +312,7 @@ object ImageCommandUtil {
 
 
     private suspend fun executeGifTransform(
-        context: CommandContext,
+        context: ICommandContext,
         transform: suspend (decoder: GifDecoder, fps: Float?, repeat: Boolean?, argData: DataObject) -> ByteArrayOutputStream,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true

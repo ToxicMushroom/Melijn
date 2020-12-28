@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.nsfw
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.SPACE_REGEX
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -19,7 +19,7 @@ class TBibCommand : AbstractCommand("command.tbib") {
         commandCategory = CommandCategory.NSFW
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.getDurationString
@@ -23,7 +23,7 @@ class DonateCommand : AbstractCommand("command.donate") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val msg = context.getTranslation("$root.response")
             .withVariable("url", "https://patreon.com/melijn")
             .withVariable("urlPaypal", "https://paypal.me/shroomish")
@@ -40,7 +40,7 @@ class DonateCommand : AbstractCommand("command.donate") {
             runConditions = arrayOf(RunCondition.GUILD, RunCondition.USER_SUPPORTER)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.supporterWrapper
             val supporter = wrapper.getSupporter(context.authorId) ?: return
             val devIds = context.container.settings.botInfo.developerIds

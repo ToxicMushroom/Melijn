@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.enums.Alignment
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.models.Cell
 import me.melijn.melijnbot.internals.utils.TableBuilder
@@ -23,7 +23,7 @@ class ShardsCommand : AbstractCommand("command.shards") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val shardManager = context.shardManager
         val tableBuilder = TableBuilder().apply {
             this.setColumns(

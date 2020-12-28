@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.database.reminder.Reminder
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresGuildPremiumMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -34,7 +34,7 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
             name = "removeAt"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val reminderWrapper = context.daoManager.reminderWrapper
             val reminders = reminderWrapper.getRemindersOfUser(context.authorId)
             if (reminders.isEmpty()) {
@@ -62,7 +62,7 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
             name = "list"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val reminderWrapper = context.daoManager.reminderWrapper
             val reminders = reminderWrapper.getRemindersOfUser(context.authorId)
             if (reminders.isEmpty()) {
@@ -85,7 +85,7 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return

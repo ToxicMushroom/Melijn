@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_CHANNELTYPE
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.utils.*
@@ -20,7 +20,7 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -35,7 +35,7 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
         }
     }
 
-    private suspend fun showChannel(context: CommandContext, type: ChannelType) {
+    private suspend fun showChannel(context: ICommandContext, type: ChannelType) {
         val channel = context.guild.getAndVerifyChannelByType(context.daoManager, type)
         if (channel == null) {
             val msg = context.getTranslation("$root.show.unset")
@@ -52,7 +52,7 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
         sendRsp(context, msg)
     }
 
-    private suspend fun setChannel(context: CommandContext, type: ChannelType) {
+    private suspend fun setChannel(context: ICommandContext, type: ChannelType) {
         val channel = if (context.args[1].equals("null", true)) {
             null
         } else {

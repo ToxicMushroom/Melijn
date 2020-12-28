@@ -6,7 +6,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
@@ -14,7 +14,7 @@ import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.internal.entities.DataMessage
 
-suspend fun sendSyntax(context: CommandContext, translationPath: String = context.commandOrder.last().syntax) {
+suspend fun sendSyntax(context: ICommandContext, translationPath: String = context.commandOrder.last().syntax) {
     val syntax = context.getTranslation("message.command.usage")
         .withVariable(
             "syntax", getSyntax(context, translationPath)
@@ -23,7 +23,7 @@ suspend fun sendSyntax(context: CommandContext, translationPath: String = contex
     sendRsp(context, syntax)
 }
 
-suspend fun getSyntax(context: CommandContext, translationPath: String): String {
+suspend fun getSyntax(context: ICommandContext, translationPath: String): String {
     return "%prefix%" + context.getTranslation(translationPath)
 }
 
@@ -40,7 +40,7 @@ fun escapeForLog(string: String): String {
 }
 
 
-fun sendMsg(context: CommandContext, msg: String) {
+fun sendMsg(context: ICommandContext, msg: String) {
     if (context.isFromGuild) {
         sendMsg(context.textChannel, msg)
     } else {
@@ -54,8 +54,8 @@ suspend fun canResponse(messageChannel: MessageChannel, supporterWrapper: Suppor
     else false
 }
 
-suspend fun sendRsp(context: CommandContext, msg: String) {
-    if (canResponse(context.messageChannel, context.daoManager.supporterWrapper)) {
+suspend fun sendRsp(context: ICommandContext, msg: String) {
+    if (canResponse(context.channel, context.daoManager.supporterWrapper)) {
         sendRsp(context.textChannel, context.daoManager, msg)
     } else {
         sendMsg(context, msg)
@@ -86,7 +86,7 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
 }
 
 
-suspend fun sendRsp(textChannel: TextChannel, context: CommandContext, msg: ModularMessage) {
+suspend fun sendRsp(textChannel: TextChannel, context: ICommandContext, msg: ModularMessage) {
     if (canResponse(textChannel, context.daoManager.supporterWrapper)) {
         sendRsp(textChannel, context.webManager.proxiedHttpClient, context.daoManager, msg)
     } else {
@@ -221,8 +221,8 @@ fun sendMsg(privateChannel: PrivateChannel, msg: String) {
     }
 }
 
-suspend fun sendRspAwaitEL(context: CommandContext, msg: String): List<Message> {
-    return if (canResponse(context.messageChannel, context.daoManager.supporterWrapper)) {
+suspend fun sendRspAwaitEL(context: ICommandContext, msg: String): List<Message> {
+    return if (canResponse(context.channel, context.daoManager.supporterWrapper)) {
         sendRspAwaitEL(context.textChannel, context.daoManager, msg)
     } else {
         sendMsgAwaitEL(context, msg)
@@ -256,7 +256,7 @@ suspend fun sendRspAwaitEL(channel: TextChannel, daoManager: DaoManager, msg: St
     return messageList
 }
 
-suspend fun sendMsgAwaitEL(context: CommandContext, msg: String): List<Message> {
+suspend fun sendMsgAwaitEL(context: ICommandContext, msg: String): List<Message> {
     return if (context.isFromGuild) {
         sendMsgAwaitEL(context.textChannel, msg)
     } else {
@@ -394,7 +394,7 @@ suspend fun sendMsgAwaitN(channel: PrivateChannel, msg: Message): Message? {
 }
 
 suspend fun sendFeatureRequiresPremiumMessage(
-    context: CommandContext,
+    context: ICommandContext,
     featurePath: String,
     featureReplaceMap: Map<String, String> = emptyMap()
 ) {
@@ -410,7 +410,7 @@ suspend fun sendFeatureRequiresPremiumMessage(
 }
 
 suspend fun sendFeatureRequiresGuildPremiumMessage(
-    context: CommandContext,
+    context: ICommandContext,
     featurePath: String,
     featureReplaceMap: Map<String, String> = emptyMap()
 ) {

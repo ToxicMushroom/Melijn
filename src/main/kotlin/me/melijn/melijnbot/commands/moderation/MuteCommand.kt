@@ -6,7 +6,7 @@ import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
@@ -33,7 +33,7 @@ class MuteCommand : AbstractCommand("command.mute") {
         discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -96,7 +96,7 @@ class MuteCommand : AbstractCommand("command.mute") {
         }
     }
 
-    private suspend fun muteRoleAquired(context: CommandContext, targetUser: User, reason: String, muteRole: Role) {
+    private suspend fun muteRoleAquired(context: ICommandContext, targetUser: User, reason: String, muteRole: Role) {
         val activeMute: Mute? = context.daoManager.muteWrapper.getActiveMute(context.guildId, targetUser.idLong)
         val mute = Mute(
             context.guildId,
@@ -128,7 +128,7 @@ class MuteCommand : AbstractCommand("command.mute") {
     }
 
     private suspend fun continueMuting(
-        context: CommandContext,
+        context: ICommandContext,
         muteRole: Role,
         targetUser: User,
         mute: Mute,

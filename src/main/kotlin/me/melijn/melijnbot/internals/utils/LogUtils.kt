@@ -11,7 +11,7 @@ import me.melijn.melijnbot.database.settings.VoteReminderOption
 import me.melijn.melijnbot.enums.*
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.music.LavaManager
 import me.melijn.melijnbot.internals.music.TrackUserData
@@ -199,7 +199,7 @@ object LogUtils {
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    suspend fun addMusicPlayerResumed(context: CommandContext) {
+    suspend fun addMusicPlayerResumed(context: ICommandContext) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
@@ -228,7 +228,7 @@ object LogUtils {
         trackManager.resumeMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 
-    suspend fun addMusicPlayerPaused(context: CommandContext) {
+    suspend fun addMusicPlayerPaused(context: ICommandContext) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
@@ -289,7 +289,7 @@ object LogUtils {
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    suspend fun addMusicPlayerNewTrack(context: CommandContext, track: AudioTrack) {
+    suspend fun addMusicPlayerNewTrack(context: ICommandContext, track: AudioTrack) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val eb = Embedder(context.daoManager, context.guildId, -1)
             .setColor(Color(0x2f3136))
@@ -609,7 +609,7 @@ object LogUtils {
         logChannel.sendMessage(eb.build())
     }
 
-    suspend fun sendPurgeLog(context: CommandContext, messages: List<Message>) {
+    suspend fun sendPurgeLog(context: ICommandContext, messages: List<Message>) {
         val guild = context.guild
         val daoManager = context.daoManager
         val pmLogChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.PURGED_MESSAGE)

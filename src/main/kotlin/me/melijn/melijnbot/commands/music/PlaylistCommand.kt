@@ -43,7 +43,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             name = "clear"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -78,7 +78,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             name = "saveQueue"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -125,7 +125,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             sendRsp(context, msg)
         }
 
-        private suspend fun getFreeSlots(context: CommandContext, size: Int): Int {
+        private suspend fun getFreeSlots(context: ICommandContext, size: Int): Int {
             val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
             return if (premium) {
                 premiumTrackLimit
@@ -136,7 +136,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
 
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -148,7 +148,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             runConditions = arrayOf(RunCondition.VC_BOT_OR_USER_DJ)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -160,7 +160,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             if (context.lavaManager.getConnectedChannel(context.guild) == null) {
                 if (!RunConditionUtil.checkOtherBotAloneOrDJOrSameVC(
                         context.container,
-                        context.event,
+                        context.message,
                         this,
                         context.getLanguage()
                     )
@@ -204,7 +204,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 val playlists = context.daoManager.playlistWrapper.getPlaylists(context.authorId)
                 if (playlists.isEmpty()) {
@@ -280,7 +280,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             aliases = arrayOf("rm", "r")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -326,7 +326,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             runConditions = arrayOf(RunCondition.PLAYING_TRACK_NOT_NULL)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -336,7 +336,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             val audioTrack: AudioTrack = guildMusicPlayer.guildTrackManager.playingTrack ?: return
 
             if (context.args.isNotEmpty() &&
-                !RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event)
+                !RunConditionUtil.checkPlayingTrackNotNull(context.container, context.message)
             ) {
                 sendSyntax(context)
                 return
@@ -366,7 +366,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
         }
 
         companion object {
-            suspend fun tracksLimitReachedAndMessage(context: CommandContext, size: Int): Boolean {
+            suspend fun tracksLimitReachedAndMessage(context: ICommandContext, size: Int): Boolean {
                 if (size < tracksLimit) return false
 
                 val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
@@ -384,7 +384,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                 return true
             }
 
-            suspend fun playlistsLimitReachedAndMessage(context: CommandContext, size: Int): Boolean {
+            suspend fun playlistsLimitReachedAndMessage(context: ICommandContext, size: Int): Boolean {
                 if (size < playlistLimit) return false
 
                 val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
@@ -404,13 +404,13 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
     }
 
     companion object {
-        private suspend fun getPlaylistByNameN(context: CommandContext, index: Int): Map<Int, String>? {
+        private suspend fun getPlaylistByNameN(context: ICommandContext, index: Int): Map<Int, String>? {
             val playlist = getStringFromArgsNMessage(context, index, 1, 128) ?: return null
             val playlistsMap = context.daoManager.playlistWrapper.getPlaylists(context.authorId)
             return playlistsMap[playlist]
         }
 
-        private suspend fun getPlaylistByNameNMessage(context: CommandContext, index: Int): Map<Int, String>? {
+        private suspend fun getPlaylistByNameNMessage(context: ICommandContext, index: Int): Map<Int, String>? {
             val tracksMap = getPlaylistByNameN(context, index)
             val playlist = context.args[index]
 

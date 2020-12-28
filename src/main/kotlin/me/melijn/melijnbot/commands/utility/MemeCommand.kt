@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -24,7 +24,7 @@ class MemeCommand : AbstractCommand("command.meme") {
         val subreddits = arrayOf("dankmemes", "memes", "funny")
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val subreddit =
             if (context.commandParts[0] == "dankmeme") "dankmemes" else subreddits[Random.nextInt(subreddits.size)]
 

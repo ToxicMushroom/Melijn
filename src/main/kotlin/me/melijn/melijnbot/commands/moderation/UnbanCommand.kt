@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
@@ -32,7 +32,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
         discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val guild = context.guild
         val daoManager = context.daoManager
         if (context.args.isEmpty()) {
@@ -116,7 +116,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
     }
 
     private suspend fun continueUnbanning(
-        context: CommandContext,
+        context: ICommandContext,
         targetUser: User,
         ban: Ban,
         banAuthor: User?,

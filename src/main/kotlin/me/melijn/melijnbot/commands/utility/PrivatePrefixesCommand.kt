@@ -29,7 +29,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -40,7 +40,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             aliases = arrayOf("ls", "view")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val title = context.getTranslation("$root.response1.title")
 
             var content = "```INI"
@@ -63,7 +63,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             aliases = arrayOf("a", "put", "p")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context)
                 return
@@ -102,7 +102,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             aliases = arrayOf("rm", "r", "delete", "d")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context)
                 return
@@ -125,7 +125,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             aliases = arrayOf("rma", "deleteAt", "dat")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context)
                 return

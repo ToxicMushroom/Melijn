@@ -2,7 +2,7 @@ package me.melijn.melijnbot.internals.embed
 
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import net.dv8tion.jda.api.EmbedBuilder
 
 class Embedder(daoManager: DaoManager, guildId: Long, userId: Long) : EmbedBuilder() {
@@ -11,7 +11,7 @@ class Embedder(daoManager: DaoManager, guildId: Long, userId: Long) : EmbedBuild
         var defaultColor = 0xA1B4ED
     }
 
-    constructor(context: CommandContext) : this(
+    constructor(context: ICommandContext) : this(
         context.daoManager,
         if (context.isFromGuild) context.guildId else -1,
         context.authorId

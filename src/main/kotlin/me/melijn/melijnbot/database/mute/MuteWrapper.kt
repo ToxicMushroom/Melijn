@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.database.mute
 
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
@@ -19,7 +19,7 @@ class MuteWrapper(private val muteDao: MuteDao) {
         return muteDao.getActiveMute(guildId, mutedId)
     }
 
-    suspend fun getMuteMap(context: CommandContext, targetUser: User): Map<Long, String> {
+    suspend fun getMuteMap(context: ICommandContext, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val mutes = muteDao.getMutes(context.guildId, targetUser.idLong)
         if (mutes.isEmpty()) {
@@ -33,7 +33,7 @@ class MuteWrapper(private val muteDao: MuteDao) {
         return map
     }
 
-    private suspend fun convertMuteInfoToMessage(context: CommandContext, mute: Mute): String {
+    private suspend fun convertMuteInfoToMessage(context: ICommandContext, mute: Mute): String {
         val muteAuthorId = mute.muteAuthorId ?: return continueConvertingInfoToMessage(context, null, mute)
 
         val muteAuthor = context.shardManager.retrieveUserById(muteAuthorId).awaitOrNull()
@@ -41,7 +41,7 @@ class MuteWrapper(private val muteDao: MuteDao) {
     }
 
     private suspend fun continueConvertingInfoToMessage(
-        context: CommandContext,
+        context: ICommandContext,
         muteAuthor: User?,
         mute: Mute
     ): String {
@@ -52,7 +52,7 @@ class MuteWrapper(private val muteDao: MuteDao) {
     }
 
     private suspend fun getMuteMessage(
-        context: CommandContext,
+        context: ICommandContext,
         muteAuthor: User?,
         unmuteAuthor: User?,
         mute: Mute
@@ -81,7 +81,7 @@ class MuteWrapper(private val muteDao: MuteDao) {
             .withVariable("active", "${mute.active}")
     }
 
-    suspend fun getMuteMap(context: CommandContext, muteId: String): Map<Long, String> {
+    suspend fun getMuteMap(context: ICommandContext, muteId: String): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val mutes = muteDao.getMutes(muteId)
         if (mutes.isEmpty()) {

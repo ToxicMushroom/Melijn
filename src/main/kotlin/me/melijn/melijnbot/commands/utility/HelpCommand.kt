@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.jagtag.BirthdayMethods
@@ -45,7 +45,7 @@ class HelpCommand : AbstractCommand("command.help") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -86,7 +86,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val inStream = Thread.currentThread().contextClassLoader.getResourceAsStream("strings_en.properties")
                     ?: return
                 val ir = InputStreamReader(inStream)
@@ -123,7 +123,7 @@ class HelpCommand : AbstractCommand("command.help") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -154,7 +154,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val dList = DiscordMethods.getMethods().map { method -> method.name }
                 val ccList = CCMethods.getMethods().map { method -> method.name }
                 val bList = BirthdayMethods.getMethods().map { method -> method.name }
@@ -169,7 +169,7 @@ class HelpCommand : AbstractCommand("command.help") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val args = context.args
         if (args.isEmpty()) {
             val daoManager = context.daoManager
@@ -286,7 +286,7 @@ class HelpCommand : AbstractCommand("command.help") {
 
     //Converts ("ping", "pong", "dunste") into a list of (PingCommand, PongArg, DunsteArg) if the args are matching an existing parent child sequence
     private fun getCorrectChildElseParent(
-        context: CommandContext,
+        context: ICommandContext,
         cmdList: MutableList<AbstractCommand>,
         args: List<String>,
         argIndex: Int = 1
@@ -313,7 +313,7 @@ class HelpCommand : AbstractCommand("command.help") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val category = getEnumFromArgN<CommandCategory>(context, 0)
 
             val commandList = context.commandList

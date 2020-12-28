@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
@@ -17,7 +17,7 @@ class RepCommand : AbstractCommand("command.rep") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             val rep = context.daoManager.repWrapper.getRep(context.authorId)
             val dailyCooldownWrapper = context.daoManager.economyCooldownWrapper
@@ -47,7 +47,7 @@ class RepCommand : AbstractCommand("command.rep") {
         }
     }
 
-    private suspend fun canRepElseMessage(context: CommandContext): Boolean {
+    private suspend fun canRepElseMessage(context: ICommandContext): Boolean {
         val dailyCooldownWrapper = context.daoManager.economyCooldownWrapper
         val lastTime = dailyCooldownWrapper.getCooldown(context.authorId, name)
         val difference = System.currentTimeMillis() - lastTime

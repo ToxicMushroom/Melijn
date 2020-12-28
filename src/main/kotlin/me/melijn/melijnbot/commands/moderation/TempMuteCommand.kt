@@ -6,7 +6,7 @@ import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
@@ -33,7 +33,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return
@@ -100,7 +100,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
     }
 
     private suspend fun muteRoleAcquired(
-        context: CommandContext,
+        context: ICommandContext,
         targetUser: User,
         reason: String,
         muteRole: Role,
@@ -135,7 +135,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
     }
 
     private suspend fun continueMuting(
-        context: CommandContext,
+        context: ICommandContext,
         muteRole: Role,
         targetUser: User,
         mute: Mute,
@@ -191,7 +191,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
     private suspend fun death(
         mutingMessage: Message?,
         mutedMessageDm: MessageEmbed,
-        context: CommandContext,
+        context: ICommandContext,
         mutedMessageLc: MessageEmbed,
         activeMute: Mute?,
         mute: Mute,

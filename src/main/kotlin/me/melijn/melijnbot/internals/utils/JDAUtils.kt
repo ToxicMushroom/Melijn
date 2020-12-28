@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.internals.utils
 
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -109,20 +109,22 @@ fun <T> RestAction<T>.async(success: suspend (T) -> Unit) {
 }
 
 
-fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
+fun getUserByArgsN(context: ICommandContext, index: Int): User? {//With null
     val shardManager = context.shardManager
+
     return if (context.args.size > index) {
-        getUserByArgsN(shardManager, context.guildN, context.args[index])
+        getUserByArgsN(shardManager, context.guildN, context.args[index], context.message)
     } else {
         null
     }
 }
 
-fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User? {
+fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String, message: Message? = null): User? {
     return if (DISCORD_ID.matches(arg)) {
         shardManager.getUserById(arg)
     } else if (USER_MENTION.matches(arg)) {
-        shardManager.getUserById((USER_MENTION.find(arg) ?: return null).groupValues[1])
+        val id = (USER_MENTION.find(arg) ?: return null).groupValues[1]
+        message?.mentionedUsers?.first { it.id == id } ?: shardManager.getUserById(id)
     } else if (guild != null && FULL_USER_REF.matches(arg)) {
         shardManager.getUserByTag(arg)
     } else if (guild != null && guild.getMembersByName(arg, true).isNotEmpty()) {
@@ -140,7 +142,7 @@ fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User
     } else null
 }
 
-suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
+suspend fun retrieveUserByArgsN(context: ICommandContext, index: Int): User? {
     val user1: User? = getUserByArgsN(context, index)
     return when {
         user1 != null -> user1
@@ -153,7 +155,8 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
                 }
                 USER_MENTION.matches(arg) -> {
                     val id = (USER_MENTION.find(arg) ?: return null).groupValues[1]
-                    context.shardManager.retrieveUserById(id).awaitOrNull()
+                    context.message.mentionedUsers.first { it.id == id }
+                        ?: context.shardManager.retrieveUserById(id).awaitOrNull()
                 }
                 else -> context.guildN?.retrieveMembersByPrefix(arg, 1)?.awaitOrNull()?.firstOrNull()?.user
             }
@@ -172,7 +175,8 @@ suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? {
     return when {
         DISCORD_ID.matches(arg) -> shardManager.retrieveUserById(arg)
         USER_MENTION.matches(arg) -> {
-            shardManager.retrieveUserById((USER_MENTION.find(arg) ?: return null).groupValues[1])
+            val id = (USER_MENTION.find(arg) ?: return null).groupValues[1]
+            shardManager.retrieveUserById(id)
         }
 
         else -> {
@@ -181,7 +185,7 @@ suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? {
     }.awaitOrNull()
 }
 
-suspend fun retrieveUserByArgsNMessage(context: CommandContext, index: Int): User? {
+suspend fun retrieveUserByArgsNMessage(context: ICommandContext, index: Int): User? {
     if (argSizeCheckFailed(context, index)) return null
     val possibleUser = retrieveUserByArgsN(context, index)
     if (possibleUser == null) {
@@ -193,7 +197,7 @@ suspend fun retrieveUserByArgsNMessage(context: CommandContext, index: Int): Use
 }
 
 
-fun getRoleByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Role? {
+fun getRoleByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boolean = true): Role? {
     var role: Role? = null
 
     if (!context.isFromGuild && sameGuildAsContext) return role
@@ -218,7 +222,7 @@ fun getRoleByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Bool
 }
 
 suspend fun getRoleByArgsNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     sameGuildAsContext: Boolean = true,
     canInteract: Boolean = false
@@ -241,37 +245,41 @@ suspend fun getRoleByArgsNMessage(
 
 // Returns pair with boolean (true if place is used in args, false if attachments were provided)
 suspend fun getImageUrlFromArgsNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int
 ): Pair<Boolean, String>? {
     val attachments = context.message.attachments
-    if (attachments.size > 0) {
-        return Pair(false, attachments[0].url)
-    } else if (context.args.isNotEmpty()) {
-        val arg = context.args[index]
-        when {
-            URL_PATTERN.matches(arg) -> {
-                return Pair(true, arg)
-            }
-            EMOTE_MENTION.matches(arg) -> {
-                val emoteType = if (arg.startsWith("<a")) "gif" else "png"
-                val emoteId = EMOTE_MENTION.find(arg)?.groupValues?.get(2)
-                return Pair(true, "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1")
-            }
-            else -> {
-                val msg = "The text you provided `${MarkdownSanitizer.sanitize(arg)}` is not a valid url"
-                sendRsp(context, msg)
+    when {
+        attachments.size > 0 -> {
+            return Pair(false, attachments[0].url)
+        }
+        context.args.isNotEmpty() -> {
+            val arg = context.args[index]
+            when {
+                URL_PATTERN.matches(arg) -> {
+                    return Pair(true, arg)
+                }
+                EMOTE_MENTION.matches(arg) -> {
+                    val emoteType = if (arg.startsWith("<a")) "gif" else "png"
+                    val emoteId = EMOTE_MENTION.find(arg)?.groupValues?.get(2)
+                    return Pair(true, "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1")
+                }
+                else -> {
+                    val msg = "The text you provided `${MarkdownSanitizer.sanitize(arg)}` is not a valid url"
+                    sendRsp(context, msg)
+                }
             }
         }
-    } else {
-        val msg = "No image was provided as an attachment or as a url"
-        sendRsp(context, msg)
+        else -> {
+            val msg = "No image was provided as an attachment or as a url"
+            sendRsp(context, msg)
+        }
     }
     return null
 }
 
 suspend fun getStringFromArgsNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     min: Int,
     max: Int,
@@ -332,7 +340,7 @@ suspend fun getStringFromArgsNMessage(
 }
 
 suspend fun getEmotejiByArgsNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     sameGuildAsContext: Boolean = false
 ): Pair<Emote?, String?>? {
@@ -349,7 +357,7 @@ suspend fun getEmotejiByArgsNMessage(
 
 
 suspend fun getEmotejiByArgsN(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     sameGuildAsContext: Boolean = false
 ): Pair<Emote?, String?>? {
@@ -371,7 +379,7 @@ suspend fun getEmotejiByArgsN(
     return Pair(emote, emoji)
 }
 
-suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
+suspend fun getEmoteByArgsNMessage(context: ICommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
     if (argSizeCheckFailed(context, index)) return null
     val emote = getEmoteByArgsN(context, index, sameGuildAsContext)
     if (emote == null) {
@@ -383,7 +391,7 @@ suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuil
 }
 
 
-suspend fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
+suspend fun getEmoteByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     var emote: Emote? = null
@@ -392,8 +400,9 @@ suspend fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsCont
         emote = context.shardManager.getEmoteById(arg)
 
     } else if (EMOTE_MENTION.matches(arg)) {
-        val id = (EMOTE_MENTION.find(arg) ?: return null).groupValues[2].toLong()
-        emote = context.shardManager.getEmoteById(id)
+        val id = (EMOTE_MENTION.find(arg) ?: return null).groupValues[2]
+        context.message.emotes.firstOrNull { it.id == id } ?:
+            context.shardManager.getEmoteById(id)
 
     } else {
         var emotes: List<Emote>? = context.guildN?.getEmotesByName(arg, false)
@@ -420,7 +429,7 @@ suspend fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsCont
 val hexColorRegex = Regex("#?([a-f]|\\d){3}(([a-f]|\\d){3})?", RegexOption.IGNORE_CASE)
 val rgbColorRegex = Regex("\\s*\\d+,\\s*\\d+,\\s*\\d+")
 
-suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color? {
+suspend fun getColorFromArgNMessage(context: ICommandContext, index: Int): Color? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val color: Color? = when {
@@ -461,7 +470,7 @@ suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color?
     return color
 }
 
-fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
+fun getTextChannelByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
     var channel: TextChannel? = null
     if (!context.isFromGuild && sameGuildAsContext) return channel
     if (context.args.size > index && context.isFromGuild) {
@@ -484,7 +493,7 @@ fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContex
 }
 
 suspend fun getTextChannelByArgsNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     sameGuildAsContext: Boolean = true
 ): TextChannel? {
@@ -499,7 +508,7 @@ suspend fun getTextChannelByArgsNMessage(
 }
 
 
-fun getVoiceChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): VoiceChannel? {
+fun getVoiceChannelByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boolean = true): VoiceChannel? {
     var channel: VoiceChannel? = null
     if (!context.isFromGuild && sameGuildAsContext) return channel
     if (context.args.size > index && context.isFromGuild) {
@@ -522,7 +531,7 @@ fun getVoiceChannelByArgsN(context: CommandContext, index: Int, sameGuildAsConte
 }
 
 suspend fun getVoiceChannelByArgNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     sameGuildAsContext: Boolean = true
 ): VoiceChannel? {
@@ -546,7 +555,7 @@ suspend fun retrieveMemberByArgsN(guild: Guild, arg: String): Member? {
 
 
 suspend fun retrieveMemberByArgsNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     index: Int,
     interactable: Boolean = false,
     botAllowed: Boolean = true
@@ -555,7 +564,10 @@ suspend fun retrieveMemberByArgsNMessage(
     val user = retrieveUserByArgsN(context, index)
     val member =
         if (user == null) null
-        else context.guild.retrieveMember(user).awaitOrNull()
+        else {
+            context.message.mentionedMembers.firstOrNull { it.id == user.id }
+                ?: context.guild.retrieveMember(user).awaitOrNull()
+        }
 
     if (member == null) {
         val msg = context.getTranslation("message.unknown.member")
@@ -584,7 +596,7 @@ suspend fun retrieveMemberByArgsNMessage(
 
 
 suspend fun notEnoughPermissionsAndMessage(
-    context: CommandContext,
+    context: ICommandContext,
     channel: GuildChannel,
     vararg perms: Permission
 ): Boolean {
@@ -627,7 +639,7 @@ fun notEnoughPermissions(
 }
 
 
-fun getTimespanFromArgNMessage(context: CommandContext, beginIndex: Int): Pair<Long, Long> {
+fun getTimespanFromArgNMessage(context: ICommandContext, beginIndex: Int): Pair<Long, Long> {
     return when (context.getRawArgPart(beginIndex, -1)) {
         "hour" -> {
             Pair(context.contextTime - 3_600_000, context.contextTime)
@@ -708,7 +720,7 @@ fun listeningMembers(vc: VoiceChannel, alwaysListeningUser: Long = -1L): Int {
 
 
 suspend fun getTimeFromArgsNMessage(
-    context: CommandContext,
+    context: ICommandContext,
     start: Long = Long.MIN_VALUE,
     end: Long = Long.MAX_VALUE
 ): Long? {

@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.database.role.SelfRoleGroup
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
@@ -42,7 +42,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
     }
 
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -53,7 +53,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             aliases = arrayOf("sn")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -131,7 +131,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             aliases = arrayOf("sgar")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -198,7 +198,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             //aliases = arrayOf("sg")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendRsp(context, "WIP")
 //            if (context.args.isEmpty()) {
 //                sendSyntax(context)
@@ -228,7 +228,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             aliases = arrayOf("sg", "sga")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -391,7 +391,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 //            aliases = arrayOf("sm")
 //        }
 //
-//        override suspend fun execute(context: CommandContext) {
+//        override suspend fun execute(context: ICommandContext) {
 //            val wrapper = context.daoManager.selfRoleModeWrapper
 //            if (context.args.isEmpty()) {
 //                val mode = wrapper.selfRoleModeCache.get(context.guildId).await().toUCC()
@@ -434,7 +434,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 aliases = arrayOf("sp")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -486,7 +486,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 aliases = arrayOf("sc")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -552,7 +552,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     aliases = arrayOf("a")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 2) {
                         sendSyntax(context)
                         return
@@ -580,7 +580,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     aliases = arrayOf("rm", "r")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 2) {
                         sendSyntax(context)
                         return
@@ -608,7 +608,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     aliases = arrayOf("rma", "ra")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 2) {
                         sendSyntax(context)
                         return
@@ -642,7 +642,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     aliases = arrayOf("cls", "c")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return
@@ -669,7 +669,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     aliases = arrayOf("ls", "l")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return
@@ -699,7 +699,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
         }
@@ -711,7 +711,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 aliases = arrayOf("ssr")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -744,7 +744,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 aliases = arrayOf("se")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -778,7 +778,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 aliases = arrayOf("a")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -813,7 +813,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 aliases = arrayOf("r", "d", "rm", "delete")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -836,7 +836,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 aliases = arrayOf("l", "ls")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val list = context.daoManager.selfRoleGroupWrapper.getMap(context.guildId)
                     .sortedBy { it.groupName }
 
@@ -863,7 +863,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 aliases = arrayOf("cn")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.size < 2) {
                     sendSyntax(context)
                     return
@@ -896,7 +896,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }
@@ -909,7 +909,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             aliases = arrayOf("set", "a", "put")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 3) {
                 sendSyntax(context)
                 return
@@ -965,7 +965,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             aliases = arrayOf("r", "rm", "delete", "del", "d")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -1037,7 +1037,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             aliases = arrayOf("rma", "ra")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -1079,7 +1079,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.selfRoleWrapper
             val map = wrapper.getMap(context.guildId)
 
@@ -1127,14 +1127,14 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
     }
 }
 
-suspend fun getSelfRoleGroupByGroupNameN(context: CommandContext, group: String): SelfRoleGroup? {
+suspend fun getSelfRoleGroupByGroupNameN(context: ICommandContext, group: String): SelfRoleGroup? {
     val wrapper = context.daoManager.selfRoleGroupWrapper
     return wrapper.getMap(context.guildId).firstOrNull { (groupName) ->
         groupName == group
     }
 }
 
-suspend fun getSelfRoleGroupByArgNMessage(context: CommandContext, index: Int): SelfRoleGroup? {
+suspend fun getSelfRoleGroupByArgNMessage(context: ICommandContext, index: Int): SelfRoleGroup? {
     val wrapper = context.daoManager.selfRoleGroupWrapper
     val group = getStringFromArgsNMessage(context, index, 1, 64)
         ?: return null

@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.image
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.getColorFromArgNMessage
@@ -24,7 +24,7 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("replaceColorGif", true) || context.commandParts[1].equals("rcGif", true)) {
             executeGif(context)
         } else {
@@ -32,7 +32,7 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
         }
     }
 
-    private suspend fun executeNormal(context: CommandContext) {
+    private suspend fun executeNormal(context: ICommandContext) {
         ImageCommandUtil.executeNormalEffect(context, effect = { image, argData ->
             val sourceColor = argData.getInt("color1")
             val newColor = Color(argData.getInt("color2"))
@@ -66,7 +66,7 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
         })
     }
 
-    private suspend fun executeGif(context: CommandContext) {
+    private suspend fun executeGif(context: ICommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, argData ->
             val sourceColor = argData.getInt("color1")
             val newColor = Color(argData.getInt("color2"))

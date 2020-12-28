@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.database.settings.VoteReminderOption
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.getEnumFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -22,7 +22,7 @@ class ToggleVoteReminderCommand : AbstractCommand("command.togglevotereminder") 
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.voteReminderStatesWrapper
         val stateMap = wrapper.contains(context.authorId)
         val toggle = getEnumFromArgNMessage<VoteReminderOption>(context, 0, "$root.invalidoption") ?: return
@@ -45,7 +45,7 @@ class ToggleVoteReminderCommand : AbstractCommand("command.togglevotereminder") 
             name = "list"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.voteReminderStatesWrapper
             val stateMap = wrapper.contains(context.authorId)
             val eb = Embedder(context)

@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_ROLETYPE
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyRoleByType
@@ -23,7 +23,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -34,7 +34,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
         handleEnum(context, roleType)
     }
 
-    private suspend fun handleEnum(context: CommandContext, roleType: RoleType) {
+    private suspend fun handleEnum(context: ICommandContext, roleType: RoleType) {
         if (context.args.size > 1) {
             setRole(context, roleType)
         } else {
@@ -42,7 +42,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
         }
     }
 
-    private suspend fun displayRole(context: CommandContext, roleType: RoleType) {
+    private suspend fun displayRole(context: ICommandContext, roleType: RoleType) {
         val daoManager = context.daoManager
         val role = context.guild.getAndVerifyRoleByType(daoManager, roleType)
 
@@ -57,7 +57,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
     }
 
 
-    private suspend fun setRole(context: CommandContext, roleType: RoleType) {
+    private suspend fun setRole(context: ICommandContext, roleType: RoleType) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return

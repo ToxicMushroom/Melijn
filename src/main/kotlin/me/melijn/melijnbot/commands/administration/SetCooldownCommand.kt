@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -23,7 +23,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -34,7 +34,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             aliases = arrayOf("c")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 3) {
                 sendSyntax(context)
                 return
@@ -68,7 +68,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             aliases = arrayOf("g")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -101,7 +101,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             aliases = arrayOf("i", "list", "ls", "l")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val map: Map<String, Long>
 
             val daoManager = context.daoManager

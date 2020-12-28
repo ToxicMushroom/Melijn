@@ -22,7 +22,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -67,7 +67,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
         }
 
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val member = context.member
             val senderVoiceChannel = member.voiceState?.channel
             val botChannel = context.lavaManager.getConnectedChannel(context.guild)
@@ -103,7 +103,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
         }
 
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val member = context.member
             val senderVoiceChannel = member.voiceState?.channel
             val botChannel = context.lavaManager.getConnectedChannel(context.guild)

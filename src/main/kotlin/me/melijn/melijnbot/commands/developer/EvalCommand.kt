@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.developer
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngine
 import javax.script.ScriptEngine
@@ -20,7 +20,7 @@ class EvalCommand : AbstractCommand("command.eval") {
 
     val engine: ScriptEngine? = ScriptEngineManager().getEngineByName("kotlin")
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         requireNotNull(engine)
         var code = context.rawArg.removePrefix("```kt").removePrefix("```").removeSuffix("```")
         val imports = code.lines().takeWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
@@ -36,7 +36,7 @@ class EvalCommand : AbstractCommand("command.eval") {
 			import javax.imageio.ImageIO
 			import kotlinx.coroutines.*
 			${imports.joinToString("\n\t\t\t")}
-			fun exec(context: CommandContext) {
+			fun exec(context: ICommandContext) {
                 TaskManager.async {
 				    ${
             code.lines().dropWhile { it.startsWith("import ") || it.startsWith("\nimport ") }

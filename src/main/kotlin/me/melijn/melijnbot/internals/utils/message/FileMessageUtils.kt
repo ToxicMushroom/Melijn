@@ -4,7 +4,7 @@ import io.ktor.client.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.ImageUtils
@@ -22,7 +22,7 @@ import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
 
-suspend fun sendRsp(context: CommandContext, image: BufferedImage, extension: String) {
+suspend fun sendRsp(context: ICommandContext, image: BufferedImage, extension: String) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendRsp(context.textChannel, context.daoManager, context.getLanguage(), image, extension)
@@ -51,7 +51,7 @@ suspend fun sendRsp(
     }
 }
 
-suspend fun sendMsg(context: CommandContext, image: BufferedImage, extension: String) {
+suspend fun sendMsg(context: ICommandContext, image: BufferedImage, extension: String) {
     if (context.isFromGuild) {
         sendMsg(context.textChannel, image, extension)
     } else {
@@ -82,7 +82,7 @@ suspend fun sendMsg(textChannel: TextChannel, image: BufferedImage, extension: S
 }
 
 
-suspend fun sendFileRsp(context: CommandContext, msg: String, bytes: ByteArray, extension: String) {
+suspend fun sendFileRsp(context: ICommandContext, msg: String, bytes: ByteArray, extension: String) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendFileRsp(context.textChannel, msg, context.daoManager, context.getLanguage(), bytes, extension)
@@ -91,7 +91,7 @@ suspend fun sendFileRsp(context: CommandContext, msg: String, bytes: ByteArray, 
     }
 }
 
-suspend fun sendFile(context: CommandContext, msg: String, bytes: ByteArray, extension: String) {
+suspend fun sendFile(context: ICommandContext, msg: String, bytes: ByteArray, extension: String) {
     if (context.isFromGuild) {
         sendFile(context.getLanguage(), msg, context.textChannel, bytes, extension)
     } else {
@@ -128,7 +128,7 @@ fun sendFileRsp(
     }
 }
 
-suspend fun sendFileRsp(context: CommandContext, bytes: ByteArray, extension: String) {
+suspend fun sendFileRsp(context: ICommandContext, bytes: ByteArray, extension: String) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendFileRsp(context.textChannel, context.daoManager, context.getLanguage(), bytes, extension)
@@ -165,7 +165,7 @@ fun sendFileRsp(
     }
 }
 
-suspend fun sendFile(context: CommandContext, bytes: ByteArray, extension: String) {
+suspend fun sendFile(context: ICommandContext, bytes: ByteArray, extension: String) {
     if (context.isFromGuild) {
         sendFile(context.getLanguage(), context.textChannel, bytes, extension)
     } else {
@@ -390,7 +390,7 @@ suspend fun sendMsgWithAttachmentsAwaitN(
 }
 
 suspend fun sendMsgAwaitEL(
-    context: CommandContext,
+    context: ICommandContext,
     msg: String,
     bufferedImage: BufferedImage?,
     extension: String

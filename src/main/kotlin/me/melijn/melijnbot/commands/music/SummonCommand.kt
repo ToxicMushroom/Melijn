@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.music
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.utils.RunConditionUtil
@@ -22,11 +22,11 @@ class SummonCommand : AbstractCommand("command.summon") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             if (!RunConditionUtil.checkOtherBotAloneOrDJOrSameVC(
                     context.container,
-                    context.event,
+                    context.message,
                     this,
                     context.getLanguage()
                 )
@@ -47,7 +47,7 @@ class SummonCommand : AbstractCommand("command.summon") {
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
             if (!RunConditionUtil.checkBotAloneOrUserDJ(
                     context.container,
-                    context.event,
+                    context.message,
                     this,
                     context.getLanguage()
                 )

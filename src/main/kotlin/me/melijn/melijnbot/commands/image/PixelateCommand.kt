@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.image
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
@@ -22,7 +22,7 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("pixelateGif", true)) {
             executeGif(context)
         } else {
@@ -30,7 +30,7 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
         }
     }
 
-    private suspend fun executeNormal(context: CommandContext) {
+    private suspend fun executeNormal(context: ICommandContext) {
         ImageCommandUtil.executeNormalEffect(context, effect = { image, imgData ->
             ImageUtils.pixelate(image, imgData.getInt("offset"))
 
@@ -46,7 +46,7 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
 
     }
 
-    private suspend fun executeGif(context: CommandContext) {
+    private suspend fun executeGif(context: ICommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, imgData ->
             ImageUtils.pixelate(image, imgData.getInt("offset"), true)
 

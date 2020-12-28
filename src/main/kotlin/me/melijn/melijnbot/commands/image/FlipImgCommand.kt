@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.image
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 import java.awt.image.BufferedImage
@@ -18,7 +18,7 @@ class FlipImgCommand : AbstractCommand("command.flipimg") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("flipGif", true)) {
             executeGif(context)
         } else {
@@ -26,13 +26,13 @@ class FlipImgCommand : AbstractCommand("command.flipimg") {
         }
     }
 
-    private suspend fun executeNormal(context: CommandContext) {
+    private suspend fun executeNormal(context: ICommandContext) {
         ImageCommandUtil.executeNormalEffect(context, { image, _ ->
             flipFrame(image)
         })
     }
 
-    private suspend fun executeGif(context: CommandContext) {
+    private suspend fun executeGif(context: ICommandContext) {
         ImageCommandUtil.executeGifEffect(context, { image, _ ->
             flipFrame(image, true)
         })

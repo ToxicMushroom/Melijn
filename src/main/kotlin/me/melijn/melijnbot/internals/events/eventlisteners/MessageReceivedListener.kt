@@ -113,7 +113,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         }
 
         val cmdContext = CommandContext(
-            event, listOf(usedMention, "help"), container, container.commandMap.values.toSet(),
+            event.message, listOf(usedMention, "help"), container, container.commandMap.values.toSet(),
             mutableMapOf(), mutableMapOf(), true, "${usedMention}help"
         )
         helpCmd.run(cmdContext)

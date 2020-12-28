@@ -4,7 +4,7 @@ import me.melijn.melijnbot.commands.utility.bigNumberFormatter
 import me.melijn.melijnbot.enums.Alignment
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.models.Cell
 import me.melijn.melijnbot.internals.utils.TableBuilder
@@ -24,7 +24,7 @@ class LeaderBoardCommand : AbstractCommand("command.leaderboard") {
         commandCategory = CommandCategory.ECONOMY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val page = (getIntegerFromArgN(context, 0) ?: 1) - 1
 
         val wrapper = context.daoManager.balanceWrapper

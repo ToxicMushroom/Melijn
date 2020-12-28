@@ -4,7 +4,7 @@ import com.sedmelluq.discord.lavaplayer.tools.PlayerLibrary
 import me.duncte123.weebJava.WeebInfo
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -20,7 +20,7 @@ class InfoCommand : AbstractCommand("command.info") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val title1 = context.getTranslation("$root.field1.title")
         val value1 = replaceValueOneVars(context.getTranslation("$root.field1.value"), context)
         val title2 = context.getTranslation("$root.field2.title")
@@ -38,7 +38,7 @@ class InfoCommand : AbstractCommand("command.info") {
         sendEmbedRsp(context, eb.build())
     }
 
-    private fun replaceValueThreeVars(string: String, context: CommandContext): String = string
+    private fun replaceValueThreeVars(string: String, context: ICommandContext): String = string
         .withVariable("javaVersion", System.getProperty("java.version"))
         .withVariable(
             "kotlinVersion",
@@ -50,14 +50,14 @@ class InfoCommand : AbstractCommand("command.info") {
         .withVariable("dbVersion", context.daoManager.dbVersion)
         .withVariable("dbConnectorVersion", context.daoManager.connectorVersion)
 
-    private fun replaceValueTwoVars(string: String, context: CommandContext): String = string
+    private fun replaceValueTwoVars(string: String, context: ICommandContext): String = string
         .withVariable(
             "os",
             "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}"
         )
         .withVariable("commandCount", context.commandList.size.toString())
 
-    private suspend fun replaceValueOneVars(string: String, context: CommandContext): String = string
+    private suspend fun replaceValueOneVars(string: String, context: ICommandContext): String = string
         .withVariable(
             "ownerTag", context.jda.shardManager?.retrieveUserById(231459866630291459L)?.awaitOrNull()?.asTag
                 ?: "ToxicMushroom#2610"
