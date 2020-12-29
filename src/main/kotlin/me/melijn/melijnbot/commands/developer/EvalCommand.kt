@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.developer
 
+import kotlinx.coroutines.Deferred
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -32,12 +33,13 @@ class EvalCommand : AbstractCommand("command.eval") {
 			import me.melijn.melijnbot.internals.*
 			import me.melijn.melijnbot.MelijnBot
 			import java.awt.image.BufferedImage
+            import kotlinx.coroutines.Deferred
 			import java.io.File
 			import javax.imageio.ImageIO
 			import kotlinx.coroutines.*
 			${imports.joinToString("\n\t\t\t")}
-			fun exec(context: ICommandContext) {
-                TaskManager.async {
+			fun exec(context: ICommandContext): Deferred<Any?> {
+                return TaskManager.taskValueNAsync {
 				    ${
             code.lines().dropWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
                 .joinToString("\n\t\t\t\t\t")
@@ -46,11 +48,12 @@ class EvalCommand : AbstractCommand("command.eval") {
             }""".trimIndent()
 
 
+
         try {
             engine.eval(code)
             val se = engine as KotlinJsr223JvmLocalScriptEngine
-            se.invokeFunction("exec", context)
-            sendRsp(context, "Invoked")
+            val resp: Deferred<Any?> = se.invokeFunction("exec", context) as Deferred<Any?>
+            sendRsp(context, resp.await().toString())
 
         } catch (t: Throwable) {
             sendRsp(context, "ERROR:\n```${t.message}```")
