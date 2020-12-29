@@ -45,10 +45,10 @@ class FlipCommand : AbstractCommand("command.flip") {
         val heads = context.getTranslation("$root.heads")
         val tails = context.getTranslation("$root.tails")
         when {
-            context.args[1].isInside("heads", "head", ignoreCase = true) -> {
+            context.args[1].isInside("heads", "head", "h", ignoreCase = true) -> {
                 flipCoin(context, amount, cash, heads, tails, 1)
             }
-            context.args[1].isInside("tails", "tail", ignoreCase = true) -> {
+            context.args[1].isInside("tails", "tail", "t", ignoreCase = true) -> {
                 flipCoin(context, amount, cash, tails, heads, 0)
             }
             else -> {

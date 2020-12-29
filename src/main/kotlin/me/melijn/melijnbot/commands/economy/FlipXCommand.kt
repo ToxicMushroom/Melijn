@@ -45,10 +45,10 @@ class FlipXCommand : AbstractCommand("command.flipx") {
         val heads = context.getTranslation("command.flip.heads")
         val tails = context.getTranslation("command.flip.tails")
         when {
-            context.args[2].isInside("heads", "head", ignoreCase = true) -> {
+            context.args[2].isInside("heads", "head", "h", ignoreCase = true) -> {
                 flipCoin(context, amount, cash, heads, tails, 1, flipTimes)
             }
-            context.args[2].isInside("tails", "tail", ignoreCase = true) -> {
+            context.args[2].isInside("tails", "tail", "t", ignoreCase = true) -> {
                 flipCoin(context, amount, cash, tails, heads, 0, flipTimes)
             }
             else -> {
