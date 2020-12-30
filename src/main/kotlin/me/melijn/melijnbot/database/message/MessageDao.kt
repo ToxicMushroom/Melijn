@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 import java.time.Instant
+import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -105,7 +106,9 @@ data class ModularMessage(
 
         // Timestamp handler
         if (extra.containsKey("isPingable")) {
-            mb.setAllowedMentions(MentionType.values().toSet())
+            mb.setAllowedMentions(
+                EnumSet.allOf(MentionType::class.java) // Default to all mentions enabled
+            )
         } else {
             mb.setAllowedMentions(emptyList())
         }
