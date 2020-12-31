@@ -67,11 +67,16 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
                     { daoManager.bannedOrKickedTriggersLeaveWrapper.shouldTrigger(event.guild.idLong) }
                 val ban = event.guild.retrieveBan(user).awaitOrNull()
                 if (ban == null) {
-                    val auditKick = event.guild.retrieveAuditLogs()
-                        .type(ActionType.KICK)
-                        .limit(5)
-                        .awaitOrNull()
-
+                    val auditKick = if (event.guild.selfMember.hasPermission(
+                            Permission.BAN_MEMBERS,
+                            Permission.VIEW_AUDIT_LOGS
+                        )
+                    ) {
+                        event.guild.retrieveAuditLogs()
+                            .type(ActionType.KICK)
+                            .limit(5)
+                            .awaitOrNull()
+                    } else null
 
 
                     if (auditKick == null) {
@@ -167,7 +172,6 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
                 ChannelType.PRE_VERIFICATION_LEAVE,
                 MessageType.PRE_VERIFICATION_LEAVE_MESSAGE
             )
-
         }
     }
 }
