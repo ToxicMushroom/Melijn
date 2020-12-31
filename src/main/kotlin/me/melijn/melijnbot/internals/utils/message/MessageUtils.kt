@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
+import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.internal.entities.DataMessage
 
@@ -336,7 +337,10 @@ fun sendMsg(
             "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
         }
     }
-    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
+
+    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(
+        msg.contentRaw
+    ) else null
     for (embed in msg.embeds) {
         if (action == null) action = channel.sendMessage(embed)
         else action.embed(embed)

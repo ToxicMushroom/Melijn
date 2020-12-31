@@ -10,10 +10,13 @@ import me.melijn.melijnbot.internals.utils.addIfNotPresent
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import org.slf4j.LoggerFactory
 import java.time.Instant
+import java.util.*
+import kotlin.collections.ArrayList
 
 const val PLACEHOLDER_PREFIX = "prefix"
 
@@ -154,16 +157,18 @@ abstract class AbstractCommand(val root: String) {
                 val tz = context.getTimeZoneId()
                 val now = Instant.now().atZone(tz)
                 if (now.dayOfYear == 1 && !context.daoManager.newYearWrapper.contains(now.year, context.authorId)) {
-                    sendRsp(
-                        context.channel, context, ModularMessage(
+                    context.channel.sendMessage(
+                        MessageBuilder().setContent(
                             "\uD83D\uDDD3 **Happy New Year ${now.year}** **" + if (context.isFromGuild) {
                                 context.member.asMention
                             } else {
                                 context.author.asMention
-                            } + "** \uD83C\uDF8A",
-                            extra = mapOf("isPingable" to "true")
+                            } + "** \uD83C\uDF8A"
                         )
-                    )
+                            .setAllowedMentions(EnumSet.allOf(Message.MentionType::class.java))
+                            .build()
+                    ).queue()
+
                     context.daoManager.newYearWrapper.add(now.year, context.authorId)
                 }
 
