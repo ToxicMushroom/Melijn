@@ -156,11 +156,11 @@ abstract class AbstractCommand(val root: String) {
                 if (now.dayOfYear == 1 && !context.daoManager.newYearWrapper.contains(now.year, context.authorId)) {
                     sendRsp(
                         context.channel, context, ModularMessage(
-                            "\uD83D\uDDD3 **Happy New Year ~~${now.year-1}~~ -> ${now.year}** " + if (context.isFromGuild) {
+                            "\uD83D\uDDD3 **Happy New Year ${now.year}** **" + if (context.isFromGuild) {
                                 context.member.asMention
                             } else {
-                                context.author.asMention + " \uD83C\uDF8A"
-                            },
+                                context.author.asMention
+                            } + "** \uD83C\uDF8A",
                             extra = mapOf("isPingable" to "true")
                         )
                     )
