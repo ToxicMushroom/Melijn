@@ -265,7 +265,8 @@ class CommandClientBuilder(private val container: Container) {
         FishCommand(),
         LockCommand(),
         UnlockCommand(),
-        FlipXCommand()
+        FlipXCommand(),
+        TimeCommand()
     )
 
     fun build(): CommandClient {
