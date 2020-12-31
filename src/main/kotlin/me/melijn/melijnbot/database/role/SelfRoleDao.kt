@@ -54,4 +54,11 @@ class SelfRoleDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         }, guildId)
         it.resume(map)
     }
+
+    fun changeName(guildId: Long, name1: String, name2: String) {
+        driverManager.executeUpdate(
+            "UPDATE $table SET groupName = ? WHERE guildId = ? AND groupName = ?",
+            name2, guildId, name1
+        )
+    }
 }

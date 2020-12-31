@@ -180,4 +180,20 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
             NORMAL_CACHE
         )
     }
+
+    suspend fun changeName(guildId: Long, name1: String, name2: String) {
+        val map = getMap(guildId).toMutableMap()
+        val data = map[name1]
+        data?.let {
+            map.remove(name1)
+            map[name2] = it
+        }
+        selfRoleDao.changeName(guildId, name1, name2)
+        selfRoleDao.setCacheEntry(
+            guildId,
+            objectMapper.writeValueAsString(map.mapValues { it.value.toString() }),
+            NORMAL_CACHE
+        )
+
+    }
 }

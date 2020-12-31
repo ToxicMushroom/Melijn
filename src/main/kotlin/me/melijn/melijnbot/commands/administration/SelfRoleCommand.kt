@@ -289,18 +289,22 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                 val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
 
-                body += if (isEmoji) {
-                    bodyFormat
-                        .withVariable("name", name)
-                        .withVariable("role", roleMention)
-                        .withVariable("emoteji", emoteji)
-                } else {
-                    val emote = context.guild.getEmoteById(emoteji) ?: context.shardManager.getEmoteById(emoteji)
-                    bodyFormat
-                        .withVariable("name", name)
-                        .withVariable("role", roleMention)
-                        .withVariable("emoteji", emote?.asMention ?: "error")
-                }
+                body += bodyFormat
+                    .withVariable("name", name)
+                    .withVariable("role", roleMention)
+                    .withVariable("roleMention", roleMention) // legacy support
+                    .withVariable("enter", "\n")
+                    .withVariable(
+                        "emoteji",
+                        if (isEmoji) {
+                            emoteji
+                        } else {
+                            val emote = context.guild.getEmoteById(emoteji)
+                                ?: context.shardManager.getEmoteById(emoteji)
+                            emote?.asMention ?: "error"
+                        }
+                    )
+
             }
 
             val totalCount = body.count { c -> c == '\n' }
@@ -873,6 +877,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 val name = getStringFromArgsNMessage(context, 1, 1, 64) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
 
+
                 val selfRoleGroup2 = getSelfRoleGroupByGroupNameN(context, name)
                 if (selfRoleGroup2 != null) {
                     val msg = context.getTranslation("$parent.exists")
@@ -881,6 +886,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     sendRsp(context, msg)
                     return
                 }
+
+                context.daoManager.selfRoleWrapper.changeName(context.guildId, selfRoleGroup1.groupName, name)
 
                 selfRoleGroup1.apply {
                     val newSr = SelfRoleGroup(name, messageIds, channelId, isEnabled, pattern, isSelfRoleable)
