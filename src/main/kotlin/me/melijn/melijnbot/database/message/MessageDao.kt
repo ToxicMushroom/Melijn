@@ -35,13 +35,17 @@ class MessageDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun set(guildId: Long, type: MessageType, message: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, type, message) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET message = ?",
-            guildId, type.toString(), message, message)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, type, message) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET message = ?",
+            guildId, type.toString(), message, message
+        )
     }
 
     fun remove(guildId: Long, type: MessageType) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND type = ?",
-            guildId, type.toString())
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND type = ?",
+            guildId, type.toString()
+        )
     }
 
     suspend fun get(guildId: Long, type: MessageType): String? = suspendCoroutine {
@@ -65,24 +69,28 @@ data class ModularMessage(
         val json = DataObject.empty()
         messageContent?.let { json.put("content", it) }
         embed?.let { membed ->
-            json.put("embed", membed.toData()
-                .put("type", EmbedType.RICH)
+            json.put(
+                "embed", membed.toData()
+                    .put("type", EmbedType.RICH)
             )
         }
 
         val attachmentsJson = DataArray.empty()
         for ((key, value) in attachments) {
-            attachmentsJson.add(DataObject.empty()
-                .put("url", key)
-                .put("file", value))
+            attachmentsJson.add(
+                DataObject.empty()
+                    .put("url", key)
+                    .put("file", value)
+            )
         }
         json.put("attachments", attachmentsJson)
 
         val extraJson = DataArray.empty()
         for ((key, value) in extra) {
-            extraJson.add(DataArray.empty()
-                .add(key)
-                .add(value)
+            extraJson.add(
+                DataArray.empty()
+                    .add(key)
+                    .add(value)
             )
         }
         json.put("extra", extraJson)

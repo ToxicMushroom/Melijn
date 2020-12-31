@@ -2,7 +2,7 @@ package me.melijn.melijnbot.database.birthday
 
 class BirthdayHistoryWrapper(private val birthdayHistoryDao: BirthdayHistoryDao) {
 
-    suspend fun add(year: Int, guildId: Long, userId: Long) {
+    fun add(year: Int, guildId: Long, userId: Long) {
         birthdayHistoryDao.add(year, guildId, userId, System.currentTimeMillis())
     }
 

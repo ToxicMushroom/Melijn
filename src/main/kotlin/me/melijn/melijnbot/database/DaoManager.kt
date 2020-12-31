@@ -44,6 +44,8 @@ import me.melijn.melijnbot.database.message.MessageHistoryWrapper
 import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.mute.MuteDao
 import me.melijn.melijnbot.database.mute.MuteWrapper
+import me.melijn.melijnbot.database.newyear.NewYearDao
+import me.melijn.melijnbot.database.newyear.NewYearWrapper
 import me.melijn.melijnbot.database.permission.*
 import me.melijn.melijnbot.database.playlist.PlaylistDao
 import me.melijn.melijnbot.database.playlist.PlaylistWrapper
@@ -194,6 +196,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
     val osuWrapper: OsuWrapper
 
+    val newYearWrapper: NewYearWrapper
+
     var driverManager: DriverManager
 
     init {
@@ -301,6 +305,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         starboardMessageWrapper = StarboardMessageWrapper(StarboardMessageDao(driverManager))
 
         osuWrapper = OsuWrapper(OsuDao(driverManager))
+
+        newYearWrapper = NewYearWrapper(NewYearDao(driverManager))
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {

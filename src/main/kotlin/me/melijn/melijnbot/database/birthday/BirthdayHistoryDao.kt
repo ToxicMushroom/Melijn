@@ -15,7 +15,7 @@ class BirthdayHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun add(year: Int, guildId: Long, userId: Long, start: Long) {
+    fun add(year: Int, guildId: Long, userId: Long, start: Long) {
         driverManager.executeUpdate("INSERT INTO $table (year, guildId, userId, start, active) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
             year, guildId, userId, start, true)
     }

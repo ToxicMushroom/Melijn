@@ -2,15 +2,18 @@ package me.melijn.melijnbot.internals.command
 
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
 import me.melijn.melijnbot.internals.utils.addIfNotPresent
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import org.slf4j.LoggerFactory
+import java.time.Instant
 
 const val PLACEHOLDER_PREFIX = "prefix"
 
@@ -146,6 +149,25 @@ abstract class AbstractCommand(val root: String) {
                     )
                     t.sendInGuild(context, shouldSend = true)
                 }
+
+                // new year check
+                val tz = context.getTimeZoneId()
+                val now = Instant.now().atZone(tz)
+                if (now.dayOfYear == 1 && !context.daoManager.newYearWrapper.contains(now.year, context.authorId)) {
+                    sendRsp(
+                        context.channel, context, ModularMessage(
+                            "\uD83D\uDDD3 **Happy New Year ~~${now.year-1}~~ -> ${now.year}** " + if (context.isFromGuild) {
+                                context.member.asMention
+                            } else {
+                                context.author.asMention + " \uD83C\uDF8A"
+                            },
+                            extra = mapOf("isPingable" to "true")
+                        )
+                    )
+                    context.daoManager.newYearWrapper.add(now.year, context.authorId)
+                }
+
+
                 if (context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)) {
                     TaskManager.async {
                         val timeMap = context.daoManager.removeInvokeWrapper.getMap(context.guildId)

@@ -86,8 +86,8 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
 }
 
 
-suspend fun sendRsp(textChannel: TextChannel, context: ICommandContext, msg: ModularMessage) {
-    if (canResponse(textChannel, context.daoManager.supporterWrapper)) {
+suspend fun sendRsp(textChannel: MessageChannel, context: ICommandContext, msg: ModularMessage) {
+    if (textChannel is TextChannel && canResponse(textChannel, context.daoManager.supporterWrapper)) {
         sendRsp(textChannel, context.webManager.proxiedHttpClient, context.daoManager, msg)
     } else {
         sendMsg(textChannel, context.webManager.proxiedHttpClient, msg)
@@ -183,7 +183,7 @@ suspend fun sendMsgAwaitN(textChannel: TextChannel, httpClient: HttpClient, msg:
     }
 }
 
-suspend fun sendMsg(textChannel: TextChannel, httpClient: HttpClient, msg: ModularMessage) {
+suspend fun sendMsg(textChannel: MessageChannel, httpClient: HttpClient, msg: ModularMessage) {
     val message: Message? = msg.toMessage()
     when {
         message == null -> sendAttachments(textChannel, httpClient, msg.attachments)
@@ -326,28 +326,16 @@ suspend fun sendMsg(
 }
 
 fun sendMsg(
-    channel: TextChannel,
+    channel: MessageChannel,
     msg: Message,
     success: ((messages: Message) -> Unit)? = null,
     failed: ((ex: Throwable) -> Unit)? = null
 ) {
-    require(channel.canTalk()) {
-        "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
+    if (channel is TextChannel) {
+        require(channel.canTalk()) {
+            "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
+        }
     }
-    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
-    for (embed in msg.embeds) {
-        if (action == null) action = channel.sendMessage(embed)
-        else action.embed(embed)
-    }
-    action?.queue(success, failed)
-}
-
-fun sendMsg(
-    channel: PrivateChannel,
-    msg: Message,
-    success: ((messages: Message) -> Unit)? = null,
-    failed: ((ex: Throwable) -> Unit)? = null
-) {
     var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
     for (embed in msg.embeds) {
         if (action == null) action = channel.sendMessage(embed)

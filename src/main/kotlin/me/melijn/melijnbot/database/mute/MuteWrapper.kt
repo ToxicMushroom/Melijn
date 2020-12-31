@@ -11,7 +11,7 @@ class MuteWrapper(private val muteDao: MuteDao) {
         return muteDao.getUnmuteableMutes()
     }
 
-    suspend fun setMute(newMute: Mute) {
+    fun setMute(newMute: Mute) {
         muteDao.setMute(newMute)
     }
 
