@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
 import javax.naming.SizeLimitExceededException
+import kotlin.io.use
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -423,7 +424,7 @@ object ImageUtils {
         decoder: GifDecoder,
         fps: Float? = null,
         repeat: Boolean?,
-        effect: (BufferedImage) -> Unit,
+        effect: suspend (BufferedImage) -> Unit,
         frameDebug: ICommandContext? = null
     ): ByteArrayOutputStream {
         val outputStream = ByteArrayOutputStream()
@@ -533,7 +534,10 @@ object ImageUtils {
         }
     }
 
-    fun addEffectToStaticImage(imageByteArray: ByteArray, effect: (BufferedImage) -> Unit): ByteArrayOutputStream {
+    suspend fun addEffectToStaticImage(
+        imageByteArray: ByteArray,
+        effect: suspend (BufferedImage) -> Unit
+    ): ByteArrayOutputStream {
         val image = ByteArrayInputStream(imageByteArray).use { bais ->
             ImageIO.read(bais)
         }
@@ -680,12 +684,22 @@ object ImageUtils {
         image.data = dest
     }
 
-    fun blur(image: BufferedImage, radius: Int, isGif: Boolean = false) {
-        val size = radius * 2 + 1
-        val weight = 1.0f / (size * size)
-        val data = FloatArray(size * size) { weight }
-        val kernel = Kernel(size, size, data)
-        useKernel(image, kernel, isGif)
+    suspend fun blur(context: ICommandContext, image: ByteArray, radius: Int, isGif: Boolean = false): ByteArray {
+//        if (!isGif) {
+        ByteArrayOutputStream().use {
+            return context.webManager.httpClient.post("http://127.0.0.1:8000/blur?sigma=$radius") {
+                body = image
+            }
+        }
+
+//
+//        } else {
+//            val size = radius * 2 + 1
+//            val weight = 1.0f / (size * size)
+//            val data = FloatArray(size * size) { weight }
+//            val kernel = Kernel(size, size, data)
+//            useKernel(image, kernel, isGif)
+//        }
     }
 
 

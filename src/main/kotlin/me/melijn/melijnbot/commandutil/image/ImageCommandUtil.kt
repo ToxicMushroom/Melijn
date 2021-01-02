@@ -109,7 +109,7 @@ object ImageCommandUtil {
     // EFFECTS
     suspend fun executeNormalEffect(
         context: ICommandContext,
-        effect: (image: BufferedImage, argData: DataObject) -> Unit,
+        effect: suspend (image: BufferedImage, argData: DataObject) -> Unit,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true
         },
@@ -124,7 +124,7 @@ object ImageCommandUtil {
 
     suspend fun executeGifEffect(
         context: ICommandContext,
-        effect: (image: BufferedImage, argData: DataObject) -> Unit,
+        effect: suspend (image: BufferedImage, argData: DataObject) -> Unit,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true
         },
@@ -272,7 +272,7 @@ object ImageCommandUtil {
     // ROOT TRANSFORM THING
     private suspend fun executeNormalTransform(
         context: ICommandContext,
-        transform: (byteArray: ByteArray, argData: DataObject) -> ByteArrayOutputStream,
+        transform: suspend (byteArray: ByteArray, argData: DataObject) -> ByteArrayOutputStream,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true
         },
@@ -322,7 +322,6 @@ object ImageCommandUtil {
     ) {
         val triple = ImageUtils.getImageBytesNMessage(context, "gif") ?: return
         val argInt = if (triple.third) 1 else 0
-
         //╯︿╰
 
         val loadingMsg = context.getTranslation("message.loading.effect")

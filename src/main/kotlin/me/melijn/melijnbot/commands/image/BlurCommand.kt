@@ -6,7 +6,10 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.ImageUtils
+import me.melijn.melijnbot.internals.utils.message.sendFileRsp
+import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.image.BufferedImage
@@ -33,34 +36,23 @@ class BlurCommand : AbstractCommand("command.blur") {
     }
 
     private suspend fun executeNormal(context: ICommandContext) {
-        ImageCommandUtil.executeNormalEffect(context, effect = { image, argData ->
-            ImageUtils.blur(image, argData.getInt("offset"))
+        val triple = ImageUtils.getImageBytesNMessage(context, "png") ?: return
+        val blurred = ImageUtils.blur(context, triple.first, 9, false)
 
-        }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
-            context.initCooldown()
-            defaultOffsetArgParser(context, argInt, argData, imgData)
-
-        }, imgDataParser = { img: BufferedImage, imgData: DataObject ->
-            imgData.put("lower", 1)
-            imgData.put("higher", max(img.height, img.width))
-            imgData.put("defaultOffset", max(max(img.width, img.height) / 75, 1))
-
-        })
+        sendFileRsp(context, blurred, "png")
     }
 
     private suspend fun executeGif(context: ICommandContext) {
-        ImageCommandUtil.executeGifEffect(context, effect = { image, argData ->
-            ImageUtils.blur(image, argData.getInt("offset"), true)
+        val triple = ImageUtils.getImageBytesNMessage(context, "gif") ?: return
+        val blurReq = TaskManager.taskValueAsync { ImageUtils.blur(context, triple.first, 9, true) }
 
-        }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
-            context.initCooldown()
-            defaultOffsetArgParser(context, argInt, argData, imgData)
+        //╯︿╰
 
-        }, imgDataParser = { img: BufferedImage, imgData: DataObject ->
-            imgData.put("lower", 1)
-            imgData.put("higher", max(img.height, img.width))
-            imgData.put("defaultOffset", max(max(img.width, img.height) / 75, 1))
+        val loadingMsg = context.getTranslation("message.loading.effect")
+        val lmsg = sendMsgAwaitEL(context, loadingMsg).firstOrNull()
 
-        }, argumentAmount = 1, debug = false)
+        val blurred = blurReq.await()
+        lmsg?.delete()?.queue()
+        sendFileRsp(context, blurred, "gif")
     }
 }
