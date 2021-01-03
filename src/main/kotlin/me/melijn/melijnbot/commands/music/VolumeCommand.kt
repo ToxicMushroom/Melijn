@@ -33,7 +33,7 @@ class VolumeCommand : AbstractCommand("command.volume") {
             return
         }
 
-        val amount = getIntegerFromArgNMessage(context, 0, 0, 1000) ?: return
+        val amount = getIntegerFromArgNMessage(context, 0, 0, 500) ?: return
         if (amount > 150 && !isPremiumUser(context)) {
             sendFeatureRequiresPremiumMessage(context, VOLUME_OVER_150)
             return
