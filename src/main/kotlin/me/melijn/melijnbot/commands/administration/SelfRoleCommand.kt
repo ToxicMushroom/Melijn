@@ -982,7 +982,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val pair = getEmotejiByArgsN(context, 1) ?: return
             val selfRoleWrapper = context.daoManager.selfRoleWrapper
             val guildSelfRoles = selfRoleWrapper.getMap(context.guildId)[group.groupName]
-                ?: throw IllegalArgumentException("Angry boy :c")
+            if (guildSelfRoles == null) {
+                sendRsp(context, "There is not selfrole entry in the " + group.groupName + " for that emoteji")
+                return
+            }
 
             val emotejis = mutableListOf<String>()
             val roleIds = mutableListOf<Long>()
@@ -1053,7 +1056,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val selfRoleWrapper = context.daoManager.selfRoleWrapper
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
             val guildSelfRoles = selfRoleWrapper.getMap(context.guildId)[group.groupName]
-                ?: throw IllegalArgumentException("Angry boy :c")
+            if (guildSelfRoles == null) {
+                sendRsp(context, "There is not selfrole entry in the " + group.groupName + " for that emoteji")
+                return
+            }
             val index = getIntegerFromArgNMessage(context, 1, 1, guildSelfRoles.length()) ?: return
 
             val dataEntry = guildSelfRoles.getArray(index - 1)
