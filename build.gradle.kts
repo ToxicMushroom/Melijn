@@ -72,7 +72,7 @@ dependencies {
     // implementation("com.github.Melijn:lavaplayer:18000a1479")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
-    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.1")
+    implementation("com.github.ToxicMushroom:Lavalink-Klient:feb9022a64")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))

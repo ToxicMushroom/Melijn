@@ -13,9 +13,9 @@ class VoiceLeaveListener(container: Container) : AbstractListener(container) {
             if (!event.member.user.isBot) {
                 VoiceUtil.channelUpdate(container, event.channelLeft)
             }
-            if (event.member.user.idLong == container.settings.botInfo.id) {
-                VoiceUtil.destroyLink(container, event.member)
-            }
+//            if (event.member.user.idLong == container.settings.botInfo.id) {
+//                VoiceUtil.destroyLink(container, event.member)
+//            }
         }
     }
 }

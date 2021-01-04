@@ -235,7 +235,7 @@ class GuildTrackManager(
             tracks.indexOf(audioTrack) + 1
         }
 
-    //PLEASE RUN IN VOICE_SAFE
+    // PLEASE RUN IN VOICE_SAFE
     suspend fun stopAndDestroy() {
         clear()
         iPlayer.stopTrack()

@@ -11,6 +11,8 @@ import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.VoiceChannel
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 
 class LavaManager(
@@ -20,6 +22,7 @@ class LavaManager(
 ) {
 
     val musicPlayerManager: MusicPlayerManager = MusicPlayerManager(daoManager, this)
+    val logger: Logger = LoggerFactory.getLogger("LavaManager")
 
     fun getIPlayer(guildId: Long, groupId: String): IPlayer {
         return if (lavalinkEnabled && jdaLavaLink != null) {
@@ -103,6 +106,19 @@ class LavaManager(
 
         } else {
             jdaLavaLink.getExistingLink(guildId)?.destroy()
+            logger.info(
+                if (jdaLavaLink.getExistingLink(guildId) == null) {
+                    "successfully destroyed $guildId"
+                } else {
+                    logger.warn("attempting force destroy")
+                    jdaLavaLink.getExistingLink(guildId)?.forceDestroy()
+                    if (jdaLavaLink.getExistingLink(guildId) == null) {
+                        "successfully force destroyed $guildId"
+                    } else {
+                        "failed to destroy $guildId"
+                    }
+                }
+            )
         }
     }
 
