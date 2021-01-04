@@ -120,6 +120,7 @@ dependencies {
     implementation("io.ktor:ktor:1.5.0")
     implementation("io.ktor:ktor-client-okhttp:1.5.0")
     implementation("io.ktor:ktor-server-netty:1.5.0")
+    implementation("io.ktor:ktor-client-jackson:1.5.0")
 
 
     implementation("com.github.ToxicMushroom:gifencoder:23b3128881")

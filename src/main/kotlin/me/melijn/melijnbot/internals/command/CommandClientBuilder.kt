@@ -266,7 +266,9 @@ class CommandClientBuilder(private val container: Container) {
         LockCommand(),
         UnlockCommand(),
         FlipXCommand(),
-        TimeCommand()
+        TimeCommand(),
+        NomCommand(),
+        ConfusedCommand()
     )
 
     fun build(): CommandClient {
