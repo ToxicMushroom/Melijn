@@ -401,8 +401,7 @@ suspend fun getEmoteByArgsN(context: ICommandContext, index: Int, sameGuildAsCon
 
     } else if (EMOTE_MENTION.matches(arg)) {
         val id = (EMOTE_MENTION.find(arg) ?: return null).groupValues[2]
-        context.message.emotes.firstOrNull { it.id == id } ?:
-            context.shardManager.getEmoteById(id)
+        context.message.emotes.firstOrNull { it.id == id } ?: context.shardManager.getEmoteById(id)
 
     } else {
         var emotes: List<Emote>? = context.guildN?.getEmotesByName(arg, false)
@@ -470,25 +469,30 @@ suspend fun getColorFromArgNMessage(context: ICommandContext, index: Int): Color
     return color
 }
 
-fun getTextChannelByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
+fun getTextChannelByArgsN(
+    context: ICommandContext,
+    index: Int,
+    sameGuildAsContext: Boolean = true
+): TextChannel? {
     var channel: TextChannel? = null
+    if (context.args.size <= index) return null
+
     if (!context.isFromGuild && sameGuildAsContext) return channel
-    if (context.args.size > index && context.isFromGuild) {
-        val arg = context.args[index]
+    val arg = context.args[index]
 
-        channel = if (arg.isPositiveNumber()) {
-            context.shardManager.getTextChannelById(arg)
+    channel = if (DISCORD_ID.matches(arg)) {
+        context.shardManager.getTextChannelById(arg)
 
-        } else if (context.isFromGuild && context.guild.getTextChannelsByName(arg, true).size > 0) {
-            context.guild.getTextChannelsByName(arg, true)[0]
+    } else if (context.isFromGuild && context.guild.getTextChannelsByName(arg, true).size > 0) {
+        context.guild.getTextChannelsByName(arg, true)[0]
 
-        } else if (CHANNEL_MENTION.matches(arg)) {
-            val id = (CHANNEL_MENTION.find(arg) ?: return null).groupValues[1]
-            context.message.mentionedChannels.firstOrNull { it.id == id }
-                ?: context.shardManager.getTextChannelById(id)
+    } else if (CHANNEL_MENTION.matches(arg)) {
+        val id = (CHANNEL_MENTION.find(arg) ?: return null).groupValues[1]
+        context.message.mentionedChannels.firstOrNull { it.id == id }
+            ?: context.shardManager.getTextChannelById(id)
 
-        } else channel
-    }
+    } else channel
+
     if (sameGuildAsContext && !context.guild.textChannels.contains(channel)) return null
     return channel
 }
