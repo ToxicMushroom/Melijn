@@ -205,7 +205,7 @@ fun getRoleByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boo
 
     val arg = context.args[index]
 
-    role = if (arg.isPositiveNumber() && context.jda.shardManager?.getRoleById(arg) != null) {
+    role = if (DISCORD_ID.matches(arg) && context.jda.shardManager?.getRoleById(arg) != null) {
         context.shardManager.getRoleById(arg)
 
     } else if (context.isFromGuild && context.guild.getRolesByName(arg, true).size > 0) {
@@ -213,7 +213,7 @@ fun getRoleByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boo
 
     } else if (ROLE_MENTION.matches(arg)) {
         val id = (ROLE_MENTION.find(arg) ?: return null).groupValues[1]
-        context.shardManager.getRoleById(id)
+        context.message.mentionedRoles.firstOrNull { it.id == id } ?: context.shardManager.getRoleById(id)
 
     } else role
 
@@ -484,7 +484,8 @@ fun getTextChannelByArgsN(context: ICommandContext, index: Int, sameGuildAsConte
 
         } else if (CHANNEL_MENTION.matches(arg)) {
             val id = (CHANNEL_MENTION.find(arg) ?: return null).groupValues[1]
-            context.shardManager.getTextChannelById(id)
+            context.message.mentionedChannels.firstOrNull { it.id == id }
+                ?: context.shardManager.getTextChannelById(id)
 
         } else channel
     }
