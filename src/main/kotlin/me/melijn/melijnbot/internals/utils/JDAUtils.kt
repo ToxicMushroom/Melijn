@@ -401,7 +401,8 @@ suspend fun getEmoteByArgsN(context: ICommandContext, index: Int, sameGuildAsCon
 
     } else if (EMOTE_MENTION.matches(arg)) {
         val id = (EMOTE_MENTION.find(arg) ?: return null).groupValues[2]
-        context.message.emotes.firstOrNull { it.id == id } ?: context.shardManager.getEmoteById(id)
+        emote = context.message.emotes.firstOrNull { it.id == id }
+            ?: context.shardManager.getEmoteById(id)
 
     } else {
         var emotes: List<Emote>? = context.guildN?.getEmotesByName(arg, false)
