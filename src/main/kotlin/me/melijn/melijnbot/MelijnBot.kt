@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.events.EventManager
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.web.RestServer
 import net.dv8tion.jda.api.GatewayEncoding
+import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
@@ -68,7 +69,8 @@ class MelijnBot {
             )
             .setShardsTotal(container.settings.botInfo.shardCount)
             .setToken(container.settings.tokens.discord)
-            .setActivity(Activity.listening("commands | ${container.settings.botInfo.prefix}help"))
+            .setActivity(Activity.playing("Starting.."))
+            .setStatus(OnlineStatus.IDLE)
             .setAutoReconnect(true)
             .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY)
             .setChunkingFilter(ChunkingFilter.NONE)
