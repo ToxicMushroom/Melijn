@@ -151,7 +151,7 @@ suspend fun consumeCallback(callback: SuspendingAudioLoadResultHandler): suspend
                 "NO_MATCHES" -> callback.noMatches()
                 "LOAD_FAILED" -> {
                     val exception = loadResult.getObject("exception")
-                    val message = exception.getString("message")
+                    val message = exception.getString("message", "unknown")
                     val severity = FriendlyException.Severity.valueOf(exception.getString("severity"))
                     val friendlyException = FriendlyException(message, severity, Throwable())
                     callback.loadFailed(friendlyException)
