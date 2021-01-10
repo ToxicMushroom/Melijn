@@ -151,11 +151,11 @@ object StringUtils {
 
     fun splitMessageAtMaxCharAmountOrLength(message: String, maxAmount: Int, c: Char, maxLength: Int): List<String> {
         var msg = message
-        var msgCount = msg.count { c == it }
+        var charCount = msg.count { c == it }
         val messages = ArrayList<String>()
-        if (msgCount > maxAmount) {
-            while (msgCount > maxAmount) {
-                msgCount -= maxAmount
+        if (charCount > maxAmount) {
+            while (charCount > maxAmount) {
+                charCount -= maxAmount
 
                 var index = 0
                 var amount = 0
