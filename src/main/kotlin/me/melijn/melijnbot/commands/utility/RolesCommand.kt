@@ -30,7 +30,12 @@ class RolesCommand : AbstractCommand("command.roles") {
         val guild: Guild = if (context.args.isNotEmpty() && DISCORD_ID.matches(context.args[0])) {
             context.shardManager.getGuildById(context.args[0]) ?: context.guild
         } else {
-            context.guild
+            val guild = context.guildN
+            if (guild == null) {
+                sendSyntax(context)
+                return
+            }
+            guild
         }
 
         val available = context.args.isNotEmpty() && context.args[context.args.size - 1] == "available"
