@@ -86,7 +86,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
                 return
             }
 
-            val prefix = context.rawArg
+            val prefix = context.rawArg.take((1024 - (PRIVATE_PREFIXES_LIMIT * "%SPLIT%".length)) / PREMIUM_PRIVATE_PREFIXES_LIMIT)
             context.daoManager.userPrefixWrapper.addPrefix(context.authorId, prefix)
 
             val msg = context.getTranslation("$root.response1")
