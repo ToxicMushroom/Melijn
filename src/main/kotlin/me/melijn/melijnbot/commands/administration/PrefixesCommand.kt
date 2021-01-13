@@ -91,7 +91,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
                 return
             }
 
-            val prefix = context.rawArg.take(1024 - (PREFIXES_LIMIT * "%SPLIT%".length) / PREMIUM_PREFIXES_LIMIT)
+            val prefix = context.rawArg.take((1024 - (PREFIXES_LIMIT * "%SPLIT%".length)) / PREMIUM_PREFIXES_LIMIT)
             context.daoManager.guildPrefixWrapper.addPrefix(context.guildId, prefix)
 
             val msg = context.getTranslation("$root.response1")
