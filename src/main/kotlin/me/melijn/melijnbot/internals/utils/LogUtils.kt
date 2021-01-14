@@ -382,7 +382,7 @@ object LogUtils {
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
-        logChannel.sendMessage(eb.build())
+        logChannel.sendMessage(eb.build()).queue()
     }
 
     fun sendRemovedRoleLog(
