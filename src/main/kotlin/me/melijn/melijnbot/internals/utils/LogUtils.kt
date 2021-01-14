@@ -73,7 +73,7 @@ object LogUtils {
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
-        logChannel.sendMessage(eb.build())
+        logChannel.sendMessage(eb.build()).queue()
     }
 
     suspend fun sendHitVerificationThroughputLimitLog(daoManager: DaoManager, member: Member) {
@@ -406,7 +406,7 @@ object LogUtils {
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
-        logChannel.sendMessage(eb.build())
+        logChannel.sendMessage(eb.build()).queue()
     }
 
     suspend fun sendMessageFailedToRemoveRoleFromMember(daoManager: DaoManager, member: Member, role: Role) {
@@ -606,7 +606,7 @@ object LogUtils {
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
-        logChannel.sendMessage(eb.build())
+        logChannel.sendMessage(eb.build()).queue()
     }
 
     suspend fun sendPurgeLog(context: ICommandContext, messages: List<Message>) {
