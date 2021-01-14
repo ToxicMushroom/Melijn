@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.enums.PunishmentType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
@@ -27,7 +27,7 @@ class HistoryCommand : AbstractCommand("command.history") {
         )
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return
@@ -128,9 +128,10 @@ class HistoryCommand : AbstractCommand("command.history") {
                             if (part.length + paginationPart.length < maxLength) {
                                 paginationPart.append(part)
                             } else {
-                                paginationPart.append(comment
-                                    .withVariable("page", countr++)
-                                    .withVariable("pages", pages)
+                                paginationPart.append(
+                                    comment
+                                        .withVariable("page", countr++)
+                                        .withVariable("pages", pages)
                                 )
                                 paginationPartList.add(paginationPart.toString())
                                 paginationPart.clear()
@@ -140,9 +141,10 @@ class HistoryCommand : AbstractCommand("command.history") {
                     } else continue
                 }
                 if (paginationPart.isNotEmpty()) {
-                    paginationPart.append(comment
-                        .withVariable("page", countr)
-                        .withVariable("pages", pages)
+                    paginationPart.append(
+                        comment
+                            .withVariable("page", countr)
+                            .withVariable("pages", pages)
                     )
                     paginationPartList.add(paginationPart.toString())
                     paginationPart.clear()
@@ -162,7 +164,7 @@ class HistoryCommand : AbstractCommand("command.history") {
             aliases = arrayOf("find", "fbci")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return

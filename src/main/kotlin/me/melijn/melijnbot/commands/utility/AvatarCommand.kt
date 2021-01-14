@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -14,11 +14,11 @@ class AvatarCommand : AbstractCommand("command.avatar") {
     init {
         id = 122
         name = "avatar"
-        aliases = arrayOf("profilePicture", "pf", "pfp")
+        aliases = arrayOf("ava", "pfp", "av")
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val user = if (context.args.isEmpty()) {
             context.author
         } else {
@@ -35,14 +35,15 @@ class AvatarCommand : AbstractCommand("command.avatar") {
         val eb = Embedder(context)
             .setTitle(title)
             .setImage(avatar)
-            .setDescription(links + " **" +
-                "[direct](${user.effectiveAvatarUrl}) • " +
-                "[x64](${user.effectiveAvatarUrl}?size=64) • " +
-                "[x128](${user.effectiveAvatarUrl}?size=128) • " +
-                "[x256](${user.effectiveAvatarUrl}?size=256) • " +
-                "[x512](${user.effectiveAvatarUrl}?size=512) • " +
-                "[x1024](${user.effectiveAvatarUrl}?size=1024) • " +
-                "[x2048](${user.effectiveAvatarUrl}?size=2048)**"
+            .setDescription(
+                links + " **" +
+                    "[direct](${user.effectiveAvatarUrl}) • " +
+                    "[x64](${user.effectiveAvatarUrl}?size=64) • " +
+                    "[x128](${user.effectiveAvatarUrl}?size=128) • " +
+                    "[x256](${user.effectiveAvatarUrl}?size=256) • " +
+                    "[x512](${user.effectiveAvatarUrl}?size=512) • " +
+                    "[x1024](${user.effectiveAvatarUrl}?size=1024) • " +
+                    "[x2048](${user.effectiveAvatarUrl}?size=2048)**"
             )
 
         sendEmbedRsp(context, eb.build())

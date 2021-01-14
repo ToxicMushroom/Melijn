@@ -21,8 +21,8 @@ import me.melijn.melijnbot.database.disabled.DisabledCommandDao
 import me.melijn.melijnbot.database.disabled.DisabledCommandWrapper
 import me.melijn.melijnbot.database.economy.BalanceDao
 import me.melijn.melijnbot.database.economy.BalanceWrapper
-import me.melijn.melijnbot.database.economy.DailyCooldownDao
-import me.melijn.melijnbot.database.economy.DailyCooldownWrapper
+import me.melijn.melijnbot.database.economy.EconomyCooldownDao
+import me.melijn.melijnbot.database.economy.EconomyCooldownWrapper
 import me.melijn.melijnbot.database.embed.*
 import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
@@ -44,6 +44,8 @@ import me.melijn.melijnbot.database.message.MessageHistoryWrapper
 import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.mute.MuteDao
 import me.melijn.melijnbot.database.mute.MuteWrapper
+import me.melijn.melijnbot.database.newyear.NewYearDao
+import me.melijn.melijnbot.database.newyear.NewYearWrapper
 import me.melijn.melijnbot.database.permission.*
 import me.melijn.melijnbot.database.playlist.PlaylistDao
 import me.melijn.melijnbot.database.playlist.PlaylistWrapper
@@ -51,6 +53,10 @@ import me.melijn.melijnbot.database.prefix.GuildPrefixDao
 import me.melijn.melijnbot.database.prefix.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
+import me.melijn.melijnbot.database.reminder.ReminderDao
+import me.melijn.melijnbot.database.reminder.ReminderWrapper
+import me.melijn.melijnbot.database.rep.RepDao
+import me.melijn.melijnbot.database.rep.RepWrapper
 import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.settings.*
 import me.melijn.melijnbot.database.starboard.StarboardMessageDao
@@ -109,6 +115,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val userPermissionWrapper: UserPermissionWrapper
     val channelRolePermissionWrapper: ChannelRolePermissionWrapper
     val channelUserPermissionWrapper: ChannelUserPermissionWrapper
+    val discordChannelOverridesWrapper: DiscordChannelOverridesWrapper
 
     val disabledCommandWrapper: DisabledCommandWrapper
     val channelCommandStateWrapper: ChannelCommandStateWrapper
@@ -174,18 +181,22 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val botLogStateWrapper: BotLogStateWrapper
     val removeResponseWrapper: RemoveResponseWrapper
     val removeInvokeWrapper: RemoveInvokeWrapper
-    val denyVoteReminderWrapper: DenyVoteReminderWrapper
+    val voteReminderStatesWrapper: VoteReminderStatesWrapper
     val voteReminderWrapper: VoteReminderWrapper
+    val reminderWrapper: ReminderWrapper
 
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
-    val dailyCooldownWrapper: DailyCooldownWrapper
+    val repWrapper: RepWrapper
+    val economyCooldownWrapper: EconomyCooldownWrapper
     val globalCooldownWrapper: GlobalCooldownWrapper
 
     val starboardSettingsWrapper: StarboardSettingsWrapper
     val starboardMessageWrapper: StarboardMessageWrapper
 
     val osuWrapper: OsuWrapper
+
+    val newYearWrapper: NewYearWrapper
 
     var driverManager: DriverManager
 
@@ -216,6 +227,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         userPermissionWrapper = UserPermissionWrapper(UserPermissionDao(driverManager))
         channelRolePermissionWrapper = ChannelRolePermissionWrapper(ChannelRolePermissionDao(driverManager))
         channelUserPermissionWrapper = ChannelUserPermissionWrapper(ChannelUserPermissionDao(driverManager))
+        discordChannelOverridesWrapper = DiscordChannelOverridesWrapper(DiscordChannelOverridesDao(driverManager))
 
         disabledCommandWrapper = DisabledCommandWrapper(DisabledCommandDao(driverManager))
 
@@ -279,18 +291,22 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         botLogStateWrapper = BotLogStateWrapper(BotLogStateDao(driverManager))
         removeResponseWrapper = RemoveResponseWrapper(RemoveResponsesDao(driverManager))
         removeInvokeWrapper = RemoveInvokeWrapper(RemoveInvokeDao(driverManager))
-        denyVoteReminderWrapper = DenyVoteReminderWrapper(DenyVoteReminderDao(driverManager))
+        voteReminderStatesWrapper = VoteReminderStatesWrapper(me.melijn.melijnbot.database.settings.VoteReminderStatesDao(driverManager))
         voteReminderWrapper = VoteReminderWrapper(VoteReminderDao(driverManager))
+        reminderWrapper = ReminderWrapper(ReminderDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         balanceWrapper = BalanceWrapper(BalanceDao(driverManager))
-        dailyCooldownWrapper = DailyCooldownWrapper(DailyCooldownDao(driverManager))
+        repWrapper = RepWrapper(RepDao(driverManager))
+        economyCooldownWrapper = EconomyCooldownWrapper(EconomyCooldownDao(driverManager))
         globalCooldownWrapper = GlobalCooldownWrapper(GlobalCooldownDao(driverManager))
 
         starboardSettingsWrapper = StarboardSettingsWrapper(StarboardSettingsDao(driverManager))
         starboardMessageWrapper = StarboardMessageWrapper(StarboardMessageDao(driverManager))
 
         osuWrapper = OsuWrapper(OsuDao(driverManager))
+
+        newYearWrapper = NewYearWrapper(NewYearDao(driverManager))
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {

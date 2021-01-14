@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.logchannel
 
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 
 class LogChannelWrapper(private val logChannelDao: LogChannelDao) {
@@ -37,5 +38,15 @@ class LogChannelWrapper(private val logChannelDao: LogChannelDao) {
     fun setChannel(guildId: Long, logChannelType: LogChannelType, channelId: Long) {
         logChannelDao.set(guildId, logChannelType, channelId)
         logChannelDao.setCacheEntry("$logChannelType:$guildId", channelId, NORMAL_CACHE)
+    }
+
+    fun migrateChannel(oldId: Long, newId: Long) {
+        logChannelDao.migrateChannel(oldId, newId)
+    }
+
+    fun invalidate(guildId: Long) {
+        LogChannelType.values().forEach { channel ->
+            logChannelDao.removeCacheEntry("$channel:$guildId")
+        }
     }
 }

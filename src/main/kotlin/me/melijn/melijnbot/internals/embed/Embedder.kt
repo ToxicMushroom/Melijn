@@ -2,12 +2,20 @@ package me.melijn.melijnbot.internals.embed
 
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import net.dv8tion.jda.api.EmbedBuilder
 
-class Embedder(daoManager: DaoManager, guildId: Long, userId: Long, embedColor: Int) : EmbedBuilder() {
+class Embedder(daoManager: DaoManager, guildId: Long, userId: Long) : EmbedBuilder() {
 
-    constructor(context: CommandContext) : this(context.daoManager, if (context.isFromGuild) context.guildId else -1, context.authorId, context.embedColor)
+    companion object {
+        var defaultColor = 0xA1B4ED
+    }
+
+    constructor(context: ICommandContext) : this(
+        context.daoManager,
+        if (context.isFromGuild) context.guildId else -1,
+        context.authorId
+    )
 
     init {
         val embedColorWrapper = daoManager.embedColorWrapper
@@ -18,9 +26,11 @@ class Embedder(daoManager: DaoManager, guildId: Long, userId: Long, embedColor: 
         val color = when {
             userColor != 0 -> userColor
             guildColor != 0 -> guildColor
-            else -> embedColor
+            else -> defaultColor
         }
 
         setColor(color)
     }
+
+
 }

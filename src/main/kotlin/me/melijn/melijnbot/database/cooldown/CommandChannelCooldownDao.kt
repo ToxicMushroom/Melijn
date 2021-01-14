@@ -8,7 +8,9 @@ import kotlin.coroutines.suspendCoroutine
 class CommandChannelCooldownDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "commandChannelCooldowns"
-    override val tableStructure: String = "guildId bigint, channelId bigint, commandId varchar(16), cooldownMillis bigint"
+    override val tableStructure: String =
+        "guildId bigint, channelId bigint, commandId varchar(16), cooldownMillis bigint"
+
     override val primaryKey: String = "guildId, commandId"
 
     override val cacheName: String = "command:channel:cooldown"
@@ -18,7 +20,7 @@ class CommandChannelCooldownDao(driverManager: DriverManager) : CacheDBDao(drive
     }
 
     suspend fun getCooldownMapForChannel(channelId: Long): Map<String, Long> = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ?", {rs ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ?", { rs ->
             val map = HashMap<String, Long>()
             while (rs.next()) {
                 map[rs.getString("commandId")] = rs.getLong("cooldownMillis")
@@ -28,7 +30,8 @@ class CommandChannelCooldownDao(driverManager: DriverManager) : CacheDBDao(drive
     }
 
     fun bulkPut(guildId: Long, channelId: Long, commandsIds: Set<String>, cooldownMillis: Long) {
-        val sql = "INSERT INTO $table (guildId, channelId, commandId, cooldownMillis) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET cooldownMillis = ?"
+        val sql = "INSERT INTO $table (guildId, channelId, commandId, cooldownMillis) VALUES (?, ?, ?, ?) " +
+            "ON CONFLICT ($primaryKey) DO UPDATE SET cooldownMillis = ?"
         driverManager.getUsableConnection { con ->
             con.prepareStatement(sql).use { preparedStatement ->
                 preparedStatement.setLong(1, guildId)
@@ -56,5 +59,9 @@ class CommandChannelCooldownDao(driverManager: DriverManager) : CacheDBDao(drive
                 preparedStatement.executeBatch()
             }
         }
+    }
+
+    fun migrateChannel(oldId: Long, newId: Long) {
+        driverManager.executeUpdate("UPDATE $table SET channelId = ? WHERE channelId = ?", newId, oldId)
     }
 }

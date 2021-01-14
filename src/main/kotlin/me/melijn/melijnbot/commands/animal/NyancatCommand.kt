@@ -2,8 +2,7 @@ package me.melijn.melijnbot.commands.animal
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
-import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -17,11 +16,10 @@ class NyancatCommand : AbstractCommand("command.nyancat") {
         id = 49
         name = "nyancat"
         aliases = arrayOf("nyan", "nya")
-        runConditions = arrayOf(RunCondition.VOTED)
         commandCategory = CommandCategory.ANIMAL
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val title = context.getTranslation("$root.title")
 
         val eb = Embedder(context)
@@ -32,8 +30,10 @@ class NyancatCommand : AbstractCommand("command.nyancat") {
 
 
     private suspend fun getRandomNyancatUrl(webManager: WebManager, token: String): String {
-        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://api.miki.bot/images/random?tags=nyancat",
-            headers = mapOf(Pair("Authorization", token))) ?: return MISSING_IMAGE_URL
+        val reply = WebUtils.getJsonFromUrl(
+            webManager.httpClient, "https://api.miki.bot/images/random?tags=nyancat",
+            headers = mapOf(Pair("Authorization", token))
+        ) ?: return MISSING_IMAGE_URL
         return reply.getString("url")
     }
 }

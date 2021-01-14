@@ -11,7 +11,7 @@ import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.audio.SongCacheWrapper
 import me.melijn.melijnbot.enums.SearchType
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
@@ -39,7 +39,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
 
     suspend fun foundSingleTrack(
-        context: CommandContext,
+        context: ICommandContext,
         guildMusicPlayer: GuildMusicPlayer,
         wrapper: SongCacheWrapper,
         track: AudioTrack,
@@ -48,6 +48,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     ) {
         track.userData = TrackUserData(context.author)
         if (guildMusicPlayer.safeQueue(context, track, nextPos)) {
+            // TODO: log the correct track position :>
             sendMessageAddedTrack(context, track)
 
             LogUtils.addMusicPlayerNewTrack(context, track)
@@ -56,7 +57,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     suspend fun foundTracks(
-        context: CommandContext,
+        context: ICommandContext,
         guildMusicPlayer: GuildMusicPlayer,
         wrapper: SongCacheWrapper,
         tracks: List<AudioTrack>,
@@ -81,7 +82,12 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    suspend fun loadNewTrackNMessage(context: CommandContext, source: String, isPlaylist: Boolean = false, nextPos: NextSongPosition) {
+    suspend fun loadNewTrackNMessage(
+        context: ICommandContext,
+        source: String,
+        isPlaylist: Boolean = false,
+        nextPos: NextSongPosition
+    ) {
         val guild = context.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
         val searchType = when {
@@ -136,21 +142,21 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
 
-    private suspend fun sendMessageLoadFailed(context: CommandContext, exception: Throwable) {
+    private suspend fun sendMessageLoadFailed(context: ICommandContext, exception: Throwable) {
         val msg = context.getTranslation("$root.loadfailed")
             .withSafeVariable("cause", exception.message ?: "/")
         sendRsp(context, msg)
         exception.printStackTrace()
     }
 
-    suspend fun sendMessageNoMatches(context: CommandContext, input: String) {
+    suspend fun sendMessageNoMatches(context: ICommandContext, input: String) {
         val msg = context.getTranslation("$root.nomatches")
             .withSafeVariable("source", input)
         sendRsp(context, msg)
     }
 
 
-    suspend fun sendMessageAddedTrack(context: CommandContext, audioTrack: AudioTrack) {
+    suspend fun sendMessageAddedTrack(context: ICommandContext, audioTrack: AudioTrack) {
         val title = context.getTranslation("$root.addedtrack.title")
             .withVariable(PLACEHOLDER_USER, context.author.asTag)
         val description = context.getTranslation("$root.addedtrack.description")
@@ -166,7 +172,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         sendEmbedRsp(context, eb.build())
     }
 
-    private suspend fun sendMessageAddedTracks(context: CommandContext, audioTracks: List<AudioTrack>) {
+    private suspend fun sendMessageAddedTracks(context: ICommandContext, audioTracks: List<AudioTrack>) {
         val title = context.getTranslation("$root.addedtracks.title")
             .withSafeVariable(PLACEHOLDER_USER, context.author.asTag)
         val description = context.getTranslation("$root.addedtracks.description")
@@ -181,11 +187,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         sendEmbedRsp(context, eb.build())
     }
 
-    private fun getQueuePosition(context: CommandContext, audioTrack: AudioTrack): Int =
+    private suspend fun getQueuePosition(context: ICommandContext, audioTrack: AudioTrack): Int =
         context.musicPlayerManager.getGuildMusicPlayer(context.guild).guildTrackManager.getPosition(audioTrack)
 
     suspend fun loadSpotifyTrack(
-        context: CommandContext,
+        context: ICommandContext,
         query: String,
         artists: Array<ArtistSimplified>?,
         durationMs: Int,
@@ -217,7 +223,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val resultHandler = object : SuspendingAudioLoadResultHandler {
             override suspend fun trackLoaded(track: AudioTrack) {
                 if ((durationMs + spotifyTrackDiff > track.duration && track.duration > durationMs - spotifyTrackDiff)
-                    || track.info.title.contains(title, true)) {
+                    || track.info.title.contains(title, true)
+                ) {
                     track.userData = TrackUserData(context.author)
                     if (player.safeQueue(context, track, nextPos)) {
                         if (!silent) {
@@ -239,7 +246,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 val tracks: List<AudioTrack> = playlist.tracks
                 for (track in tracks.subList(0, min(tracks.size, 5))) {
                     if ((durationMs + spotifyTrackDiff > track.duration && track.duration > durationMs - spotifyTrackDiff)
-                        || track.info.title.contains(title, true)) {
+                        || track.info.title.contains(title, true)
+                    ) {
                         track.userData = TrackUserData(context.author)
                         if (player.safeQueue(context, track, nextPos)) {
                             if (!silent) {
@@ -277,7 +285,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
             for (track in tracks.subList(0, min(tracks.size, 5))) {
                 if ((durationMs + spotifyTrackDiff > track.duration && track.duration > durationMs - spotifyTrackDiff)
-                    || track.info.title.contains(title, true)) {
+                    || track.info.title.contains(title, true)
+                ) {
                     track.userData = TrackUserData(context.author)
                     if (player.safeQueue(context, track, nextPos)) {
                         if (!silent) {
@@ -303,7 +312,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     private suspend fun loadSpotifyTrackOther(
-        context: CommandContext,
+        context: ICommandContext,
         query: String,
         artists: Array<ArtistSimplified>?,
         durationMs: Int,
@@ -329,7 +338,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    private fun appendArtists(artists: Array<ArtistSimplified>?, source: StringBuilder, artistNames: MutableList<String>) {
+    private fun appendArtists(
+        artists: Array<ArtistSimplified>?,
+        source: StringBuilder,
+        artistNames: MutableList<String>
+    ) {
         if (artists != null) {
             if (artists.isNotEmpty()) source.append(" ")
             val artistString = artists.joinToString(", ", transform = { artist ->
@@ -340,14 +353,17 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    suspend fun loadSpotifyPlaylist(context: CommandContext, tracks: Array<Track>, nextPos: NextSongPosition) {
+    suspend fun loadSpotifyPlaylist(context: ICommandContext, tracks: Array<Track>, nextPos: NextSongPosition) {
         val limit = if (isPremiumGuild(context)) QUEUE_LIMIT else DONATE_QUEUE_LIMIT
         val slotsLeft = limit - context.getGuildMusicPlayer().guildTrackManager.trackSize()
 
         val loadedTracks = mutableListOf<Track>()
         val failedTracks = mutableListOf<Track>()
         val msg = context.getTranslation("command.play.loadingtrack" + if (tracks.size > 1) "s" else "")
-            .withVariable("trackCount", if (slotsLeft < tracks.size) "${slotsLeft}/${tracks.size}" else "${tracks.size}")
+            .withVariable(
+                "trackCount",
+                if (slotsLeft < tracks.size) "${slotsLeft}/${tracks.size}" else "${tracks.size}"
+            )
 
         val message = sendRspAwaitEL(context, msg)
         for (track in tracks.take(slotsLeft)) {
@@ -367,14 +383,21 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    suspend fun loadSpotifyAlbum(context: CommandContext, simpleTracks: Array<TrackSimplified>, nextPos: NextSongPosition) {
+    suspend fun loadSpotifyAlbum(
+        context: ICommandContext,
+        simpleTracks: Array<TrackSimplified>,
+        nextPos: NextSongPosition
+    ) {
         val limit = if (isPremiumGuild(context)) QUEUE_LIMIT else DONATE_QUEUE_LIMIT
         val slotsLeft = limit - context.getGuildMusicPlayer().guildTrackManager.trackSize()
 
         val loadedTracks = mutableListOf<TrackSimplified>()
         val failedTracks = mutableListOf<TrackSimplified>()
         val msg = context.getTranslation("command.play.loadingtrack" + if (simpleTracks.size > 1) "s" else "")
-            .withVariable("trackCount", if (slotsLeft < simpleTracks.size) "${slotsLeft}/${simpleTracks.size}" else "${simpleTracks.size}")
+            .withVariable(
+                "trackCount",
+                if (slotsLeft < simpleTracks.size) "${slotsLeft}/${simpleTracks.size}" else "${simpleTracks.size}"
+            )
 
         val message = sendRspAwaitEL(context, msg)
         for (track in simpleTracks.take(slotsLeft)) {
@@ -385,16 +408,22 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                     failedTracks.add(track)
                 }
                 if (loadedTracks.size + failedTracks.size == simpleTracks.size) {
-                    val newMsg = context.getTranslation("command.play.loadedtrack" + if (simpleTracks.size > 1) "s" else "")
-                        .withVariable("loadedCount", loadedTracks.size.toString())
-                        .withVariable("failedCount", failedTracks.size.toString())
+                    val newMsg =
+                        context.getTranslation("command.play.loadedtrack" + if (simpleTracks.size > 1) "s" else "")
+                            .withVariable("loadedCount", loadedTracks.size.toString())
+                            .withVariable("failedCount", failedTracks.size.toString())
                     message[0].editMessage(newMsg).await()
                 }
             }
         }
     }
 
-    suspend fun loadNewTrackPickerNMessage(context: CommandContext, query: String, nextPos: NextSongPosition) {
+    suspend fun loadNewTrackPickerNMessage(
+        context: ICommandContext,
+        query: String,
+        searchType: SearchType,
+        nextPos: NextSongPosition
+    ) {
         val guildMusicPlayer = context.getGuildMusicPlayer()
         val rawInput = query
             .replace(YT_SELECTOR, "")
@@ -415,18 +444,35 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
 
             override suspend fun playlistLoaded(playlist: AudioPlaylist) {
-                prepareSearchMenu(context, playlist.tracks, nextPos)
+                if (playlist.tracks.isEmpty()) {
+                    sendMessageNoMatches(context, rawInput)
+                } else {
+                    prepareSearchMenu(context, playlist.tracks, nextPos)
+                }
             }
         }
 
-        audioPlayerManager.loadItemOrdered(guildMusicPlayer, query, resultHandler)
+        ytSearch.search(rawInput, searchType, { tracks ->
+            if (tracks.isEmpty()) {
+                sendMessageNoMatches(context, rawInput)
+            } else {
+                prepareSearchMenu(context, tracks, nextPos)
+            }
+        }, {
+            sendMessageNoMatches(context, rawInput)
+        }, resultHandler)
     }
 
-    private suspend fun prepareSearchMenu(context: CommandContext, trackList: List<AudioTrack>, nextPos: NextSongPosition) {
+    private suspend fun prepareSearchMenu(
+        context: ICommandContext,
+        trackList: List<AudioTrack>,
+        nextPos: NextSongPosition
+    ) {
         val guildMusicPlayer = context.getGuildMusicPlayer()
         if (guildMusicPlayer.queueIsFull(context, 1)) return
 
         val tracks = trackList.filterIndexed { index, _ -> index < 5 }.toMutableList()
+        if (tracks.isEmpty()) return
 
         for ((index, track) in tracks.withIndex()) {
             track.userData = TrackUserData(context.author)
@@ -447,7 +493,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    private suspend fun sendMessageSearchMenu(context: CommandContext, tracks: List<AudioTrack>): List<Message> {
+    private suspend fun sendMessageSearchMenu(context: ICommandContext, tracks: List<AudioTrack>): List<Message> {
         val title = context.getTranslation("$root.searchmenu")
         var menu = ""
         for ((index, track) in tracks.withIndex()) {
@@ -460,7 +506,14 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         return sendEmbedRspAwaitEL(context, eb.build())
     }
 
-    suspend fun loadNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User, source: String, nextPos: NextSongPosition) {
+    suspend fun loadNewTrack(
+        daoManager: DaoManager,
+        lavaManager: LavaManager,
+        vc: VoiceChannel,
+        author: User,
+        source: String,
+        nextPos: NextSongPosition
+    ) {
         val guild = vc.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
 

@@ -17,11 +17,21 @@ class ChannelUserPermissionWrapper(private val channelUserPermissionDao: Channel
         if (result != null) return result
 
         val permissionMap = channelUserPermissionDao.getMap(channelId, userId)
-        channelUserPermissionDao.setCacheEntry("$channelId:$userId", objectMapper.writeValueAsString(permissionMap), NORMAL_CACHE)
+        channelUserPermissionDao.setCacheEntry(
+            "$channelId:$userId",
+            objectMapper.writeValueAsString(permissionMap),
+            NORMAL_CACHE
+        )
         return permissionMap
     }
 
-    suspend fun setPermissions(guildId: Long, channelId: Long, userId: Long, permissions: List<String>, state: PermState) {
+    suspend fun setPermissions(
+        guildId: Long,
+        channelId: Long,
+        userId: Long,
+        permissions: List<String>,
+        state: PermState
+    ) {
         val permissionMap = getPermMap(channelId, userId).toMutableMap()
         if (state == PermState.DEFAULT) {
             permissions.forEach { permissionMap.remove(it) }
@@ -30,7 +40,11 @@ class ChannelUserPermissionWrapper(private val channelUserPermissionDao: Channel
             permissions.forEach { permissionMap[it] = state }
             channelUserPermissionDao.bulkPut(guildId, channelId, userId, permissions, state)
         }
-        channelUserPermissionDao.setCacheEntry("$channelId:$userId", objectMapper.writeValueAsString(permissionMap), NORMAL_CACHE)
+        channelUserPermissionDao.setCacheEntry(
+            "$channelId:$userId",
+            objectMapper.writeValueAsString(permissionMap),
+            NORMAL_CACHE
+        )
     }
 
     suspend fun setPermission(guildId: Long, channelId: Long, userId: Long, permission: String, state: PermState) {
@@ -42,11 +56,19 @@ class ChannelUserPermissionWrapper(private val channelUserPermissionDao: Channel
             permissionMap[permission] = state
             channelUserPermissionDao.set(guildId, channelId, userId, permission, state)
         }
-        channelUserPermissionDao.setCacheEntry("$channelId:$userId", objectMapper.writeValueAsString(permissionMap), NORMAL_CACHE)
+        channelUserPermissionDao.setCacheEntry(
+            "$channelId:$userId",
+            objectMapper.writeValueAsString(permissionMap),
+            NORMAL_CACHE
+        )
     }
 
     fun clear(channelId: Long, userId: Long) {
-        channelUserPermissionDao.setCacheEntry("$channelId:$userId", objectMapper.writeValueAsString(emptyMap<String, PermState>()), NORMAL_CACHE)
+        channelUserPermissionDao.setCacheEntry(
+            "$channelId:$userId",
+            objectMapper.writeValueAsString(emptyMap<String, PermState>()),
+            NORMAL_CACHE
+        )
         channelUserPermissionDao.delete(channelId, userId)
     }
 
@@ -56,5 +78,9 @@ class ChannelUserPermissionWrapper(private val channelUserPermissionDao: Channel
                 entry.value == state
             }.keys.toList(), state)
         }
+    }
+
+    fun migrateChannel(oldId: Long, newId: Long) {
+        channelUserPermissionDao.migrateChannel(oldId, newId)
     }
 }

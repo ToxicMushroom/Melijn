@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.internals.threading
 
 import kotlinx.coroutines.*
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.MessageChannel
@@ -22,12 +22,21 @@ object TaskManager {
 
     val executorService: ExecutorService = Executors.newCachedThreadPool(threadFactory.invoke("Task"))
     val dispatcher = executorService.asCoroutineDispatcher()
-    val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(15, threadFactory.invoke("Repeater"))
+    val scheduledExecutorService: ScheduledExecutorService =
+        Executors.newScheduledThreadPool(15, threadFactory.invoke("Repeater"))
 
     fun async(block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
         Task {
             block.invoke(this)
         }.run()
+    }
+
+    fun asyncIgnoreEx(block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
+        try {
+            block.invoke(this)
+        } catch (t: Throwable) {
+            // ignored by design
+        }
     }
 
     fun <T> taskValueAsync(block: suspend CoroutineScope.() -> T): Deferred<T> = CoroutineScope(dispatcher).async {
@@ -42,7 +51,7 @@ object TaskManager {
         }.run()
     }
 
-    fun async(context: CommandContext, block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
+    fun async(context: ICommandContext, block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
         ContextTask(context) {
             block.invoke(this)
         }.run()
@@ -66,11 +75,12 @@ object TaskManager {
         }.run()
     }
 
-    fun async(user: User, messageChannel: MessageChannel, block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
-        UserChannelTask(user, messageChannel) {
-            block.invoke(this)
-        }.run()
-    }
+    fun async(user: User, messageChannel: MessageChannel, block: suspend CoroutineScope.() -> Unit) =
+        CoroutineScope(dispatcher).launch {
+            UserChannelTask(user, messageChannel) {
+                block.invoke(this)
+            }.run()
+        }
 
     fun async(user: User, guild: Guild, block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
         UserGuildTask(user, guild) {
@@ -84,7 +94,7 @@ object TaskManager {
         }.run()
     }
 
-    inline fun asyncAfter(afterMillis: Long, crossinline func: () -> Unit) {
-        scheduledExecutorService.schedule(TaskInline { func() }, afterMillis, TimeUnit.MILLISECONDS)
+    inline fun asyncAfter(afterMillis: Long, crossinline func: suspend () -> Unit) {
+        scheduledExecutorService.schedule(RunnableTask { func() }, afterMillis, TimeUnit.MILLISECONDS)
     }
 }

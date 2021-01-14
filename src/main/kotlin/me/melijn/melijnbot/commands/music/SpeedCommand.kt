@@ -1,8 +1,9 @@
 package me.melijn.melijnbot.commands.music
 
+import me.melijn.llklient.io.filters.Timescale
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.getLongFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -17,17 +18,23 @@ class SpeedCommand : AbstractCommand("command.speed") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
         if (context.args.isEmpty()) {
+            val currentSpeedPercent = (iPlayer.filters.timescale?.speed ?: 1.0f) * 100
             val msg = context.getTranslation("$root.show")
-                .withVariable("speed", iPlayer.speed * 100)
+                .withVariable("speed", currentSpeedPercent)
             sendRsp(context, msg)
             return
         }
 
         val speed = getLongFromArgNMessage(context, 0, 0, ignore = arrayOf("%")) ?: return
-        iPlayer.setSpeed(speed / 100.0)
+        val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
+
+        val ts = player.filters.timescale ?: Timescale()
+        ts.speed = speed / 100.0f
+        player.filters.timescale = ts
+        player.filters.commit()
 
         val msg = context.getTranslation("$root.set")
             .withVariable("speed", speed)

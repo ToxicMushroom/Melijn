@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.database.mute
 
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
@@ -11,7 +11,7 @@ class MuteWrapper(private val muteDao: MuteDao) {
         return muteDao.getUnmuteableMutes()
     }
 
-    suspend fun setMute(newMute: Mute) {
+    fun setMute(newMute: Mute) {
         muteDao.setMute(newMute)
     }
 
@@ -19,7 +19,7 @@ class MuteWrapper(private val muteDao: MuteDao) {
         return muteDao.getActiveMute(guildId, mutedId)
     }
 
-    suspend fun getMuteMap(context: CommandContext, targetUser: User): Map<Long, String> {
+    suspend fun getMuteMap(context: ICommandContext, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val mutes = muteDao.getMutes(context.guildId, targetUser.idLong)
         if (mutes.isEmpty()) {
@@ -33,21 +33,30 @@ class MuteWrapper(private val muteDao: MuteDao) {
         return map
     }
 
-    private suspend fun convertMuteInfoToMessage(context: CommandContext, mute: Mute): String {
+    private suspend fun convertMuteInfoToMessage(context: ICommandContext, mute: Mute): String {
         val muteAuthorId = mute.muteAuthorId ?: return continueConvertingInfoToMessage(context, null, mute)
 
         val muteAuthor = context.shardManager.retrieveUserById(muteAuthorId).awaitOrNull()
         return continueConvertingInfoToMessage(context, muteAuthor, mute)
     }
 
-    private suspend fun continueConvertingInfoToMessage(context: CommandContext, muteAuthor: User?, mute: Mute): String {
+    private suspend fun continueConvertingInfoToMessage(
+        context: ICommandContext,
+        muteAuthor: User?,
+        mute: Mute
+    ): String {
         val unbanAuthorId = mute.unmuteAuthorId ?: return getMuteMessage(context, muteAuthor, null, mute)
 
         val unmuteAuthor = context.shardManager.retrieveUserById(unbanAuthorId).awaitOrNull()
         return getMuteMessage(context, muteAuthor, unmuteAuthor, mute)
     }
 
-    private suspend fun getMuteMessage(context: CommandContext, muteAuthor: User?, unmuteAuthor: User?, mute: Mute): String {
+    private suspend fun getMuteMessage(
+        context: ICommandContext,
+        muteAuthor: User?,
+        unmuteAuthor: User?,
+        mute: Mute
+    ): String {
         val deletedUser = context.getTranslation("message.deleted.user")
         val unmuteReason = mute.unmuteReason
         val zoneId = context.getTimeZoneId()
@@ -58,7 +67,10 @@ class MuteWrapper(private val muteDao: MuteDao) {
         return context.getTranslation("message.punishmenthistory.mute")
             .withSafeVariable("muteAuthor", muteAuthor?.asTag ?: deletedUser)
             .withVariable("muteAuthorId", "${mute.muteAuthorId}")
-            .withSafeVariable("unmuteAuthor", if (mute.unmuteAuthorId == null) "/" else unmuteAuthor?.asTag ?: deletedUser)
+            .withSafeVariable(
+                "unmuteAuthor",
+                if (mute.unmuteAuthorId == null) "/" else unmuteAuthor?.asTag ?: deletedUser
+            )
             .withVariable("unmuteAuthorId", mute.unmuteAuthorId?.toString() ?: "/")
             .withSafeVariable("muteReason", mute.reason.substring(0, min(mute.reason.length, 830)))
             .withSafeVariable("unmuteReason", unmuteReason?.substring(0, min(unmuteReason.length, 830)) ?: "/")
@@ -69,7 +81,7 @@ class MuteWrapper(private val muteDao: MuteDao) {
             .withVariable("active", "${mute.active}")
     }
 
-    suspend fun getMuteMap(context: CommandContext, muteId: String): Map<Long, String> {
+    suspend fun getMuteMap(context: ICommandContext, muteId: String): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val mutes = muteDao.getMutes(muteId)
         if (mutes.isEmpty()) {

@@ -5,7 +5,7 @@ import me.melijn.melijnbot.commands.utility.toUniversalDateTimeFormat
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
@@ -36,7 +36,8 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
             MangaArg(root),
             CharacterArg(root)
         )
-        jikanUrl = "http${(if (jikanSettings.ssl) "s" else "")}://${jikanSettings.host}:${jikanSettings.port}/public/v3/"
+        jikanUrl =
+            "http${(if (jikanSettings.ssl) "s" else "")}://${jikanSettings.host}:${jikanSettings.port}/public/v3/"
 
         JikanKt.apply {
             restClient = RestClient(false, jikanUrl, jikanSettings.key)
@@ -51,7 +52,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
             aliases = arrayOf("char")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -162,7 +163,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
         }
 
         // TODO get the actual manga entry
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -190,11 +191,13 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
 
 
                 val publishingValue = result.publishing?.let {
-                    context.getTranslation(if (it) {
-                        "yes"
-                    } else {
-                        "no"
-                    })
+                    context.getTranslation(
+                        if (it) {
+                            "yes"
+                        } else {
+                            "no"
+                        }
+                    )
                 } ?: context.getTranslation("unknown")
 
                 val eb = Embedder(context)
@@ -236,11 +239,11 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
         }
 
         // TODO get the actual anime entry
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             showSeries(context)
         }
 
-        suspend fun showSeries(context: CommandContext) {
+        suspend fun showSeries(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -266,11 +269,13 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
                 val synopsis = context.getTranslation("title.synopsis")
 
                 val airingValue = result.airing?.let {
-                    context.getTranslation(if (it) {
-                        "yes"
-                    } else {
-                        "no"
-                    })
+                    context.getTranslation(
+                        if (it) {
+                            "yes"
+                        } else {
+                            "no"
+                        }
+                    )
                 } ?: context.getTranslation("unknown")
 
                 val eb = Embedder(context)
@@ -310,7 +315,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
             aliases = arrayOf("profile", "u", "userProfile", "up")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -401,7 +406,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         animeArg.showSeries(context)
     }
 }

@@ -4,8 +4,9 @@ import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
@@ -15,7 +16,7 @@ import net.dv8tion.jda.api.entities.TextChannel
 import java.time.format.DateTimeFormatter
 
 
-suspend fun sendEmbedRspAwaitEL(context: CommandContext, embed: MessageEmbed): List<Message> {
+suspend fun sendEmbedRspAwaitEL(context: ICommandContext, embed: MessageEmbed): List<Message> {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     return if (premiumGuild) {
         sendEmbedRspAwaitEL(context.daoManager, context.textChannel, embed)
@@ -31,7 +32,8 @@ suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, textChannel: TextChannel
     }
 
     return if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
-        !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+        !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
+    ) {
 
 
         val message = textChannel.sendMessage(embed).awaitOrNull()
@@ -47,7 +49,7 @@ suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, textChannel: TextChannel
     }
 }
 
-fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
+fun sendEmbed(context: ICommandContext, embed: MessageEmbed) {
     if (context.isFromGuild) {
         sendEmbed(context.daoManager.embedDisabledWrapper, context.textChannel, embed)
     } else {
@@ -55,7 +57,7 @@ fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
     }
 }
 
-suspend fun sendEmbedRsp(context: CommandContext, embed: MessageEmbed) {
+suspend fun sendEmbedRsp(context: ICommandContext, embed: MessageEmbed) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendEmbedRsp(context.daoManager, context.textChannel, embed)
@@ -70,10 +72,15 @@ fun sendEmbedRsp(daoManager: DaoManager, textChannel: TextChannel, embed: Messag
         throw IllegalArgumentException("No permission to talk in this channel")
     }
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
-        !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+        !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
+    ) {
         TaskManager.async(textChannel) {
-            val message = textChannel.sendMessage(embed).awaitOrNull() ?: return@async
-
+            val message = try {
+                textChannel.sendMessage(embed).await()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                return@async
+            }
             val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
             val seconds = timeMap[textChannel.idLong] ?: return@async
 
@@ -88,7 +95,7 @@ fun sendEmbedRsp(daoManager: DaoManager, textChannel: TextChannel, embed: Messag
     }
 }
 
-suspend fun sendEmbedAwaitEL(context: CommandContext, embed: MessageEmbed): List<Message> {
+suspend fun sendEmbedAwaitEL(context: ICommandContext, embed: MessageEmbed): List<Message> {
     return if (context.isFromGuild) {
         sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, context.textChannel, embed)
     } else {
@@ -110,14 +117,19 @@ suspend fun sendEmbedAwaitEL(privateChannel: PrivateChannel, embed: MessageEmbed
 }
 
 
-suspend fun sendEmbedAwaitEL(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed): List<Message> {
+suspend fun sendEmbedAwaitEL(
+    embedDisabledWrapper: EmbedDisabledWrapper,
+    textChannel: TextChannel,
+    embed: MessageEmbed
+): List<Message> {
     val guild = textChannel.guild
     if (!textChannel.canTalk()) {
         throw IllegalArgumentException("No permission to talk in this channel")
     }
 
     return if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
-        !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+        !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
+    ) {
 
         val msg = textChannel.sendMessage(embed).awaitOrNull()
         msg?.let { listOf(it) } ?: emptyList()
@@ -133,7 +145,8 @@ fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChann
         throw IllegalArgumentException("No permission to talk in this channel")
     }
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
-        !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+        !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
+    ) {
         textChannel.sendMessage(embed).queue()
     } else {
         sendEmbedAsMessage(textChannel, embed)
@@ -192,6 +205,10 @@ suspend fun sendEmbedAsMessageAwaitEL(textChannel: TextChannel, embed: MessageEm
     return sendMsgAwaitEL(textChannel, embed.toMessage())
 }
 
-suspend fun sendEmbedAsResponseAwaitEL(textChannel: TextChannel, daoManager: DaoManager, embed: MessageEmbed): List<Message> {
+suspend fun sendEmbedAsResponseAwaitEL(
+    textChannel: TextChannel,
+    daoManager: DaoManager,
+    embed: MessageEmbed
+): List<Message> {
     return sendRspAwaitEL(textChannel, daoManager, embed.toMessage())
 }

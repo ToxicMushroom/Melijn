@@ -93,7 +93,11 @@ class MySpotifyApi(spotifySettings: Settings.Api.Spotify) {
         trackList(tracks)
     }
 
-    private suspend fun acceptPlaylistResults(songArg: String, trackList: suspend (Array<Track>) -> Unit, regex: Regex) {
+    private suspend fun acceptPlaylistResults(
+        songArg: String,
+        trackList: suspend (Array<Track>) -> Unit,
+        regex: Regex
+    ) {
         val result = requireNotNull(regex.find(songArg)) { "bruh" }
         val id = result.groupValues[1]
         val paginTracks = spotifyApi
@@ -128,7 +132,11 @@ class MySpotifyApi(spotifySettings: Settings.Api.Spotify) {
         trackList(tracks.toTypedArray())
     }
 
-    private suspend fun acceptAlbumResults(songArg: String, simpleTrack: suspend (Array<TrackSimplified>) -> Unit, regex: Regex) {
+    private suspend fun acceptAlbumResults(
+        songArg: String,
+        simpleTrack: suspend (Array<TrackSimplified>) -> Unit,
+        regex: Regex
+    ) {
         val result = requireNotNull(regex.find(songArg)) { "bruh" }
         val id = result.groupValues[1]
         val simpleTracks = spotifyApi.getAlbumsTracks(id).build().executeAsync().await().items

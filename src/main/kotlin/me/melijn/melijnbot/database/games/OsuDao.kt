@@ -18,8 +18,10 @@ class OsuDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun set(userId: Long, name: String) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, name) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET name = ?",
-            userId, name, name)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (userId, name) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET name = ?",
+            userId, name, name
+        )
     }
 
     suspend fun get(userId: Long): String = suspendCoroutine {

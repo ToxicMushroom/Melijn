@@ -1,20 +1,21 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.internals.threading.TaskManager
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.OnlineStatus
+import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.StatusChangeEvent
 
 class BotStartShutdownListener(container: Container) : AbstractListener(container) {
 
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is StatusChangeEvent) {
-            runBlocking { onStatusChange(event) }
+            onStatusChange(event)
         }
     }
 
@@ -32,6 +33,8 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
             if (readyShards != container.settings.botInfo.shardCount) return
 
             if (!container.serviceManager.slowStarted) {
+                shardManager.setStatus(OnlineStatus.ONLINE)
+                shardManager .setActivity(Activity.listening("commands | ${container.settings.botInfo.prefix}help"))
                 TaskManager.async {
                     logger.info("Starting music clients..")
                     VoiceUtil.resumeMusic(event, container)

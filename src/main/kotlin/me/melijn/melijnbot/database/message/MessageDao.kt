@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 import java.time.Instant
+import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -34,13 +35,17 @@ class MessageDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun set(guildId: Long, type: MessageType, message: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, type, message) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET message = ?",
-            guildId, type.toString(), message, message)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, type, message) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET message = ?",
+            guildId, type.toString(), message, message
+        )
     }
 
     fun remove(guildId: Long, type: MessageType) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND type = ?",
-            guildId, type.toString())
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND type = ?",
+            guildId, type.toString()
+        )
     }
 
     suspend fun get(guildId: Long, type: MessageType): String? = suspendCoroutine {
@@ -55,7 +60,7 @@ class MessageDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 data class ModularMessage(
     var messageContent: String? = null,
     var embed: MessageEmbed? = null,
-    var attachments: Map<String, String> = emptyMap(),
+    var attachments: Map<String, String> = emptyMap(), // url -> name
     var extra: Map<String, String> = emptyMap()
 ) {
 
@@ -64,24 +69,28 @@ data class ModularMessage(
         val json = DataObject.empty()
         messageContent?.let { json.put("content", it) }
         embed?.let { membed ->
-            json.put("embed", membed.toData()
-                .put("type", EmbedType.RICH)
+            json.put(
+                "embed", membed.toData()
+                    .put("type", EmbedType.RICH)
             )
         }
 
         val attachmentsJson = DataArray.empty()
         for ((key, value) in attachments) {
-            attachmentsJson.add(DataObject.empty()
-                .put("url", key)
-                .put("file", value))
+            attachmentsJson.add(
+                DataObject.empty()
+                    .put("url", key)
+                    .put("file", value)
+            )
         }
         json.put("attachments", attachmentsJson)
 
         val extraJson = DataArray.empty()
         for ((key, value) in extra) {
-            extraJson.add(DataArray.empty()
-                .add(key)
-                .add(value)
+            extraJson.add(
+                DataArray.empty()
+                    .add(key)
+                    .add(value)
             )
         }
         json.put("extra", extraJson)
@@ -90,7 +99,7 @@ data class ModularMessage(
 
     fun toMessage(): Message? {
         var membed = embed
-        if (messageContent == null && (membed == null || membed.isEmpty || !membed.isSendable) && attachments.isEmpty()) return null
+        if (messageContent == null && (membed == null || membed.isEmpty || !membed.isSendable)) return null
 
         // Timestamp handler
         if (membed != null && extra.containsKey("currentTimestamp")) {
@@ -105,7 +114,9 @@ data class ModularMessage(
 
         // Timestamp handler
         if (extra.containsKey("isPingable")) {
-            mb.setAllowedMentions(MentionType.values().toSet())
+            mb.setAllowedMentions(
+                EnumSet.allOf(MentionType::class.java) // Default to all mentions enabled
+            )
         } else {
             mb.setAllowedMentions(emptyList())
         }

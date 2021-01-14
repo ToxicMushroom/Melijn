@@ -28,8 +28,10 @@ class JoinRoleDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun put(guildId: Long, joinRoleInfo: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, joinRoleInfo) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET joinRoleInfo = ?",
-            guildId, joinRoleInfo, joinRoleInfo)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, joinRoleInfo) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET joinRoleInfo = ?",
+            guildId, joinRoleInfo, joinRoleInfo
+        )
     }
 
     fun remove(guildId: Long) {

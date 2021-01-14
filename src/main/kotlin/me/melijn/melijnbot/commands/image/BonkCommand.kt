@@ -5,7 +5,7 @@ import io.lettuce.core.SetArgs
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.getBooleanFromArgN
 import me.melijn.melijnbot.internals.utils.getLongFromArgN
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
@@ -33,7 +33,7 @@ class BonkCommand : AbstractCommand("command.bonk") {
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -122,7 +122,8 @@ class GifSequenceWriter(outputStream: ImageOutputStream, imageType: Int, delay: 
         child.setAttribute("authenticationCode", "2.0")
 
         val loopContinuously: Int = if (loop) 0 else 1
-        child.userObject = byteArrayOf(0x1, (loopContinuously and 0xFF).toByte(), ((loopContinuously shr 8) and 0xFF).toByte())
+        child.userObject =
+            byteArrayOf(0x1, (loopContinuously and 0xFF).toByte(), ((loopContinuously shr 8) and 0xFF).toByte())
         appExtensionNode.appendChild(child)
         metadata.setFromTree(metaFormatName, root)
     }

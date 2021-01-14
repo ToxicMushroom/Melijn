@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.developer
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 
 class RedisCommand : AbstractCommand("command.redis") {
@@ -12,7 +12,7 @@ class RedisCommand : AbstractCommand("command.redis") {
         name = "redis"
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val commands = context.daoManager.driverManager.redisConnection?.async()
         if (commands == null) {
             sendRsp(context, "Redis not initizialized")

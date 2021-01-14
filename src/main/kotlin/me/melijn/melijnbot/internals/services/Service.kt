@@ -23,7 +23,8 @@ abstract class Service(
         }
     }
 
-    private val scheduledExecutor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(serviceThreadFactory(name))
+    private val scheduledExecutor: ScheduledExecutorService =
+        Executors.newSingleThreadScheduledExecutor(serviceThreadFactory(name))
     private lateinit var future: ScheduledFuture<*>
     val logger: Logger = LoggerFactory.getLogger(name)
 

@@ -1,9 +1,16 @@
 package me.melijn.melijnbot.internals.command
 
+import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.internals.music.AudioLoader
+import me.melijn.melijnbot.internals.music.GuildMusicPlayer
+import me.melijn.melijnbot.internals.music.LavaManager
+import me.melijn.melijnbot.internals.music.MusicPlayerManager
+import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.*
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.sharding.ShardManager
+import java.time.ZoneId
 
 
 interface ICommandContext {
@@ -14,6 +21,13 @@ interface ICommandContext {
      * @return the [net.dv8tion.jda.api.entities.Guild] for this command/event or throws an [IllegalArgumentException] when not executed in a guild
      */
     val guild: Guild
+
+    /**
+     * Returns the [net.dv8tion.jda.api.entities.Guild] for the current command/event
+     *
+     * @return the [net.dv8tion.jda.api.entities.Guild] for this command/event or throws an [IllegalArgumentException] when not executed in a guild
+     */
+    val guildN: Guild?
 
 
     /**
@@ -26,20 +40,11 @@ interface ICommandContext {
 
 
     /**
-     * Returns the [message event][net.dv8tion.jda.api.events.message.MessageReceivedEvent] that was received for this instance
-     *
-     * @return the [message event][net.dv8tion.jda.api.events.message.MessageReceivedEvent] that was received for this instance
-     */
-    val event: MessageReceivedEvent
-
-
-    /**
      * Returns the [message][net.dv8tion.jda.api.entities.Message] that triggered this event
      *
      * @return the [message][net.dv8tion.jda.api.entities.Message] that triggered this event
      */
     val message: Message
-        get() = this.event.message
 
     /**
      * Returns the [messageId][Long] of the [message][net.dv8tion.jda.api.entities.Message] that triggered this event
@@ -47,7 +52,7 @@ interface ICommandContext {
      * @return the [messageId][Long] of the [message][net.dv8tion.jda.api.entities.Message] that triggered this event
      */
     val messageId: Long
-        get() = this.event.messageIdLong
+        get() = message.idLong
 
 
     /**
@@ -56,7 +61,6 @@ interface ICommandContext {
      * @return the [author][net.dv8tion.jda.api.entities.User] of the message as user
      */
     val author: User
-        get() = this.event.author
 
     /**
      * Returns the [authorId][Long] of the user that authored the message
@@ -68,26 +72,18 @@ interface ICommandContext {
 
 
     /**
-     * Returns the [author][net.dv8tion.jda.api.entities.Member] of the message as member
-     *
      * @return the [author][net.dv8tion.jda.api.entities.Member] of the message as member
      */
     val member: Member
-        get() = this.event.member ?: throw IllegalArgumentException("Event is not from a guild")
 
 
     /**
-     * Returns the current [jda][net.dv8tion.jda.api.JDA] instance
-     *
      * @return the current [jda][net.dv8tion.jda.api.JDA] instance
      */
     val jda: JDA
-        get() = this.event.jda
 
 
     /**
-     * Returns the current [net.dv8tion.jda.api.sharding.ShardManager] instance
-     *
      * @return the current [net.dv8tion.jda.api.sharding.ShardManager] instance
      */
     val shardManager: ShardManager
@@ -95,24 +91,18 @@ interface ICommandContext {
 
 
     /**
-     * Returns the [user][net.dv8tion.jda.api.entities.User] for the currently logged in account
-     *
      * @return the [user][net.dv8tion.jda.api.entities.User] for the currently logged in account
      */
     val selfUser: User
         get() = this.jda.selfUser
 
     /**
-     * Returns the [userId][Long] for the currently logged in account
-     *
      * @return the [userId][Long] for the currently logged in account
      */
     val selfUserId: Long
         get() = this.jda.selfUser.idLong
 
     /**
-     * Returns the [member][net.dv8tion.jda.api.entities.Member] in the guild for the currently logged in account
-     *
      * @return the [member][net.dv8tion.jda.api.entities.Member] in the guild for the currently logged in account or throws an [IllegalArgumentException]
      */
     val selfMember: Member
@@ -120,44 +110,72 @@ interface ICommandContext {
 
 
     /**
-     * Returns the [Boolean] for where the message was sent
-     *
      * @return the [Boolean] for where the message was sent
      */
     val isFromGuild: Boolean
-        get() = this.event.isFromGuild
+        get() = this.guildN != null
 
 
     /**
-     * Returns the [textChannel][TextChannel] that the message for this event was
-     * send in
-     *
      * @return the [textChannel][TextChannel] that the message for this event was send in
      */
     val textChannel: TextChannel
-        get() = this.event.textChannel
 
     /**
-     * Returns the [channel][net.dv8tion.jda.api.entities.PrivateChannel] that the message for this event was send in
-     *
      * @return the [channel][net.dv8tion.jda.api.entities.PrivateChannel] that the message for this event was send in
      */
     val privateChannel: PrivateChannel
-        get() = this.event.privateChannel
 
     /**
-     * Returns the [messageChannel][MessageChannel] that the message for this event was send in
-     *
      * @return the [messageChannel][MessageChannel] that the message for this event was send in
      */
-    val messageChannel: MessageChannel
-        get() = this.event.channel
+    val channel: MessageChannel
 
     /**
-     * Returns the [channelId][Long] of the [messageChannel][MessageChannel] that the message for this event was send in
-     *
      * @return the [channelId][Long] of the [messageChannel][MessageChannel] that the message for this event was send in
      */
     val channelId: Long
-        get() = this.event.channel.idLong
+
+    /**
+     * @return the [webManager][WebManager] container instance of the bot
+     */
+    val webManager: WebManager
+
+    /**
+     * @return the [usedPrefix][String] raw prefix that is used or if it's a mention, the displayed content
+     */
+    val usedPrefix: String
+
+    val commandParts: List<String>
+    val container: Container
+    val commandList: Set<AbstractCommand>
+    val partSpaceMap: MutableMap<String, Int>
+    val aliasMap: MutableMap<String, List<String>>
+    var searchedAliases: Boolean
+
+    val prefix: String
+    var commandOrder: List<AbstractCommand>
+    var args: List<String>
+    var oldArgs: List<String>
+    val daoManager: DaoManager
+    var rawArg: String
+    val contextTime: Long
+    val lavaManager: LavaManager
+    val musicPlayerManager: MusicPlayerManager
+    val audioLoader: AudioLoader
+    var fullArg: String
+    val botDevIds: LongArray
+
+    var calculatedRoot: String
+    var calculatedCommandPartsOffset: Int
+
+    fun reply(something: Any)
+    fun reply(embed: MessageEmbed)
+    suspend fun getLanguage(): String
+    fun getRawArgPart(beginIndex: Int, endIndex: Int = -1): String
+    suspend fun getTranslation(path: String): String
+    suspend fun getTimeZoneId(): ZoneId
+    fun getGuildMusicPlayer(): GuildMusicPlayer
+    fun initCooldown()
+    fun initArgs()
 }

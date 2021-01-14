@@ -25,4 +25,8 @@ class UnverifiedUsersWrapper(private val unverifiedUsersDao: UnverifiedUsersDao)
     fun update(guildId: Long, userId: Long, tries: Long) {
         unverifiedUsersDao.update(guildId, userId, tries)
     }
+
+    suspend fun getGuilds(userId: Long): List<Long> {
+        return unverifiedUsersDao.getGuilds(userId)
+    }
 }

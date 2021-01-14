@@ -5,6 +5,7 @@ import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.content.*
 import io.ktor.http.*
+import io.ktor.network.sockets.*
 import kotlinx.coroutines.TimeoutCancellationException
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -22,7 +23,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
         val token = settings.tokens.topDotGG
         val url = "$TOP_GG_URL/api/bots/${settings.botInfo.id}/stats"
         if (token.isBlank()) return
-        TaskManager.async {
+        TaskManager.asyncIgnoreEx {
             val body = DataObject.empty()
                 .put("shards", DataArray.fromCollection(serversArray))
                 .toString()
@@ -38,11 +39,13 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
         try {
             httpClient.post<String>(url, builder)
         } catch (t: TimeoutCancellationException) {
-            logger.warn("Failed to post bot stats to: $url")
+            logger.warn("Failed to post bot stats to: $url | timeoutcancellation")
         } catch (t: ClientRequestException) {
-            logger.warn("Failed to post bot stats to: $url")
+            logger.warn("Failed to post bot stats to: $url | clientrequest")
         } catch (t: ServerResponseException) {
-            logger.warn("Failed to post bot stats to: $url")
+            logger.warn("Failed to post bot stats to: $url | serverresponse")
+        } catch (t: SocketTimeoutException) {
+            logger.warn("Failed to post bot stats to: $url | sockettimeout")
         }
     }
 
@@ -50,7 +53,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
         val token = settings.tokens.botsOnDiscordXYZ
         val url = "$BOTS_ON_DISCORD_XYZ_URL/bot-api/bots/${settings.botInfo.id}/guilds"
         if (token.isBlank()) return
-        TaskManager.async {
+        TaskManager.asyncIgnoreEx {
             val body = DataObject.empty()
                 .put("guildCount", "$servers")
                 .toString()
@@ -66,7 +69,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
         val token = settings.tokens.botlistSpace
         val url = "$BOTLIST_SPACE/v1/bots/${settings.botInfo.id}"
         if (token.isBlank()) return
-        TaskManager.async {
+        TaskManager.asyncIgnoreEx {
             val body = DataObject.empty()
                 .put("shards", DataArray.fromCollection(serversArray))
                 .toString()
@@ -82,7 +85,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
         val token = settings.tokens.discordBotListCom
         val url = "$DISCORD_BOT_LIST_COM/api/v1/bots/${settings.botInfo.id}/stats"
         if (token.isBlank()) return
-        TaskManager.async {
+        TaskManager.asyncIgnoreEx {
             val body = DataObject.empty()
                 .put("guilds", servers)
                 .put("voice_connections", voice)
@@ -100,7 +103,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
         val token = settings.tokens.discordBotsGG
         val url = "$DISCORD_BOTS_GG/api/v1/bots/${settings.botInfo.id}/stats"
         if (token.isBlank()) return
-        TaskManager.async {
+        TaskManager.asyncIgnoreEx {
             val body = DataObject.empty()
                 .put("guildCount", servers)
                 .put("shardCount", shards)
@@ -117,7 +120,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
         val token = settings.tokens.botsForDiscordCom
         val url = "$BOTS_FOR_DISCORD_COM/api/bot/${settings.botInfo.id}"
         if (token.isBlank()) return
-        TaskManager.async {
+        TaskManager.asyncIgnoreEx {
             val body = DataObject.empty()
                 .put("server_count", servers)
                 .toString()
@@ -133,7 +136,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
         val token = settings.tokens.discordBoats
         val url = "$DISCORD_BOATS/api/bot/${settings.botInfo.id}"
         if (token.isBlank()) return
-        TaskManager.async {
+        TaskManager.asyncIgnoreEx {
             val body = DataObject.empty()
                 .put("server_count", servers)
                 .toString()

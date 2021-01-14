@@ -78,14 +78,19 @@ class BirthdayService(
 
                     //Get birthday log channel
                     val channelId = channels.getOrElse(guildId) { null } ?: continue
-                    val textChannel = guild.getAndVerifyChannelById(daoManager, ChannelType.BIRTHDAY, channelId, setOf(Permission.MESSAGE_WRITE))
+                    val textChannel = guild.getAndVerifyChannelById(
+                        daoManager,
+                        ChannelType.BIRTHDAY,
+                        channelId,
+                        setOf(Permission.MESSAGE_WRITE)
+                    )
                     if (textChannel == null) {
                         channels.remove(guildId)
                         continue
                     }
 
                     //send birthday message
-                    LogUtils.sendBirthdayMessage(daoManager,httpClient, textChannel, member, info.birthYear)
+                    LogUtils.sendBirthdayMessage(daoManager, httpClient, textChannel, member, info.birthYear)
                 }
             }
 

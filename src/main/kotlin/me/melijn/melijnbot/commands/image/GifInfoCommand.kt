@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.image
 import com.madgag.gif.fmsware.GifDecoder
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
@@ -23,7 +23,7 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val triple = ImageUtils.getImageBytesNMessage(context, "gif") ?: return
         val image = triple.first
         val byteArrayInputStream = ByteArrayInputStream(image)

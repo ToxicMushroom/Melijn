@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyMusicChannel
 import me.melijn.melijnbot.internals.utils.getVoiceChannelByArgNMessage
@@ -18,7 +18,7 @@ class SetMusicChannelCommand : AbstractCommand("command.setmusicchannel") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.musicChannelWrapper
 
         if (context.args.isEmpty()) {

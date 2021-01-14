@@ -20,19 +20,23 @@ class BirthdayDao(driverManager: DriverManager) : Dao(driverManager) {
         val prevDay = if (day == 1) 365 else day - 1
         val nextDay = if (day == 365) 1 else day + 1
         driverManager.executeQuery(
-            "SELECT *, $table.startTime FROM $table LEFT JOIN $tableT ON $table.userId = $tableT.id WHERE ($table.birthday = ? OR $table.birthday = ? OR $table.birthday = ?)"
-            , { rs ->
-            val map = mutableMapOf<Long, BirthdayInfo>()
-            while (rs.next()) {
-                map[rs.getLong("userId")] = BirthdayInfo(
-                    rs.getInt("birthyear"),
-                    rs.getInt("birthday"),
-                    0.0,
-                    rs.getString("zoneId")
-                )
-            }
-            it.resume(map)
-        }, day, prevDay, nextDay)
+            "SELECT *, $table.startTime FROM $table LEFT JOIN $tableT ON $table.userId = $tableT.id WHERE ($table.birthday = ? OR $table.birthday = ? OR $table.birthday = ?)",
+            { rs ->
+                val map = mutableMapOf<Long, BirthdayInfo>()
+                while (rs.next()) {
+                    map[rs.getLong("userId")] = BirthdayInfo(
+                        rs.getInt("birthyear"),
+                        rs.getInt("birthday"),
+                        0.0,
+                        rs.getString("zoneId")
+                    )
+                }
+                it.resume(map)
+            },
+            day,
+            prevDay,
+            nextDay
+        )
     }
 
     suspend fun get(userId: Long): Pair<Int, Int>? = suspendCoroutine {
@@ -46,8 +50,10 @@ class BirthdayDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(userId: Long, birthday: Int, birthyear: Int) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, birthday, birthyear) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET birthday = ?, birthyear = ?",
-            userId, birthday, birthyear, birthday, birthyear)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (userId, birthday, birthyear) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET birthday = ?, birthyear = ?",
+            userId, birthday, birthyear, birthday, birthyear
+        )
     }
 
     suspend fun remove(userId: Long) {

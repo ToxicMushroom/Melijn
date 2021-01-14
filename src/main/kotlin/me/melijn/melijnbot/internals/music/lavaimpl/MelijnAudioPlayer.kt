@@ -80,7 +80,13 @@ class MelijnAudioPlayer(private val manager: MelijnAudioPlayerManager) : AudioPl
             stuckEventSent = false
             if (previousTrack != null) {
                 previousTrack?.stop()
-                dispatchEvent(TrackEndEvent(this, previousTrack, if (newTrack == null) AudioTrackEndReason.STOPPED else AudioTrackEndReason.REPLACED))
+                dispatchEvent(
+                    TrackEndEvent(
+                        this,
+                        previousTrack,
+                        if (newTrack == null) AudioTrackEndReason.STOPPED else AudioTrackEndReason.REPLACED
+                    )
+                )
                 shadowTrack = previousTrack
             }
         }
@@ -208,7 +214,13 @@ class MelijnAudioPlayer(private val manager: MelijnAudioPlayerManager) : AudioPl
         synchronized(trackSwitchLock) {
             if (activeTrack === track) {
                 activeTrack = null
-                dispatchEvent(TrackEndEvent(this, track, if (track.activeExecutor.failedBeforeLoad()) AudioTrackEndReason.LOAD_FAILED else AudioTrackEndReason.FINISHED))
+                dispatchEvent(
+                    TrackEndEvent(
+                        this,
+                        track,
+                        if (track.activeExecutor.failedBeforeLoad()) AudioTrackEndReason.LOAD_FAILED else AudioTrackEndReason.FINISHED
+                    )
+                )
             }
         }
     }

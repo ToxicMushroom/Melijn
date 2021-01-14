@@ -23,7 +23,7 @@ const val PLACEHOLDER_ROLE = "role"
 const val PLACEHOLDER_ROLE_ID = "roleId"
 const val PLACEHOLDER_ARG = "arg"
 const val PLACEHOLDER_TYPE = "type"
-const val MISSING_IMAGE_URL = "https://discordapp.com/assets/e0c782560fd96acd7f01fda1f8c6ff24.svg"
+const val MISSING_IMAGE_URL = "https://static.melijn.com/404.png"
 
 const val YT_VID_URL_BASE = "https://youtu.be/"
 const val YT_SELECTOR = "ytsearch:"

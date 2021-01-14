@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.await
@@ -22,7 +22,7 @@ class PingCommand : AbstractCommand("command.ping") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val part1 = context.getTranslation("$root.response1.part1")
             .withVariable("gatewayPing", context.jda.gatewayPing)
 
@@ -35,6 +35,8 @@ class PingCommand : AbstractCommand("command.ping") {
         val timeStamp1 = System.currentTimeMillis()
         eb.setDescription(part1)
         val message = sendEmbedAwaitEL(context, eb.build())
+        if (message.isEmpty()) return
+
         val timeStamp2 = System.currentTimeMillis()
 
         val msgPing = timeStamp2 - timeStamp1

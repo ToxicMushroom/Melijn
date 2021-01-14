@@ -4,7 +4,7 @@ import me.melijn.melijnbot.anilist.type.MediaType
 import me.melijn.melijnbot.commandutil.anime.AniListCommandUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class AniListCommand : AbstractCommand("command.anilist") {
@@ -36,7 +36,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
             aliases = arrayOf("su")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             AniListCommandUtil.searchUser(context)
         }
     }
@@ -48,7 +48,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
             aliases = arrayOf("m")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             AniListCommandUtil.searchManga(context)
         }
     }
@@ -60,7 +60,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
             aliases = arrayOf("sm")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             AniListCommandUtil.searchMedia(context, MediaType.MANGA)
         }
     }
@@ -72,7 +72,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
             aliases = arrayOf("u", "profile", "userProfile", "up")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -91,7 +91,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
             aliases = arrayOf("a", "series", "movie", "ova", "ona", "tv")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             AniListCommandUtil.searchAnime(context)
         }
     }
@@ -103,7 +103,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
             aliases = arrayOf("sa", "searchmovie", "searchova", "searchona")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             AniListCommandUtil.searchMedia(context, MediaType.ANIME)
         }
     }
@@ -115,7 +115,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
             aliases = arrayOf("c", "char")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -134,12 +134,12 @@ class AniListCommand : AbstractCommand("command.anilist") {
             aliases = arrayOf("sc")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             AniListCommandUtil.searchCharacter(context)
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return

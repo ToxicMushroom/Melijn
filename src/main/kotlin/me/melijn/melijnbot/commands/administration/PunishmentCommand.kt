@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.autopunishment.Punishment
 import me.melijn.melijnbot.enums.PunishmentType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_PERMISSIONTYPE
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
@@ -29,7 +29,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -55,7 +55,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 aliases = arrayOf("d")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.size < 2) {
                     sendSyntax(context)
                     return
@@ -86,7 +86,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 aliases = arrayOf("r")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.size < 2) {
                     sendSyntax(context)
                     return
@@ -120,7 +120,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 )
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
         }
@@ -133,7 +133,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 DurationArg(root, PunishmentType.REMOVEROLE)
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
         }
@@ -148,7 +148,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 )
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -158,7 +158,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                     name = "delDays"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 2) {
                         sendSyntax(context)
                         return
@@ -190,7 +190,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 )
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
         }
@@ -204,7 +204,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 )
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -214,7 +214,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                     name = "delDays"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 2) {
                         sendSyntax(context)
                         return
@@ -236,7 +236,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             }
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }
@@ -247,7 +247,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             name = "setReason"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -286,7 +286,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             aliases = arrayOf("put", "insert")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 3) {
                 sendSyntax(context)
                 return
@@ -317,7 +317,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.punishmentWrapper
             var list = wrapper.getList(context.guildId)
             val msg: String
@@ -352,7 +352,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             aliases = arrayOf("rm")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -361,16 +361,21 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             val item = getPunishmentNMessage(context, 0) ?: return
             val wrapper = context.daoManager.punishmentWrapper
 
-            wrapper.remove(context.guildId, name)
+            wrapper.remove(context.guildId, item.name)
             val msg = context.getTranslation("$root.removed")
-                .withVariable("name", item.name)
+                .withSafeVariable("name", item.name)
                 .withVariable("type", item.punishmentType.toUCC())
+                .withSafeVariable("reason", item.reason)
             sendRsp(context, msg)
         }
     }
 }
 
-suspend fun getPunishmentNMessage(context: CommandContext, position: Int, punishmentType: PunishmentType? = null): Punishment? {
+suspend fun getPunishmentNMessage(
+    context: ICommandContext,
+    position: Int,
+    punishmentType: PunishmentType? = null
+): Punishment? {
     val name = context.args[position]
     val wrapper = context.daoManager.punishmentWrapper
     val list = wrapper.getList(context.guildId)
@@ -382,8 +387,8 @@ suspend fun getPunishmentNMessage(context: CommandContext, position: Int, punish
     if (item == null || (punishmentType != null && item.punishmentType != punishmentType)) {
         val extra = if (punishmentType == null) "" else ".typed"
         val msg = context.getTranslation("command.punishment.nomatch$extra")
-            .withVariable(PLACEHOLDER_ARG, name)
-            .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+            .withSafeVariable(PLACEHOLDER_ARG, name)
+            .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
             .withVariable("type", item?.punishmentType?.toUCC() ?: "error")
         sendRsp(context, msg)
     }

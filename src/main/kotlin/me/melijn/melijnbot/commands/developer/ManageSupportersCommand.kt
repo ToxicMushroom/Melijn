@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.developer
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.getLongFromArgNMessage
@@ -33,7 +33,7 @@ class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
             context.daoManager.supporterWrapper.add(user.idLong)
@@ -48,7 +48,7 @@ class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
             aliases = arrayOf("s", "put", "p")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
             val guildId = getLongFromArgNMessage(context, 1, 0) ?: return
 
@@ -65,7 +65,7 @@ class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
             aliases = arrayOf("deleted", "del", "d", "rm", "rem", "r")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
             context.daoManager.supporterWrapper.remove(user.idLong)
@@ -80,16 +80,33 @@ class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
             aliases = arrayOf("ls", "l")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val supporters = context.daoManager.supporterWrapper.getUsers()
 
             var msg = "```INI\n[userId] - [guildId] - [lastServerPicked] - [startTime]\n"
             for (supporterId in supporters) {
                 val supporter = context.daoManager.supporterWrapper.getSupporter(supporterId) ?: continue
-                msg += "${supporter.userId} (${context.shardManager.retrieveUserById(supporter.userId).awaitOrNull()?.asTag?.replace("#", "//") ?: "unknown"}) -" +
+                msg += "${supporter.userId} (${
+                    context.shardManager.retrieveUserById(supporter.userId).awaitOrNull()?.asTag?.replace(
+                        "#",
+                        "//"
+                    ) ?: "unknown"
+                }) -" +
                     " ${if (supporter.guildId == -1L) "/" else supporter.guildId.toString()} -" +
-                    " [${supporter.lastServerPickTime.asEpochMillisToDateTime(context.daoManager, context.guildId, context.authorId)}] -" +
-                    " [${supporter.startMillis.asEpochMillisToDateTime(context.daoManager, context.guildId, context.authorId)}]\n"
+                    " [${
+                        supporter.lastServerPickTime.asEpochMillisToDateTime(
+                            context.daoManager,
+                            context.guildId,
+                            context.authorId
+                        )
+                    }] -" +
+                    " [${
+                        supporter.startMillis.asEpochMillisToDateTime(
+                            context.daoManager,
+                            context.guildId,
+                            context.authorId
+                        )
+                    }]\n"
             }
             msg += "```"
 
@@ -97,7 +114,7 @@ class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }

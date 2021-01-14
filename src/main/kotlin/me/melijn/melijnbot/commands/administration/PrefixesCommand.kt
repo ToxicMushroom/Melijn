@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.isPremiumGuild
@@ -30,7 +30,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -41,7 +41,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             aliases = arrayOf("ls", "view", "info")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val title = context.getTranslation("$root.response1.title")
             val prefixes = context.daoManager.guildPrefixWrapper.getPrefixes(context.guildId)
                 .sortedBy { it }
@@ -68,7 +68,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             aliases = arrayOf("a", "put", "p")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context)
                 return
@@ -91,7 +91,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
                 return
             }
 
-            val prefix = context.rawArg
+            val prefix = context.rawArg.take((1024 - (PREFIXES_LIMIT * "%SPLIT%".length)) / PREMIUM_PREFIXES_LIMIT)
             context.daoManager.guildPrefixWrapper.addPrefix(context.guildId, prefix)
 
             val msg = context.getTranslation("$root.response1")
@@ -107,7 +107,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             aliases = arrayOf("rm", "r", "delete", "d")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context)
                 return
@@ -129,7 +129,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             aliases = arrayOf("rma", "deleteAt", "dat")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context)
                 return

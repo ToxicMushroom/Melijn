@@ -19,14 +19,23 @@ const val UNKNOWN_ID_CAUSE = "unknownid"
 const val CANNOT_INTERACT_CAUSE = "cannotinteract"
 private const val NO_PERM_CAUSE = "nopermission"
 
-suspend fun Guild.getAndVerifyLogChannelByType(daoManager: DaoManager, type: LogChannelType, logIfInvalid: Boolean = true): TextChannel? {
+suspend fun Guild.getAndVerifyLogChannelByType(
+    daoManager: DaoManager,
+    type: LogChannelType,
+    logIfInvalid: Boolean = true
+): TextChannel? {
     val logChannelWrapper = daoManager.logChannelWrapper
     val channelId = logChannelWrapper.getChannelId(idLong, type)
 
     return this.getAndVerifyLogChannelById(daoManager, type, channelId, logIfInvalid)
 }
 
-suspend fun Guild.getAndVerifyLogChannelById(daoManager: DaoManager, type: LogChannelType, channelId: Long, logIfInvalid: Boolean = true): TextChannel? {
+suspend fun Guild.getAndVerifyLogChannelById(
+    daoManager: DaoManager,
+    type: LogChannelType,
+    channelId: Long,
+    logIfInvalid: Boolean = true
+): TextChannel? {
     val logChannelWrapper = daoManager.logChannelWrapper
     val textChannel = getTextChannelById(channelId)
     var shouldRemove = false
@@ -129,7 +138,13 @@ suspend fun Guild.getAndVerifyMusicChannel(
             shouldRemove = true
             val logChannel = this.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
             val language = getLanguage(daoManager, -1, this.idLong)
-            LogUtils.sendRemovedMusicChannelLog(language, zoneId, logChannel, NO_PERM_CAUSE, perm.toString().toUpperWordCase())
+            LogUtils.sendRemovedMusicChannelLog(
+                language,
+                zoneId,
+                logChannel,
+                NO_PERM_CAUSE,
+                perm.toString().toUpperWordCase()
+            )
         }
     }
 
@@ -141,7 +156,11 @@ suspend fun Guild.getAndVerifyMusicChannel(
     return voiceChannel
 }
 
-suspend fun Guild.getAndVerifyRoleByType(daoManager: DaoManager, type: RoleType, shouldBeInteractable: Boolean = false): Role? {
+suspend fun Guild.getAndVerifyRoleByType(
+    daoManager: DaoManager,
+    type: RoleType,
+    shouldBeInteractable: Boolean = false
+): Role? {
     val roleWrapper = daoManager.roleWrapper
     val roleId = roleWrapper.getRoleId(idLong, type)
     if (roleId == -1L) return null
@@ -149,7 +168,12 @@ suspend fun Guild.getAndVerifyRoleByType(daoManager: DaoManager, type: RoleType,
     return this.getAndVerifyRoleById(daoManager, type, roleId, shouldBeInteractable)
 }
 
-suspend fun Guild.getAndVerifyRoleById(daoManager: DaoManager, roleType: RoleType, roleId: Long, shouldBeInteractable: Boolean = false): Role? {
+suspend fun Guild.getAndVerifyRoleById(
+    daoManager: DaoManager,
+    roleType: RoleType,
+    roleId: Long,
+    shouldBeInteractable: Boolean = false
+): Role? {
     val role = getRoleById(roleId)
     var shouldRemove = false
     var cause = ""

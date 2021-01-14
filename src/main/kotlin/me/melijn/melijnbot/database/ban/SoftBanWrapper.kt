@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.database.ban
 
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.withSafeVariable
@@ -14,7 +14,7 @@ class SoftBanWrapper(private val softBanDao: SoftBanDao) {
         softBanDao.addSoftBan(softBan)
     }
 
-    suspend fun getSoftBanMap(context: CommandContext, targetUser: User): Map<Long, String> {
+    suspend fun getSoftBanMap(context: ICommandContext, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val softBans = softBanDao.getSoftBans(context.guildId, targetUser.idLong)
 
@@ -28,12 +28,12 @@ class SoftBanWrapper(private val softBanDao: SoftBanDao) {
         return map
     }
 
-    private suspend fun convertSoftBanInfoToMessage(context: CommandContext, softBan: SoftBan): String {
+    private suspend fun convertSoftBanInfoToMessage(context: ICommandContext, softBan: SoftBan): String {
         val kickAuthor = context.shardManager.retrieveUserById(softBan.softBanAuthorId).awaitOrNull()
         return getSoftBanMessage(context, kickAuthor, softBan)
     }
 
-    private suspend fun getSoftBanMessage(context: CommandContext, softBanAuthor: User?, softBan: SoftBan): String {
+    private suspend fun getSoftBanMessage(context: ICommandContext, softBanAuthor: User?, softBan: SoftBan): String {
         val deletedUser = context.getTranslation("message.deleted.user")
         val zoneId = context.getTimeZoneId()
         return context.getTranslation("message.punishmenthistory.softban")
@@ -45,7 +45,7 @@ class SoftBanWrapper(private val softBanDao: SoftBanDao) {
 
     }
 
-    suspend fun getSoftBanMap(context: CommandContext, softbanId: String): Map<Long, String> {
+    suspend fun getSoftBanMap(context: ICommandContext, softbanId: String): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val softBans = softBanDao.getSoftBans(softbanId)
         if (softBans.isEmpty()) {

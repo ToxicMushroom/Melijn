@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.games
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.getBalanceNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -39,7 +39,7 @@ class PokerCommand : AbstractCommand("command.poker") {
     private val ranks = listOf("2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "R", "A")
     private val types = listOf('♠', '♣', '♥', '♦')
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -79,9 +79,11 @@ class PokerCommand : AbstractCommand("command.poker") {
             )
 
             eb.addField(
-                context.getTranslation("$root.actions"), context.getTranslation(
-                "$root.actionsvalue"
-            ), false
+                context.getTranslation("$root.actions"),
+                context.getTranslation(
+                    "$root.actionsvalue"
+                ).withVariable("prefix", context.usedPrefix),
+                false
             )
 
             eb.setFooter(

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.anime
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -18,7 +18,7 @@ class MikuCommand : AbstractCommand("command.miku") {
         commandCategory = CommandCategory.ANIME
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val web = context.webManager
 
         val eb = Embedder(context)
@@ -27,8 +27,10 @@ class MikuCommand : AbstractCommand("command.miku") {
     }
 
     private suspend fun getRandomPossumUrl(webManager: WebManager, token: String): String {
-        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://api.miki.bot/images/random?tags=miku",
-            headers = mapOf(Pair("Authorization", token))) ?: return MISSING_IMAGE_URL
+        val reply = WebUtils.getJsonFromUrl(
+            webManager.httpClient, "https://api.miki.bot/images/random?tags=miku",
+            headers = mapOf(Pair("Authorization", token))
+        ) ?: return MISSING_IMAGE_URL
         return reply.getString("url")
     }
 }

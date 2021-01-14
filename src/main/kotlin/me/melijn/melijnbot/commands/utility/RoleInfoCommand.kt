@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE_ID
 import me.melijn.melijnbot.internals.utils.asLongLongGMTString
@@ -22,7 +22,7 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -45,7 +45,10 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
         .withVariable(PLACEHOLDER_ROLE_ID, role.id)
         .withVariable("creationTime", role.timeCreated.asLongLongGMTString())
         .withVariable("position", role.position.toString() + "/" + role.guild.roleCache.size())
-        .withVariable("members", role.guild.memberCache.stream().filter { member -> member.roles.contains(role) }.count().toString())
+        .withVariable(
+            "members",
+            role.guild.memberCache.stream().filter { member -> member.roles.contains(role) }.count().toString()
+        )
         .withVariable("isMentionable", if (role.isMentionable) yes else no)
         .withVariable("isHoisted", if (role.isHoisted) yes else no)
         .withVariable("isManaged", if (role.isManaged) yes else no)

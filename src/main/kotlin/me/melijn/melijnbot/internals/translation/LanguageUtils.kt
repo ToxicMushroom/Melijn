@@ -1,9 +1,9 @@
 package me.melijn.melijnbot.internals.translation
 
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 
-suspend fun getLanguage(context: CommandContext): String {
+suspend fun getLanguage(context: ICommandContext): String {
     val guildId = if (context.isFromGuild) context.guildId else -1L
     return getLanguage(context.daoManager, context.authorId, guildId)
 }

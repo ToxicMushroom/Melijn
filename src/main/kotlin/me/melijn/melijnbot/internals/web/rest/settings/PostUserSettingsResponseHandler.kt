@@ -66,12 +66,14 @@ object PostUserSettingsResponseHandler {
                 }
             }
 
-            context.call.respondJson(DataObject.empty()
-                .put("success", true)
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("success", true)
             )
         } catch (t: Throwable) {
-            context.call.respondJson(DataObject.empty()
-                .put("success", false)
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("success", false)
             )
         }
     }

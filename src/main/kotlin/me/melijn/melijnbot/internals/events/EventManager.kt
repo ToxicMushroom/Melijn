@@ -3,19 +3,19 @@ package me.melijn.melijnbot.internals.events
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.command.CommandClientBuilder
 import me.melijn.melijnbot.internals.events.eventlisteners.*
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.guild.GenericGuildEvent
 import net.dv8tion.jda.api.events.message.guild.GenericGuildMessageEvent
 import net.dv8tion.jda.api.events.message.priv.GenericPrivateMessageEvent
-import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.hooks.IEventManager
 import java.util.*
 import kotlin.collections.ArrayList
 
 class EventManager(val container: Container) : IEventManager {
 
-    private val eventListeners: ArrayList<EventListener> = ArrayList()
+    private val eventListeners: ArrayList<SuspendListener> = ArrayList()
 
     fun start() {
         registerEvents()
@@ -41,26 +41,29 @@ class EventManager(val container: Container) : IEventManager {
             .loadCommands()
             .build()
 
-
+        // ORDER WILL AFFECT ORDER IN WICH EVENTS ARE CALLED
+        eventListeners.add(container.eventWaiter)
         eventListeners.add(commandListener)
-        eventListeners.add(botJoinLeaveListener)
-        eventListeners.add(botStartShutdownListener)
-        eventListeners.add(messageDeletedListener)
         eventListeners.add(messageReceivedListener)
-        eventListeners.add(messageUpdateListener)
+        eventListeners.add(messageDeletedListener)
         eventListeners.add(messageReactionAddedListener)
         eventListeners.add(messageReactionRemovedListener)
+        eventListeners.add(botJoinLeaveListener)
+        eventListeners.add(botStartShutdownListener)
+        eventListeners.add(messageUpdateListener)
         eventListeners.add(joinLeaveListener)
         eventListeners.add(voiceJoinListener)
         eventListeners.add(voiceLeaveListener)
         eventListeners.add(voiceMoveListener)
         eventListeners.add(boostListener)
-        eventListeners.add(container.eventWaiter)
+
         // eventListeners.add(roleAddedListener)
         // eventListeners.add(roleRemovedListener)
 
         lavaEventListener?.let {
-            eventListeners.add(it)
+            eventListeners.add(
+                Lavalistener(it)
+            )
         }
     }
 
@@ -70,16 +73,18 @@ class EventManager(val container: Container) : IEventManager {
 
     override fun handle(event: GenericEvent) {
         if (container.shuttingDown) return
-        try {
-            for (eventListener in eventListeners) {
-                eventListener.onEvent(event)
-            }
-        } catch (e: Exception) {
-            when (event) {
-                is GenericGuildMessageEvent -> e.sendInGuild(event.guild, event.channel)
-                is GenericPrivateMessageEvent -> e.sendInGuild(channel = event.channel)
-                is GenericGuildEvent -> e.sendInGuild(event.guild)
-                else -> e.sendInGuild()
+        TaskManager.async {
+            try {
+                for (eventListener in eventListeners) {
+                    eventListener.onEvent(event)
+                }
+            } catch (e: Exception) {
+                when (event) {
+                    is GenericGuildMessageEvent -> e.sendInGuild(event.guild, event.channel)
+                    is GenericPrivateMessageEvent -> e.sendInGuild(channel = event.channel)
+                    is GenericGuildEvent -> e.sendInGuild(event.guild)
+                    else -> e.sendInGuild()
+                }
             }
         }
 

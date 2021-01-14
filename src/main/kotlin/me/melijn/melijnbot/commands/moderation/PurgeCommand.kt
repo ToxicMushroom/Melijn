@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.moderation
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
@@ -31,7 +31,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
         commandCategory = CommandCategory.MODERATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -77,22 +77,33 @@ class PurgeCommand : AbstractCommand("command.purge") {
                     for (message in messages) {
                         context.container.purgedIds[message.idLong] = context.authorId
                     }
-                    val futures = context.textChannel.purgeMessages(messages)
-                    futures.forEach {
-                        it.await()
+
+                    val msg = try {
+                        val futures = context.textChannel.purgeMessages(messages)
+                        futures.forEach {
+                            it.await()
+                        }
+
+                        val userMore = if (targetUser == null) "" else ".user"
+                        val more = if (amount > 1) ".more" else ".one"
+                        context.getTranslation("$root.success$userMore$more")
+                            .withVariable("amount", amount.toString())
+                            .withSafeVariable(PLACEHOLDER_USER, targetUser?.asTag ?: "")
+                    } catch (t: Throwable) {
+                        context.getTranslation("$root.error")
                     }
 
-                    val userMore = if (targetUser == null) "" else ".user"
-                    val more = if (amount > 1) ".more" else ".one"
-                    val msg = context.getTranslation("$root.success$userMore$more")
-                        .withVariable("amount", amount.toString())
-                        .withSafeVariable(PLACEHOLDER_USER, targetUser?.asTag ?: "")
-
                     purgeInProgress.remove(purgePID)
-                    if (!context.commandParts[1].equals(silentPurgeName, true) && !context.commandParts[1].equals(silentPruneName, true))
+                    if (!context.commandParts[1].equals(silentPurgeName, true) && !context.commandParts[1].equals(
+                            silentPruneName,
+                            true
+                        )
+                    )
                         sendMsgAwaitEL(context, msg).firstOrNull()?.delete()?.queueAfter(5, TimeUnit.SECONDS)
 
-                    LogUtils.sendPurgeLog(context, messages)
+                    if (messages.isNotEmpty()) {
+                        LogUtils.sendPurgeLog(context, messages)
+                    }
                 }
             }
     }

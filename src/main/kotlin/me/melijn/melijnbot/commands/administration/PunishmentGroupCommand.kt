@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.autopunishment.PunishGroup
 import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.*
@@ -26,6 +26,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             RemoveArg(root),
             SelectArg(root),
             ListArg(root),
+            SetPointExpireTimeArg(root),
             SetPPTriggerArg(root),
             SetPPGoalArg(root),
             RemovePPGoalArg(root),
@@ -36,7 +37,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
     companion object {
         val selectionMap = HashMap<Pair<Long, Long>, String>()
-        suspend fun getSelectedPGroup(context: CommandContext): PunishGroup? {
+        suspend fun getSelectedPGroup(context: ICommandContext): PunishGroup? {
             val pair = context.guildId to context.authorId
             return if (selectionMap.containsKey(pair)) {
                 val id = selectionMap[pair] ?: return null
@@ -60,7 +61,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -71,7 +72,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.autoPunishmentGroupWrapper
             val name = getStringFromArgsNMessage(context, 0, 1, 64, cantContainChars = arrayOf('[', ',', ']'))
                 ?: return
@@ -89,7 +90,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             name = "remove"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.autoPunishmentGroupWrapper
             val name = context.args[0]
             wrapper.remove(context.guildId, name)
@@ -107,13 +108,20 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.autoPunishmentGroupWrapper
             val list = wrapper.getMapsForGuild(context.guildId)
 
             val title = context.getTranslation("$root.title")
             val ppTrigger = context.getTranslation("$root.pptrigger")
             val ppGoal = context.getTranslation("$root.ppgoal")
+            if (list.isEmpty()) {
+                val msg = context.getTranslation("$root.empty")
+                    .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                sendRsp(context, msg)
+                return
+            }
+
             var content = "```INI"
             for ((name, pair) in list) {
                 val firstMap = pair.first
@@ -142,7 +150,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             aliases = arrayOf("s")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val group = getPunishmentGroupByArgNMessage(context, 0) ?: return
             selectionMap[context.guildId to context.authorId] = group.groupName
 
@@ -152,6 +160,25 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
         }
     }
 
+    class SetPointExpireTimeArg(parent: String) : AbstractCommand("$parent.setpointexpiretime") {
+
+        init {
+            name = "setPointExpireTime"
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            val pg = getSelectedPGroup(context) ?: return
+            val expireMillis = (getDurationByArgsNMessage(context, 0, context.args.size) ?: return) * 1000
+            context.daoManager.autoPunishmentGroupWrapper.setExpireTime(context.guildId, pg.groupName, expireMillis)
+
+            val msg = context.getTranslation("$root.set")
+                .withVariable("group", pg.groupName)
+                .withVariable("duration", getDurationString(expireMillis))
+            sendRsp(context, msg)
+        }
+
+    }
+
     class SetPPTriggerArg(parent: String) : AbstractCommand("$parent.setpunishmentpointtrigger") {
 
         init {
@@ -159,7 +186,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             aliases = arrayOf("setPPTrigger")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val pg = getSelectedPGroup(context) ?: return
             val type = getEnumFromArgNMessage<PointsTriggerType>(context, 0, UNKNOWN_POINTSTRIGGERTTYPE_PATH)
                 ?: return
@@ -189,7 +216,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             aliases = arrayOf("sppg", "sppgoal", "setPPGoal")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -219,7 +246,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             aliases = arrayOf("rppg", "rppgoal")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -256,7 +283,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             aliases = arrayOf("cp")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -292,7 +319,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
     }
 }
 
-suspend fun getPunishmentGroupByArgNMessage(context: CommandContext, index: Int): PunishGroup? {
+suspend fun getPunishmentGroupByArgNMessage(context: ICommandContext, index: Int): PunishGroup? {
     val wrapper = context.daoManager.autoPunishmentGroupWrapper
     val group = getStringFromArgsNMessage(context, index, 1, 64, cantContainChars = arrayOf('[', ',', ']'))
         ?: return null

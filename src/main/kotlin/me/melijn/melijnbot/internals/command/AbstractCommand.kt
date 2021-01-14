@@ -8,9 +8,13 @@ import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
 import me.melijn.melijnbot.internals.utils.addIfNotPresent
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
+import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.entities.Message
 import org.slf4j.LoggerFactory
+import java.time.Instant
+import java.util.*
+import kotlin.collections.ArrayList
 
 const val PLACEHOLDER_PREFIX = "prefix"
 
@@ -23,7 +27,7 @@ abstract class AbstractCommand(val root: String) {
     var help = "$root.help"
     var arguments = "$root.arguments"
     var examples = "$root.examples"
-    var cooldown: Long = 0
+    var cooldown: Long = 0 // millis
     var commandCategory: CommandCategory = CommandCategory.DEVELOPER
     var aliases: Array<String> = arrayOf()
     var discordChannelPermissions: Array<Permission> = arrayOf()
@@ -39,8 +43,8 @@ abstract class AbstractCommand(val root: String) {
 
     private val cmdlogger = LoggerFactory.getLogger("cmd")
 
-    protected abstract suspend fun execute(context: CommandContext)
-    suspend fun run(context: CommandContext) {
+    protected abstract suspend fun execute(context: ICommandContext)
+    suspend fun run(context: ICommandContext) {
         context.commandOrder = ArrayList(context.commandOrder + this).toList()
 
         val indexedCommand = context.commandOrder.withIndex().sortedBy { it.index }.last()
@@ -66,7 +70,7 @@ abstract class AbstractCommand(val root: String) {
                 for ((cmd2, ls) in aliasCache.getAliases(context.authorId)) {
                     val currentList = (context.aliasMap[cmd2] ?: emptyList()).toMutableList()
                     for (alias in ls) {
-                        currentList.addIfNotPresent(alias)
+                        currentList.addIfNotPresent(alias, true)
                     }
 
                     context.aliasMap[cmd2] = currentList
@@ -124,35 +128,79 @@ abstract class AbstractCommand(val root: String) {
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
             }
             try {
-                val cmdId = context.commandOrder.first().id.toString() + context.commandOrder.drop(1).joinToString(".") { it.name }
-                if (CommandClient.checksFailed(context.container, context.commandOrder.last(), cmdId, context.event, true, context.commandParts)) return
+                val cmdId = context.commandOrder.first().id.toString() + context.commandOrder.drop(1)
+                    .joinToString(".") { it.name }
+                if (CommandClient.checksFailed(
+                        context.container,
+                        context.commandOrder.last(),
+                        cmdId,
+                        context.message,
+                        true,
+                        context.commandParts
+                    )
+                ) return
                 cmdlogger.info("${context.guildN?.name ?: ""}/${context.author.name}◠: ${context.message.contentRaw}")
                 val start = System.currentTimeMillis()
                 try {
                     execute(context)
                 } catch (t: Throwable) {
-                    cmdlogger.error("↱ ${context.guildN?.name ?: ""}/${context.author.name}◡: ${context.message.contentRaw}", t)
+                    cmdlogger.error(
+                        "↱ ${context.guildN?.name ?: ""}/${context.author.name}◡: ${context.message.contentRaw}",
+                        t
+                    )
                     t.sendInGuild(context, shouldSend = true)
                 }
+
+                // new year check
+                val tz = context.getTimeZoneId()
+                val now = Instant.now().atZone(tz)
+                if (now.dayOfYear == 1 && !context.daoManager.newYearWrapper.contains(now.year, context.authorId)) {
+                    context.channel.sendMessage(
+                        MessageBuilder().setContent(
+                            "\uD83D\uDDD3 **Happy New Year ${now.year}** **" + if (context.isFromGuild) {
+                                context.member.asMention
+                            } else {
+                                context.author.asMention
+                            } + "** \uD83C\uDF8A"
+                        )
+                            .setAllowedMentions(EnumSet.allOf(Message.MentionType::class.java))
+                            .build()
+                    ).queue()
+
+                    context.daoManager.newYearWrapper.add(now.year, context.authorId)
+                }
+
+
                 if (context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)) {
                     TaskManager.async {
                         val timeMap = context.daoManager.removeInvokeWrapper.getMap(context.guildId)
                         val seconds = timeMap[context.textChannel.idLong] ?: timeMap[context.guildId] ?: return@async
 
-                        if (!context.selfMember.hasPermission(context.textChannel, Permission.MESSAGE_MANAGE)) return@async
+                        if (!context.selfMember.hasPermission(
+                                context.textChannel,
+                                Permission.MESSAGE_MANAGE
+                            )
+                        ) return@async
 
                         delay(seconds * 1000L)
                         val message = context.message
                         context.container.botDeletedMessageIds.add(message.idLong)
 
-                        if (!context.selfMember.hasPermission(context.textChannel, Permission.MESSAGE_MANAGE)) return@async
+                        if (!context.selfMember.hasPermission(
+                                context.textChannel,
+                                Permission.MESSAGE_MANAGE
+                            )
+                        ) return@async
                         message.delete().queue(null, { context.container.botDeletedMessageIds.remove(message.idLong) })
                     }
                 }
                 val second = System.currentTimeMillis()
                 cmdlogger.info("${context.guildN?.name ?: ""}/${context.author.name}◡${(second - start) / 1000.0}: ${context.message.contentRaw}")
             } catch (t: Throwable) {
-                cmdlogger.error("↱ ${context.guildN?.name ?: ""}/${context.author.name}◡: ${context.message.contentRaw}", t)
+                cmdlogger.error(
+                    "↱ ${context.guildN?.name ?: ""}/${context.author.name}◡: ${context.message.contentRaw}",
+                    t
+                )
                 t.sendInGuild(context)
             }
             context.daoManager.commandUsageWrapper.addUse(context.commandOrder[0].id)
@@ -172,9 +220,10 @@ abstract class AbstractCommand(val root: String) {
         }
         return false
     }
+
 }
 
-suspend fun hasPermission(context: CommandContext, permission: String, required: Boolean = false): Boolean {
+suspend fun hasPermission(context: ICommandContext, permission: String, required: Boolean = false): Boolean {
     if (!context.isFromGuild) return true
     if (context.member.isOwner || context.member.hasPermission(Permission.ADMINISTRATOR)) return true
     val guildId = context.guildId
@@ -208,7 +257,7 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
     for (roleId in (context.member.roles.map { role -> role.idLong } + context.guild.publicRole.idLong)) {
         channelRoleResult = when (
             daoManager.channelRolePermissionWrapper.getPermMap(channelId, roleId)[lPermission]
-            ) {
+        ) {
             PermState.ALLOW -> PermState.ALLOW
             PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) {
                 PermState.DENY
@@ -246,8 +295,14 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
     }
 }
 
-suspend fun hasPermission(container: Container, event: MessageReceivedEvent, permission: String, category: CommandCategory? = null, required: Boolean = false): Boolean {
-    val member = event.member ?: return true
+suspend fun hasPermission(
+    container: Container,
+    message: Message,
+    permission: String,
+    category: CommandCategory? = null,
+    required: Boolean = false
+): Boolean {
+    val member = message.member ?: return true
     if (member.isOwner || member.hasPermission(Permission.ADMINISTRATOR)) return true
     val guild = member.guild
     val guildId = guild.idLong
@@ -256,7 +311,7 @@ suspend fun hasPermission(container: Container, event: MessageReceivedEvent, per
     // Gives me better ability to help
     if (container.settings.botInfo.developerIds.contains(authorId)) return true
 
-    val channelId = event.textChannel.idLong
+    val channelId = message.textChannel.idLong
     val userMap = container.daoManager.userPermissionWrapper.getPermMap(guildId, authorId)
     val channelUserMap = container.daoManager.channelUserPermissionWrapper.getPermMap(channelId, authorId)
 
@@ -277,11 +332,12 @@ suspend fun hasPermission(container: Container, event: MessageReceivedEvent, per
 
     // Permission checking for roles
     for (roleId in (member.roles.map { role -> role.idLong } + guild.publicRole.idLong)) {
-        channelRoleResult = when (container.daoManager.channelRolePermissionWrapper.getPermMap(channelId, roleId)[lPermission]) {
-            PermState.ALLOW -> PermState.ALLOW
-            PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) PermState.DENY else channelRoleResult
-            else -> channelRoleResult
-        }
+        channelRoleResult =
+            when (container.daoManager.channelRolePermissionWrapper.getPermMap(channelId, roleId)[lPermission]) {
+                PermState.ALLOW -> PermState.ALLOW
+                PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) PermState.DENY else channelRoleResult
+                else -> channelRoleResult
+            }
         if (channelRoleResult == PermState.ALLOW) break
         if (channelRoleResult != PermState.DEFAULT) continue
         if (roleResult != PermState.ALLOW) {

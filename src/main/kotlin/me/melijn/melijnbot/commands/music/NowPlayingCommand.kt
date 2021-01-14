@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.music
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.getDurationString
@@ -21,7 +21,7 @@ class NowPlayingCommand : AbstractCommand("command.nowplaying") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val playingTrack = trackManager.iPlayer.playingTrack ?: throw IllegalArgumentException("Checks failed")
         val trackStatus = context.getTranslation(if (trackManager.iPlayer.paused) "paused" else "playing")
@@ -63,7 +63,8 @@ fun getProgressBar(playingTrack: AudioTrack, playerPosition: Long): String {
 
     return StringBuilder("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬")
         .insert(percent, "]($fullUrl)<a:cool_nyan:490978764264570894>")
-        .append(" **").append(getDurationString(playerPosition)).append("/").append(getDurationString(playingTrack.duration)).append("**")
+        .append(" **").append(getDurationString(playerPosition)).append("/")
+        .append(getDurationString(playingTrack.duration)).append("**")
         .insert(0, "[")
         .toString()
 }

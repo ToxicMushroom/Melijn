@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.await
@@ -19,7 +19,7 @@ class EmotesCommand : AbstractCommand("command.emotes") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val emotes = context.guild.retrieveEmotes().await()
         if (emotes.isEmpty()) {
             val msg = context.getTranslation("$root.noemotes")
@@ -29,7 +29,8 @@ class EmotesCommand : AbstractCommand("command.emotes") {
         if (context.args.isNotEmpty() && context.args[0] == "full") {
             val sb = StringBuilder("List of emotes:\n")
             for (emote in emotes) {
-                sb.append(emote.asMention).append(" | ").append(emote.id).append(" - `:").append(emote.name).appendLine(":`")
+                sb.append(emote.asMention).append(" | ").append(emote.id).append(" - `:").append(emote.name)
+                    .appendLine(":`")
             }
             sb.append(emotes.size).append("/").append(context.guild.maxEmotes)
             sendPaginationMsg(context, StringUtils.splitMessage(sb.toString()), 0)

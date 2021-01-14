@@ -4,7 +4,7 @@ import io.ktor.client.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.ImageUtils
@@ -22,7 +22,7 @@ import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
 
-suspend fun sendRsp(context: CommandContext, image: BufferedImage, extension: String) {
+suspend fun sendRsp(context: ICommandContext, image: BufferedImage, extension: String) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendRsp(context.textChannel, context.daoManager, context.getLanguage(), image, extension)
@@ -32,7 +32,13 @@ suspend fun sendRsp(context: CommandContext, image: BufferedImage, extension: St
 }
 
 
-suspend fun sendRsp(textChannel: TextChannel, daoManager: DaoManager, language: String, image: BufferedImage, extension: String) {
+suspend fun sendRsp(
+    textChannel: TextChannel,
+    daoManager: DaoManager,
+    language: String,
+    image: BufferedImage,
+    extension: String
+) {
     require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
     val byteArrayOutputStream = ByteArrayOutputStream()
 
@@ -45,7 +51,7 @@ suspend fun sendRsp(textChannel: TextChannel, daoManager: DaoManager, language: 
     }
 }
 
-suspend fun sendMsg(context: CommandContext, image: BufferedImage, extension: String) {
+suspend fun sendMsg(context: ICommandContext, image: BufferedImage, extension: String) {
     if (context.isFromGuild) {
         sendMsg(context.textChannel, image, extension)
     } else {
@@ -76,7 +82,7 @@ suspend fun sendMsg(textChannel: TextChannel, image: BufferedImage, extension: S
 }
 
 
-suspend fun sendFileRsp(context: CommandContext, msg: String, bytes: ByteArray, extension: String) {
+suspend fun sendFileRsp(context: ICommandContext, msg: String, bytes: ByteArray, extension: String) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendFileRsp(context.textChannel, msg, context.daoManager, context.getLanguage(), bytes, extension)
@@ -85,7 +91,7 @@ suspend fun sendFileRsp(context: CommandContext, msg: String, bytes: ByteArray, 
     }
 }
 
-suspend fun sendFile(context: CommandContext, msg: String, bytes: ByteArray, extension: String) {
+suspend fun sendFile(context: ICommandContext, msg: String, bytes: ByteArray, extension: String) {
     if (context.isFromGuild) {
         sendFile(context.getLanguage(), msg, context.textChannel, bytes, extension)
     } else {
@@ -93,7 +99,14 @@ suspend fun sendFile(context: CommandContext, msg: String, bytes: ByteArray, ext
     }
 }
 
-fun sendFileRsp(textChannel: TextChannel, msg: String, daoManager: DaoManager, language: String, bytes: ByteArray, extension: String) {
+fun sendFileRsp(
+    textChannel: TextChannel,
+    msg: String,
+    daoManager: DaoManager,
+    language: String,
+    bytes: ByteArray,
+    extension: String
+) {
     require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
 
     if (textChannel.guild.maxFileSize < (bytes.size)) {
@@ -115,7 +128,7 @@ fun sendFileRsp(textChannel: TextChannel, msg: String, daoManager: DaoManager, l
     }
 }
 
-suspend fun sendFileRsp(context: CommandContext, bytes: ByteArray, extension: String) {
+suspend fun sendFileRsp(context: ICommandContext, bytes: ByteArray, extension: String) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendFileRsp(context.textChannel, context.daoManager, context.getLanguage(), bytes, extension)
@@ -124,7 +137,13 @@ suspend fun sendFileRsp(context: CommandContext, bytes: ByteArray, extension: St
     }
 }
 
-fun sendFileRsp(textChannel: TextChannel, daoManager: DaoManager, language: String, bytes: ByteArray, extension: String) {
+fun sendFileRsp(
+    textChannel: TextChannel,
+    daoManager: DaoManager,
+    language: String,
+    bytes: ByteArray,
+    extension: String
+) {
     require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
 
     if (textChannel.guild.maxFileSize < (bytes.size)) {
@@ -146,7 +165,7 @@ fun sendFileRsp(textChannel: TextChannel, daoManager: DaoManager, language: Stri
     }
 }
 
-suspend fun sendFile(context: CommandContext, bytes: ByteArray, extension: String) {
+suspend fun sendFile(context: ICommandContext, bytes: ByteArray, extension: String) {
     if (context.isFromGuild) {
         sendFile(context.getLanguage(), context.textChannel, bytes, extension)
     } else {
@@ -205,17 +224,21 @@ fun sendFile(language: String, msg: String, textChannel: TextChannel, bytes: Byt
     if (textChannel.guild.maxFileSize < (bytes.size)) {
         val size = StringUtils.humanReadableByteCountBin(bytes.size)
         val max = StringUtils.humanReadableByteCountBin(textChannel.jda.selfUser.allowedFileSize)
-        val msg = i18n.getTranslation(language, "message.filetoobig")
+        val msg1 = i18n.getTranslation(language, "message.filetoobig")
             .withVariable("size", size)
             .withVariable("max", max)
-        sendMsg(textChannel, msg)
+        sendMsg(textChannel, msg1)
         return
     }
 
     textChannel.sendMessage(msg).addFile(bytes, "finished.$extension").queue()
 }
 
-private suspend fun attachmentsAction(textChannel: MessageChannel, httpClient: HttpClient, urls: Map<String, String>): MessageAction? {
+private suspend fun attachmentsAction(
+    textChannel: MessageChannel,
+    httpClient: HttpClient,
+    urls: Map<String, String>
+): MessageAction? {
     var messageAction: MessageAction? = null
     val guild = if (textChannel is TextChannel) textChannel.guild else null
     for ((index, url) in urls.iterator().withIndex()) {
@@ -229,7 +252,12 @@ private suspend fun attachmentsAction(textChannel: MessageChannel, httpClient: H
     return messageAction
 }
 
-private suspend fun msgWithAttachmentsAction(channel: MessageChannel, httpClient: HttpClient, message: Message, attachments: Map<String, String>): MessageAction? {
+private suspend fun msgWithAttachmentsAction(
+    channel: MessageChannel,
+    httpClient: HttpClient,
+    message: Message,
+    attachments: Map<String, String>
+): MessageAction? {
     var messageAction: MessageAction? = null
     val guild = if (channel is TextChannel) channel.guild else null
     for ((index, url) in attachments.iterator().withIndex()) {
@@ -255,7 +283,12 @@ private suspend fun msgWithAttachmentsAction(channel: MessageChannel, httpClient
 }
 
 
-suspend fun sendAttachmentsRspAwaitN(textChannel: TextChannel, httpClient: HttpClient, daoManager: DaoManager, attachments: Map<String, String>): Message? {
+suspend fun sendAttachmentsRspAwaitN(
+    textChannel: TextChannel,
+    httpClient: HttpClient,
+    daoManager: DaoManager,
+    attachments: Map<String, String>
+): Message? {
     val message = attachmentsAction(textChannel, httpClient, attachments)?.awaitOrNull() ?: return null
     TaskManager.async(textChannel) {
         handleRspDelete(daoManager, message)
@@ -263,7 +296,13 @@ suspend fun sendAttachmentsRspAwaitN(textChannel: TextChannel, httpClient: HttpC
     return message
 }
 
-suspend fun sendRspWithAttachmentsAwaitN(textChannel: TextChannel, httpClient: HttpClient, daoManager: DaoManager, message: Message, attachments: Map<String, String>): Message? {
+suspend fun sendRspWithAttachmentsAwaitN(
+    textChannel: TextChannel,
+    httpClient: HttpClient,
+    daoManager: DaoManager,
+    message: Message,
+    attachments: Map<String, String>
+): Message? {
     val msg = msgWithAttachmentsAction(textChannel, httpClient, message, attachments)?.awaitOrNull() ?: return null
     TaskManager.async(textChannel) {
         handleRspDelete(daoManager, msg)
@@ -297,7 +336,12 @@ suspend fun sendAttachments(textChannel: MessageChannel, httpClient: HttpClient,
     attachmentsAction(textChannel, httpClient, urls)?.queue()
 }
 
-fun sendRspAttachments(daoManager: DaoManager, httpClient: HttpClient, textChannel: TextChannel, urls: Map<String, String>) {
+fun sendRspAttachments(
+    daoManager: DaoManager,
+    httpClient: HttpClient,
+    textChannel: TextChannel,
+    urls: Map<String, String>
+) {
     TaskManager.async(textChannel) {
         val message = attachmentsAction(textChannel, httpClient, urls)?.awaitOrNull() ?: return@async
 
@@ -305,7 +349,13 @@ fun sendRspAttachments(daoManager: DaoManager, httpClient: HttpClient, textChann
     }
 }
 
-fun sendRspWithAttachments(daoManager: DaoManager, httpClient: HttpClient, textChannel: TextChannel, message: Message, attachments: Map<String, String>) {
+fun sendRspWithAttachments(
+    daoManager: DaoManager,
+    httpClient: HttpClient,
+    textChannel: TextChannel,
+    message: Message,
+    attachments: Map<String, String>
+) {
     TaskManager.async(textChannel) {
         val msg = msgWithAttachmentsAction(textChannel, httpClient, message, attachments)?.awaitOrNull() ?: return@async
 
@@ -313,19 +363,38 @@ fun sendRspWithAttachments(daoManager: DaoManager, httpClient: HttpClient, textC
     }
 }
 
-suspend fun sendMsgWithAttachments(channel: MessageChannel, httpClient: HttpClient, message: Message, attachments: Map<String, String>) {
+suspend fun sendMsgWithAttachments(
+    channel: MessageChannel,
+    httpClient: HttpClient,
+    message: Message,
+    attachments: Map<String, String>
+) {
     msgWithAttachmentsAction(channel, httpClient, message, attachments)?.queue()
 }
 
-suspend fun sendAttachmentsAwaitN(textChannel: MessageChannel, httpClient: HttpClient, urls: Map<String, String>): Message? {
+suspend fun sendAttachmentsAwaitN(
+    textChannel: MessageChannel,
+    httpClient: HttpClient,
+    urls: Map<String, String>
+): Message? {
     return attachmentsAction(textChannel, httpClient, urls)?.awaitOrNull()
 }
 
-suspend fun sendMsgWithAttachmentsAwaitN(channel: MessageChannel, httpClient: HttpClient, message: Message, attachments: Map<String, String>): Message? {
+suspend fun sendMsgWithAttachmentsAwaitN(
+    channel: MessageChannel,
+    httpClient: HttpClient,
+    message: Message,
+    attachments: Map<String, String>
+): Message? {
     return msgWithAttachmentsAction(channel, httpClient, message, attachments)?.awaitOrNull()
 }
 
-suspend fun sendMsgAwaitEL(context: CommandContext, msg: String, bufferedImage: BufferedImage?, extension: String): List<Message> {
+suspend fun sendMsgAwaitEL(
+    context: ICommandContext,
+    msg: String,
+    bufferedImage: BufferedImage?,
+    extension: String
+): List<Message> {
     return if (context.isFromGuild) {
         sendMsgAwaitEL(context.textChannel, msg, bufferedImage, extension)
     } else {
@@ -333,7 +402,12 @@ suspend fun sendMsgAwaitEL(context: CommandContext, msg: String, bufferedImage: 
     }
 }
 
-suspend fun sendMsgAwaitEL(textChannel: TextChannel, msg: String, image: BufferedImage?, extension: String): List<Message> {
+suspend fun sendMsgAwaitEL(
+    textChannel: TextChannel,
+    msg: String,
+    image: BufferedImage?,
+    extension: String
+): List<Message> {
     require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
 
     val messageList = mutableListOf<Message>()
@@ -357,7 +431,12 @@ suspend fun sendMsgAwaitEL(textChannel: TextChannel, msg: String, image: Buffere
     return messageList
 }
 
-suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String, image: BufferedImage?, extension: String): List<Message> {
+suspend fun sendMsgAwaitEL(
+    privateChannel: PrivateChannel,
+    msg: String,
+    image: BufferedImage?,
+    extension: String
+): List<Message> {
     if (privateChannel.user.isBot) return emptyList()
 
     val messageList = mutableListOf<Message>()

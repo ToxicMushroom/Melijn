@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.games
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.getBalanceNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
@@ -38,7 +38,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
 
     data class SlotEntry(val name: String, val unicode: String, val occurrence: Int)
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val slotEmote = context.shardManager.getEmoteById(context.container.settings.emote.slotId)
         val prizeMap = mutableMapOf<Int, String>()
 
@@ -74,7 +74,14 @@ class SlotsCommand : AbstractCommand("command.slots") {
                     .withVariable("slot2", slotEmote?.asMention ?: "?")
                     .withVariable("slot3", slotEmote?.asMention ?: "?")
             )
-        val msg = sendEmbedAwaitEL(context, eb.build()).last()
+
+
+        val msg = try {
+            sendEmbedAwaitEL(context, eb.build()).last()
+        } catch (t: Throwable) {
+            balanceWrapper.addBalance(context.authorId, amount)
+            return
+        }
 
 
         delay(1_000)

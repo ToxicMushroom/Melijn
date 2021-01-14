@@ -3,13 +3,15 @@ package me.melijn.melijnbot.database.filter
 import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.FilterMode
+import me.melijn.melijnbot.internals.utils.splitIETEL
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "filterGroups"
-    override val tableStructure: String = "guildId bigint, filterGroupName varchar(32), channelIds varchar(2048), mode varchar(64), state boolean, points int"
+    override val tableStructure: String =
+        "guildId bigint, filterGroupName varchar(32), punishGroupNames varchar(1024), channelIds varchar(2048), mode varchar(64), state boolean, points int, deleteHit boolean"
     override val primaryKey: String = "guildId, filterGroupName"
 
     override val cacheName: String = "filter:group"
@@ -20,15 +22,21 @@ class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     fun add(guildId: Long, group: FilterGroup) {
         group.apply {
-            val query = "INSERT INTO $table (guildId, filterGroupName, channelIds, mode, state, points) VALUES (?, ?, ?, ?, ?, ?) " +
-                "ON CONFLICT ($primaryKey) DO UPDATE SET channelIds = ?, mode = ?, state = ?, points = ?"
-            driverManager.executeUpdate(query,
+            val query =
+                "INSERT INTO $table (guildId, filterGroupName, punishGroupNames, channelIds, mode, state, points, deleteHit) VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                    "ON CONFLICT ($primaryKey) DO UPDATE SET punishGroupNames = ?, channelIds = ?, mode = ?, state = ?, points = ?, deleteHit = ?"
+            driverManager.executeUpdate(
+                query,
+                // Insert args
                 guildId,
                 filterGroupName,
+                punishGroupNames.joinToString(","),
                 group.channels.joinToString(","),
-                mode.toString(), state, points,
+                mode.toString(), state, points, deleteHit,
+                // Update Set args
+                punishGroupNames.joinToString(","),
                 group.channels.joinToString(","),
-                mode.toString(), state, points
+                mode.toString(), state, points, deleteHit
             )
         }
     }
@@ -42,16 +50,16 @@ class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
                 list.add(
                     FilterGroup(
                         rs.getString("filterGroupName"),
+                        rs.getString("punishGroupNames").splitIETEL(","),
                         rs.getBoolean("state"),
-                        if (channels.isBlank())
-                            longArrayOf()
-                        else channels.split(",")
+                        channels.splitIETEL(",")
                             .map { id ->
                                 id.toLong()
                             }
                             .toLongArray(),
                         FilterMode.valueOf(rs.getString("mode")),
-                        rs.getInt("points")
+                        rs.getInt("points"),
+                        rs.getBoolean("deleteHit")
                     )
                 )
             }
@@ -60,15 +68,19 @@ class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun remove(guildId: Long, group: FilterGroup) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND filterGroupName = ?",
-            guildId, group.filterGroupName)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND filterGroupName = ?",
+            guildId, group.filterGroupName
+        )
     }
 }
 
 data class FilterGroup(
-    val filterGroupName: String,
+    var filterGroupName: String,
+    var punishGroupNames: List<String>,
     var state: Boolean,
     var channels: LongArray,
     var mode: FilterMode,
-    var points: Int
+    var points: Int,
+    var deleteHit: Boolean
 )

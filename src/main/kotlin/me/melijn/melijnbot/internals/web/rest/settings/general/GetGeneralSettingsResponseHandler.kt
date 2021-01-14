@@ -1,8 +1,6 @@
-package me.melijn.melijnbot.internals.web.rest.settings
+package me.melijn.melijnbot.internals.web.rest.settings.general
 
-import io.ktor.application.*
 import io.ktor.request.*
-import io.ktor.response.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import me.melijn.melijnbot.MelijnBot
@@ -29,8 +27,10 @@ object GetGeneralSettingsResponseHandler {
         val userId = context.call.receiveText()
         val member = guild?.retrieveMemberById(userId)?.awaitOrNull()
         if (member == null) {
-            context.call.respondJson(DataObject.empty()
-                .put("error", "guild invalidated"))
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("error", "guild invalidated")
+            )
             return
         }
 
@@ -41,8 +41,10 @@ object GetGeneralSettingsResponseHandler {
             member.isOwner)
 
         if (!hasPerm) {
-            context.call.respondJson(DataObject.empty()
-                .put("error", "guild invalidated"))
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("error", "guild invalidated")
+            )
             return
         }
 
@@ -97,6 +99,7 @@ object GetGeneralSettingsResponseHandler {
             DataObject.empty()
                 .put("guild", guildData)
                 .put("settings", settings)
-                .put("provided", provided))
+                .put("provided", provided)
+        )
     }
 }

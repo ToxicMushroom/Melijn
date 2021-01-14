@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.commandutil.game
 
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.DISCORD_ID
 import me.melijn.melijnbot.internals.utils.USER_MENTION
 import me.melijn.melijnbot.internals.utils.awaitOrNull
@@ -20,7 +20,7 @@ object OsuUtil {
         }
     }
 
-    suspend fun retrieveDiscordUserForOsuByArgsN(context: CommandContext, index: Int): User? {
+    suspend fun retrieveDiscordUserForOsuByArgsN(context: ICommandContext, index: Int): User? {
         val user1: User? = getDiscordUserForOsuByArgsN(context.shardManager, context.args[index])
         return when {
             user1 != null -> user1

@@ -6,6 +6,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.RoleUpdateCause
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.eventlisteners.EventWaiter
 import me.melijn.melijnbot.internals.music.LavaManager
 import me.melijn.melijnbot.internals.services.ServiceManager
@@ -23,6 +24,7 @@ val objectMapper = jacksonObjectMapper()
 class Container {
 
 
+    var voteReq: Boolean = true
     var logToDiscord: Boolean = true
 
     // userId, roleId, cause
@@ -40,8 +42,8 @@ class Container {
         set(value) {
             if (value) {
                 serviceManager.stopServices()
-                MelijnBot.shardManager.setActivity(Activity.playing("shutting down"))
-                MelijnBot.shardManager.setStatus(OnlineStatus.DO_NOT_DISTURB)
+                MelijnBot.shardManager.setActivity(Activity.playing("updating or maintenance"))
+                MelijnBot.shardManager.setStatus(OnlineStatus.IDLE)
             }
             field = value
         }
@@ -77,6 +79,7 @@ class Container {
 
     init {
         logger.info("Using ${System.getenv("CONFIG_NAME") ?: "config"}.json as config")
+        Embedder.defaultColor = settings.botInfo.embedColor
         instance = this
     }
 

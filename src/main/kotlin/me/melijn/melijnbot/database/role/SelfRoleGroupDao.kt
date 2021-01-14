@@ -9,7 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class SelfRoleGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "selfRoleGroups"
-    override val tableStructure: String = "guildId bigint, groupName varchar(64), messageIds varchar(1024), channelId bigint, isEnabled boolean, pattern varchar(256), isSelfRoleable boolean"
+    override val tableStructure: String =
+        "guildId bigint, groupName varchar(64), messageIds varchar(1024), channelId bigint, isEnabled boolean, pattern varchar(256), isSelfRoleable boolean"
     override val primaryKey: String = "guildId, groupName"
 
     override val cacheName: String = "selfrole:group"
@@ -39,16 +40,38 @@ class SelfRoleGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager)
     }
 
 
-    fun set(guildId: Long, groupName: String, messageIds: String, channelId: Long, isEnabled: Boolean, pattern: String, isSelfRoleable: Boolean) {
+    fun set(
+        guildId: Long,
+        groupName: String,
+        messageIds: String,
+        channelId: Long,
+        isEnabled: Boolean,
+        pattern: String,
+        isSelfRoleable: Boolean
+    ) {
         driverManager.executeUpdate(
             "INSERT INTO $table (guildId, groupName, messageIds, channelId, isEnabled, pattern, isSelfRoleable) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO " +
                 "UPDATE SET messageIds = ?, channelId = ?, isEnabled = ?, pattern = ?, isSelfRoleable = ?",
-            guildId, groupName, messageIds, channelId, isEnabled, pattern, isSelfRoleable, messageIds, channelId, isEnabled, pattern, isSelfRoleable)
+            guildId,
+            groupName,
+            messageIds,
+            channelId,
+            isEnabled,
+            pattern,
+            isSelfRoleable,
+            messageIds,
+            channelId,
+            isEnabled,
+            pattern,
+            isSelfRoleable
+        )
     }
 
     fun remove(guildId: Long, groupName: String) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND groupName = ?",
-            guildId, groupName)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND groupName = ?",
+            guildId, groupName
+        )
     }
 }
 

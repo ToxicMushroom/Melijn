@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.internals.utils
 
 import com.wrapper.spotify.Base64
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import java.nio.ByteBuffer
 import java.util.*
@@ -11,7 +11,12 @@ val SPACE_PATTERN = Regex("\\s+")
 
 object StringUtils {
     private val backTicks = "```".toRegex()
-    fun splitMessageWithCodeBlocks(message: String, nextSplitThreshold: Int = 1800, margin: Int = 30, lang: String = ""): List<String> {
+    fun splitMessageWithCodeBlocks(
+        message: String,
+        nextSplitThreshold: Int = 1800,
+        margin: Int = 30,
+        lang: String = ""
+    ): List<String> {
         var msg = message
         val messages = ArrayList<String>()
         var shouldAppendBackTicks = false
@@ -53,12 +58,13 @@ object StringUtils {
             }
 
             val index = getSplitIndex(findLastNewline, nextSplitThreshold, margin, 2000)
-            messages.add(findLastNewline.substring(0, index) +
-                if (shouldAppendBackTicks) {
-                    "```"
-                } else {
-                    ""
-                }
+            messages.add(
+                findLastNewline.substring(0, index) +
+                    if (shouldAppendBackTicks) {
+                        "```"
+                    } else {
+                        ""
+                    }
             )
 
 
@@ -127,27 +133,29 @@ object StringUtils {
             index = findLastNewline.lastIndexOf(",")
         }
         if (index < splitAtLeast) {
-            index = (maxLength-1) - margin
+            index = (maxLength - 1) - margin
         }
 
         return index
     }
 
     fun Long.toBase64(): String {
-        return Base64.encode(ByteBuffer
-            .allocate(Long.SIZE_BYTES)
-            .putLong(this)
-            .array())
+        return Base64.encode(
+            ByteBuffer
+                .allocate(Long.SIZE_BYTES)
+                .putLong(this)
+                .array()
+        )
             .remove("=")
     }
 
     fun splitMessageAtMaxCharAmountOrLength(message: String, maxAmount: Int, c: Char, maxLength: Int): List<String> {
         var msg = message
-        var msgCount = msg.count { c == it }
+        var charCount = msg.count { c == it }
         val messages = ArrayList<String>()
-        if (msgCount > maxAmount) {
-            while (msgCount > maxAmount) {
-                msgCount -= maxAmount
+        if (charCount > maxAmount) {
+            while (charCount > maxAmount) {
+                charCount -= maxAmount
 
                 var index = 0
                 var amount = 0
@@ -231,7 +239,7 @@ fun String.escapeMarkdown(): String {
         .replace("_", "\\_")
         .replace("~~", "\\~\\~")
         .replace("> ", "\\> ")
-        .replace("`", "\\`")
+        .replace("`", "'")
 }
 
 fun String.escapeDiscordInvites(): String {
@@ -258,7 +266,7 @@ fun String.toUpperWordCase(): String {
     return newString
 }
 
-fun String.replacePrefix(context: CommandContext): String {
+fun String.replacePrefix(context: ICommandContext): String {
     return this.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
 }
 

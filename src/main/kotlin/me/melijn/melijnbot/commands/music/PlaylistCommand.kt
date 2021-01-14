@@ -2,12 +2,14 @@ package me.melijn.melijnbot.commands.music
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.llklient.utils.LavalinkUtil
+import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.internals.command.*
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.music.TrackUserData
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendPaginationModularMsg
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
@@ -26,14 +28,115 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
         aliases = arrayOf("pl", "playlists")
         children = arrayOf(
             AddArg(root),
+            SaveQueueArg(root),
             RemoveArg(root),
+            ClearArg(root),
             ListArg(root),
             LoadArg(root)
         )
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: CommandContext) {
+    class ClearArg(parent: String) : AbstractCommand("$parent.clear") {
+
+        init {
+            name = "clear"
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val tracksMap = getPlaylistByNameNMessage(context, 0) ?: return
+
+            val trackValues = mutableListOf<String>()
+            val tracks = tracksMap.toSortedMap()
+                .map { it.value }
+                .withIndex()
+                .map {
+                    trackValues.add(it.value)
+                    LavalinkUtil.toAudioTrack(it.value)
+                }
+
+            context.daoManager.playlistWrapper.clear(context.authorId, context.args[0])
+
+            val msg = context.getTranslation("$root.cleared")
+                .withSafeVariable("playlist", context.args[0])
+                .withVariable("count", tracks.size)
+
+
+            sendRsp(context, msg)
+        }
+
+    }
+
+    class SaveQueueArg(parent: String) : AbstractCommand("$parent.savequeue") {
+
+        init {
+            name = "saveQueue"
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val guildMusicPlayer = context.musicPlayerManager.getGuildMusicPlayer(context.guild)
+
+            val playingTrack: AudioTrack = guildMusicPlayer.guildTrackManager.playingTrack ?: return
+            var tracksToAdd = mutableListOf<AudioTrack>()
+            tracksToAdd.add(playingTrack)
+            guildMusicPlayer.guildTrackManager.tracks.forEach {
+                tracksToAdd.add(it)
+            }
+
+
+            val playlists = context.daoManager.playlistWrapper.getPlaylists(context.authorId)
+            if (AddArg.playlistsLimitReachedAndMessage(context, playlists.size)) {
+                return
+            }
+
+            val freeSlots = getFreeSlots(context, playlists.size)
+            if (tracksToAdd.size > freeSlots) {
+                tracksToAdd = tracksToAdd.subList(0, freeSlots)
+            }
+
+
+            val tracksMap = getPlaylistByNameN(context, 0)
+            if (tracksMap != null && AddArg.tracksLimitReachedAndMessage(context, tracksMap.size)) {
+                return
+            }
+
+            var position = tracksMap?.maxByOrNull { it.key }?.key ?: 0
+
+            tracksToAdd.forEach { track ->
+                context.daoManager.playlistWrapper
+                    .set(context.authorId, context.args[0], ++position, LavalinkUtil.toMessage(track))
+            }
+
+            val msg = context.getTranslation("$root.added")
+                .withVariable("amount", tracksToAdd.size)
+                .withSafeVariable("playlist", context.args[0])
+                .withVariable("positionStart", (tracksMap?.size ?: 0) + 1)
+                .withVariable("positionEnd", (tracksMap?.size ?: 0) + tracksToAdd.size)
+            sendRsp(context, msg)
+        }
+
+        private suspend fun getFreeSlots(context: ICommandContext, size: Int): Int {
+            val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
+            return if (premium) {
+                premiumTrackLimit
+            } else {
+                tracksLimit
+            } - size
+        }
+
+    }
+
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -45,7 +148,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             runConditions = arrayOf(RunCondition.VC_BOT_OR_USER_DJ)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -55,9 +158,21 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             val guildMusicPlayer = context.musicPlayerManager.getGuildMusicPlayer(context.guild)
 
             if (context.lavaManager.getConnectedChannel(context.guild) == null) {
-                if (!RunConditionUtil.checkOtherBotAloneOrDJOrSameVC(context.container, context.event, this, context.getLanguage())) return
+                if (!RunConditionUtil.checkOtherBotAloneOrDJOrSameVC(
+                        context.container,
+                        context.message,
+                        this,
+                        context.getLanguage()
+                    )
+                ) return
                 val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
-                if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
+                if (notEnoughPermissionsAndMessage(
+                        context,
+                        vc,
+                        Permission.VOICE_SPEAK,
+                        Permission.VOICE_CONNECT
+                    )
+                ) return
 
                 context.lavaManager.openConnection(vc, context.getGuildMusicPlayer().groupId)
             }
@@ -89,7 +204,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 val playlists = context.daoManager.playlistWrapper.getPlaylists(context.authorId)
                 if (playlists.isEmpty()) {
@@ -130,7 +245,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             val sb = StringBuilder()
             for ((index, track) in tracks.withIndex()) {
                 sb
-                    .append("\n[#${index + 1}](")
+                    .append("[#${index + 1}](")
                     .append(track.info.uri)
                     .append(") - ")
                     .append(track.info.title.escapeMarkdown())
@@ -138,10 +253,23 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                     .append(getDurationString(track.info.length))
                     .appendLine("]`")
             }
+
             val eb = Embedder(context)
                 .setTitle(title)
-                .setDescription(sb.toString())
-            sendEmbedRsp(context, eb.build())
+            val parts = StringUtils.splitMessage(sb.toString())
+            val msgs = mutableListOf<ModularMessage>()
+
+            for ((index, part) in parts.withIndex()) {
+                msgs.add(
+                    ModularMessage(
+                        embed = eb.setDescription(part)
+                            .setFooter("Page ${index + 1}/${parts.size}")
+                            .build()
+                    )
+                )
+            }
+
+            sendPaginationModularMsg(context, msgs, 0)
         }
     }
 
@@ -152,7 +280,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             aliases = arrayOf("rm", "r")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -198,7 +326,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             runConditions = arrayOf(RunCondition.PLAYING_TRACK_NOT_NULL)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -208,7 +336,8 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             val audioTrack: AudioTrack = guildMusicPlayer.guildTrackManager.playingTrack ?: return
 
             if (context.args.isNotEmpty() &&
-                !RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event)) {
+                !RunConditionUtil.checkPlayingTrackNotNull(context.container, context.message)
+            ) {
                 sendSyntax(context)
                 return
             }
@@ -227,7 +356,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             val position = tracksMap?.maxByOrNull { it.key }?.key ?: 0
 
             context.daoManager.playlistWrapper
-                .set(context.authorId, context.args[0], position+1, LavalinkUtil.toMessage(audioTrack))
+                .set(context.authorId, context.args[0], position + 1, LavalinkUtil.toMessage(audioTrack))
 
             val msg = context.getTranslation("$root.added")
                 .withSafeVariable("title", audioTrack.info.title)
@@ -237,7 +366,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
         }
 
         companion object {
-            suspend fun tracksLimitReachedAndMessage(context: CommandContext, size: Int): Boolean {
+            suspend fun tracksLimitReachedAndMessage(context: ICommandContext, size: Int): Boolean {
                 if (size < tracksLimit) return false
 
                 val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
@@ -245,7 +374,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                     return false
                 }
 
-                val root = context.commandOrder.last().root
+                val root = context.commandOrder.first().root
                 val msg = if (premium) {
                     context.getTranslation("$root.tracklimit.premium")
                 } else {
@@ -255,14 +384,14 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                 return true
             }
 
-            suspend fun playlistsLimitReachedAndMessage(context: CommandContext, size: Int): Boolean {
+            suspend fun playlistsLimitReachedAndMessage(context: ICommandContext, size: Int): Boolean {
                 if (size < playlistLimit) return false
 
                 val premium = context.daoManager.supporterWrapper.getUsers().contains(context.authorId)
                 if (premium && size < premiumPlaylistLimit) {
                     return false
                 }
-                val root = context.commandOrder.last().root
+                val root = context.commandOrder.first().root
                 val msg = if (premium) {
                     context.getTranslation("$root.playlistlimit.premium")
                 } else {
@@ -275,13 +404,13 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
     }
 
     companion object {
-        private suspend fun getPlaylistByNameN(context: CommandContext, index: Int): Map<Int, String>? {
+        private suspend fun getPlaylistByNameN(context: ICommandContext, index: Int): Map<Int, String>? {
             val playlist = getStringFromArgsNMessage(context, index, 1, 128) ?: return null
             val playlistsMap = context.daoManager.playlistWrapper.getPlaylists(context.authorId)
             return playlistsMap[playlist]
         }
 
-        private suspend fun getPlaylistByNameNMessage(context: CommandContext, index: Int): Map<Int, String>? {
+        private suspend fun getPlaylistByNameNMessage(context: ICommandContext, index: Int): Map<Int, String>? {
             val tracksMap = getPlaylistByNameN(context, index)
             val playlist = context.args[index]
 

@@ -5,11 +5,12 @@ import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.getBooleanFromArgNMessage
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.removeFirst
+import net.dv8tion.jda.api.Permission
 
 class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
@@ -27,7 +28,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
         )
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -38,7 +39,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             aliases = arrayOf("sc")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 MessageCommandUtil.showMessage(context, ModularMessageProperty.CONTENT, type)
             } else {
@@ -70,7 +71,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -80,7 +81,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 name = "setTitle"
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val property = ModularMessageProperty.EMBED_TITLE
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showMessage(context, property, type)
@@ -95,7 +96,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 name = "setTitleUrl"
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val property = ModularMessageProperty.EMBED_URL
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showMessage(context, property, type)
@@ -111,7 +112,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 name = "setAuthor"
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val property = ModularMessageProperty.EMBED_AUTHOR
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showMessage(context, property, type)
@@ -126,7 +127,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 name = "setAuthorIcon"
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val property = ModularMessageProperty.EMBED_AUTHOR_ICON_URL
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showMessage(context, property, type)
@@ -141,7 +142,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 name = "setAuthorUrl"
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val property = ModularMessageProperty.EMBED_AUTHOR_URL
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showMessage(context, property, type)
@@ -157,7 +158,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 name = "setThumbnail"
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val property = ModularMessageProperty.EMBED_THUMBNAIL
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showMessage(context, property, type)
@@ -172,7 +173,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 name = "setImage"
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val property = ModularMessageProperty.EMBED_IMAGE
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showMessage(context, property, type)
@@ -196,7 +197,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 )
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -207,7 +208,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                     aliases = arrayOf("addInline")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val split = context.rawArg.split(">")
                     if (split.size < 2) {
                         sendSyntax(context)
@@ -226,7 +227,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                     name = "setTitle"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 2) {
                         sendSyntax(context)
                         return
@@ -245,7 +246,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                     name = "setValue"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 2) {
                         sendSyntax(context)
                         return
@@ -264,7 +265,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                     name = "setInline"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 2) {
                         sendSyntax(context)
                         return
@@ -281,7 +282,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                     name = "remove"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return
@@ -297,7 +298,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                     name = "list"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     MessageCommandUtil.showEmbedFields(context, type)
                 }
             }
@@ -311,7 +312,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 aliases = arrayOf("setDesc")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val property = ModularMessageProperty.EMBED_DESCRIPTION
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showMessage(context, property, type)
@@ -327,7 +328,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 aliases = arrayOf("setColour")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val property = ModularMessageProperty.EMBED_COLOR
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showMessage(context, property, type)
@@ -342,7 +343,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 name = "setFooter"
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val property = ModularMessageProperty.EMBED_FOOTER
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showMessage(context, property, type)
@@ -357,7 +358,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 name = "setFooterIcon"
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val property = ModularMessageProperty.EMBED_FOOTER_ICON_URL
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showMessage(context, property, type)
@@ -373,7 +374,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 aliases = arrayOf("c")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 MessageCommandUtil.clearEmbed(context, type)
             }
         }
@@ -391,7 +392,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -402,7 +403,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 MessageCommandUtil.listAttachments(context, type)
             }
         }
@@ -414,7 +415,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 aliases = arrayOf("a")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.size < 2) {
                     sendSyntax(context, syntax)
                     return
@@ -431,7 +432,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 aliases = arrayOf("delete", "r", "d")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context, syntax)
                     return
@@ -445,10 +446,11 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
         init {
             name = "view"
+            discordChannelPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
             aliases = arrayOf("preview")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             MessageCommandUtil.showMessagePreviewTyped(context, type)
         }
     }
@@ -459,7 +461,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             name = "setPingable"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.rawArg.isBlank()) {
                 MessageCommandUtil.showPingable(context, type)
                 return

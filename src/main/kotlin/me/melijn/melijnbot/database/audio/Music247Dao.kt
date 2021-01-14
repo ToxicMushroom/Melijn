@@ -18,8 +18,10 @@ class Music247Dao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun add(guildId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId) VALUES (?) ON CONFLICT ($primaryKey) DO NOTHING",
-            guildId)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId) VALUES (?) ON CONFLICT ($primaryKey) DO NOTHING",
+            guildId
+        )
 
     }
 
@@ -30,7 +32,9 @@ class Music247Dao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun remove(guildId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?",
-            guildId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ?",
+            guildId
+        )
     }
 }

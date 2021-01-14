@@ -6,7 +6,7 @@ import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.*
@@ -48,7 +48,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("cp")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -94,7 +94,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             name = "rename"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -115,7 +115,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
     companion object {
         val selectionMap = HashMap<Pair<Long, Long>, Long>()
-        suspend fun getSelectedCCNMessage(context: CommandContext): CustomCommand? {
+        suspend fun getSelectedCCNMessage(context: ICommandContext): CustomCommand? {
             val pair = Pair(context.guildId, context.authorId)
             return if (selectionMap.containsKey(pair)) {
                 val id = selectionMap[pair]
@@ -135,7 +135,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -146,7 +146,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val title = context.getTranslation("$root.title")
 
             val ccs = context.daoManager.customCommandWrapper.getList(context.guildId)
@@ -169,7 +169,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             name = "add"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -188,7 +188,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 sendRsp(context, msg)
             }
 
-            val name = context.args[0]
+            val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
             var content = context.rawArg.removeFirst(name).trim()
             if (content.isBlank()) content = "empty"
 
@@ -212,7 +212,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("delete", "rm")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -248,7 +248,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("s")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -287,7 +287,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -297,7 +297,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 name = "add"
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -326,7 +326,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 aliases = arrayOf("rm", "rem", "delete")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -366,7 +366,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val ccSelected = getSelectedCCNMessage(context) ?: return
                 val aliases = ccSelected.aliases
 
@@ -399,7 +399,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("setDesc", "sd")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -427,7 +427,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("sc")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -456,7 +456,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("sps")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -499,7 +499,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 name = "setPingable"
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val cc = getSelectedCCNMessage(context) ?: return
                 if (context.rawArg.isBlank()) {
                     MessageCommandUtil.showPingableCC(context, cc)
@@ -511,7 +511,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -521,7 +521,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 aliases = arrayOf("preview", "show", "info")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val cc = getSelectedCCNMessage(context) ?: return
                 MessageCommandUtil.showMessagePreviewCC(context, cc)
             }
@@ -534,7 +534,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 aliases = arrayOf("sc")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val cc = getSelectedCCNMessage(context) ?: return
                 val property = ModularMessageProperty.CONTENT
                 if (context.args.isEmpty()) {
@@ -569,7 +569,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 )
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -579,7 +579,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "setTitle"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_TITLE
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -595,7 +595,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "setTitleUrl"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_URL
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -612,7 +612,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "setAuthor"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_AUTHOR
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -628,7 +628,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "setAuthorIcon"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_AUTHOR_ICON_URL
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -644,7 +644,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "setAuthorUrl"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_AUTHOR_URL
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -661,7 +661,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "setThumbnail"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_THUMBNAIL
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -677,7 +677,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "setImage"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_IMAGE
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -702,7 +702,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     )
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     sendSyntax(context)
                 }
 
@@ -713,7 +713,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                         aliases = arrayOf("addInline")
                     }
 
-                    override suspend fun execute(context: CommandContext) {
+                    override suspend fun execute(context: ICommandContext) {
                         val split = context.rawArg.split(">")
                         if (split.size < 2) {
                             sendSyntax(context)
@@ -733,7 +733,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                         name = "setTitle"
                     }
 
-                    override suspend fun execute(context: CommandContext) {
+                    override suspend fun execute(context: ICommandContext) {
                         if (context.args.size < 2) {
                             sendSyntax(context)
                             return
@@ -753,7 +753,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                         name = "setValue"
                     }
 
-                    override suspend fun execute(context: CommandContext) {
+                    override suspend fun execute(context: ICommandContext) {
                         if (context.args.size < 2) {
                             sendSyntax(context)
                             return
@@ -773,7 +773,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                         name = "setInline"
                     }
 
-                    override suspend fun execute(context: CommandContext) {
+                    override suspend fun execute(context: ICommandContext) {
                         if (context.args.size < 2) {
                             sendSyntax(context)
                             return
@@ -792,7 +792,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                         aliases = arrayOf("rm", "rem", "delete")
                     }
 
-                    override suspend fun execute(context: CommandContext) {
+                    override suspend fun execute(context: ICommandContext) {
                         if (context.args.isEmpty()) {
                             sendSyntax(context)
                             return
@@ -810,7 +810,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                         aliases = arrayOf("ls")
                     }
 
-                    override suspend fun execute(context: CommandContext) {
+                    override suspend fun execute(context: ICommandContext) {
                         val cc = getSelectedCCNMessage(context) ?: return
                         MessageCommandUtil.showEmbedFieldsCC(context, cc)
                     }
@@ -825,7 +825,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     aliases = arrayOf("setDesc")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_DESCRIPTION
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -842,7 +842,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     aliases = arrayOf("setColour")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_COLOR
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -858,7 +858,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "setFooter"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_FOOTER
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -874,7 +874,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "setFooterIcon"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_FOOTER_ICON_URL
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -890,7 +890,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "setTimeStamp"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_TIME_STAMP
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
@@ -906,7 +906,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "clear"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val cc = getSelectedCCNMessage(context) ?: return
                     MessageCommandUtil.clearEmbedCC(context, cc)
                 }
@@ -925,7 +925,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 )
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -936,7 +936,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     arrayOf("ls")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val cc = getSelectedCCNMessage(context) ?: return
                     MessageCommandUtil.listAttachmentsCC(context, cc)
                 }
@@ -948,7 +948,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     name = "add"
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val cc = getSelectedCCNMessage(context) ?: return
                     if (context.args.size < 2) {
                         sendSyntax(context)
@@ -966,7 +966,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     aliases = arrayOf("rm", "rem", "delete")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return

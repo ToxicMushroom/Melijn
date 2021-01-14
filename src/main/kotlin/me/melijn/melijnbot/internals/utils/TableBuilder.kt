@@ -12,6 +12,7 @@ class TableBuilder {
     private val valueRows = mutableMapOf<Int, List<Cell>>()
     private val footerRow = mutableListOf<Cell>()
     private val columnWidth = mutableMapOf<Int, Int>()
+    private val extraSplit = mutableMapOf<Int, String>()
 
     var defaultSeperator = " | "
     var seperatorOverrides = mutableMapOf<Int, String>()
@@ -24,6 +25,10 @@ class TableBuilder {
     var rowPrefix = ""
     var rowSuffix = ""
 
+
+    fun addSplit(character: String = footerTopSeperator) {
+        extraSplit[valueRows.size] = character
+    }
 
     fun setColumns(vararg headerValues: String): TableBuilder {
         val cells = headerValues.map { Cell(it) }.toTypedArray()
@@ -97,7 +102,11 @@ class TableBuilder {
         addHeaderSplicer(sb)
 
         //main
-        for (element in valueRows.values) {
+        for ((index, element) in valueRows) {
+            if (extraSplit.containsKey(index)) {
+                extraSplit[index]?.let { addSplicer(sb, it, headerRow) }
+            }
+
             if (split && sb.length + maxRowWidth > 1997 - (if (footerRow.size > 0) maxRowWidth * 3 else maxRowWidth)) {
                 toReturn.add("$sb```")
                 sb = StringBuilder()

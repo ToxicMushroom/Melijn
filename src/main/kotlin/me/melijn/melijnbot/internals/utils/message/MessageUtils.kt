@@ -6,20 +6,32 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
+import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.internal.entities.DataMessage
 
-suspend fun sendSyntax(context: CommandContext, translationPath: String = context.commandOrder.last().syntax) {
+suspend fun sendSyntax(context: ICommandContext, translationPath: String = context.commandOrder.last().syntax) {
     val syntax = context.getTranslation("message.command.usage")
-        .withVariable("syntax", context.getTranslation(translationPath)
-            .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+        .withVariable(
+            "syntax", getSyntax(context, translationPath)
+                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
         )
     sendRsp(context, syntax)
 }
+
+suspend fun getSyntax(context: ICommandContext, translationPath: String): String {
+    return "%prefix%" + context.getTranslation(translationPath)
+}
+
+fun getSyntax(lang: String, translationPath: String): String {
+    return "%prefix%" + i18n.getTranslation(lang, translationPath)
+}
+
 
 fun escapeForLog(string: String): String {
     return string
@@ -29,7 +41,7 @@ fun escapeForLog(string: String): String {
 }
 
 
-fun sendMsg(context: CommandContext, msg: String) {
+fun sendMsg(context: ICommandContext, msg: String) {
     if (context.isFromGuild) {
         sendMsg(context.textChannel, msg)
     } else {
@@ -43,8 +55,8 @@ suspend fun canResponse(messageChannel: MessageChannel, supporterWrapper: Suppor
     else false
 }
 
-suspend fun sendRsp(context: CommandContext, msg: String) {
-    if (canResponse(context.messageChannel, context.daoManager.supporterWrapper)) {
+suspend fun sendRsp(context: ICommandContext, msg: String) {
+    if (canResponse(context.channel, context.daoManager.supporterWrapper)) {
         sendRsp(context.textChannel, context.daoManager, msg)
     } else {
         sendMsg(context, msg)
@@ -75,8 +87,8 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
 }
 
 
-suspend fun sendRsp(textChannel: TextChannel, context: CommandContext, msg: ModularMessage) {
-    if (canResponse(textChannel, context.daoManager.supporterWrapper)) {
+suspend fun sendRsp(textChannel: MessageChannel, context: ICommandContext, msg: ModularMessage) {
+    if (textChannel is TextChannel && canResponse(textChannel, context.daoManager.supporterWrapper)) {
         sendRsp(textChannel, context.webManager.proxiedHttpClient, context.daoManager, msg)
     } else {
         sendMsg(textChannel, context.webManager.proxiedHttpClient, msg)
@@ -95,7 +107,13 @@ fun sendRsp(channel: TextChannel, httpClient: HttpClient, daoManager: DaoManager
     val message: Message? = msg.toMessage()
     when {
         message == null -> sendRspAttachments(daoManager, httpClient, channel, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendRspWithAttachments(daoManager, httpClient, channel, message, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendRspWithAttachments(
+            daoManager,
+            httpClient,
+            channel,
+            message,
+            msg.attachments
+        )
         else -> sendRsp(channel, daoManager, message)
     }
 }
@@ -127,16 +145,32 @@ suspend fun sendMsgAwaitN(privateChannel: PrivateChannel, httpClient: HttpClient
     val message: Message? = msg.toMessage()
     return when {
         message == null -> sendAttachmentsAwaitN(privateChannel, httpClient, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(privateChannel, httpClient, message, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(
+            privateChannel,
+            httpClient,
+            message,
+            msg.attachments
+        )
         else -> sendMsgAwaitN(privateChannel, message)
     }
 }
 
-suspend fun sendRspAwaitN(textChannel: TextChannel, httpClient: HttpClient, daoManager: DaoManager, msg: ModularMessage): Message? {
+suspend fun sendRspAwaitN(
+    textChannel: TextChannel,
+    httpClient: HttpClient,
+    daoManager: DaoManager,
+    msg: ModularMessage
+): Message? {
     val message: Message? = msg.toMessage()
     return when {
         message == null -> sendAttachmentsRspAwaitN(textChannel, httpClient, daoManager, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendRspWithAttachmentsAwaitN(textChannel, httpClient, daoManager, message, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendRspWithAttachmentsAwaitN(
+            textChannel,
+            httpClient,
+            daoManager,
+            message,
+            msg.attachments
+        )
         else -> sendRspAwaitN(textChannel, daoManager, message)
     }
 }
@@ -150,7 +184,7 @@ suspend fun sendMsgAwaitN(textChannel: TextChannel, httpClient: HttpClient, msg:
     }
 }
 
-suspend fun sendMsg(textChannel: TextChannel, httpClient: HttpClient, msg: ModularMessage) {
+suspend fun sendMsg(textChannel: MessageChannel, httpClient: HttpClient, msg: ModularMessage) {
     val message: Message? = msg.toMessage()
     when {
         message == null -> sendAttachments(textChannel, httpClient, msg.attachments)
@@ -188,8 +222,8 @@ fun sendMsg(privateChannel: PrivateChannel, msg: String) {
     }
 }
 
-suspend fun sendRspAwaitEL(context: CommandContext, msg: String): List<Message> {
-    return if (canResponse(context.messageChannel, context.daoManager.supporterWrapper)) {
+suspend fun sendRspAwaitEL(context: ICommandContext, msg: String): List<Message> {
+    return if (canResponse(context.channel, context.daoManager.supporterWrapper)) {
         sendRspAwaitEL(context.textChannel, context.daoManager, msg)
     } else {
         sendMsgAwaitEL(context, msg)
@@ -223,7 +257,7 @@ suspend fun sendRspAwaitEL(channel: TextChannel, daoManager: DaoManager, msg: St
     return messageList
 }
 
-suspend fun sendMsgAwaitEL(context: CommandContext, msg: String): List<Message> {
+suspend fun sendMsgAwaitEL(context: ICommandContext, msg: String): List<Message> {
     return if (context.isFromGuild) {
         sendMsgAwaitEL(context.textChannel, msg)
     } else {
@@ -264,7 +298,12 @@ fun sendMsg(channel: TextChannel, msg: String) {
     }
 }
 
-suspend fun sendMsg(channel: TextChannel, msg: String, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+suspend fun sendMsg(
+    channel: TextChannel,
+    msg: String,
+    success: ((messages: List<Message>) -> Unit)? = null,
+    failed: ((ex: Throwable) -> Unit)? = null
+) {
     require(channel.canTalk()) {
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
@@ -287,20 +326,21 @@ suspend fun sendMsg(channel: TextChannel, msg: String, success: ((messages: List
     }
 }
 
-fun sendMsg(channel: TextChannel, msg: Message, success: ((messages: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    require(channel.canTalk()) {
-        "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
+fun sendMsg(
+    channel: MessageChannel,
+    msg: Message,
+    success: ((messages: Message) -> Unit)? = null,
+    failed: ((ex: Throwable) -> Unit)? = null
+) {
+    if (channel is TextChannel) {
+        require(channel.canTalk()) {
+            "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
+        }
     }
-    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
-    for (embed in msg.embeds) {
-        if (action == null) action = channel.sendMessage(embed)
-        else action.embed(embed)
-    }
-    action?.queue(success, failed)
-}
 
-fun sendMsg(channel: PrivateChannel, msg: Message, success: ((messages: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
+    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(
+        msg.contentRaw
+    ) else null
     for (embed in msg.embeds) {
         if (action == null) action = channel.sendMessage(embed)
         else action.embed(embed)
@@ -345,7 +385,11 @@ suspend fun sendMsgAwaitN(channel: PrivateChannel, msg: Message): Message? {
     return action?.awaitOrNull()
 }
 
-suspend fun sendFeatureRequiresPremiumMessage(context: CommandContext, featurePath: String, featureReplaceMap: Map<String, String> = emptyMap()) {
+suspend fun sendFeatureRequiresPremiumMessage(
+    context: ICommandContext,
+    featurePath: String,
+    featureReplaceMap: Map<String, String> = emptyMap()
+) {
     var feature = context.getTranslation(featurePath)
     for ((key, replacement) in featureReplaceMap) {
         feature = feature.replace("%$key%", replacement)
@@ -357,7 +401,11 @@ suspend fun sendFeatureRequiresPremiumMessage(context: CommandContext, featurePa
     sendRsp(context, baseMsg)
 }
 
-suspend fun sendFeatureRequiresGuildPremiumMessage(context: CommandContext, featurePath: String, featureReplaceMap: Map<String, String> = emptyMap()) {
+suspend fun sendFeatureRequiresGuildPremiumMessage(
+    context: ICommandContext,
+    featurePath: String,
+    featureReplaceMap: Map<String, String> = emptyMap()
+) {
     var feature = context.getTranslation(featurePath)
     for ((key, replacement) in featureReplaceMap) {
         feature = feature.replace("%$key%", replacement)

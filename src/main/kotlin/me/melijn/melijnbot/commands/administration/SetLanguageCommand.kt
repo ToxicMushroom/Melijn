@@ -4,7 +4,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.enums.Language
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_LANGUAGE
 import me.melijn.melijnbot.internals.utils.getEnumFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -24,7 +24,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
     }
 
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendCurrentLang(context)
         } else {
@@ -32,7 +32,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
         }
     }
 
-    private suspend fun sendCurrentLang(context: CommandContext) {
+    private suspend fun sendCurrentLang(context: ICommandContext) {
         val wrapper = context.daoManager.guildLanguageWrapper
         val lang = wrapper.getLanguage(context.guildId)
 
@@ -47,7 +47,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
         sendRsp(context, msg)
     }
 
-    private suspend fun setLang(context: CommandContext) {
+    private suspend fun setLang(context: ICommandContext) {
         val lang: String
         val shouldUnset = "null".equals(context.rawArg, true)
 
@@ -77,7 +77,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
             name = "list"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             var msg = context.getTranslation("$root.title")
             msg += Language.values()
                 .withIndex()

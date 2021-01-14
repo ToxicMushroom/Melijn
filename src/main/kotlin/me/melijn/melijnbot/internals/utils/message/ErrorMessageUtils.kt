@@ -3,7 +3,7 @@ package me.melijn.melijnbot.internals.utils.message
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.toUCC
@@ -17,9 +17,14 @@ import java.nio.ByteBuffer
 import java.util.*
 
 
-fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread(), extra: String? = null, shouldSend: Boolean = true) = runBlocking {
+fun Throwable.sendInGuild(
+    context: ICommandContext,
+    thread: Thread = Thread.currentThread(),
+    extra: String? = null,
+    shouldSend: Boolean = true
+) = runBlocking {
     val sanitizedMessage = "Message: ${MarkdownSanitizer.escape(context.message.contentRaw)}\n" + (extra ?: "")
-    sendInGuildSuspend(context.guildN, context.messageChannel, context.author, thread, sanitizedMessage, shouldSend)
+    sendInGuildSuspend(context.guildN, context.channel, context.author, thread, sanitizedMessage, shouldSend)
 }
 
 fun Throwable.sendInGuild(

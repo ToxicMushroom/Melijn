@@ -19,7 +19,7 @@ import java.awt.Color
 
 class MessageUpdateListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMessageUpdateEvent) {
             TaskManager.async(event.author, event.channel) {
                 onMessageUpdate(event)
@@ -59,7 +59,12 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         }
     }
 
-    private suspend fun postMessageUpdateLog(event: GuildMessageUpdateEvent, logChannel: TextChannel, daoMessage: DaoMessage, oldContent: String) {
+    private suspend fun postMessageUpdateLog(
+        event: GuildMessageUpdateEvent,
+        logChannel: TextChannel,
+        daoMessage: DaoMessage,
+        oldContent: String
+    ) {
         val daoManager = container.daoManager
         val zoneId = getZoneId(daoManager, event.guild.idLong)
         val language = getLanguage(daoManager, -1, event.guild.idLong)
@@ -73,7 +78,10 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
             .withVariable(PLACEHOLDER_USER_ID, event.author.id)
             .withVariable("sentTime", event.message.timeCreated.asLongLongGMTString())
             .withVariable("editedTime", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
-            .withVariable("link", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
+            .withVariable(
+                "link",
+                "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}"
+            )
 
         val embedBuilder = EmbedBuilder()
             .setColor(Color(0xA1DAC3))

@@ -1,7 +1,5 @@
 package me.melijn.melijnbot.internals.web.rest.member
 
-import io.ktor.application.*
-import io.ktor.response.*
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.isPositiveNumber
@@ -18,9 +16,11 @@ object MemberInfoResponseHandler {
         }
 
         if (guild == null) {
-            context.call.respondJson(DataObject.empty()
-                .put("error", "Invalid guildId")
-                .put("isMember", false))
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("error", "Invalid guildId")
+                    .put("isMember", false)
+            )
             return
         }
 
@@ -33,15 +33,19 @@ object MemberInfoResponseHandler {
             guild.retrieveMember(it).awaitOrNull()
         }
         if (member == null) {
-            context.call.respondJson(DataObject.empty()
-                .put("error", "Member not found")
-                .put("isMember", false))
+            context.call.respondJson(
+                DataObject.empty()
+                    .put("error", "Member not found")
+                    .put("isMember", false)
+            )
             return
         }
 
 
-        context.call.respondJson(DataObject.empty()
-            .put("isMember", true)
-            .put("isAdmin", member.hasPermission(Permission.ADMINISTRATOR) || member.isOwner))
+        context.call.respondJson(
+            DataObject.empty()
+                .put("isMember", true)
+                .put("isAdmin", member.hasPermission(Permission.ADMINISTRATOR) || member.isOwner)
+        )
     }
 }

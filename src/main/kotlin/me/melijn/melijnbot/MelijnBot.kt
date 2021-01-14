@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.events.EventManager
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.web.RestServer
 import net.dv8tion.jda.api.GatewayEncoding
+import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
@@ -39,17 +40,22 @@ class MelijnBot {
 
         val nodeMap = mutableMapOf<String, Array<Settings.Lavalink.LLNode>>()
         nodeMap["normal"] = container.settings.lavalink.verified_nodes
-        nodeMap["http"] = container.settings.lavalink.http_nodes
+        if (container.settings.lavalink.enabled_http_nodes) {
+            nodeMap["http"] = container.settings.lavalink.http_nodes
+        }
 
         logger.info("Connecting to lavalink")
         val jdaLavaLink = runBlocking {
-            TaskManager.taskValueAsync { generateJdaLinkFromNodes(container, nodeMap) }.await()
+            TaskManager.taskValueAsync {
+                generateJdaLinkFromNodes(container, nodeMap)
+            }.await()
         }
 
         container.initLava(jdaLavaLink)
 
         eventManager = EventManager(container)
 
+        logger.info("Building JDA Shardmanager")
         val defaultShardManagerBuilder = DefaultShardManagerBuilder
             .create(
                 GatewayIntent.DIRECT_MESSAGES,
@@ -63,7 +69,8 @@ class MelijnBot {
             )
             .setShardsTotal(container.settings.botInfo.shardCount)
             .setToken(container.settings.tokens.discord)
-            .setActivity(Activity.listening("commands | ${container.settings.botInfo.prefix}help"))
+            .setActivity(Activity.playing("Starting.."))
+            .setStatus(OnlineStatus.IDLE)
             .setAutoReconnect(true)
             .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY)
             .setChunkingFilter(ChunkingFilter.NONE)
@@ -97,7 +104,10 @@ class MelijnBot {
         }
     }
 
-    private suspend fun generateJdaLinkFromNodes(container: Container, nodeMap: Map<String, Array<Settings.Lavalink.LLNode>>): JDALavalink? {
+    private suspend fun generateJdaLinkFromNodes(
+        container: Container,
+        nodeMap: Map<String, Array<Settings.Lavalink.LLNode>>
+    ): JDALavalink? {
         return if (container.settings.lavalink.enabled) {
             val linkBuilder = JDALavalink(
                 container.settings.botInfo.id,

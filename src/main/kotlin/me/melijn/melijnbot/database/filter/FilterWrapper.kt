@@ -18,7 +18,11 @@ class FilterWrapper(private val filterDao: FilterDao) {
         if (cached != null) return cached
 
         val filters = filterDao.get(guildId, filterGroupName, filterType)
-        filterDao.setCacheEntry("$filterType:$guildId:$filterGroupName", objectMapper.writeValueAsString(filters), NORMAL_CACHE)
+        filterDao.setCacheEntry(
+            "$filterType:$guildId:$filterGroupName",
+            objectMapper.writeValueAsString(filters),
+            NORMAL_CACHE
+        )
         return filters
     }
 
@@ -27,7 +31,11 @@ class FilterWrapper(private val filterDao: FilterDao) {
 
         val filters = getFilters(guildId, filterGroupName, filterType).toMutableList()
         filters.addIfNotPresent(filter)
-        filterDao.setCacheEntry("$filterType:$guildId:$filterGroupName", objectMapper.writeValueAsString(filters), NORMAL_CACHE)
+        filterDao.setCacheEntry(
+            "$filterType:$guildId:$filterGroupName",
+            objectMapper.writeValueAsString(filters),
+            NORMAL_CACHE
+        )
     }
 
     suspend fun removeFilter(guildId: Long, filterGroupName: String, filterType: FilterType, filter: String) {
@@ -35,7 +43,11 @@ class FilterWrapper(private val filterDao: FilterDao) {
 
         val filters = getFilters(guildId, filterGroupName, filterType).toMutableList()
         filters.remove(filter)
-        filterDao.setCacheEntry("$filterType:$guildId:$filterGroupName", objectMapper.writeValueAsString(filters), NORMAL_CACHE)
+        filterDao.setCacheEntry(
+            "$filterType:$guildId:$filterGroupName",
+            objectMapper.writeValueAsString(filters),
+            NORMAL_CACHE
+        )
     }
 
     suspend fun contains(guildId: Long, filterGroupName: String, filterType: FilterType, filter: String): Boolean {

@@ -18,7 +18,10 @@ class DonatorService(
 
         for (member in guild?.memberCache ?: emptyList<Member>()) {
             val isPremium = member.roles.any {
-                it.idLong == 488579500427313208 || it.idLong == 686243026384715796 || it.idLong == 734467534492926032
+                it.idLong == 488579500427313208 ||
+                    it.idLong == 686243026384715796 ||
+                    it.idLong == 734467534492926032 ||
+                    it.idLong == 347510431289704449
             }
             if (isPremium) {
                 wrapper.add(member.idLong)

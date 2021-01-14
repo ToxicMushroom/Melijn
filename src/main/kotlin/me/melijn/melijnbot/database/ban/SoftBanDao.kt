@@ -20,56 +20,68 @@ class SoftBanDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun addSoftBan(ban: SoftBan) {
         ban.apply {
-            driverManager.executeUpdate("INSERT INTO $table (softBanId, guildId, softBannedId, softBanAuthorId, reason, moment) VALUES (?, ?, ?, ?, ?, ?)" +
-                " ON CONFLICT ($primaryKey) DO NOTHING",
-                softBanId, guildId, softBannedId, softBanAuthorId, reason, moment)
+            driverManager.executeUpdate(
+                "INSERT INTO $table (softBanId, guildId, softBannedId, softBanAuthorId, reason, moment) VALUES (?, ?, ?, ?, ?, ?)" +
+                    " ON CONFLICT ($primaryKey) DO NOTHING",
+                softBanId, guildId, softBannedId, softBanAuthorId, reason, moment
+            )
         }
     }
 
     suspend fun getSoftBans(guildId: Long, bannedId: Long): List<SoftBan> = suspendCoroutine {
         driverManager.executeQuery(
             "SELECT * FROM $table WHERE guildId = ? AND softBannedId = ?", { rs ->
-            val softBans = ArrayList<SoftBan>()
-            while (rs.next()) {
-                softBans.add(SoftBan(
-                    guildId,
-                    bannedId,
-                    rs.getLong("softBanAuthorId"),
-                    rs.getString("reason"),
-                    rs.getLong("moment"),
-                    rs.getString("softBanId")
-                ))
-            }
-            it.resume(softBans)
-        }, guildId, bannedId)
+                val softBans = ArrayList<SoftBan>()
+                while (rs.next()) {
+                    softBans.add(
+                        SoftBan(
+                            guildId,
+                            bannedId,
+                            rs.getLong("softBanAuthorId"),
+                            rs.getString("reason"),
+                            rs.getLong("moment"),
+                            rs.getString("softBanId")
+                        )
+                    )
+                }
+                it.resume(softBans)
+            }, guildId, bannedId
+        )
     }
 
     suspend fun getSoftBans(softbanId: String): List<SoftBan> = suspendCoroutine {
         driverManager.executeQuery(
             "SELECT * FROM $table WHERE softBanId = ?", { rs ->
-            val softBans = ArrayList<SoftBan>()
-            while (rs.next()) {
-                softBans.add(SoftBan(
-                    rs.getLong("guildId"),
-                    rs.getLong("softBannedId"),
-                    rs.getLong("softBanAuthorId"),
-                    rs.getString("reason"),
-                    rs.getLong("moment"),
-                    softbanId
-                ))
-            }
-            it.resume(softBans)
-        }, softbanId)
+                val softBans = ArrayList<SoftBan>()
+                while (rs.next()) {
+                    softBans.add(
+                        SoftBan(
+                            rs.getLong("guildId"),
+                            rs.getLong("softBannedId"),
+                            rs.getLong("softBanAuthorId"),
+                            rs.getString("reason"),
+                            rs.getLong("moment"),
+                            softbanId
+                        )
+                    )
+                }
+                it.resume(softBans)
+            }, softbanId
+        )
     }
 
     suspend fun clear(guildId: Long, softbannedId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND softBannedId = ?",
-            guildId, softbannedId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND softBannedId = ?",
+            guildId, softbannedId
+        )
     }
 
     suspend fun remove(softBan: SoftBan) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND softBannedId = ? AND softBanId = ?",
-            softBan.guildId, softBan.softBannedId, softBan.softBanId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND softBannedId = ? AND softBanId = ?",
+            softBan.guildId, softBan.softBannedId, softBan.softBanId
+        )
     }
 }
 

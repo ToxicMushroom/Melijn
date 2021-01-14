@@ -5,7 +5,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -24,7 +24,8 @@ class SettingsCommand : AbstractCommand("command.settings") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
+
         val guild = if (context.args.isNotEmpty() && context.botDevIds.contains(context.authorId)) {
             val guild1 = context.shardManager.getGuildById(context.args[0])
             if (guild1 == null) {
@@ -60,13 +61,28 @@ class SettingsCommand : AbstractCommand("command.settings") {
             "\n**UnverifiedRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.UNVERIFIED)) +
             "\n**BirthDayRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.BIRTHDAY)) +
             "\n" +
-            "\n**VerificationChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.VERIFICATION)) +
+            "\n**VerificationChannel:** " + idToChannelMention(
+            channelWrapper.getChannelId(
+                guildId,
+                ChannelType.VERIFICATION
+            )
+        ) +
             "\n**JoinChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.JOIN)) +
             "\n**LeaveChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.LEAVE)) +
             "\n**SelfRoleChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.SELFROLE)) +
             "\n**BirthDayChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.BIRTHDAY)) +
-            "\n**PreVerificationJoinChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.PRE_VERIFICATION_JOIN)) +
-            "\n**PreVerificationLeaveChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId,ChannelType.PRE_VERIFICATION_LEAVE)) +
+            "\n**PreVerificationJoinChannel:** " + idToChannelMention(
+            channelWrapper.getChannelId(
+                guildId,
+                ChannelType.PRE_VERIFICATION_JOIN
+            )
+        ) +
+            "\n**PreVerificationLeaveChannel:** " + idToChannelMention(
+            channelWrapper.getChannelId(
+                guildId,
+                ChannelType.PRE_VERIFICATION_LEAVE
+            )
+        ) +
             "\n" +
             "\n$logChannels" +
             "\n" +
@@ -83,7 +99,10 @@ class SettingsCommand : AbstractCommand("command.settings") {
             daoManager.userPrefixWrapper.getPrefixes(context.authorId).joinToString { pref ->
                 "\n  - **" + MarkdownSanitizer.escape(pref) + "**"
             } +
-            "\nEmbedState: **" + booleanToString(context, !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guildId)) +
+            "\nEmbedState: **" + booleanToString(
+            context,
+            !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guildId)
+        ) +
             "\n**EmbedColor: **" + (if (ec == 0) "unset" else "#" + ec.toHexString()) +
             "\n**PrivateEmbedColor: **" + (if (pec == 0) "unset" else pec.toHexString()) +
             "\n**Language: **" + daoManager.guildLanguageWrapper.getLanguage(guildId) +
@@ -115,7 +134,7 @@ class SettingsCommand : AbstractCommand("command.settings") {
         }
     }
 
-    private suspend fun booleanToString(context: CommandContext, contains: Boolean): String {
+    private suspend fun booleanToString(context: ICommandContext, contains: Boolean): String {
         val enabled = context.getTranslation("enabled")
         val disabled = context.getTranslation("disabled")
         return if (contains) enabled else disabled

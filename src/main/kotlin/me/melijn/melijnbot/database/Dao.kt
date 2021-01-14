@@ -85,6 +85,6 @@ abstract class CacheDBDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun removeCacheEntry(key: Any) {
         driverManager.redisConnection?.async()
-            ?.del(key.toString())
+            ?.del("$cacheName:${key}")
     }
 }

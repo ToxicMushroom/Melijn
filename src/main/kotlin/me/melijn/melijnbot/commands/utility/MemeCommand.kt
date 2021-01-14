@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -24,8 +24,9 @@ class MemeCommand : AbstractCommand("command.meme") {
         val subreddits = arrayOf("dankmemes", "memes", "funny")
     }
 
-    override suspend fun execute(context: CommandContext) {
-        val subreddit = if (context.commandParts[0] == "dankmeme") "dankmemes" else subreddits[Random.nextInt(subreddits.size)]
+    override suspend fun execute(context: ICommandContext) {
+        val subreddit =
+            if (context.commandParts[0] == "dankmeme") "dankmemes" else subreddits[Random.nextInt(subreddits.size)]
 
         val randomResult = RedditCommand.getRandomRedditResultNMessage(context, subreddit, "hot", "day") ?: return
 
@@ -34,7 +35,11 @@ class MemeCommand : AbstractCommand("command.meme") {
                 .setTitle(randomResult.title.take(256), "https://reddit.com" + randomResult.url)
                 .setImage(if (randomResult.justText) null else randomResult.img)
                 .setThumbnail(if (randomResult.justText) "https://static.melijn.com/text-icon.png" else null)
-                .setFooter("\uD83D\uDD3C ${randomResult.ups} | " + (randomResult.created * 1000).asEpochMillisToDateTime(context.getTimeZoneId()))
+                .setFooter(
+                    "\uD83D\uDD3C ${randomResult.ups} | " + (randomResult.created * 1000).asEpochMillisToDateTime(
+                        context.getTimeZoneId()
+                    )
+                )
 
             if (randomResult.thumb.isNotBlank() && randomResult.thumb != "self" && randomResult.justText) {
                 try {

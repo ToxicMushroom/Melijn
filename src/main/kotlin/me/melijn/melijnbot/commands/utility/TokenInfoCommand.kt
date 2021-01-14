@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
@@ -21,7 +21,7 @@ class TokenInfoCommand : AbstractCommand("command.tokeninfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -44,10 +44,12 @@ class TokenInfoCommand : AbstractCommand("command.tokeninfo") {
         val hmac = (split[2])
 
         val eb = Embedder(context)
-            .setDescription("**BotID:** ${userId}\n" +
-                "**Bot Creation Time:** ${(botCreated).asEpochMillisToDateTime(context.getTimeZoneId())} | $botCreated\n" +
-                "**Token Creation Time:** ${(tokenCreated).asEpochMillisToDateTime(context.getTimeZoneId())} | $tokenCreated\n" +
-                "**Hmac:** $hmac")
+            .setDescription(
+                "**BotID:** ${userId}\n" +
+                    "**Bot Creation Time:** ${(botCreated).asEpochMillisToDateTime(context.getTimeZoneId())} | $botCreated\n" +
+                    "**Token Creation Time:** ${(tokenCreated).asEpochMillisToDateTime(context.getTimeZoneId())} | $tokenCreated\n" +
+                    "**Hmac:** $hmac"
+            )
         if (bot != null) {
             eb.setAuthor(bot.asTag, null, bot.effectiveAvatarUrl)
         } else {

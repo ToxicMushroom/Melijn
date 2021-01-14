@@ -9,16 +9,22 @@ import io.ktor.server.netty.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.web.rest.codes.VerificationCodeResponseHandler
 import me.melijn.melijnbot.internals.web.rest.commands.FullCommandsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.convert.UpgradeGuildsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.info.GetGuildResponseHandler
 import me.melijn.melijnbot.internals.web.rest.info.PostGuildResponseHandler
 import me.melijn.melijnbot.internals.web.rest.member.MemberInfoResponseHandler
-import me.melijn.melijnbot.internals.web.rest.settings.GetGeneralSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.settings.GetUserSettingsResponseHandler
-import me.melijn.melijnbot.internals.web.rest.settings.PostGeneralSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.settings.PostUserSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.general.GetGeneralSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.general.PostGeneralSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.logging.GetLoggingSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.logging.PostLoggingSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.starboard.GetStarboardSettingsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.settings.starboard.PostStarboardSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.shutdown.ShutdownResponseHandler
+import me.melijn.melijnbot.internals.web.rest.stats.PublicStatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.StatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.voted.VotedResponseHandler
 import net.dv8tion.jda.api.utils.data.DataArray
@@ -50,6 +56,14 @@ class RestServer(container: Container) {
                     call.respondText { t.message + "\n" + t.stackTraceToString() }
                 }
             }
+            get("/publicStats") {
+                try {
+                    PublicStatsResponseHandler.handlePublicStatsResponse(RequestContext(call, container))
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                    call.respondText { t.message + "\n" + t.stackTraceToString() }
+                }
+            }
 
 
             get("/guild/{id}") {
@@ -73,10 +87,12 @@ class RestServer(container: Container) {
                 val path = call.parameters["path"] ?: return@get
                 val translation = i18n.getTranslation(lang, path)
 
-                call.respondText(DataObject.empty()
-                    .put("isSame", path == translation)
-                    .put("translation", translation)
-                    .toString())
+                call.respondText(
+                    DataObject.empty()
+                        .put("isSame", path == translation)
+                        .put("translation", translation)
+                        .toString()
+                )
             }
 
             get("/translations/{language}") {
@@ -97,6 +113,14 @@ class RestServer(container: Container) {
                 VotedResponseHandler.handleVotedResponse(RequestContext(call, container))
             }
 
+            post("/unverified/guilds") {
+                VerificationCodeResponseHandler.handleUnverifiedGuilds(RequestContext(call, container))
+            }
+
+            post("/unverified/verify") {
+                VerificationCodeResponseHandler.handleGuildVeriifcation(RequestContext(call, container))
+            }
+
             post("/getsettings/user/{userId}") {
                 GetUserSettingsResponseHandler.handleUserSettingsGet(RequestContext(call, container))
             }
@@ -111,6 +135,22 @@ class RestServer(container: Container) {
 
             post("/postsettings/general/{guildId}") {
                 PostGeneralSettingsResponseHandler.handleGeneralSettingsPost(RequestContext(call, container))
+            }
+
+            post("/getsettings/logging/{guildId}") {
+                GetLoggingSettingsResponseHandler.handleGetLoggingSettings(RequestContext(call, container))
+            }
+
+            post("/setsettings/logging/{guildId}") {
+                PostLoggingSettingsResponseHandler.handleSetLoggingSettings(RequestContext(call, container))
+            }
+
+            post("/getsettings/starboard/{guildId}") {
+                GetStarboardSettingsResponseHandler.handleGetStarboardSettings(RequestContext(call, container))
+            }
+
+            post("/setsettings/starboard/{guildId}") {
+                PostStarboardSettingsResponseHandler.handleSetStarboardSettings(RequestContext(call, container))
             }
 
             get("/shutdown") {

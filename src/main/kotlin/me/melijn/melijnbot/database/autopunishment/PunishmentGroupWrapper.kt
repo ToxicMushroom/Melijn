@@ -21,10 +21,10 @@ class PunishmentGroupWrapper(private val punishmentGroupDao: PunishmentGroupDao)
         val list = mutableListOf<PunishGroup>()
         for ((group, valuePair) in valuePairs) {
             val firstEntries = valuePair
-                .first
+                .second
                 .splitIETEL(",")
             val secondEntries = valuePair
-                .second
+                .third
                 .removeSurrounding("[", "]")
                 .splitIETEL("],[")
             val ppTriggerList = mutableListOf<PointsTriggerType>()
@@ -36,7 +36,7 @@ class PunishmentGroupWrapper(private val punishmentGroupDao: PunishmentGroupDao)
                 val entryParts = entry.split(", ")
                 ppGoalMap[entryParts[0].toInt()] = entryParts[1]
             }
-            list.add(PunishGroup(group, ppTriggerList, ppGoalMap))
+            list.add(PunishGroup(group, valuePair.first, ppTriggerList, ppGoalMap))
         }
         punishmentGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
         return list
@@ -46,12 +46,12 @@ class PunishmentGroupWrapper(private val punishmentGroupDao: PunishmentGroupDao)
         val maps = punishmentGroupDao.getAll(guildId)
         val final = mutableMapOf<String, Pair<List<PointsTriggerType>, Map<Int, String>>>()
         for ((group, pair) in maps) {
-            val firstEntries = if (pair.first.isEmpty()) emptyList() else pair
-                .first
+            val firstEntries = if (pair.second.isEmpty()) emptyList() else pair
+                .second
                 .splitIETEL(",")
 
-            val secondEntries = if (pair.first.isEmpty()) emptyList() else pair
-                .second
+            val secondEntries = if (pair.third.isEmpty()) emptyList() else pair
+                .third
                 .removeSurrounding("[", "]")
                 .splitIETEL("],[")
             val ppTriggerList = mutableListOf<PointsTriggerType>()
@@ -72,7 +72,7 @@ class PunishmentGroupWrapper(private val punishmentGroupDao: PunishmentGroupDao)
         val list = getList(guildId).toMutableList()
         if (list.any { it.groupName == group }) return
         punishmentGroupDao.add(guildId, group)
-        list.add(PunishGroup(group, emptyList(), mutableMapOf()))
+        list.add(PunishGroup(group, 0,  emptyList(), mutableMapOf()))
         punishmentGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
 
@@ -84,9 +84,9 @@ class PunishmentGroupWrapper(private val punishmentGroupDao: PunishmentGroupDao)
 
         punishmentGroupDao.setEnabledTypes(guildId, group, string)
         val list = getList(guildId).toMutableList()
-        val pGroup = list.first { it.groupName == group }
+        val pGroup = list.firstOrNull { it.groupName == group } ?: return
         list.remove(pGroup)
-        list.add(PunishGroup(pGroup.groupName, types, pGroup.pointGoalMap))
+        list.add(PunishGroup(pGroup.groupName, pGroup.expireTime, types, pGroup.pointGoalMap))
         punishmentGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
 
@@ -97,23 +97,33 @@ class PunishmentGroupWrapper(private val punishmentGroupDao: PunishmentGroupDao)
 
         punishmentGroupDao.setPointGoalMap(guildId, group, string)
         val list = getList(guildId).toMutableList()
-        val pGroup = list.first { it.groupName == group }
+        val pGroup = list.firstOrNull { it.groupName == group } ?: return
         list.remove(pGroup)
-        list.add(PunishGroup(pGroup.groupName, pGroup.enabledTypes, goals.toMutableMap()))
+        list.add(PunishGroup(pGroup.groupName, pGroup.expireTime, pGroup.enabledTypes, goals.toMutableMap()))
         punishmentGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
 
     suspend fun remove(guildId: Long, group: String) {
         punishmentGroupDao.remove(guildId, group)
         val list = getList(guildId).toMutableList()
-        val pGroup = list.first { it.groupName == group }
+        val pGroup = list.firstOrNull { it.groupName == group } ?: return
         list.remove(pGroup)
+        punishmentGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
+    }
+
+    suspend fun setExpireTime(guildId: Long, groupName: String, expireMillis: Long) {
+        punishmentGroupDao.setExpireTime(guildId, groupName, expireMillis)
+        val list = getList(guildId).toMutableList()
+        val pGroup = list.firstOrNull { it.groupName == groupName } ?: return
+        list.remove(pGroup)
+        list.add(PunishGroup(pGroup.groupName, expireMillis, pGroup.enabledTypes, pGroup.pointGoalMap))
         punishmentGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
 }
 
 data class PunishGroup(
     val groupName: String,
+    var expireTime: ExpireTime, // millis
     var enabledTypes: List<PointsTriggerType>,
     val pointGoalMap: MutableMap<Int, String>
 )

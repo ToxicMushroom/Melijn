@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.image
 import com.squareup.gifencoder.*
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
@@ -25,7 +25,7 @@ class PngsToGifCommand : AbstractCommand("command.pngstogif") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val triple = ImageUtils.getImagesBytesNMessage(context, "png") ?: return
 
         ByteArrayOutputStream().use { baos ->

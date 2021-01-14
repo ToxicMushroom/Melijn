@@ -22,10 +22,26 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun setMute(mute: Mute) {
         mute.apply {
-            driverManager.executeUpdate("INSERT INTO $table (muteId, guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                " ON CONFLICT ($primaryKey) DO UPDATE SET endTime = ?, muteAuthorId = ?, reason = ?, unmuteAuthorId = ?, unmuteReason = ?, active = ?",
-                muteId, guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active,
-                endTime, muteAuthorId, reason, unmuteAuthorId, unmuteReason, active)
+            driverManager.executeUpdate(
+                "INSERT INTO $table (muteId, guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                    " ON CONFLICT ($primaryKey) DO UPDATE SET endTime = ?, muteAuthorId = ?, reason = ?, unmuteAuthorId = ?, unmuteReason = ?, active = ?",
+                muteId,
+                guildId,
+                mutedId,
+                muteAuthorId,
+                unmuteAuthorId,
+                reason,
+                startTime,
+                endTime,
+                unmuteReason,
+                active,
+                endTime,
+                muteAuthorId,
+                reason,
+                unmuteAuthorId,
+                unmuteReason,
+                active
+            )
         }
     }
 
@@ -33,18 +49,20 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE active = ? AND endTime < ?", { rs ->
             val mutes = ArrayList<Mute>()
             while (rs.next()) {
-                mutes.add(Mute(
-                    rs.getLong("guildId"),
-                    rs.getLong("mutedId"),
-                    rs.getLong("muteAuthorId"),
-                    rs.getString("reason"),
-                    rs.getLong("unmuteAuthorId"),
-                    rs.getString("unmuteReason"),
-                    rs.getLong("startTime"),
-                    rs.getLong("endTime"),
-                    true,
-                    rs.getString("muteId")
-                ))
+                mutes.add(
+                    Mute(
+                        rs.getLong("guildId"),
+                        rs.getLong("mutedId"),
+                        rs.getLong("muteAuthorId"),
+                        rs.getString("reason"),
+                        rs.getLong("unmuteAuthorId"),
+                        rs.getString("unmuteReason"),
+                        rs.getLong("startTime"),
+                        rs.getLong("endTime"),
+                        true,
+                        rs.getString("muteId")
+                    )
+                )
             }
             it.resume(mutes)
         }, true, System.currentTimeMillis())
@@ -75,18 +93,20 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND mutedId = ?", { rs ->
             val mutes = mutableListOf<Mute>()
             while (rs.next()) {
-                mutes.add(Mute(
-                    guildId,
-                    mutedId,
-                    rs.getLong("muteAuthorId"),
-                    rs.getString("reason"),
-                    rs.getLong("unmuteAuthorId"),
-                    rs.getString("unmuteReason"),
-                    rs.getLong("startTime"),
-                    rs.getLong("endTime"),
-                    rs.getBoolean("active"),
-                    rs.getString("muteId")
-                ))
+                mutes.add(
+                    Mute(
+                        guildId,
+                        mutedId,
+                        rs.getLong("muteAuthorId"),
+                        rs.getString("reason"),
+                        rs.getLong("unmuteAuthorId"),
+                        rs.getString("unmuteReason"),
+                        rs.getLong("startTime"),
+                        rs.getLong("endTime"),
+                        rs.getBoolean("active"),
+                        rs.getString("muteId")
+                    )
+                )
             }
             it.resume(mutes)
         }, guildId, mutedId)
@@ -96,36 +116,44 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         val mutes = ArrayList<Mute>()
         driverManager.executeQuery("SELECT * FROM $table WHERE muteId = ?", { rs ->
             while (rs.next()) {
-                mutes.add(Mute(
-                    rs.getLong("guildId"),
-                    rs.getLong("mutedId"),
-                    rs.getLong("muteAuthorId"),
-                    rs.getString("reason"),
-                    rs.getLong("unmuteAuthorId"),
-                    rs.getString("unmuteReason"),
-                    rs.getLong("startTime"),
-                    rs.getLong("endTime"),
-                    rs.getBoolean("active"),
-                    muteId
-                ))
+                mutes.add(
+                    Mute(
+                        rs.getLong("guildId"),
+                        rs.getLong("mutedId"),
+                        rs.getLong("muteAuthorId"),
+                        rs.getString("reason"),
+                        rs.getLong("unmuteAuthorId"),
+                        rs.getString("unmuteReason"),
+                        rs.getLong("startTime"),
+                        rs.getLong("endTime"),
+                        rs.getBoolean("active"),
+                        muteId
+                    )
+                )
             }
         }, muteId)
         return mutes
     }
 
     suspend fun clearHistory(guildId: Long, mutedId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND mutedId = ? AND active = ?",
-            guildId, mutedId, false)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND mutedId = ? AND active = ?",
+            guildId, mutedId, false
+        )
     }
 
     suspend fun clear(guildId: Long, mutedId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND mutedId = ?",
-            guildId, mutedId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND mutedId = ?",
+            guildId, mutedId
+        )
     }
 
     suspend fun remove(mute: Mute) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND mutedId = ? AND muteId = ?",
-            mute.guildId, mute.mutedId, mute.muteId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND mutedId = ? AND muteId = ?",
+            mute.guildId, mute.mutedId, mute.muteId
+        )
     }
 }
 

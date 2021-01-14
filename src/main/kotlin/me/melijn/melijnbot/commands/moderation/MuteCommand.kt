@@ -6,7 +6,7 @@ import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
@@ -33,7 +33,7 @@ class MuteCommand : AbstractCommand("command.mute") {
         discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -48,7 +48,12 @@ class MuteCommand : AbstractCommand("command.mute") {
                 sendRsp(context, msg)
                 return
             }
-            if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+            if (!context.member.canInteract(member) && !hasPermission(
+                    context,
+                    SpecialPermission.PUNISH_BYPASS_HIGHER.node,
+                    true
+                )
+            ) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
                     .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 sendRsp(context, msg)
@@ -91,7 +96,7 @@ class MuteCommand : AbstractCommand("command.mute") {
         }
     }
 
-    private suspend fun muteRoleAquired(context: CommandContext, targetUser: User, reason: String, muteRole: Role) {
+    private suspend fun muteRoleAquired(context: ICommandContext, targetUser: User, reason: String, muteRole: Role) {
         val activeMute: Mute? = context.daoManager.muteWrapper.getActiveMute(context.guildId, targetUser.idLong)
         val mute = Mute(
             context.guildId,
@@ -122,7 +127,14 @@ class MuteCommand : AbstractCommand("command.mute") {
         continueMuting(context, muteRole, targetUser, mute, activeMute, message)
     }
 
-    private suspend fun continueMuting(context: CommandContext, muteRole: Role, targetUser: User, mute: Mute, activeMute: Mute?, mutingMessage: Message?) {
+    private suspend fun continueMuting(
+        context: ICommandContext,
+        muteRole: Role,
+        targetUser: User,
+        mute: Mute,
+        activeMute: Mute?,
+        mutingMessage: Message?
+    ) {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
@@ -130,7 +142,17 @@ class MuteCommand : AbstractCommand("command.mute") {
         val zoneId = getZoneId(daoManager, guild.idLong)
         val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
         val mutedMessageDm = getMuteMessage(language, privZoneId, guild, targetUser, author, mute)
-        val mutedMessageLc = getMuteMessage(language, zoneId, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
+        val mutedMessageLc = getMuteMessage(
+            language,
+            zoneId,
+            guild,
+            targetUser,
+            author,
+            mute,
+            true,
+            targetUser.isBot,
+            mutingMessage != null
+        )
 
 
         val targetMember = guild.retrieveMember(targetUser).awaitOrNull() ?: return
@@ -201,7 +223,8 @@ fun getMuteMessage(
         .withVariable("muteId", mute.muteId)
 
     val extraDesc: String = if (!received || isBot) {
-        i18n.getTranslation(language,
+        i18n.getTranslation(
+            language,
             if (isBot) {
                 "message.punishment.extra.bot"
             } else {

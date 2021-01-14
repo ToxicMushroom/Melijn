@@ -1,9 +1,8 @@
 package me.melijn.melijnbot.internals.web
 
 import io.ktor.application.*
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.request.headers
+import io.ktor.client.*
+import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.response.*
 import net.dv8tion.jda.api.utils.data.DataArray

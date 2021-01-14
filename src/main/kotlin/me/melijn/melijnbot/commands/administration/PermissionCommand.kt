@@ -4,7 +4,7 @@ import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -26,7 +26,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -44,7 +44,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -55,7 +55,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("put", "s")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.size < 3) {
                     sendSyntax(context)
                     return
@@ -92,7 +92,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("v", "vw", "list", "info")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -127,7 +127,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("clr")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -157,7 +157,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -168,7 +168,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("put", "s")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.size < 3) {
                     sendSyntax(context)
                     return
@@ -208,7 +208,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("v", "vw", "list", "info")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -244,7 +244,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("clr")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -273,7 +273,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendRsp(context, "Channel Permissions")
         }
 
@@ -290,7 +290,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 )
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -301,7 +301,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("put", "s")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 4) {
                         sendSyntax(context)
                         return
@@ -341,7 +341,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("v", "vw", "list", "info")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return
@@ -360,7 +360,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable("permissionNode", permissionNode)
 
 
-                    val channelRole = context.daoManager.channelRolePermissionWrapper.getPermMap(channel.idLong, role.idLong)
+                    val channelRole =
+                        context.daoManager.channelRolePermissionWrapper.getPermMap(channel.idLong, role.idLong)
 
                     var content = "```INI"
                     for ((index, perm) in permissions.withIndex()) {
@@ -383,7 +384,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("clr")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return
@@ -416,7 +417,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 )
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -427,7 +428,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("put", "s")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 4) {
                         sendSyntax(context)
                         return
@@ -468,7 +469,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("v", "vw", "list", "info")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return
@@ -509,7 +510,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("clr")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return
@@ -543,7 +544,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -553,7 +554,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("u")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val extraArg = if (
                     copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
                     copyParent is PermissionCommand.ChannelArg.UserChannelArg
@@ -578,7 +579,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
             }
 
-            private suspend fun copyUserToUser(context: CommandContext) {
+            private suspend fun copyUserToUser(context: ICommandContext) {
                 val user1 = retrieveUserByArgsNMessage(context, 0) ?: return
                 val user2 = retrieveUserByArgsNMessage(context, 1) ?: return
 
@@ -602,7 +603,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 sendRsp(context, msg)
             }
 
-            private suspend fun copyRoleToUser(context: CommandContext) {
+            private suspend fun copyRoleToUser(context: ICommandContext) {
                 val role1 = getRoleByArgsNMessage(context, 0) ?: return
                 val user2 = retrieveUserByArgsNMessage(context, 1) ?: return
 
@@ -626,7 +627,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 sendRsp(context, msg)
             }
 
-            private suspend fun copyChannelUserToUser(context: CommandContext) {
+            private suspend fun copyChannelUserToUser(context: ICommandContext) {
                 val channel1 = getTextChannelByArgsNMessage(context, 0) ?: return
                 val user2 = retrieveUserByArgsNMessage(context, 1) ?: return
                 val user3 = retrieveUserByArgsNMessage(context, 2) ?: return
@@ -653,7 +654,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 sendRsp(context, msg)
             }
 
-            private suspend fun copyChannelRoleToUser(context: CommandContext) {
+            private suspend fun copyChannelRoleToUser(context: ICommandContext) {
                 val channel1 = getTextChannelByArgsNMessage(context, 0) ?: return
                 val role2 = getRoleByArgsNMessage(context, 1) ?: return
                 val user3 = retrieveUserByArgsNMessage(context, 2) ?: return
@@ -688,7 +689,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("r")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val extraArg = if (
                     copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
                     copyParent is PermissionCommand.ChannelArg.UserChannelArg
@@ -713,7 +714,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
             }
 
-            private suspend fun copyUserToRole(context: CommandContext) {
+            private suspend fun copyUserToRole(context: ICommandContext) {
                 val user1 = retrieveUserByArgsNMessage(context, 0) ?: return
                 val role2 = getRoleByArgsNMessage(context, 1) ?: return
 
@@ -738,7 +739,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 sendRsp(context, msg)
             }
 
-            private suspend fun copyRoleToRole(context: CommandContext) {
+            private suspend fun copyRoleToRole(context: ICommandContext) {
                 val role1 = getRoleByArgsNMessage(context, 0) ?: return
                 val role2 = getRoleByArgsNMessage(context, 1) ?: return
 
@@ -761,7 +762,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 sendRsp(context, msg)
             }
 
-            private suspend fun copyChannelUserToRole(context: CommandContext) {
+            private suspend fun copyChannelUserToRole(context: ICommandContext) {
                 val channel1 = getTextChannelByArgsNMessage(context, 0) ?: return
                 val user2 = retrieveUserByArgsNMessage(context, 1) ?: return
                 val role3 = getRoleByArgsNMessage(context, 2) ?: return
@@ -787,7 +788,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 sendRsp(context, msg)
             }
 
-            private suspend fun copyChannelRoleToRole(context: CommandContext) {
+            private suspend fun copyChannelRoleToRole(context: ICommandContext) {
                 val channel1 = getTextChannelByArgsNMessage(context, 0) ?: return
                 val role2 = getRoleByArgsNMessage(context, 1) ?: return
                 val role3 = getRoleByArgsNMessage(context, 2) ?: return
@@ -821,18 +822,19 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 children = arrayOf(RoleChannelCommand(copyParent, root), UserChannelCommand(copyParent, root))
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
-            class RoleChannelCommand(private val copyParent: AbstractCommand, parentRoot: String) : AbstractCommand("$parentRoot.role") {
+            class RoleChannelCommand(private val copyParent: AbstractCommand, parentRoot: String) :
+                AbstractCommand("$parentRoot.role") {
 
                 init {
                     name = "role"
                     aliases = arrayOf("r")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val extraArg = if (
                         copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
                         copyParent is PermissionCommand.ChannelArg.UserChannelArg
@@ -857,7 +859,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
                 }
 
-                private suspend fun copyUserToChannelRole(context: CommandContext) {
+                private suspend fun copyUserToChannelRole(context: ICommandContext) {
                     val user1 = retrieveUserByArgsNMessage(context, 0) ?: return
                     val channel2 = getTextChannelByArgsNMessage(context, 1) ?: return
                     val role3 = getRoleByArgsNMessage(context, 2) ?: return
@@ -883,7 +885,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     sendRsp(context, msg)
                 }
 
-                private suspend fun copyRoleToChannelRole(context: CommandContext) {
+                private suspend fun copyRoleToChannelRole(context: ICommandContext) {
                     val role1 = getRoleByArgsNMessage(context, 0) ?: return
                     val channel2 = getTextChannelByArgsNMessage(context, 1) ?: return
                     val role3 = getRoleByArgsNMessage(context, 2) ?: return
@@ -909,7 +911,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     sendRsp(context, msg)
                 }
 
-                private suspend fun copyChannelUserToChannelRole(context: CommandContext) {
+                private suspend fun copyChannelUserToChannelRole(context: ICommandContext) {
                     val channel1 = getTextChannelByArgsNMessage(context, 0) ?: return
                     val user2 = retrieveUserByArgsNMessage(context, 1) ?: return
                     val channel3 = getTextChannelByArgsNMessage(context, 2) ?: return
@@ -937,7 +939,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     sendRsp(context, msg)
                 }
 
-                private suspend fun copyChannelRoleToChannelRole(context: CommandContext) {
+                private suspend fun copyChannelRoleToChannelRole(context: ICommandContext) {
                     val channel1 = getTextChannelByArgsNMessage(context, 0) ?: return
                     val role2 = getRoleByArgsNMessage(context, 1) ?: return
                     val channel3 = getTextChannelByArgsNMessage(context, 2) ?: return
@@ -965,14 +967,15 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
             }
 
-            class UserChannelCommand(private val copyParent: AbstractCommand, parentRoot: String) : AbstractCommand("$parentRoot.user") {
+            class UserChannelCommand(private val copyParent: AbstractCommand, parentRoot: String) :
+                AbstractCommand("$parentRoot.user") {
 
                 init {
                     name = "user"
                     aliases = arrayOf("u")
                 }
 
-                override suspend fun execute(context: CommandContext) {
+                override suspend fun execute(context: ICommandContext) {
                     val extraArg = if (
                         copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
                         copyParent is PermissionCommand.ChannelArg.UserChannelArg
@@ -997,7 +1000,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
                 }
 
-                private suspend fun copyUserToChannelUser(context: CommandContext) {
+                private suspend fun copyUserToChannelUser(context: ICommandContext) {
                     val user1 = retrieveUserByArgsNMessage(context, 0) ?: return
                     val channel2 = getTextChannelByArgsNMessage(context, 1) ?: return
                     val user3 = retrieveUserByArgsNMessage(context, 2) ?: return
@@ -1023,7 +1026,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     sendRsp(context, msg)
                 }
 
-                private suspend fun copyRoleToChannelUser(context: CommandContext) {
+                private suspend fun copyRoleToChannelUser(context: ICommandContext) {
                     val role1 = getRoleByArgsNMessage(context, 0) ?: return
                     val channel2 = getTextChannelByArgsNMessage(context, 1) ?: return
                     val user3 = retrieveUserByArgsNMessage(context, 2) ?: return
@@ -1049,7 +1052,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     sendRsp(context, msg)
                 }
 
-                private suspend fun copyChannelUserToChannelUser(context: CommandContext) {
+                private suspend fun copyChannelUserToChannelUser(context: ICommandContext) {
                     val channel1 = getTextChannelByArgsNMessage(context, 0) ?: return
                     val user2 = retrieveUserByArgsNMessage(context, 1) ?: return
                     val channel3 = getTextChannelByArgsNMessage(context, 2) ?: return
@@ -1076,7 +1079,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     sendRsp(context, msg)
                 }
 
-                private suspend fun copyChannelRoleToChannelUser(context: CommandContext) {
+                private suspend fun copyChannelRoleToChannelUser(context: ICommandContext) {
                     val channel1 = getTextChannelByArgsNMessage(context, 0) ?: return
                     val role2 = getRoleByArgsNMessage(context, 1) ?: return
                     val channel3 = getTextChannelByArgsNMessage(context, 2) ?: return
@@ -1108,7 +1111,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
     }
 }
 
-suspend fun getPermissionsFromArgNMessage(context: CommandContext, arg: String): List<String>? {
+suspend fun getPermissionsFromArgNMessage(context: ICommandContext, arg: String): List<String>? {
     val permissions = getPermissionsFromArg(context, arg)
     if (permissions == null) {
 
@@ -1119,7 +1122,7 @@ suspend fun getPermissionsFromArgNMessage(context: CommandContext, arg: String):
     return permissions
 }
 
-fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
+fun getPermissionsFromArg(context: ICommandContext, arg: String): List<String>? {
     val category: CommandCategory? = enumValueOrNull(arg)
     val permParts = arg.split(".")
 
@@ -1134,11 +1137,13 @@ fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
     val regex: Regex = when {
         arg == "*" || category != null -> ".*".toRegex()
         permParts.last() == "*" -> (
-            Pattern.quote(permParts.subList(0, permParts.size - 1)
-                .joinToString(".")) + "(..*)?"
-            ).toRegex()
+            Pattern.quote(
+                permParts.subList(0, permParts.size - 1)
+                    .joinToString(".")
+            ) + "(..*)?"
+            ).toRegex(RegexOption.IGNORE_CASE)
 
-        else -> Pattern.quote(arg).toRegex()
+        else -> Pattern.quote(arg).toRegex(RegexOption.IGNORE_CASE)
     }
 
     val perms = getPermissions(commands)

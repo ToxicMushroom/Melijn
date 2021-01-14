@@ -40,19 +40,24 @@ object StatsResponseHandler {
         scheduledExecutorService as ThreadPoolExecutor
 
         val dataObject = DataObject.empty()
-        dataObject.put("bot", DataObject.empty()
-            .put("uptime", ManagementFactory.getRuntimeMXBean().uptime)
-            .put("melijnThreads", threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size)
-            .put("ramUsage", usedJVMMem)
-            .put("ramTotal", totalJVMMem)
-            .put("jvmThreads", Thread.activeCount())
-            .put("cpuUsage", bean.processCpuLoad * 100)
+        dataObject.put(
+            "bot", DataObject.empty()
+                .put("uptime", ManagementFactory.getRuntimeMXBean().uptime)
+                .put(
+                    "melijnThreads",
+                    threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size
+                )
+                .put("ramUsage", usedJVMMem)
+                .put("ramTotal", totalJVMMem)
+                .put("jvmThreads", Thread.activeCount())
+                .put("cpuUsage", bean.processCpuLoad * 100)
         )
 
-        dataObject.put("server", DataObject.empty()
-            .put("uptime", getSystemUptime())
-            .put("ramUsage", usedMem)
-            .put("ramTotal", totalMem)
+        dataObject.put(
+            "server", DataObject.empty()
+                .put("uptime", getSystemUptime())
+                .put("ramUsage", usedMem)
+                .put("ramTotal", totalMem)
         )
 
 

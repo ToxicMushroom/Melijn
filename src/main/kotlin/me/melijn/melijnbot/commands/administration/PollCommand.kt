@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.commands.utility.T2eCommand.Companion.letter
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.getTextChannelByArgsN
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendRspAwaitEL
@@ -24,7 +24,7 @@ class PollCommand : AbstractCommand("command.poll") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
         return
     }
@@ -38,7 +38,7 @@ class PollCommand : AbstractCommand("command.poll") {
 
         //>poll addTimed *d [textChannel] "question?" "a" "B"
         //>poll addTimed *d "question?" "a" "B"
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 4) {
                 sendSyntax(context)
                 return
@@ -54,7 +54,7 @@ class PollCommand : AbstractCommand("command.poll") {
 
         //>poll add [textChannel] "question?" "a" "B"
         //>poll add "question?" "a" "B"
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 3) {
                 sendSyntax(context)
                 return
@@ -75,10 +75,12 @@ class PollCommand : AbstractCommand("command.poll") {
 
             val absoluteChannel = textChannel ?: context.textChannel
             val answerList = args.subList(1, args.size)
-            val answers = answerList.withIndex().joinToString("\n") { "${getEmoji((it.index + 1).toString())} ${it.value}" }
-            val msg = sendRspAwaitEL(absoluteChannel, context.daoManager, "**${args[0]}**\n\n" + answers).firstOrNull()?:return
-            for(i in answerList.indices){
-                getEmojiraw(i+1)?.let { msg.addReaction(it).queue() }
+            val answers =
+                answerList.withIndex().joinToString("\n") { "${getEmoji((it.index + 1).toString())} ${it.value}" }
+            val msg = sendRspAwaitEL(absoluteChannel, context.daoManager, "**${args[0]}**\n\n" + answers).firstOrNull()
+                ?: return
+            for (i in answerList.indices) {
+                getEmojiraw(i + 1)?.let { msg.addReaction(it).queue() }
             }
         }
 

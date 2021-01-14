@@ -17,6 +17,7 @@ data class Settings(
     val database: Database,
     val redis: Redis,
     val emote: Emote,
+    val economy: Economy,
     val unLoggedThreads: Array<String>
 ) {
 
@@ -72,6 +73,7 @@ data class Settings(
     data class Lavalink(
         var http_nodes: Array<LLNode>,
         var verified_nodes: Array<LLNode>,
+        var enabled_http_nodes: Boolean,
         var enabled: Boolean
     ) {
         data class LLNode(val groupId: String, val host: String, val pass: String)
@@ -111,6 +113,12 @@ data class Settings(
         val slotId: Long
     )
 
+    data class Economy(
+        val baseMel: Long,
+        val premiumMultiplier: Float,
+        val streakExpireHours: Int
+    )
+
     companion object {
         private val dotenv = dotenv {
             this.filename = System.getenv("ENV_FILE") ?: ".env"
@@ -121,6 +129,7 @@ data class Settings(
             ?: throw IllegalStateException("missing env value: $path")
 
         fun getLong(path: String): Long = get(path).toLong()
+        fun getFloat(path: String): Float = get(path).toFloat()
         fun getInt(path: String): Int = get(path).toInt()
         fun getBoolean(path: String): Boolean = get(path).toBoolean()
 
@@ -178,6 +187,7 @@ data class Settings(
                 Lavalink(
                     llNodes.filter { it.groupId == "http" }.toTypedArray(),
                     llNodes.filter { it.groupId == "normal" }.toTypedArray(),
+                    getBoolean("lavalink.enabled.http.nodes"),
                     getBoolean("lavalink.enabled")
                 ),
                 Token(
@@ -208,6 +218,11 @@ data class Settings(
                 ),
                 Emote(
                     getLong("emote.slotId")
+                ),
+                Economy(
+                    getLong("economy.baseMel"),
+                    getFloat("economy.premiumMultiplier"),
+                    getInt("economy.streakExpireHours")
                 ),
                 get("unloggedThreads").splitIETEL(",").toTypedArray()
             )

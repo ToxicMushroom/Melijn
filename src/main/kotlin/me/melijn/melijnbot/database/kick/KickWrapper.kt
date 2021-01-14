@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.database.kick
 
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.withSafeVariable
@@ -14,7 +14,7 @@ class KickWrapper(private val kickDao: KickDao) {
         kickDao.add(kick)
     }
 
-    suspend fun getKickMap(context: CommandContext, targetUser: User): Map<Long, String> {
+    suspend fun getKickMap(context: ICommandContext, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val kicks = kickDao.getKicks(context.guildId, targetUser.idLong)
 
@@ -28,7 +28,7 @@ class KickWrapper(private val kickDao: KickDao) {
         return map
     }
 
-    suspend fun getKickMap(context: CommandContext, kickId: String): Map<Long, String> {
+    suspend fun getKickMap(context: ICommandContext, kickId: String): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val kicks = kickDao.getKicks(kickId)
         if (kicks.isEmpty()) {
@@ -43,12 +43,12 @@ class KickWrapper(private val kickDao: KickDao) {
         return map
     }
 
-    private suspend fun convertKickInfoToMessage(context: CommandContext, kick: Kick): String {
+    private suspend fun convertKickInfoToMessage(context: ICommandContext, kick: Kick): String {
         val kickAuthor = context.shardManager.retrieveUserById(kick.kickAuthorId).awaitOrNull()
         return getKickMessage(context, kickAuthor, kick)
     }
 
-    private suspend fun getKickMessage(context: CommandContext, kickAuthor: User?, kick: Kick): String {
+    private suspend fun getKickMessage(context: ICommandContext, kickAuthor: User?, kick: Kick): String {
         val deletedUser = context.getTranslation("message.deleted.user")
         val zoneId = context.getTimeZoneId()
         return context.getTranslation("message.punishmenthistory.kick")

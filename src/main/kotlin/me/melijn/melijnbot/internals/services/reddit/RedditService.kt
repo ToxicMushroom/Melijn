@@ -21,7 +21,8 @@ class RedditService(httpClient: HttpClient, driverManager: DriverManager) : Serv
     }
 }
 
-class RedditAboutService(httpClient: HttpClient, driverManager: DriverManager) : Service("RedditAbout", 30, 2, TimeUnit.MINUTES) {
+class RedditAboutService(httpClient: HttpClient, driverManager: DriverManager) :
+    Service("RedditAbout", 30, 2, TimeUnit.MINUTES) {
     override val service: RunnableTask = RunnableTask {
         for (subreddit in MemeCommand.subreddits) {
             if ((driverManager.redisConnection?.async()?.ttl("reddit:posts:hot:$subreddit")?.await() ?: 0) < 1700) {

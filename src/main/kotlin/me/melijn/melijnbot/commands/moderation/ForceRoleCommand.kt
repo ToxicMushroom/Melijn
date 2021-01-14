@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
@@ -37,7 +37,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             aliases = arrayOf("roleInfo")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -74,7 +74,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             aliases = arrayOf("userInfo")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -98,7 +98,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -108,7 +108,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             name = "add"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -123,7 +123,12 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
                     sendRsp(context, msg)
                     return
                 }
-                if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+                if (!context.member.canInteract(member) && !hasPermission(
+                        context,
+                        SpecialPermission.PUNISH_BYPASS_HIGHER.node,
+                        true
+                    )
+                ) {
                     val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
                         .withVariable(PLACEHOLDER_USER, member.asTag)
                     sendRsp(context, msg)
@@ -133,7 +138,9 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
             context.daoManager.forceRoleWrapper.add(context.guildId, user.idLong, role.idLong)
             if (member != null && !member.roles.contains(role)) {
-                if (!context.guild.addRoleToMember(member, role).reason("(forceRole add) ${context.author.asTag}").awaitBool()) {
+                if (!context.guild.addRoleToMember(member, role).reason("(forceRole add) ${context.author.asTag}")
+                        .awaitBool()
+                ) {
                     LogUtils.sendMessageFailedToAddRoleToMember(context.daoManager, member, role)
                 }
             }
@@ -151,7 +158,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             name = "remove"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -162,7 +169,9 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
             context.daoManager.forceRoleWrapper.remove(context.guildId, user.idLong, role.idLong)
             if (member != null && member.roles.contains(role)) {
-                if (context.guild.removeRoleFromMember(member, role).reason("(forceRole remove) ${context.author.asTag}").awaitBool()) {
+                if (context.guild.removeRoleFromMember(member, role)
+                        .reason("(forceRole remove) ${context.author.asTag}").awaitBool()
+                ) {
                     LogUtils.sendMessageFailedToRemoveRoleFromMember(context.daoManager, member, role)
                 }
             }
@@ -180,7 +189,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             name = "list"
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val userRolesMap = context.daoManager.forceRoleWrapper.getForceRoles(context.guildId)
             val reverseMap = mutableMapOf<Long, Int>()
 
@@ -190,13 +199,20 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
                 }
             }
 
+            if (reverseMap.isEmpty()) {
+                val msg = context.getTranslation("$root.empty")
+                sendRsp(context, msg)
+                return
+            }
+
+
             var content = "```INI\n[role] - [users]"
             for ((roleId, users) in reverseMap) {
                 val role = context.guild.getRoleById(roleId)
                 content += "\n[${role?.name}] - $users"
             }
-            if (reverseMap.isEmpty()) content += "\n/"
             content += "```"
+
 
             val msg = context.getTranslation("$root.title") + content
             sendRspCodeBlock(context, msg, "INI", true)

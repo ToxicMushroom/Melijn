@@ -3,7 +3,7 @@ package me.melijn.melijnbot.internals.music
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.isPremiumGuild
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.withVariable
@@ -55,7 +55,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
         return false
     }
 
-    suspend fun safeQueue(context: CommandContext, track: AudioTrack, nextPos: NextSongPosition): Boolean {
+    suspend fun safeQueue(context: ICommandContext, track: AudioTrack, nextPos: NextSongPosition): Boolean {
         val success = safeQueueSilent(context.daoManager, track, nextPos)
         if (!success) {
             val msg = context.getTranslation("message.music.queuelimit")
@@ -68,7 +68,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
         return success
     }
 
-    suspend fun queueIsFull(context: CommandContext, add: Int, silent: Boolean = false): Boolean {
+    suspend fun queueIsFull(context: ICommandContext, add: Int, silent: Boolean = false): Boolean {
         if (
             guildTrackManager.tracks.size + add > QUEUE_LIMIT ||
             (guildTrackManager.tracks.size + add > DONATE_QUEUE_LIMIT && isPremiumGuild(context))

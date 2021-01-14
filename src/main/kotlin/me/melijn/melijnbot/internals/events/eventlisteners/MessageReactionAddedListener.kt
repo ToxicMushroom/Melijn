@@ -3,6 +3,8 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.games.PokerCommand
+import me.melijn.melijnbot.commands.games.RockPaperScissorsCommand
+import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.VerificationType
@@ -33,13 +35,44 @@ import java.lang.Integer.min
 
 class MessageReactionAddedListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMessageReactionAddEvent) onGuildMessageReactionAdd(event)
         if (event is PrivateMessageReactionAddEvent) onPrivateMessageReactionAdd(event)
     }
 
     private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = TaskManager.async(event.channel) {
         paginationHandler(event)
+        handleRPSReaction(event)
+    }
+
+
+    private suspend fun handleRPSReaction(event: PrivateMessageReactionAddEvent) {
+        val author = event.jda.retrieveUserById(event.userIdLong).awaitOrNull() ?: return
+
+        val rps1 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user1 == author.idLong && it.choice1 == null }
+        if (rps1 != null) {
+            RockPaperScissorsCommand.activeGames.remove(rps1)
+
+            rps1.choice1 = try {
+                RockPaperScissorsGame.RPS.fromEmote(event.reactionEmote.emoji)
+            } catch (t: Throwable) {
+                null
+            }
+            RockPaperScissorsCommand.activeGames.add(rps1)
+            return
+        }
+
+        val rps2 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user2 == author.idLong && it.choice2 == null }
+        if (rps2 != null) {
+            RockPaperScissorsCommand.activeGames.remove(rps2)
+
+            rps2.choice2 = try {
+                RockPaperScissorsGame.RPS.fromEmote(event.reactionEmote.emoji)
+            } catch (t: Throwable) {
+                null
+            }
+            RockPaperScissorsCommand.activeGames.add(rps2)
+        }
     }
 
     // TODO fix duplicate code in this file
@@ -60,13 +93,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
-            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
-                "⏪" -> 0
-                "⏩" -> pagination.messageList.size - 1
-                "◀️" -> pagination.currentPage - 1
-                "▶️" -> pagination.currentPage + 1
-                else -> return
-            }))
+            val newIndex = min(
+                pagination.messageList.size - 1, max(
+                    0, when (emoji) {
+                        "⏪" -> 0
+                        "⏩" -> pagination.messageList.size - 1
+                        "◀️" -> pagination.currentPage - 1
+                        "▶️" -> pagination.currentPage + 1
+                        else -> return
+                    }
+                )
+            )
 
             if (newIndex != pagination.currentPage)
                 message.editMessage(pagination.messageList[newIndex]).queue()
@@ -88,13 +125,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
-            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
-                "⏪" -> 0
-                "⏩" -> pagination.messageList.size - 1
-                "◀️" -> pagination.currentPage - 1
-                "▶️" -> pagination.currentPage + 1
-                else -> return
-            }))
+            val newIndex = min(
+                pagination.messageList.size - 1, max(
+                    0, when (emoji) {
+                        "⏪" -> 0
+                        "⏩" -> pagination.messageList.size - 1
+                        "◀️" -> pagination.currentPage - 1
+                        "▶️" -> pagination.currentPage + 1
+                        else -> return
+                    }
+                )
+            )
 
             if (newIndex != pagination.currentPage) {
                 val msg = pagination.messageList[newIndex].toMessage()
@@ -117,15 +158,16 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         }
     }
 
-    private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) = TaskManager.async(event.user, event.channel) {
-        selfRoleHandler(event)
-        postReactionAddedLog(event)
-        verificationHandler(event)
-        searchMenuHandler(event)
-        paginationHandler(event)
-        pokerHandler(event)
-        starboardHandler(event)
-    }
+    private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) =
+        TaskManager.async(event.user, event.channel) {
+            selfRoleHandler(event)
+            postReactionAddedLog(event)
+            verificationHandler(event)
+            searchMenuHandler(event)
+            paginationHandler(event)
+            pokerHandler(event)
+            starboardHandler(event)
+        }
 
     private suspend fun starboardHandler(event: GuildMessageReactionAddEvent) {
         if (event.user.isBot || event.reactionEmote.isEmote) return
@@ -134,29 +176,41 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         val starboardSettings = container.daoManager.starboardSettingsWrapper
         val starboardMessageWrapper = container.daoManager.starboardMessageWrapper
-        val channel = event.guild.getAndVerifyChannelByType(container.daoManager, ChannelType.STARBOARD, Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS)
+        val sbchannel = event.guild.getAndVerifyChannelByType(
+            container.daoManager,
+            ChannelType.STARBOARD,
+            Permission.MESSAGE_WRITE,
+            Permission.MESSAGE_EMBED_LINKS
+        )
             ?: return
         val msg = starboardMessageWrapper.getStarboardInfo(event.messageIdLong)
         if (msg == null) {
-            val reactions = event.channel.retrieveReactionUsersById(event.messageIdLong, "⭐").await().filter { !it.isBot }.size
+            if (event.channel.isNSFW) return
+            val reactions =
+                event.channel.retrieveReactionUsersById(event.messageIdLong, "⭐").await().filter { !it.isBot }.size
             val ogMessage = event.channel.retrieveMessageById(event.messageIdLong).await()
             val settings = starboardSettings.getStarboardSettings(event.guild.idLong)
             if (reactions >= settings.minStars) {
-                val starboardMessage = getSendableStarboardMessage(event, reactions, ogMessage.author, event.channel) ?: return
-                val message = channel.sendMessage(starboardMessage).await()
+                val starboardMessage =
+                    getSendableStarboardMessage(event, reactions, ogMessage.author, event.channel) ?: return
+                val message = sbchannel.sendMessage(starboardMessage).await()
                 message.addReaction("⭐").queue()
-                starboardMessageWrapper.setStarboardInfo(event.guild.idLong, event.channel.idLong, ogMessage.author.idLong, event.messageIdLong,
-                    message.idLong, reactions, false, System.currentTimeMillis())
+                starboardMessageWrapper.setStarboardInfo(
+                    event.guild.idLong, event.channel.idLong, ogMessage.author.idLong, event.messageIdLong,
+                    message.idLong, reactions, false, System.currentTimeMillis()
+                )
             }
 
         } else {
             if (msg.deleted) return
-            val partStars1 = channel.retrieveReactionUsersById(msg.starboardMessageId, "⭐").await().filter { !it.isBot }.size
+            val sbReactionUsers = sbchannel.retrieveReactionUsersById(msg.starboardMessageId, "⭐").awaitOrNull()
+                ?.filter { !it.isBot }?.map { it.idLong } ?: return
+            val partStars1 = sbReactionUsers.size
             val ogChannel = event.guild.getTextChannelById(msg.ogChannelId)
             val partStars2N = ogChannel
                 ?.retrieveReactionUsersById(msg.ogMessageId, "⭐")
                 ?.awaitOrNull()
-                ?.filter { !it.isBot }
+                ?.filter { !it.isBot && !sbReactionUsers.contains(it.idLong) }
                 ?.size
             if (partStars2N == null) {
                 starboardMessageWrapper.updateChannel(msg.ogMessageId, 0)
@@ -165,20 +219,36 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val partStars2 = partStars2N ?: 0
             val newStarCount = partStars1 + partStars2
             if (newStarCount != msg.stars) {
-                val message = channel.retrieveMessageById(msg.starboardMessageId).await()
+                val message = sbchannel.retrieveMessageById(msg.starboardMessageId).await()
                 val author = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull()
-                val newContent = getSendableStarboardMessage(event, msg.stars + 1, author, ogChannel)
-                starboardMessageWrapper.setStarboardInfo(event.guild.idLong, msg.ogChannelId, msg.authorId, msg.starboardMessageId, msg.starboardMessageId, newStarCount, msg.deleted, msg.moment)
+                val newContent = getSendableStarboardMessage(event, newStarCount, author, ogChannel)
+                starboardMessageWrapper.setStarboardInfo(
+                    event.guild.idLong,
+                    msg.ogChannelId,
+                    msg.authorId,
+                    msg.starboardMessageId,
+                    msg.starboardMessageId,
+                    newStarCount,
+                    msg.deleted,
+                    msg.moment
+                )
                 newContent?.let { message.editMessage(it).queue() }
             }
         }
     }
 
-    private suspend fun getSendableStarboardMessage(event: GuildMessageReactionAddEvent, stars: Int, author: User?, channel: TextChannel?): Message? {
+    private suspend fun getSendableStarboardMessage(
+        event: GuildMessageReactionAddEvent,
+        stars: Int,
+        author: User?,
+        channel: TextChannel?
+    ): Message? {
         val ogMessage = event.channel.retrieveMessageById(event.messageIdLong).await() ?: return null
 
-        val eb = Embedder(container.daoManager, event.guild.idLong, author?.idLong
-            ?: -1, container.settings.botInfo.embedColor)
+        val eb = Embedder(
+            container.daoManager, event.guild.idLong, author?.idLong
+                ?: -1
+        )
             .setAuthor(author?.asTag ?: "deleted_user#0000", null, author?.effectiveAvatarUrl)
         if (ogMessage.embeds.size > 0) {
             val embed = ogMessage.embeds[0]
@@ -195,6 +265,12 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             }
         } else {
             eb.setDescription(ogMessage.contentRaw.replace("[", "\\["))
+        }
+
+        for (attachment in ogMessage.attachments) {
+            if (attachment.isImage) {
+                eb.setImage(attachment.url)
+            }
         }
 
         val messageBuilder = MessageBuilder()
@@ -241,13 +317,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
-            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
-                "⏪" -> 0
-                "⏩" -> pagination.messageList.size - 1
-                "◀️" -> pagination.currentPage - 1
-                "▶️" -> pagination.currentPage + 1
-                else -> return
-            }))
+            val newIndex = min(
+                pagination.messageList.size - 1, max(
+                    0, when (emoji) {
+                        "⏪" -> 0
+                        "⏩" -> pagination.messageList.size - 1
+                        "◀️" -> pagination.currentPage - 1
+                        "▶️" -> pagination.currentPage + 1
+                        else -> return
+                    }
+                )
+            )
 
             if (newIndex != pagination.currentPage)
                 message.editMessage(pagination.messageList[newIndex]).queue()
@@ -272,13 +352,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
-            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
-                "⏪" -> 0
-                "⏩" -> pagination.messageList.size - 1
-                "◀️" -> pagination.currentPage - 1
-                "▶️" -> pagination.currentPage + 1
-                else -> return
-            }))
+            val newIndex = min(
+                pagination.messageList.size - 1, max(
+                    0, when (emoji) {
+                        "⏪" -> 0
+                        "⏩" -> pagination.messageList.size - 1
+                        "◀️" -> pagination.currentPage - 1
+                        "▶️" -> pagination.currentPage + 1
+                        else -> return
+                    }
+                )
+            )
 
             if (newIndex != pagination.currentPage) {
                 val msg = pagination.messageList[newIndex].toMessage()
@@ -335,7 +419,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             track == null -> {
                 val title = i18n.getTranslation(language, "message.music.searchmenu")
                 val desc = i18n.getTranslation(language, "message.music.search.cancelled.description")
-                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong, container.settings.botInfo.embedColor)
+                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong)
                     .setTitle(title)
                     .setDescription(desc)
                 message.editMessage(eb.build()).queue()
@@ -354,7 +438,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                     .withVariable("duration", getDurationString(track.duration))
                     .withVariable("url", track.info.uri)
 
-                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong, container.settings.botInfo.embedColor)
+                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong)
                 eb.setTitle(title)
                 eb.setDescription(description)
                 message.editMessage(eb.build()).queue()
@@ -375,14 +459,19 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val member = event.member
         val dao = container.daoManager
 
-        val verificationChannel = guild.getAndVerifyChannelByType(dao, ChannelType.VERIFICATION, Permission.MESSAGE_MANAGE)
-            ?: return
+        val verificationChannel =
+            guild.getAndVerifyChannelByType(dao, ChannelType.VERIFICATION, Permission.MESSAGE_MANAGE)
+                ?: return
         if (verificationChannel.idLong != textChannel.idLong) return
         val verificationType = dao.verificationTypeWrapper.getType(guild.idLong)
         if (verificationType != VerificationType.REACTION) return
 
         val unverifiedRole = VerificationUtils.getUnverifiedRoleN(event.channel, dao) ?: return
-        if (!dao.unverifiedUsersWrapper.contains(guild.idLong, member.idLong) && !member.roles.contains(unverifiedRole)) {
+        if (!dao.unverifiedUsersWrapper.contains(
+                guild.idLong,
+                member.idLong
+            ) && !member.roles.contains(unverifiedRole)
+        ) {
             //User is already verified
             if (!member.hasPermission(Permission.ADMINISTRATOR)) {
                 //User doesn't have admin perms to add reaction in verification channel
@@ -399,8 +488,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                         (event.reactionEmote.isEmoji && event.reactionEmote.emoji == code) ||
                         (event.reactionEmote.isEmote && event.reactionEmote.emote.id == code)
                     ) {
-                        VerificationUtils.verify(dao, container.webManager.proxiedHttpClient,
-                            unverifiedRole, guild.selfMember.user, member)
+                        VerificationUtils.verify(
+                            dao, container.webManager.proxiedHttpClient,
+                            unverifiedRole, guild.selfMember.user, member
+                        )
                     } else {
                         VerificationUtils.failedVerification(dao, member)
                     }
@@ -437,7 +528,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             .withVariable("emoteName", event.reactionEmote.name)
             .withVariable("emoteId", if (isEmote) event.reactionEmote.id else "/")
             .withVariable("moment", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
-            .withVariable("messageUrl", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.messageId}")
+            .withVariable(
+                "messageUrl",
+                "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.messageId}"
+            )
             .withVariable("emoteUrl", if (isEmote) event.reactionEmote.emote.imageUrl else "/")
 
         val footer = i18n.getTranslation(language, "listener.message.reaction.log.footer")

@@ -18,8 +18,10 @@ class GainProfileDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun insert(id: Long, name: String, profile: String) {
-        driverManager.executeUpdate("INSERT INTO $table (id, name, profile) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET profile = ?",
-            id, name, profile, profile)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (id, name, profile) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET profile = ?",
+            id, name, profile, profile
+        )
     }
 
     suspend fun get(id: Long): Map<String, GainProfile> = suspendCoroutine {
@@ -35,8 +37,10 @@ class GainProfileDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun delete(guildId: Long, profileName: String) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE id = ? AND name = ?",
-            guildId, profileName)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE id = ? AND name = ?",
+            guildId, profileName
+        )
     }
 
 }

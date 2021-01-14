@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.music
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.*
@@ -22,7 +22,7 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val guildMusicPlayer = context.getGuildMusicPlayer().guildTrackManager
         val vc = context.lavaManager.getConnectedChannel(context.guild)
         if (vc == null) {
@@ -58,7 +58,7 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
         }
     }
 
-    private suspend fun doSkip(context: CommandContext, votes: Int) {
+    private suspend fun doSkip(context: ICommandContext, votes: Int) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val cTrack = trackManager.iPlayer.playingTrack ?: return
         val part1 =

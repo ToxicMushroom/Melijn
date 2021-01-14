@@ -4,7 +4,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.llklient.utils.LavalinkUtil
 import me.melijn.melijnbot.internals.music.TrackUserData
 import me.melijn.melijnbot.internals.music.toMessage
-import java.util.*
+import me.melijn.melijnbot.internals.threading.SafeList
 
 class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChannelDao: LastVoiceChannelDao) {
 
@@ -30,9 +30,8 @@ class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChann
         return newMap
     }
 
-    fun put(guildId: Long, botId: Long, playingTrack: AudioTrack, queue: Queue<AudioTrack>) {
+    suspend fun put(guildId: Long, botId: Long, playingTrack: AudioTrack, queue: SafeList<AudioTrack>) {
         //Concurrent modification don't ask me why
-        val newQueue: Queue<AudioTrack> = LinkedList(queue)
         val playing = LavalinkUtil.toMessage(playingTrack)
         var ud: TrackUserData? = playingTrack.userData as TrackUserData?
             ?: TrackUserData(botId, "", "")
@@ -42,8 +41,8 @@ class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChann
         tracksDao.set(guildId, 0, playing, udMessage)
 
         var goodIndex = 1
-        for (track in newQueue) {
-            if (track == null) continue
+
+        queue.forEach { track ->
             val json = LavalinkUtil.toMessage(track)
             ud = playingTrack.userData as TrackUserData?
             udMessage = ud?.toMessage() ?: ""

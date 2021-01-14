@@ -8,7 +8,8 @@ import me.melijn.melijnbot.objectMapper
 class SelfRoleGroupWrapper(private val selfRoleGroupDao: SelfRoleGroupDao) {
 
     suspend fun getMap(guildId: Long): List<SelfRoleGroup> {
-        val result = selfRoleGroupDao.getCacheEntry(guildId, HIGHER_CACHE)?.let { objectMapper.readValue<List<SelfRoleGroup>>(it) }
+        val result = selfRoleGroupDao.getCacheEntry(guildId, HIGHER_CACHE)
+            ?.let { objectMapper.readValue<List<SelfRoleGroup>>(it) }
 
         if (result != null) return result
 
@@ -27,8 +28,16 @@ class SelfRoleGroupWrapper(private val selfRoleGroupDao: SelfRoleGroupDao) {
 
         list.add(selfRoleGroup)
 
-        selfRoleGroupDao.set(guildId, selfRoleGroup.groupName, selfRoleGroup.messageIds.joinToString("%SPLIT%"), selfRoleGroup.channelId, selfRoleGroup.isEnabled, selfRoleGroup.pattern
-            ?: "", selfRoleGroup.isSelfRoleable)
+        selfRoleGroupDao.set(
+            guildId,
+            selfRoleGroup.groupName,
+            selfRoleGroup.messageIds.joinToString("%SPLIT%"),
+            selfRoleGroup.channelId,
+            selfRoleGroup.isEnabled,
+            selfRoleGroup.pattern
+                ?: "",
+            selfRoleGroup.isSelfRoleable
+        )
         selfRoleGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
 

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -17,13 +17,18 @@ class VerifyCommand : AbstractCommand("command.verify") {
         commandCategory = CommandCategory.MODERATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
         }
 
-        val role = VerificationUtils.getUnverifiedRoleNMessage(context.author, context.textChannel, context.daoManager, context.usedPrefix)
+        val role = VerificationUtils.getUnverifiedRoleNMessage(
+            context.author,
+            context.textChannel,
+            context.daoManager,
+            context.usedPrefix
+        )
             ?: return
 
         val msg = if (context.args[0] == "*") {
@@ -31,7 +36,14 @@ class VerifyCommand : AbstractCommand("command.verify") {
             val failures = mutableListOf<Member>()
             for (member in members) {
                 try {
-                    if (!VerificationUtils.verify(context.daoManager, context.webManager.proxiedHttpClient, role, context.author, member)) {
+                    if (!VerificationUtils.verify(
+                            context.daoManager,
+                            context.webManager.proxiedHttpClient,
+                            role,
+                            context.author,
+                            member
+                        )
+                    ) {
                         failures.add(member)
                     }
                 } catch (t: Throwable) {
@@ -52,7 +64,14 @@ class VerifyCommand : AbstractCommand("command.verify") {
         } else {
             val member = retrieveMemberByArgsNMessage(context, 0) ?: return
             try {
-                if (VerificationUtils.verify(context.daoManager, context.webManager.proxiedHttpClient, role, context.author, member)) {
+                if (VerificationUtils.verify(
+                        context.daoManager,
+                        context.webManager.proxiedHttpClient,
+                        role,
+                        context.author,
+                        member
+                    )
+                ) {
                     context.getTranslation("$root.success")
                 } else {
                     context.getTranslation("$root.failure")

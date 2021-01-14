@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import com.sun.management.OperatingSystemMXBean
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -24,7 +24,7 @@ class StatsCommand : AbstractCommand("command.stats") {
     }
 
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val bean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
         val totalMem: Long
         val usedMem: Long
@@ -90,7 +90,8 @@ class StatsCommand : AbstractCommand("command.stats") {
 
         val embed = Embedder(context)
             .setThumbnail(context.selfUser.effectiveAvatarUrl)
-            .setDescription("""
+            .setDescription(
+                """
                 |```INI
                 |[${title1}]```$value1
                 |
@@ -99,7 +100,8 @@ class StatsCommand : AbstractCommand("command.stats") {
                 |                                
                 |```INI
                 |[${title3}]```$value3
-            """.trimMargin())
+            """.trimMargin()
+            )
             .build()
 
         sendEmbedRsp(context, embed)
@@ -133,8 +135,9 @@ class StatsCommand : AbstractCommand("command.stats") {
         .withVariable("systemUptime", uptime)
 
 
-    private fun replaceValue3Vars(value: String, cpuUsage: String, ramUsage: String, threadCount: String): String = value
-        .withVariable("jvmCPUUsage", cpuUsage)
-        .withVariable("ramUsage", ramUsage)
-        .withVariable("threadCount", threadCount)
+    private fun replaceValue3Vars(value: String, cpuUsage: String, ramUsage: String, threadCount: String): String =
+        value
+            .withVariable("jvmCPUUsage", cpuUsage)
+            .withVariable("ramUsage", ramUsage)
+            .withVariable("threadCount", threadCount)
 }

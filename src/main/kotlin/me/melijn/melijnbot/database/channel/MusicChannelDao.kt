@@ -18,8 +18,10 @@ class MusicChannelDao(driverManager: DriverManager) : CacheDBDao(driverManager) 
     }
 
     fun set(guildId: Long, channelId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET channelId = ?",
-            guildId, channelId, channelId)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, channelId) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET channelId = ?",
+            guildId, channelId, channelId
+        )
     }
 
     fun remove(guildId: Long) {

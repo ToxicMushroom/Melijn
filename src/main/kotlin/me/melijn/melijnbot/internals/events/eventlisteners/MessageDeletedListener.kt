@@ -41,7 +41,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val recentDeletions = ConcurrentHashMap<Pair<Long, Long>, Map<DaoMessage, Long>>()
     }
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMessageDeleteEvent) {
             TaskManager.async(event.channel) {
                 onGuildMessageDelete(event)
@@ -148,14 +148,19 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
     private suspend fun snipeLogLimitReached(snipeMap: Map<DaoMessage, Long>, guildId: Long): Boolean {
         return snipeMap.size >= SNIPE_LIMIT &&
-            (!container.daoManager.supporterWrapper.getGuilds().contains(guildId) || snipeMap.size >= PREMIUM_SNIPE_LIMIT)
+            (!container.daoManager.supporterWrapper.getGuilds()
+                .contains(guildId) || snipeMap.size >= PREMIUM_SNIPE_LIMIT)
     }
 
     private suspend fun logBots(textChannel: TextChannel): Boolean {
         return container.daoManager.botLogStateWrapper.shouldLog(textChannel.guild.idLong)
     }
 
-    private suspend fun postDeletedBySelfLog(sdmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent) {
+    private suspend fun postDeletedBySelfLog(
+        sdmLogChannel: TextChannel?,
+        msg: DaoMessage,
+        event: GuildMessageDeleteEvent
+    ) {
         if (sdmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
         if (messageAuthor.isBot && !logBots(sdmLogChannel)) return
@@ -174,7 +179,12 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         }
     }
 
-    private suspend fun postDeletedByOtherLog(odmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, deleterMember: Member) {
+    private suspend fun postDeletedByOtherLog(
+        odmLogChannel: TextChannel?,
+        msg: DaoMessage,
+        event: GuildMessageDeleteEvent,
+        deleterMember: Member
+    ) {
         if (odmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
         if (messageAuthor.isBot && !logBots(odmLogChannel)) return
@@ -193,7 +203,12 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         }
     }
 
-    private suspend fun postDeletedByFilterLog(fmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, causeArgs: Map<String, List<String>>?) {
+    private suspend fun postDeletedByFilterLog(
+        fmLogChannel: TextChannel?,
+        msg: DaoMessage,
+        event: GuildMessageDeleteEvent,
+        causeArgs: Map<String, List<String>>?
+    ) {
         if (fmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
         if (messageAuthor.isBot && !logBots(fmLogChannel)) return

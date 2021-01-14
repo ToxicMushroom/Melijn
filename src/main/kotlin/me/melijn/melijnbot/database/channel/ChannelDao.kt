@@ -19,12 +19,18 @@ class ChannelDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun set(guildId: Long, channelType: ChannelType, channelId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelType, channelId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET channelId = ?",
-            guildId, channelType.toString(), channelId, channelId)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, channelType, channelId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET channelId = ?",
+            guildId, channelType.toString(), channelId, channelId
+        )
     }
 
     fun remove(guildId: Long, channelType: ChannelType) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND channelType = ?", guildId, channelType.toString())
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND channelType = ?",
+            guildId,
+            channelType.toString()
+        )
     }
 
     suspend fun get(guildId: Long, channelType: ChannelType): Long = suspendCoroutine {
@@ -46,5 +52,9 @@ class ChannelDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
             it.resume(roleMap)
 
         }, channelType.toString())
+    }
+
+    fun migrateChannel(oldId: Long, newId: Long) {
+        driverManager.executeUpdate("UPDATE $table SET channelId = ? WHERE channelId = ?", newId, oldId)
     }
 }

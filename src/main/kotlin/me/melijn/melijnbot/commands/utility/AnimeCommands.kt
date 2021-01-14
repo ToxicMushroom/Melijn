@@ -7,7 +7,12 @@ import kotlin.math.max
 fun Date.toUniversalDateTimeFormat(): String {
     val cal = Calendar.getInstance()
     cal.time = this
-    return "${goodFormat(cal, Calendar.YEAR, 4)}-${goodFormat(cal, Calendar.MONTH, 1)}-${goodFormat(cal, Calendar.DAY_OF_MONTH)} " +
+    return "${goodFormat(cal, Calendar.YEAR, 4)}-${goodFormat(cal, Calendar.MONTH, 1)}-${
+        goodFormat(
+            cal,
+            Calendar.DAY_OF_MONTH
+        )
+    } " +
         "${goodFormat(cal, Calendar.HOUR)}:${goodFormat(cal, Calendar.MINUTE)}"
 }
 
@@ -34,7 +39,7 @@ fun Date.toUniversalDateFormat(): String {
 //        name = "kitsu"
 //    }
 //
-//    override suspend fun execute(context: CommandContext) {
+//    override suspend fun execute(context: ICommandContext) {
 //
 //    }
 //}

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.jagtag.BirthdayMethods
@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.jagtag.DiscordMethods
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.getSyntax
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
@@ -44,7 +45,7 @@ class HelpCommand : AbstractCommand("command.help") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -85,7 +86,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val inStream = Thread.currentThread().contextClassLoader.getResourceAsStream("strings_en.properties")
                     ?: return
                 val ir = InputStreamReader(inStream)
@@ -122,7 +123,7 @@ class HelpCommand : AbstractCommand("command.help") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -153,7 +154,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: CommandContext) {
+            override suspend fun execute(context: ICommandContext) {
                 val dList = DiscordMethods.getMethods().map { method -> method.name }
                 val ccList = CCMethods.getMethods().map { method -> method.name }
                 val bList = BirthdayMethods.getMethods().map { method -> method.name }
@@ -168,17 +169,33 @@ class HelpCommand : AbstractCommand("command.help") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val args = context.args
         if (args.isEmpty()) {
+            val daoManager = context.daoManager
+            var prefixes = (if (context.isFromGuild) {
+                daoManager.guildPrefixWrapper.getPrefixes(context.guildId) +
+                    daoManager.userPrefixWrapper.getPrefixes(context.authorId)
+            } else {
+                daoManager.userPrefixWrapper.getPrefixes(context.authorId)
+            }).sortedBy { it.length }
+
+            if (prefixes.isEmpty()) {
+                prefixes = listOf(context.container.settings.botInfo.prefix)
+            }
             val title = context.getTranslation("$root.embed.title")
             val description = context.getTranslation("$root.embed.description")
-                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
-                .withVariable("melijnMention", if (context.isFromGuild) context.selfMember.asMention else context.selfUser.asMention)
+                .withSafeVariable("serverPrefix", prefixes.first())
+                .withSafeVariable(PLACEHOLDER_PREFIX, prefixes.first())
+                .withVariable(
+                    "melijnMention",
+                    if (context.isFromGuild) context.selfMember.asMention else context.selfUser.asMention
+                )
 
             val embedder = Embedder(context)
                 .setTitle(title)
                 .setDescription(description)
+                .setFooter("@${context.selfUser.asTag} is always a valid prefix")
 
             sendEmbedRsp(context, embedder.build())
             return
@@ -210,11 +227,14 @@ class HelpCommand : AbstractCommand("command.help") {
             ?.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
 
         val embedder = Embedder(context)
-            .setTitle(cmdTitle, "https://melijn.com/commands?q=${parent.name}&c=${parent.commandCategory.toString().toLowerCase()}")
+            .setTitle(
+                cmdTitle,
+                "https://melijn.com/commands?q=${parent.name}&c=${parent.commandCategory.toString().toLowerCase()}"
+            )
             .addField(
                 cmdSyntax,
                 MarkdownSanitizer.escape(
-                    context.getTranslation(command.syntax)
+                    getSyntax(context, command.syntax)
                         .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
                 ),
                 false
@@ -237,7 +257,10 @@ class HelpCommand : AbstractCommand("command.help") {
             while (matcher.find()) {
                 val og = matcher.group(0)
                 val path = matcher.group(1)
-                help = help.replace(og, "*" + context.getTranslation(path).withVariable(PLACEHOLDER_PREFIX, context.usedPrefix))
+                help = help.replace(
+                    og,
+                    "*" + context.getTranslation(path).withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                )
             }
             for (argumentsPart in StringUtils.splitMessage(help, splitAtLeast = 750, maxLength = 1024)) {
                 embedder.addField(cmdArguments, argumentsPart, false)
@@ -263,7 +286,7 @@ class HelpCommand : AbstractCommand("command.help") {
 
     //Converts ("ping", "pong", "dunste") into a list of (PingCommand, PongArg, DunsteArg) if the args are matching an existing parent child sequence
     private fun getCorrectChildElseParent(
-        context: CommandContext,
+        context: ICommandContext,
         cmdList: MutableList<AbstractCommand>,
         args: List<String>,
         argIndex: Int = 1
@@ -290,7 +313,7 @@ class HelpCommand : AbstractCommand("command.help") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val category = getEnumFromArgN<CommandCategory>(context, 0)
 
             val commandList = context.commandList
@@ -299,8 +322,7 @@ class HelpCommand : AbstractCommand("command.help") {
 
             val title = context.getTranslation("$root.title")
 
-            //Alphabetical order
-            val categoryPathMap = mapOf(
+            val categoryPathMap = mutableMapOf(
                 Pair(CommandCategory.ADMINISTRATION, "$root.field2.title"),
                 Pair(CommandCategory.ANIMAL, "$root.field6.title"),
                 Pair(CommandCategory.ANIME, "$root.field7.title"),
@@ -310,7 +332,12 @@ class HelpCommand : AbstractCommand("command.help") {
                 Pair(CommandCategory.MODERATION, "$root.field3.title"),
                 Pair(CommandCategory.MUSIC, "$root.field4.title"),
                 Pair(CommandCategory.UTILITY, "$root.field1.title")
-            ).filter { entry ->
+            )
+
+            if (context.isFromGuild && context.textChannel.isNSFW) {
+                categoryPathMap[CommandCategory.NSFW] = "$root.field10.title"
+            }
+            val categoryFiltered = categoryPathMap.filter { entry ->
                 entry.key == category || category == null
             }
 
@@ -321,7 +348,9 @@ class HelpCommand : AbstractCommand("command.help") {
                 .setTitle(title, "https://melijn.com/commands")
                 .setFooter(commandAmount, null)
 
-            categoryPathMap.forEach { entry ->
+            categoryFiltered.toSortedMap { o1, o2 ->
+                o1.toString().compareTo(o2.toString())
+            }.forEach { entry ->
                 eb.addField(context.getTranslation(entry.value), commandListString(commandList, entry.key), false)
             }
 

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
@@ -25,7 +25,7 @@ class UrbanCommand : AbstractCommand("command.urban") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val web = context.webManager
         if (context.args.isEmpty()) {
             sendSyntax(context)
@@ -49,8 +49,10 @@ class UrbanCommand : AbstractCommand("command.urban") {
             val meaning = context.getTranslation("$root.meaning")
             val example = context.getTranslation("$root.example")
 
-            val actualMeaning = if (first == null || first.isEmpty()) "/" else first.substring(0, min(1000, first.length))
-            val actualExample = if (second == null || second.isEmpty()) "/" else second.substring(0, min(1000, second.length))
+            val actualMeaning =
+                if (first == null || first.isEmpty()) "/" else first.substring(0, min(1000, first.length))
+            val actualExample =
+                if (second == null || second.isEmpty()) "/" else second.substring(0, min(1000, second.length))
 
 
             val desc = "$meaning\n$actualMeaning\n\n$example\n$actualExample"
@@ -65,6 +67,7 @@ class UrbanCommand : AbstractCommand("command.urban") {
     private suspend fun getUrbanResult(webManager: WebManager, arg: String): Pair<String?, String?>? {
         val json = WebUtils.getJsonFromUrl(webManager.httpClient, "https://api.urbandictionary.com/v0/define?term=$arg")
             ?: return null
+        if (!json.hasKey("list")) return null
         val results = json.getArray("list")
         if (results.isEmpty) return Pair(null, null)
         val result = results.getObject(0)

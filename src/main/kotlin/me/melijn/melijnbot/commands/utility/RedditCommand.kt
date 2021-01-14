@@ -10,7 +10,7 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
@@ -32,7 +32,7 @@ class RedditCommand : AbstractCommand("command.reddit") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -57,7 +57,11 @@ class RedditCommand : AbstractCommand("command.reddit") {
             .setTitle(randomResult.title.take(256), "https://reddit.com" + randomResult.url)
             .setImage(if (randomResult.justText) null else randomResult.img)
             .setThumbnail(if (randomResult.justText) "https://static.melijn.com/text-icon.png" else null)
-            .setFooter("\uD83D\uDD3C ${randomResult.ups} | " + (randomResult.created * 1000).asEpochMillisToDateTime(context.getTimeZoneId()))
+            .setFooter(
+                "\uD83D\uDD3C ${randomResult.ups} | " + (randomResult.created * 1000).asEpochMillisToDateTime(
+                    context.getTimeZoneId()
+                )
+            )
         if (randomResult.thumb.isNotBlank() && randomResult.thumb != "self" && randomResult.justText) {
             try {
                 embedder.setThumbnail(randomResult.thumb)
@@ -74,7 +78,12 @@ class RedditCommand : AbstractCommand("command.reddit") {
     }
 
     companion object {
-        suspend fun getRandomRedditResultNMessage(context: CommandContext, subreddit: String, arg: String, time: String): RedditResult? {
+        suspend fun getRandomRedditResultNMessage(
+            context: ICommandContext,
+            subreddit: String,
+            arg: String,
+            time: String
+        ): RedditResult? {
             val about = context.daoManager.driverManager.redisConnection?.async()
                 ?.get("reddit:about:$subreddit")
                 ?.await()
@@ -120,7 +129,13 @@ class RedditCommand : AbstractCommand("command.reddit") {
                 ?.let {
                     objectMapper.readValue<List<RedditResult>>(it)
                 }
-                ?: requestPostsAndStore(context.webManager.httpClient, context.daoManager.driverManager, subreddit, arg, time)
+                ?: requestPostsAndStore(
+                    context.webManager.httpClient,
+                    context.daoManager.driverManager,
+                    subreddit,
+                    arg,
+                    time
+                )
 
             if (posts == null) {
                 val unknownReddit = context.getTranslation("command.reddit.down")
@@ -129,7 +144,8 @@ class RedditCommand : AbstractCommand("command.reddit") {
                 return null
             }
 
-            val filteredPosts = posts.filter { !it.nsfw || (it.nsfw && (!context.isFromGuild || context.textChannel.isNSFW)) }
+            val filteredPosts =
+                posts.filter { !it.nsfw || (it.nsfw && (!context.isFromGuild || context.textChannel.isNSFW)) }
             if (filteredPosts.isEmpty() && posts.isNotEmpty()) {
                 val msg = context.getTranslation("command.reddit.allpostsnsfw")
                     .withVariable("amount", posts.size - filteredPosts.size)
@@ -144,7 +160,13 @@ class RedditCommand : AbstractCommand("command.reddit") {
             return filteredPosts[Random.nextInt(filteredPosts.size)]
         }
 
-        suspend fun requestPostsAndStore(httpClient: HttpClient, driverManager: DriverManager, subreddit: String, arg: String, time: String): List<RedditResult>? {
+        suspend fun requestPostsAndStore(
+            httpClient: HttpClient,
+            driverManager: DriverManager,
+            subreddit: String,
+            arg: String,
+            time: String
+        ): List<RedditResult>? {
             val data = try {
                 DataObject.fromJson(
                     httpClient.get<String>("https://www.reddit.com/r/$subreddit.json?sort=${arg}&t=${time}&limit=100")
@@ -158,29 +180,41 @@ class RedditCommand : AbstractCommand("command.reddit") {
             for (i in 0 until dataPosts.length()) {
                 val dataPost = dataPosts.getObject(i).getObject("data")
                 val imgUrl = dataPost.getString("url_overridden_by_dest", "")
-                posts.add(RedditResult(
-                    dataPost.getLong("ups"),
-                    dataPost.getString("subreddit"),
-                    dataPost.getString("title"),
-                    dataPost.getLong("created"),
-                    dataPost.getString("permalink"),
-                    dataPost.getString("url_overridden_by_dest", ""),
-                    dataPost.getString("thumbnail") == "self" ||
-                        (!imgUrl.endsWith(".png") && !imgUrl.endsWith(".jpg") && !imgUrl.endsWith(".jpeg") && !imgUrl.endsWith(".gif")
-                            && !imgUrl.endsWith(".tiff")),
-                    dataPost.getBoolean("over18"),
-                    dataPost.getString("thumbnail")
-                ))
+                posts.add(
+                    RedditResult(
+                        dataPost.getLong("ups"),
+                        dataPost.getString("subreddit"),
+                        dataPost.getString("title"),
+                        dataPost.getLong("created"),
+                        dataPost.getString("permalink"),
+                        dataPost.getString("url_overridden_by_dest", ""),
+                        dataPost.getString("thumbnail") == "self" ||
+                            (!imgUrl.endsWith(".png") && !imgUrl.endsWith(".jpg") && !imgUrl.endsWith(".jpeg") && !imgUrl.endsWith(
+                                ".gif"
+                            )
+                                && !imgUrl.endsWith(".tiff")),
+                        dataPost.getBoolean("over18"),
+                        dataPost.getString("thumbnail")
+                    )
+                )
             }
             val timePart = if (arg == "top") {
                 ":${time}"
             } else ""
             driverManager.redisConnection?.async()
-                ?.set("reddit:posts:${arg}$timePart:$subreddit", objectMapper.writeValueAsString(posts), SetArgs().ex(600))
+                ?.set(
+                    "reddit:posts:${arg}$timePart:$subreddit",
+                    objectMapper.writeValueAsString(posts),
+                    SetArgs().ex(600)
+                )
             return posts
         }
 
-        suspend fun requestAboutAndStore(httpClient: HttpClient, driverManager: DriverManager, subreddit: String): RedditAbout? {
+        suspend fun requestAboutAndStore(
+            httpClient: HttpClient,
+            driverManager: DriverManager,
+            subreddit: String
+        ): RedditAbout? {
             val res = try {
                 DataObject.fromJson(
                     httpClient.get<HttpResponse>("https://api.reddit.com/r/$subreddit/about").readText()

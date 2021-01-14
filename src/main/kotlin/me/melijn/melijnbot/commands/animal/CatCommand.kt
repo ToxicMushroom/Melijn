@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.animal
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -14,11 +14,11 @@ class CatCommand : AbstractCommand("command.cat") {
     init {
         id = 46
         name = "cat"
-        aliases = arrayOf("meow")
+        aliases = arrayOf("meow", "🐈")
         commandCategory = CommandCategory.ANIMAL
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val title = context.getTranslation("$root.title")
         val web = context.webManager
 
@@ -39,7 +39,12 @@ class CatCommand : AbstractCommand("command.cat") {
             "order" to "RANDOM"
         )
 
-        val reply = WebUtils.getJsonAFromUrl(webManager.httpClient, "https://api.thecatapi.com/v1/images/search", params, headers)
+        val reply = WebUtils.getJsonAFromUrl(
+            webManager.httpClient,
+            "https://api.thecatapi.com/v1/images/search",
+            params,
+            headers
+        )
             ?: return MISSING_IMAGE_URL
         return reply.getObject(0).getString("url", MISSING_IMAGE_URL)
     }

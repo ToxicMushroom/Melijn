@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.image
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.getColorFromArgNMessage
@@ -24,7 +24,7 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("replaceColorGif", true) || context.commandParts[1].equals("rcGif", true)) {
             executeGif(context)
         } else {
@@ -32,7 +32,7 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
         }
     }
 
-    private suspend fun executeNormal(context: CommandContext) {
+    private suspend fun executeNormal(context: ICommandContext) {
         ImageCommandUtil.executeNormalEffect(context, effect = { image, argData ->
             val sourceColor = argData.getInt("color1")
             val newColor = Color(argData.getInt("color2"))
@@ -44,8 +44,9 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
                     val newAlpha = if (alpha2 == -1) ints[3] else alpha2
                     val c2 = newAlpha shl 24 or (newColor.red shl 16) or (newColor.green shl 8) or newColor.blue
                     intArrayOf(c2 and 0xff, c2 shr 8 and 0xff, c2 shr 16 and 0xff, c2 shr 24 and 0xff)
+                } else {
+                    ints
                 }
-                ints
             }
         }, argDataParser = argParser@{ argInt: Int, argData: DataObject, _: DataObject ->
             val sourceColor = getColorFromArgNMessage(context, argInt) ?: return@argParser false
@@ -65,7 +66,7 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
         })
     }
 
-    private suspend fun executeGif(context: CommandContext) {
+    private suspend fun executeGif(context: ICommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, argData ->
             val sourceColor = argData.getInt("color1")
             val newColor = Color(argData.getInt("color2"))
@@ -78,12 +79,22 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
 
                     val c2 = newAlpha shl 24 or (newColor.red shl 16) or (newColor.green shl 8) or newColor.blue
                     val newColor1 = ImageUtils.suiteColorForGif(c2)
-                    intArrayOf(newColor1 and 0xff, newColor1 shr 8 and 0xff, newColor1 shr 16 and 0xff, newColor1 shr 24 and 0xff)
+                    intArrayOf(
+                        newColor1 and 0xff,
+                        newColor1 shr 8 and 0xff,
+                        newColor1 shr 16 and 0xff,
+                        newColor1 shr 24 and 0xff
+                    )
 
                 } else {
                     val c2 = ints[3] shl 24 or (ints[2] shl 16) or (ints[1] shl 8) or ints[0]
                     val newColor1 = ImageUtils.suiteColorForGif(c2)
-                    intArrayOf(newColor1 and 0xff, newColor1 shr 8 and 0xff, newColor1 shr 16 and 0xff, newColor1 shr 24 and 0xff)
+                    intArrayOf(
+                        newColor1 and 0xff,
+                        newColor1 shr 8 and 0xff,
+                        newColor1 shr 16 and 0xff,
+                        newColor1 shr 24 and 0xff
+                    )
                 }
             }
 

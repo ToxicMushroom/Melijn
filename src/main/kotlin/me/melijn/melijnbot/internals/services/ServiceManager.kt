@@ -8,8 +8,11 @@ import me.melijn.melijnbot.internals.services.donator.DonatorService
 import me.melijn.melijnbot.internals.services.message.MessageCleanerService
 import me.melijn.melijnbot.internals.services.music.SpotifyService
 import me.melijn.melijnbot.internals.services.mutes.MuteService
+import me.melijn.melijnbot.internals.services.ppexpiry.PPExpireService
 import me.melijn.melijnbot.internals.services.reddit.RedditAboutService
 import me.melijn.melijnbot.internals.services.reddit.RedditService
+import me.melijn.melijnbot.internals.services.reminders.ReminderService
+import me.melijn.melijnbot.internals.services.rockpaperscissors.RSPService
 import me.melijn.melijnbot.internals.services.roles.RolesService
 import me.melijn.melijnbot.internals.services.stats.StatsService
 import me.melijn.melijnbot.internals.services.voice.VoiceScoutService
@@ -33,6 +36,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         slowServices.add(MuteService(shardManager, daoManager))
         slowServices.add(StatsService(shardManager, webManager.botListApi))
         slowServices.add(BirthdayService(shardManager, webManager.proxiedHttpClient, daoManager))
+        slowServices.add(VoteReminderService(daoManager))
         webManager.spotifyApi?.let { spotifyApi ->
             services.add(SpotifyService(spotifyApi))
         }
@@ -42,10 +46,12 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         slowServices.add(VoiceScoutService(container, shardManager))
         services.add(DonatorService(container, shardManager))
         slowServices.add(RolesService(daoManager.tempRoleWrapper, shardManager))
-        slowServices.add(VoteReminderService(daoManager))
+        slowServices.add(ReminderService(daoManager))
 //        slowServices.add(SpamService(container, shardManager))
         services.add(RedditService(webManager.httpClient, daoManager.driverManager))
         services.add(RedditAboutService(webManager.httpClient, daoManager.driverManager))
+        services.add(PPExpireService(daoManager.autoPunishmentWrapper))
+        services.add(RSPService(shardManager, daoManager))
     }
 
     fun startSlowservices() {

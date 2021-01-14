@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.getBooleanFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -17,7 +17,7 @@ class SetBotLogStateCommand : AbstractCommand("command.setbotlogstate") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.botLogStateWrapper
         if (context.args.isEmpty()) {
             val state = wrapper.shouldLog(context.guildId)

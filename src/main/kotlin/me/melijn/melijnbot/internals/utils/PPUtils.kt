@@ -2,6 +2,9 @@ package me.melijn.melijnbot.internals.utils
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.moderation.*
+import me.melijn.melijnbot.database.autopunishment.ExpireTime
+import me.melijn.melijnbot.database.autopunishment.Points
+import me.melijn.melijnbot.database.autopunishment.PunishGroup
 import me.melijn.melijnbot.database.autopunishment.Punishment
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.database.ban.SoftBan
@@ -9,6 +12,7 @@ import me.melijn.melijnbot.database.kick.Kick
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.database.warn.Warn
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.enums.PunishmentType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.translation.getLanguage
@@ -21,32 +25,70 @@ import net.dv8tion.jda.api.entities.Member
 object PPUtils {
 
     // Updates the punishment points of the user and checks for new punishment point goal hits, then applies the goals if hit
-    suspend fun updatePP(member: Member, ppMap: Map<String, Long>, container: Container) {
+    suspend fun updatePP(
+        member: Member,
+        extraPPMap: Map<List<String>, Points>,
+        container: Container,
+        type: PointsTriggerType
+    ) {
         val guildId = member.guild.idLong
         val daoManager = container.daoManager
         val apWrapper = daoManager.autoPunishmentWrapper
-        val oldPPMap = apWrapper.getPointsMap(guildId, member.idLong)
-        apWrapper.set(guildId, member.idLong, ppMap)
+        val oldPPMap = apWrapper.getPointsMap(guildId, member.idLong).toMutableMap()
+
+        val newPPMap = mutableMapOf<ExpireTime, Map<String, Points>>()
+        newPPMap.putAll(oldPPMap)
 
         val apgWrapper = daoManager.autoPunishmentGroupWrapper
-        val pgs = apgWrapper.getList(guildId)
+
+        val pgs = apgWrapper.getList(guildId).filter { // Only need to give points for enabled punishGroups
+            it.enabledTypes.contains(type)
+        }
 
         val punishments = daoManager.punishmentWrapper.getList(guildId)
-        for (pg in pgs) {
-            val key = ppMap.keys.firstOrNull { key -> key == pg.groupName } ?: continue
-            val newPoints = ppMap[key] ?: continue
-            val oldPoints = oldPPMap.getOrDefault(pg.groupName, 0)
-            val entries = pg.pointGoalMap.filter { (tp, _) -> tp in (oldPoints + 1)..newPoints }
-
-
-            for (entry in entries) {
-                val punishment = punishments.first { (name) -> name == entry.value }
-                applyPunishment(member, punishment, container)
-                punishment.punishmentType
+        for (pg: PunishGroup in pgs) {
+            val absExpireTime = if (pg.expireTime == 0L) {
+                0
+            } else {
+                pg.expireTime + System.currentTimeMillis()
             }
 
-            pg.pointGoalMap
+            for ((pgNames, extraPoints) in extraPPMap) {
+                if (!pgNames.contains(pg.groupName)) continue
+
+                val oldPoints = oldPPMap.values.sumBy {
+                    it[pg.groupName]?.let { points: Points ->
+                        points
+                    } ?: 0
+                }
+
+                val entries = pg.pointGoalMap.filter { (tp, _) ->
+                    tp in (oldPoints + 1)..(oldPoints + extraPoints)
+                }
+
+                for (entry in entries) {
+                    val punishment = punishments.first { (name) ->
+                        name == entry.value
+                    }
+                    applyPunishment(member, punishment, container)
+                }
+
+                val processing = newPPMap[absExpireTime]?.toMutableMap()
+                if (processing != null) {
+                    val points = (processing[pg.groupName] ?: 0) + extraPoints
+                    processing[pg.groupName] = points
+                    newPPMap[absExpireTime] = processing
+                } else {
+                    newPPMap[absExpireTime] = mapOf(pg.groupName to extraPoints)
+                }
+            }
         }
+
+        val actuallyNew = newPPMap.filter { entry ->
+            !oldPPMap.containsKey(entry.key) || oldPPMap[entry.key] != entry.value
+        }
+
+        apWrapper.set(guildId, member.idLong, actuallyNew)
     }
 
     // Applies the correct punishment to the member
@@ -96,7 +138,13 @@ object PPUtils {
         }
     }
 
-    private suspend fun applyRemoveRole(member: Member, punishment: Punishment, container: Container, duration: Long?, roleId: Long) {
+    private suspend fun applyRemoveRole(
+        member: Member,
+        punishment: Punishment,
+        container: Container,
+        duration: Long?,
+        roleId: Long
+    ) {
         val guild = member.guild
         val daoManager = container.daoManager
         val wrapper = daoManager.tempRoleWrapper
@@ -108,7 +156,13 @@ object PPUtils {
         }
     }
 
-    private suspend fun applyAddRole(member: Member, punishment: Punishment, container: Container, duration: Long?, roleId: Long) {
+    private suspend fun applyAddRole(
+        member: Member,
+        punishment: Punishment,
+        container: Container,
+        duration: Long?,
+        roleId: Long
+    ) {
         val guild = member.guild
         val daoManager = container.daoManager
         val wrapper = daoManager.tempRoleWrapper
@@ -120,7 +174,13 @@ object PPUtils {
         }
     }
 
-    private suspend fun applyBan(member: Member, punishment: Punishment, container: Container, delDays: Int, duration: Long?) {
+    private suspend fun applyBan(
+        member: Member,
+        punishment: Punishment,
+        container: Container,
+        delDays: Int,
+        duration: Long?
+    ) {
         val pc = member.user.openPrivateChannel().awaitOrNull()
         val jda = member.jda
         val guild = member.guild
@@ -152,7 +212,17 @@ object PPUtils {
         val zoneId = getZoneId(daoManager, guild.idLong)
         val privZoneId = getZoneId(daoManager, guild.idLong, member.idLong)
         val banMessageDM = getBanMessage(lang, privZoneId, guild, member.user, jda.selfUser, ban)
-        val banMessageLog = getBanMessage(lang, zoneId, guild, member.user, jda.selfUser, ban, true, member.user.isBot, banningMessage != null)
+        val banMessageLog = getBanMessage(
+            lang,
+            zoneId,
+            guild,
+            member.user,
+            jda.selfUser,
+            ban,
+            true,
+            member.user.isBot,
+            banningMessage != null
+        )
         banningMessage?.editMessage(banMessageDM)?.override(true)?.queue()
 
         val lcType = if (duration == null) LogChannelType.PERMANENT_BAN else LogChannelType.TEMP_BAN
@@ -189,7 +259,17 @@ object PPUtils {
         guild.unban(member.user).reason("softban").queue()
 
         val softBanMessageDM = getSoftBanMessage(lang, privZoneId, guild, member.user, jda.selfUser, softBan)
-        val softBanMessageLog = getSoftBanMessage(lang, zoneId, guild, member.user, jda.selfUser, softBan, true, member.user.isBot, softBanningMessage != null)
+        val softBanMessageLog = getSoftBanMessage(
+            lang,
+            zoneId,
+            guild,
+            member.user,
+            jda.selfUser,
+            softBan,
+            true,
+            member.user.isBot,
+            softBanningMessage != null
+        )
         softBanningMessage?.editMessage(softBanMessageDM)?.override(true)?.queue()
 
         val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.SOFT_BAN) ?: return
@@ -224,7 +304,17 @@ object PPUtils {
         val pc = member.user.openPrivateChannel().awaitOrNull()
         val mutedMessage = pc?.sendMessage(muteMessageDM)?.awaitOrNull()
 
-        val muteMessageLog = getMuteMessage(lang, zoneId, guild, member.user, jda.selfUser, mute, true, member.user.isBot, mutedMessage != null)
+        val muteMessageLog = getMuteMessage(
+            lang,
+            zoneId,
+            guild,
+            member.user,
+            jda.selfUser,
+            mute,
+            true,
+            member.user.isBot,
+            mutedMessage != null
+        )
 
         val lcType = if (duration == null) LogChannelType.PERMANENT_MUTE else LogChannelType.TEMP_MUTE
         val channel = guild.getAndVerifyLogChannelByType(daoManager, lcType) ?: return
@@ -258,7 +348,17 @@ object PPUtils {
         }
 
         val kickMessageDM = getKickMessage(lang, privZoneId, guild, member.user, jda.selfUser, kick)
-        val kickMessageLog = getKickMessage(lang, zoneId, guild, member.user, jda.selfUser, kick, true, member.user.isBot, kickingMessage != null)
+        val kickMessageLog = getKickMessage(
+            lang,
+            zoneId,
+            guild,
+            member.user,
+            jda.selfUser,
+            kick,
+            true,
+            member.user.isBot,
+            kickingMessage != null
+        )
         kickingMessage?.editMessage(kickMessageDM)?.override(true)?.queue()
 
         val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.KICK) ?: return
@@ -287,7 +387,17 @@ object PPUtils {
         val pc = member.user.openPrivateChannel().awaitOrNull()
         val kickedMessage = pc?.sendMessage(warnMessageDM)?.awaitOrNull()
 
-        val warnMessageLog = getWarnMessage(lang, zoneId, guild, member.user, jda.selfUser, warn, true, member.user.isBot, kickedMessage != null)
+        val warnMessageLog = getWarnMessage(
+            lang,
+            zoneId,
+            guild,
+            member.user,
+            jda.selfUser,
+            warn,
+            true,
+            member.user.isBot,
+            kickedMessage != null
+        )
 
         val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.KICK) ?: return
         sendEmbed(daoManager.embedDisabledWrapper, channel, warnMessageLog)

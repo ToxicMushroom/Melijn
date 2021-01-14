@@ -6,8 +6,8 @@ class VoteWrapper(private val voteDao: VoteDao) {
         return voteDao.getVotesObject(userId)
     }
 
-    fun setVote(userId: Long, votes: Long, streak: Long, lastTime: Long) {
-        voteDao.set(userId, votes, streak, lastTime)
+    fun setVote(userVote: UserVote) {
+        voteDao.set(userVote)
     }
 
     suspend fun getTop(users: Int, offset: Int): Map<Long, Long> {
@@ -16,6 +16,10 @@ class VoteWrapper(private val voteDao: VoteDao) {
 
     suspend fun getRowCount(): Long {
         return voteDao.getRowCount()
+    }
+
+    suspend fun getPosition(userId: Long): Pair<Long, Long> {
+        return voteDao.getPosition(userId)
     }
 
 }

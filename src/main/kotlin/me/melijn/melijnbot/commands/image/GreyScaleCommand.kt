@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.image
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 
@@ -17,7 +17,7 @@ class GreyScaleCommand : AbstractCommand("command.greyscale") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("greyscaleGif", true)) {
             executeGif(context)
         } else {
@@ -25,14 +25,14 @@ class GreyScaleCommand : AbstractCommand("command.greyscale") {
         }
     }
 
-    private suspend fun executeNormal(context: CommandContext) {
+    private suspend fun executeNormal(context: ICommandContext) {
         ImageCommandUtil.executeNormalRecolorSingleOffset(context) { ints ->
             val value = ImageUtils.getBrightness(ints[0], ints[1], ints[2])
             intArrayOf(value, value, value, ints[3])
         }
     }
 
-    private suspend fun executeGif(context: CommandContext) {
+    private suspend fun executeGif(context: ICommandContext) {
         ImageCommandUtil.executeGifRecolorSingleOffset(context, { ints ->
             var value = ImageUtils.getBrightness(ints[0], ints[1], ints[2])
             if (value == 255) {

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.economy
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.getLongFromArgNMessage
 import me.melijn.melijnbot.internals.utils.isInside
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -19,7 +19,7 @@ class FlipCommand : AbstractCommand("command.flip") {
         commandCategory = CommandCategory.ECONOMY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.size != 2) {
             sendSyntax(context)
             return
@@ -45,10 +45,10 @@ class FlipCommand : AbstractCommand("command.flip") {
         val heads = context.getTranslation("$root.heads")
         val tails = context.getTranslation("$root.tails")
         when {
-            context.args[1].isInside("heads", "head", ignoreCase = true) -> {
+            context.args[1].isInside("heads", "head", "h", ignoreCase = true) -> {
                 flipCoin(context, amount, cash, heads, tails, 1)
             }
-            context.args[1].isInside("tails", "tail", ignoreCase = true) -> {
+            context.args[1].isInside("tails", "tail", "t", ignoreCase = true) -> {
                 flipCoin(context, amount, cash, tails, heads, 0)
             }
             else -> {
@@ -58,7 +58,14 @@ class FlipCommand : AbstractCommand("command.flip") {
         }
     }
 
-    private suspend fun flipCoin(context: CommandContext, bet: Long, cash: Long, winning: String, losing: String, winCon: Int) {
+    private suspend fun flipCoin(
+        context: ICommandContext,
+        bet: Long,
+        cash: Long,
+        winning: String,
+        losing: String,
+        winCon: Int
+    ) {
         val nextInt = Random.nextInt(2)
         val balanceWrapper = context.daoManager.balanceWrapper
 

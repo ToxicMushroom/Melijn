@@ -4,7 +4,7 @@ import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.enums.CommandState
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_COMMANDSTATE
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
@@ -28,7 +28,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
     // setCommandState channel channel* commandNode* state*
     // setCommandState info [channel*]
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -39,7 +39,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             aliases = arrayOf("g")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -71,7 +71,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             aliases = arrayOf("c")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 3) {
                 sendSyntax(context)
                 return
@@ -113,7 +113,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             aliases = arrayOf("i")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val daoManager = context.daoManager
             if (context.args.isEmpty()) {
                 val ids = daoManager.disabledCommandWrapper.getSet(context.guildId)

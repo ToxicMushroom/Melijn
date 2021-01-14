@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.events.guild.GuildLeaveEvent
 
 class BotJoinLeaveListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildJoinEvent) {
             onBotJoinGuild(event)
         } else if (event is GuildLeaveEvent) {
@@ -23,20 +23,24 @@ class BotJoinLeaveListener(container: Container) : AbstractListener(container) {
     private suspend fun onBotLeaveGuild(event: GuildLeaveEvent) {
         container.lavaManager.closeConnection(event.guild.idLong)
 
-        logger.info("{}Left the '{}' guild, id: {}, shard: {}{}",
+        logger.info(
+            "{}Left the '{}' guild, id: {}, shard: {}{}",
             ConsoleColor.BLUE,
             event.guild.name,
             event.guild.id,
             event.jda.shardInfo.shardId,
-            ConsoleColor.RESET)
+            ConsoleColor.RESET
+        )
     }
 
     private fun onBotJoinGuild(event: GuildJoinEvent) {
-        logger.info("{}Joined the '{}' guild, id: {}, shard: {}{}",
+        logger.info(
+            "{}Joined the '{}' guild, id: {}, shard: {}{}",
             ConsoleColor.CYAN,
             event.guild.name,
             event.guild.id,
             event.jda.shardInfo.shardId,
-            ConsoleColor.RESET)
+            ConsoleColor.RESET
+        )
     }
 }

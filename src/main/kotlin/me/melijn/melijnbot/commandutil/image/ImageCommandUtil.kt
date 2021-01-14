@@ -3,15 +3,15 @@ package me.melijn.melijnbot.commandutil.image
 import com.madgag.gif.fmsware.GifDecoder
 import com.squareup.gifencoder.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.getBooleanFromArgN
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -26,7 +26,12 @@ object ImageCommandUtil {
 
 
     // needs lower and higher to be put in the imgData with imgParser arg
-    suspend fun defaultOffsetArgParser(context: CommandContext, argInt: Int, argData: DataObject, imgData: DataObject): Boolean {
+    suspend fun defaultOffsetArgParser(
+        context: ICommandContext,
+        argInt: Int,
+        argData: DataObject,
+        imgData: DataObject
+    ): Boolean {
         val lower = imgData.getInt("lower")
         val higher = imgData.getInt("higher")
         return if (argInt == context.args.size) {
@@ -46,7 +51,7 @@ object ImageCommandUtil {
 
     // arg data must contain "offset" -> Int (-255 -> 255)
     suspend fun executeNormalRecolorSingleOffset(
-        context: CommandContext,
+        context: ICommandContext,
         recolor: (ints: IntArray) -> IntArray
     ) {
         executeNormalEffect(context, { image, argData ->
@@ -73,7 +78,7 @@ object ImageCommandUtil {
 
     // arg data must contain "offset" -> Int (-255 -> 255)
     suspend fun executeGifRecolorSingleOffset(
-        context: CommandContext,
+        context: ICommandContext,
         recolor: (ints: IntArray) -> IntArray, // ints: r, g, b, offset (def: 255)
         debug: Boolean = false
     ) {
@@ -103,7 +108,7 @@ object ImageCommandUtil {
 
     // EFFECTS
     suspend fun executeNormalEffect(
-        context: CommandContext,
+        context: ICommandContext,
         effect: (image: BufferedImage, argData: DataObject) -> Unit,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true
@@ -118,7 +123,7 @@ object ImageCommandUtil {
     }
 
     suspend fun executeGifEffect(
-        context: CommandContext,
+        context: ICommandContext,
         effect: (image: BufferedImage, argData: DataObject) -> Unit,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true
@@ -141,7 +146,7 @@ object ImageCommandUtil {
 
     // FRAME APPENDER THING
     suspend fun executeGifFrameAppend(
-        context: CommandContext,
+        context: ICommandContext,
         debug: Boolean = false
     ) {
         executeGifTransform(context, { gifDecoder, fps, repeat, _ ->
@@ -162,12 +167,34 @@ object ImageCommandUtil {
             val gct = gifDecoder.gct ?: emptyArray<Int>().toIntArray()
 
             for (index in 0 until gifDecoder.frameCount) {
-                addFrameToEncoderReverseThingie(gifDecoder, debug, gct, index, width, height, encoder, context, fps, false)
+                addFrameToEncoderReverseThingie(
+                    gifDecoder,
+                    debug,
+                    gct,
+                    index,
+                    width,
+                    height,
+                    encoder,
+                    context,
+                    fps,
+                    false
+                )
             }
 
             for (fakeIndex in 0 until (gifDecoder.frameCount - 1)) {
                 val index = gifDecoder.frameCount - fakeIndex - 2
-                addFrameToEncoderReverseThingie(gifDecoder, debug, gct, index, width, height, encoder, context, fps, true)
+                addFrameToEncoderReverseThingie(
+                    gifDecoder,
+                    debug,
+                    gct,
+                    index,
+                    width,
+                    height,
+                    encoder,
+                    context,
+                    fps,
+                    true
+                )
             }
 
             encoder.finishEncoding()
@@ -180,7 +207,7 @@ object ImageCommandUtil {
         }, 0)
     }
 
-    private fun addFrameToEncoderReverseThingie(
+    private suspend fun addFrameToEncoderReverseThingie(
         decoder: GifDecoder,
         debug: Boolean,
         gct: IntArray,
@@ -188,7 +215,7 @@ object ImageCommandUtil {
         width: Int,
         height: Int,
         encoder: GifEncoder,
-        context: CommandContext,
+        context: ICommandContext,
         fps: Float?,
         isSecondIteration: Boolean
     ) {
@@ -214,38 +241,37 @@ object ImageCommandUtil {
         options.setDelay(delay, TimeUnit.MILLISECONDS)
 
         if (debug) {
-            runBlocking {
-                val lct = if (frameMeta.lct.isEmpty()) {
-                    gct
-                } else {
-                    frameMeta.lct
-                }
-
-                val bgColor = if (lct.size > frameMeta.bgIndex && frameMeta.bgIndex != -1) {
-                    Color(lct[frameMeta.bgIndex])
-                } else {
-                    null
-                }
-
-                val transColor = if (lct.size > frameMeta.transIndex && frameMeta.transIndex != -1) {
-                    Color(lct[frameMeta.transIndex])
-                } else {
-                    null
-                }
-
-                sendMsgAwaitEL(context, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
+            val lct = if (frameMeta.lct.isEmpty()) {
+                gct
+            } else {
+                frameMeta.lct
             }
+
+            val bgColor = if (lct.size > frameMeta.bgIndex && frameMeta.bgIndex != -1) {
+                Color(lct[frameMeta.bgIndex])
+            } else {
+                null
+            }
+
+            val transColor = if (lct.size > frameMeta.transIndex && frameMeta.transIndex != -1) {
+                Color(lct[frameMeta.transIndex])
+            } else {
+                null
+            }
+
+            sendMsgAwaitEL(context, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
         }
 
         encoder.addImage(
             gifFrame.getRGB(0, 0, width, height, Array(width * height) { 0 }.toIntArray(), 0, width),
-            width, options)
+            width, options
+        )
     }
 
 
     // ROOT TRANSFORM THING
     private suspend fun executeNormalTransform(
-        context: CommandContext,
+        context: ICommandContext,
         transform: (byteArray: ByteArray, argData: DataObject) -> ByteArrayOutputStream,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true
@@ -269,7 +295,12 @@ object ImageCommandUtil {
         imgDataParser(img, imgData)
 
         val argData = DataObject.empty()
-        if (!argDataParser(argInt, argData, imgData)) { // The arg data parser will send the error message and return false
+        if (!argDataParser(
+                argInt,
+                argData,
+                imgData
+            )
+        ) { // The arg data parser will send the error message and return false
             return
         }
 
@@ -281,8 +312,8 @@ object ImageCommandUtil {
 
 
     private suspend fun executeGifTransform(
-        context: CommandContext,
-        transform: (decoder: GifDecoder, fps: Float?, repeat: Boolean?, argData: DataObject) -> ByteArrayOutputStream,
+        context: ICommandContext,
+        transform: suspend (decoder: GifDecoder, fps: Float?, repeat: Boolean?, argData: DataObject) -> ByteArrayOutputStream,
         argDataParser: suspend (argInt: Int, argData: DataObject, imgData: DataObject) -> Boolean = { _: Int, _: DataObject, _: DataObject ->
             true
         },
@@ -304,12 +335,25 @@ object ImageCommandUtil {
         }
 
         val img = decoder.image
+        if (img == null) {
+            lmsg?.delete()?.queue()
+            sendRsp(
+                context,
+                "The .gif you provided actually doesnt point to a valid gif format. Contact support if you have any questions regarding this issue."
+            )
+            return
+        }
 
         val imgData = DataObject.empty()
         imgDataParser(img, imgData)
 
         val argData = DataObject.empty()
-        if (!argDataParser(argInt, argData, imgData)) { // The arg data parser will send the error message and return false
+        if (!argDataParser(
+                argInt,
+                argData,
+                imgData
+            )
+        ) { // The arg data parser will send the error message and return false
             return
         }
 

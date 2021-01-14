@@ -32,7 +32,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -51,7 +51,8 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
 
         val activeMute: Mute? = daoManager.muteWrapper.getActiveMute(context.guildId, targetUser.idLong)
         val mute: Mute = activeMute
-            ?: Mute(context.guildId,
+            ?: Mute(
+                context.guildId,
                 targetUser.idLong,
                 null,
                 "/"
@@ -81,7 +82,12 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
                 sendRsp(context, msg)
                 return
             }
-            if (!context.member.canInteract(targetMember) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+            if (!context.member.canInteract(targetMember) && !hasPermission(
+                    context,
+                    SpecialPermission.PUNISH_BYPASS_HIGHER.node,
+                    true
+                )
+            ) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
                     .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
                 sendRsp(context, msg)
@@ -117,7 +123,13 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         }
     }
 
-    private suspend fun sendUnmuteLogs(context: CommandContext, targetUser: User, muteAuthor: User?, mute: Mute, unmuteReason: String) {
+    private suspend fun sendUnmuteLogs(
+        context: ICommandContext,
+        targetUser: User,
+        muteAuthor: User?,
+        mute: Mute,
+        unmuteReason: String
+    ) {
         val guild = context.guild
         val daoManager = context.daoManager
         val language = context.getLanguage()
@@ -142,7 +154,18 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
             false
         }
 
-        val msgLc = getUnmuteMessage(language, privZoneId, guild, targetUser, muteAuthor, context.author, mute, true, targetUser.isBot, success)
+        val msgLc = getUnmuteMessage(
+            language,
+            privZoneId,
+            guild,
+            targetUser,
+            muteAuthor,
+            context.author,
+            mute,
+            true,
+            targetUser.isBot,
+            success
+        )
 
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNMUTE)
         logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, msgLc) }
@@ -195,7 +218,8 @@ fun getUnmuteMessage(
         .withVariable("muteId", mute.muteId)
 
     var extraDesc: String = if (!received || isBot) {
-        i18n.getTranslation(language,
+        i18n.getTranslation(
+            language,
             if (isBot) {
                 "message.punishment.extra.bot"
             } else {
@@ -206,7 +230,8 @@ fun getUnmuteMessage(
         ""
     }
     if (failedCause != null) {
-        extraDesc += i18n.getTranslation(language,
+        extraDesc += i18n.getTranslation(
+            language,
             "message.punishment.extra.failed"
         ).withSafeVariable("cause", failedCause)
     }

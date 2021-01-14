@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.enums.DateFormat
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.getBirthdayByArgsNMessage
 import me.melijn.melijnbot.internals.utils.getEnumFromArgN
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -18,7 +18,7 @@ class SetBirthdayCommand : AbstractCommand("command.setbirthday") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             val birthday = context.daoManager.birthdayWrapper.getBirthday(context.author.idLong)
 
@@ -50,7 +50,7 @@ class SetBirthdayCommand : AbstractCommand("command.setbirthday") {
     }
 }
 
-suspend fun setBirthday(context: CommandContext, datePair: Pair<Int, Int?>) {
+suspend fun setBirthday(context: ICommandContext, datePair: Pair<Int, Int?>) {
     val birthday = datePair.first
     val optionalBirthYear = datePair.second
 

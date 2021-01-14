@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.events.eventlisteners.MessageDeletedListener
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -16,7 +16,7 @@ class SnipeCommand : AbstractCommand("command.snipe") {
         commandCategory = CommandCategory.MODERATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val amount: Int
         val channelId: Long
         val guildId = context.guildId
@@ -65,7 +65,10 @@ class SnipeCommand : AbstractCommand("command.snipe") {
             sb.append("[")
                 .append(key.moment.asEpochMillisToDateTime(context.getTimeZoneId()))
                 .append("] **")
-                .append(context.guild.retrieveMemberById(key.authorId).awaitOrNull()?.asTag?.escapeMarkdown() ?: key.authorId)
+                .append(
+                    context.guild.retrieveMemberById(key.authorId).awaitOrNull()?.asTag?.escapeMarkdown()
+                        ?: key.authorId
+                )
                 .append("**: ")
                 .appendLine(key.content.escapeMarkdown())
         }

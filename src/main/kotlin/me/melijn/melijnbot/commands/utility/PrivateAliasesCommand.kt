@@ -36,7 +36,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val aliasMap = context.daoManager.aliasWrapper.getAliases(context.authorId)
             if (aliasMap.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
@@ -54,7 +54,8 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
                 sb.append(indexer++).append(". [").append(rootCmd.name).append("]").append(idLessCmd.replace(".", " "))
                     .append("\n")
                 for ((index, alias) in aliases.sorted().withIndex()) {
-                    sb.append("    ").append(index + 1).append(": ").append(MarkdownSanitizer.escape(alias)).append("\n")
+                    sb.append("    ").append(index + 1).append(": ").append(MarkdownSanitizer.escape(alias))
+                        .append("\n")
                 }
             }
             sb.append("```")
@@ -71,7 +72,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("ca")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -107,7 +108,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("c")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -134,7 +135,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("rma", "ra")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -173,10 +174,12 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("rm", "r")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val pathInfo = getCommandPathInfo(context, 0) ?: return
-            val alias = getStringFromArgsNMessage(context, 1, 1, 64,
-                cantContainChars = arrayOf(' '), cantContainWords = arrayOf("%SPLIT%")) ?: return
+            val alias = getStringFromArgsNMessage(
+                context, 1, 1, 64,
+                cantContainChars = arrayOf(' '), cantContainWords = arrayOf("%SPLIT%")
+            ) ?: return
 
             context.daoManager.aliasWrapper.remove(context.authorId, pathInfo.fullPath, alias)
 
@@ -194,7 +197,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -216,8 +219,10 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             }
 
             val pathInfo = getCommandPathInfo(context, 0) ?: return
-            val alias = getStringFromArgsNMessage(context, 1, 1, 64,
-                cantContainWords = arrayOf("%SPLIT%")) ?: return
+            val alias = getStringFromArgsNMessage(
+                context, 1, 1, 64,
+                cantContainWords = arrayOf("%SPLIT%")
+            ) ?: return
 
             val cmdTotal = (aliases[pathInfo.fullPath] ?: emptyList()).size
             if (cmdTotal >= CMD_ALIASES_LIMIT) {
@@ -237,7 +242,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }

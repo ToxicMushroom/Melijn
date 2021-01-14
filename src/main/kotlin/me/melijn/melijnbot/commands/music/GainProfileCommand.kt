@@ -33,10 +33,11 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
         init {
             name = "load"
             aliases = arrayOf("l")
-            runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
+            runConditions =
+                arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -50,7 +51,8 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             val floatArray = profile.toFloatArray()
 
             val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
-            player.setBands(floatArray)
+            player.filters.bands = floatArray
+            player.filters.commit()
 
             val msg = context.getTranslation("$root.loaded")
                 .withSafeVariable("gainProfile", pair.first)
@@ -67,7 +69,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -84,7 +86,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
 
             wrapper.add(context.guildId, newName, profile.toFloatArray())
 
-            val msg = context.getTranslation("$context.copied")
+            val msg = context.getTranslation("$root.copied")
                 .withSafeVariable("gainProfile1", name)
                 .withSafeVariable("gainProfile2", newName)
             sendRsp(context, msg)
@@ -99,7 +101,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -143,7 +145,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -172,7 +174,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.gainProfileWrapper
             val map = wrapper.getGainProfile(context.guildId)
 
@@ -206,7 +208,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -214,7 +216,9 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
 
             val name = getStringFromArgsNMessage(context, 0, 1, 20) ?: return
             val wrapper = context.daoManager.gainProfileWrapper
-            context.getGuildMusicPlayer().guildTrackManager.iPlayer.bands.let { wrapper.add(context.guildId, name, it) }
+            context.getGuildMusicPlayer().guildTrackManager.iPlayer.filters.bands.let {
+                wrapper.add(context.guildId, name, it)
+            }
 
             val msg = context.getTranslation("$root.added")
                 .withSafeVariable(PLACEHOLDER_ARG, name)
@@ -223,12 +227,16 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }
 
-suspend fun getGainProfileNMessage(context: CommandContext, map: Map<String, GainProfile>, index: Int): Pair<String, GainProfile>? {
+suspend fun getGainProfileNMessage(
+    context: ICommandContext,
+    map: Map<String, GainProfile>,
+    index: Int
+): Pair<String, GainProfile>? {
     val name: String
     val profileName = if (context.args[index].isPositiveNumber()) {
         val profileIndex = getIntegerFromArgNMessage(context, index, 0, map.size - 1) ?: return null

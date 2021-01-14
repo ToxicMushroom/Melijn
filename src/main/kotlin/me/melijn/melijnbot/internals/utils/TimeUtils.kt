@@ -1,13 +1,14 @@
 package me.melijn.melijnbot.internals.utils
 
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
@@ -31,21 +32,32 @@ object TimeUtils {
 //    return offsetDateTime.asLongLongGMTString()
 //}
 
-suspend fun getZoneId(daoManager: DaoManager?, guildId: Long? = null, userId: Long? = null): ZoneId {
+suspend fun getZoneId(daoManager: DaoManager, guildId: Long? = null, userId: Long? = null): ZoneId {
 
     val guildTimezone = guildId?.let {
-        val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
-        if (zoneId?.isBlank() == true) null
-        else ZoneId.of(zoneId)
+        val zoneId = daoManager.timeZoneWrapper.getTimeZone(it)
+        if (zoneId.isBlank()) null
+        else {
+            TimeZone.getTimeZone(zoneId).toZoneId()
+        }
     }
 
     val userTimezone = userId?.let {
-        val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
-        if (zoneId?.isBlank() == true) null
-        else ZoneId.of(zoneId)
+        val zoneId = daoManager.timeZoneWrapper.getTimeZone(it)
+        if (zoneId.isBlank()) null
+        else {
+            TimeZone.getTimeZone(zoneId).toZoneId()
+        }
     }
 
     return userTimezone ?: guildTimezone ?: ZoneId.of("GMT")
+}
+
+fun manualSupporterTimeZone(zoneId: String): ZoneId? {
+    return when (zoneId) {
+        "EST" -> ZoneId.of("GMT-5")
+        else -> null
+    }
 }
 
 suspend fun Long.asEpochMillisToDateTime(daoManager: DaoManager?, guildId: Long? = null, userId: Long? = null): String {
@@ -137,7 +149,12 @@ fun getDurationString(milliseconds: Double): String {
 }
 
 val holyPattern = Pattern.compile("(\\d+)([a-zA-Z]+)")
-suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, rightBound: Int, timeStamps: List<String> = context.args): Long? {
+suspend fun getDurationByArgsNMessage(
+    context: ICommandContext,
+    leftBound: Int,
+    rightBound: Int,
+    timeStamps: List<String> = context.args
+): Long? {
     val corruptTimeStamps = timeStamps.subList(leftBound, rightBound).toMutableList()
     val holyTimeStamps = mutableListOf<String>()
     var totalTime = 0L
@@ -157,7 +174,7 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, r
     }
 
     if (holyTimeStamps.isEmpty()) {
-        val msg = context.getTranslation("message.unknown.timeduration")
+        val msg = context.getTranslation("message.unknown.duration")
             .withVariable("arg", timeStamps.joinToString(" "))
 
         sendRsp(context, msg)
@@ -181,12 +198,12 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, r
         val typeNorm = matcher.group(2)
         val type = typeNorm.toLowerCase()
         val multiplier = when {
+            ("M" == typeNorm || arrayOf("month", "months").contains(type)) -> 30 * 24 * 60 * 60
             arrayOf("s", "second", "seconds").contains(type) -> 1
             arrayOf("m", "minute", "minutes").contains(type) -> 60
             arrayOf("h", "hour", "hours").contains(type) -> 60 * 60
             arrayOf("d", "day", "days").contains(type) -> 24 * 60 * 60
             arrayOf("w", "week", "weeks").contains(type) -> 7 * 24 * 60 * 60
-            "M" == type || arrayOf("month", "months").contains(type) -> 30 * 24 * 60 * 60
             arrayOf("y", "year", "years").contains(type) -> 52 * 7 * 24 * 60 * 60
             else -> null
         }

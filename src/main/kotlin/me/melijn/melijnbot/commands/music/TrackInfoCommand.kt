@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.music
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.music.TrackUserData
@@ -11,7 +11,6 @@ import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withSafeVariable
-import java.lang.Integer.max
 
 class TrackInfoCommand : AbstractCommand("command.trackinfo") {
 
@@ -22,36 +21,41 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         val player = context.getGuildMusicPlayer()
         val trackManager = player.guildTrackManager
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
         }
-        val index = getIntegerFromArgNMessage(context, 0, 0, trackManager.trackSize()) ?: return
 
         val playingTrack = trackManager.iPlayer.playingTrack ?: throw IllegalArgumentException("checks failed")
-        val track = if (index == 0) {
+
+        val targetIndex = getIntegerFromArgNMessage(context, 0, 0, trackManager.tracks.size) ?: return
+        val targetTrack = if (targetIndex == 0) {
             playingTrack
         } else {
-            trackManager.tracks[index - 1]
+            trackManager.tracks.get(targetIndex - 1)
         }
 
-        val trackUserData = (track.userData as TrackUserData)
+        val trackUserData = (targetTrack.userData as TrackUserData)
         val title = context.getTranslation("$root.title")
         val requester = context.getTranslation("$root.requester")
         val requesterId = context.getTranslation("$root.requesterid")
         val length = context.getTranslation("$root.length")
         val timeuntil = context.getTranslation("$root.timeuntil")
         val progress = context.getTranslation("$root.progress")
-        val desc = "**[%title%](${track.info.uri})**"
-            .withSafeVariable("title", track.info.title)
+        val desc = "**[%title%](${targetTrack.info.uri})**"
+            .withSafeVariable("title", targetTrack.info.title)
 
         var timeUntilTime = playingTrack.duration - trackManager.iPlayer.trackPosition
-        trackManager.tracks.toList().subList(0, max(index - 1, 0)).forEach { tr -> timeUntilTime += tr.duration }
+        trackManager.tracks.indexedForEach { index, track ->
+            if (index < (targetIndex - 1)) {
+                timeUntilTime += track.duration
+            }
+        }
         if (trackManager.loopedTrack) timeUntilTime = Long.MAX_VALUE
-        if (index == 0) timeUntilTime = 0
+        if (targetIndex == 0) timeUntilTime = 0
 
 
         val embedder = Embedder(context)
@@ -59,13 +63,13 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
             .setDescription(desc)
             .addField(requester, trackUserData.userTag, true)
             .addField(requesterId, trackUserData.userId.toString(), true)
-            .setThumbnail("https://img.youtube.com/vi/${track.identifier}/hqdefault.jpg")
+            .setThumbnail("https://img.youtube.com/vi/${targetTrack.identifier}/hqdefault.jpg")
 
-        if (index != 0) {
-            embedder.addField(length, "`[${getDurationString(track.duration)}]`", true)
+        if (targetIndex != 0) {
+            embedder.addField(length, "`[${getDurationString(targetTrack.duration)}]`", true)
             embedder.addField(timeuntil, getDurationString(timeUntilTime), false)
         } else {
-            embedder.addField(progress, getProgressBar(track, trackManager.iPlayer.trackPosition), false)
+            embedder.addField(progress, getProgressBar(targetTrack, trackManager.iPlayer.trackPosition), false)
         }
 
         sendEmbedRsp(context, embedder.build())

@@ -1,3 +1,5 @@
+@file:Suppress("RemoveRedundantQualifierName")
+
 package me.melijn.melijnbot.internals.command
 
 import me.melijn.melijnbot.Container
@@ -7,10 +9,13 @@ import me.melijn.melijnbot.commands.anime.*
 import me.melijn.melijnbot.commands.developer.*
 import me.melijn.melijnbot.commands.economy.*
 import me.melijn.melijnbot.commands.games.PokerCommand
+import me.melijn.melijnbot.commands.games.RockPaperScissorsCommand
 import me.melijn.melijnbot.commands.games.SlotsCommand
+import me.melijn.melijnbot.commands.games.TicTacToeCommand
 import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.commands.music.*
+import me.melijn.melijnbot.commands.nsfw.*
 import me.melijn.melijnbot.commands.utility.*
 import me.melijn.melijnbot.internals.threading.TaskManager
 import org.slf4j.LoggerFactory
@@ -189,6 +194,11 @@ class CommandClientBuilder(private val container: Container) {
         SetBotLogStateCommand(),
         SetRoleColorCommand(),
         AniListCommand(),
+        NekoHCommand(),
+        Rule34Command(),
+        SafebooruCommand(),
+        TBibCommand(),
+        GelbooruCommand(),
         AngryCommand(),
         PngsFromGifCommand(),
         PngsToGifCommand(),
@@ -210,7 +220,7 @@ class CommandClientBuilder(private val container: Container) {
         SetRemoveResponsesCommand(),
         SetRemoveInvokeCommand(),
         ManageSupportersCommand(),
-        FlipCommand(),
+        me.melijn.melijnbot.commands.economy.FlipCommand(),
         DailyCommand(),
         PayCommand(),
         BassBoostCommand(),
@@ -242,7 +252,24 @@ class CommandClientBuilder(private val container: Container) {
         SnekCommand(),
         PlaylistCommand(),
         StarboardCommand(),
-        LikeCommand()
+        LikeCommand(),
+        RemindmeCommand(),
+        ShipCommand(),
+        MusicNodeCommand(),
+        ClearQueueCommand(),
+        TicTacToeCommand(),
+        RockPaperScissorsCommand(),
+        RepCommand(),
+        BegCommand(),
+        ChickenCommand(),
+        FishCommand(),
+        LockCommand(),
+        UnlockCommand(),
+        FlipXCommand(),
+        TimeCommand(),
+        NomCommand(),
+        ConfusedCommand(),
+        FrogCommand()
     )
 
     fun build(): CommandClient {

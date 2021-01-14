@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.*
@@ -20,7 +20,7 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         var guild = context.guild
         if (context.args.isNotEmpty()) {
             if (context.args[0].matches(Regex("\\d+"))) {
@@ -28,28 +28,33 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
             }
         }
 
+        val isSupporter = context.daoManager.supporterWrapper.getGuilds().contains(guild.idLong)
+        val yes = context.getTranslation("yes")
+        val no = context.getTranslation("no")
 
         val title1 = context.getTranslation("$root.response1.field1.title")
         val title2 = context.getTranslation("$root.response1.field2.title")
         val title3 = context.getTranslation("$root.response1.field3.title")
 
-        val value1 = replaceFieldVar(context, guild, "$root.response1.field1.value")
-        val value2 = replaceFieldVar(context, guild, "$root.response1.field2.value")
-        val value31 = replaceFieldVar(context, guild, "$root.response1.field3.value.part1")
-        val value32 = replaceFieldVar(context, guild, "$root.response1.field3.value.part2")
-        val value33 = replaceFieldVar(context, guild, "$root.response1.field3.value.part3")
-        val value34 = replaceFieldVar(context, guild, "$root.response1.field3.value.part4")
+
+        val value1 = replaceFieldVar(context.getTranslation("$root.response1.field1.value"), guild, isSupporter, yes, no)
+        val value2 = replaceFieldVar(context.getTranslation("$root.response1.field2.value"), guild, isSupporter, yes, no)
+        val value31 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part1"), guild, isSupporter, yes, no)
+        val value32 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part2"), guild, isSupporter, yes, no)
+        val value33 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part3"), guild, isSupporter, yes, no)
+        val value34 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part4"), guild, isSupporter, yes, no)
 
         var value3 = ""
-        if (guild.iconUrl != null) value3 += replaceFieldVar(context, guild, value31)
-        if (guild.bannerUrl != null) value3 += replaceFieldVar(context, guild, value32)
-        if (guild.splashUrl != null) value3 += replaceFieldVar(context, guild, value33)
-        if (guild.vanityUrl != null) value3 += replaceFieldVar(context, guild, value34)
+        if (guild.iconUrl != null) value3 += replaceFieldVar(value31, guild, isSupporter, yes, no)
+        if (guild.bannerUrl != null) value3 += replaceFieldVar(value32, guild, isSupporter, yes, no)
+        if (guild.splashUrl != null) value3 += replaceFieldVar(value33, guild, isSupporter, yes, no)
+        if (guild.vanityUrl != null) value3 += replaceFieldVar(value34, guild, isSupporter, yes, no)
         if (value3.isEmpty()) value3 = "/"
 
         val eb = Embedder(context)
             .setThumbnail(guild.iconUrl)
-            .setDescription("""
+            .setDescription(
+                """
                 |```INI
                 |[${title1}]```$value1
                 |
@@ -58,19 +63,19 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
                 |                                
                 |```INI
                 |[${title3}]```$value3
-            """.trimMargin())
+            """.trimMargin()
+            )
 
         sendEmbedRsp(context, eb.build())
     }
 
-    private suspend fun replaceFieldVar(context: CommandContext, guild: Guild, path: String): String {
-        val isSupporter = context.daoManager.supporterWrapper.getGuilds().contains(guild.idLong)
-        val yes = context.getTranslation("yes")
-        val no = context.getTranslation("no")
-        return replaceFieldVar(context.getTranslation(path), guild, isSupporter, yes, no)
-    }
-
-    private suspend fun replaceFieldVar(string: String, guild: Guild, isSupporter: Boolean, yes: String, no: String): String {
+    private suspend fun replaceFieldVar(
+        string: String,
+        guild: Guild,
+        isSupporter: Boolean,
+        yes: String,
+        no: String
+    ): String {
         val botCount = guild.memberCache
             .stream()
             .filter { member -> member.user.isBot }
@@ -98,8 +103,14 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
             .withVariable("verificationLevel", guild.verificationLevel.toUCC())
             .withVariable("botCount", botCount.toString())
             .withVariable("userCount", (guild.memberCount - botCount).toString())
-            .withVariable("botPercent", (((botCount.toDouble() / guild.memberCount) * 10000).roundToLong() / 100.0).toString())
-            .withVariable("userPercent", ((((guild.memberCount - botCount.toDouble()) / guild.memberCount) * 10000).roundToLong() / 100.0).toString())
+            .withVariable(
+                "botPercent",
+                (((botCount.toDouble() / guild.memberCount) * 10000).roundToLong() / 100.0).toString()
+            )
+            .withVariable(
+                "userPercent",
+                ((((guild.memberCount - botCount.toDouble()) / guild.memberCount) * 10000).roundToLong() / 100.0).toString()
+            )
             .withVariable("mfa", guild.requiredMFALevel.toUCC())
     }
 }

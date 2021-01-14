@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.enums.FilterType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
@@ -23,7 +23,7 @@ class FilterCommand : AbstractCommand("command.filter") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -34,7 +34,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -55,14 +55,15 @@ class FilterCommand : AbstractCommand("command.filter") {
     }
 
 
-    class RemoveByIndexArg(parent: String, private val filterType: FilterType) : AbstractCommand("$parent.removebyindex") {
+    class RemoveByIndexArg(parent: String, private val filterType: FilterType) :
+        AbstractCommand("$parent.removebyindex") {
 
         init {
             name = "removeByIndex"
             aliases = arrayOf("removeAt", "rbi", "deleteByIndex")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -90,7 +91,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             aliases = arrayOf("r", "delete", "d")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -117,7 +118,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -155,7 +156,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }
@@ -175,7 +176,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             )
         }
 
-        override suspend fun execute(context: CommandContext) {
+        override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }

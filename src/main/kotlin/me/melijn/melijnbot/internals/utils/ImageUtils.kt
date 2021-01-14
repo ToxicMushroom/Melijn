@@ -9,7 +9,7 @@ import io.ktor.client.statement.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.streams.*
 import kotlinx.coroutines.*
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -47,7 +47,10 @@ object ImageUtils {
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
     val discordSize = "?size=2048"
 
-    suspend fun getImageBytesNMessage(context: CommandContext, reqFormat: String? = null): Triple<ByteArray, String, Boolean>? {
+    suspend fun getImageBytesNMessage(
+        context: ICommandContext,
+        reqFormat: String? = null
+    ): Triple<ByteArray, String, Boolean>? {
         val args = context.args
         val attachments = context.message.attachments
 
@@ -105,7 +108,8 @@ object ImageUtils {
                 arg = true
                 url = args[0]
                 try {
-                    if (!checkFormat(context, url, reqFormat)) return null
+                    if (reqFormat == "gif" && !checkFormat(context, url, reqFormat)) return null
+                    if (!checkValidUrl(context, url)) return null
 
                     img = downloadImage(context.webManager.proxiedHttpClient, url)
                     ByteArrayInputStream(img).use { bis ->
@@ -118,6 +122,7 @@ object ImageUtils {
                     t.printStackTrace()
                     return null
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     val msg = context.getTranslation("message.notuserorurl")
                         .withVariable(PLACEHOLDER_ARG, args[0])
                     sendRsp(context, msg)
@@ -147,11 +152,17 @@ object ImageUtils {
         return Triple(nonnullImage, url, arg)
     }
 
-    suspend fun downloadImage(context: CommandContext, url: String, doChecks: Boolean = true): ByteArray {
+    suspend fun downloadImage(context: ICommandContext, url: String, doChecks: Boolean = true): ByteArray {
         return downloadImage(context.webManager.httpClient, url, doChecks, context.guildN, context)
     }
 
-    suspend fun downloadImage(httpClient: HttpClient, url: String, doChecks: Boolean = true, guild: Guild? = null, context: CommandContext? = null): ByteArray {
+    suspend fun downloadImage(
+        httpClient: HttpClient,
+        url: String,
+        doChecks: Boolean = true,
+        guild: Guild? = null,
+        context: ICommandContext? = null
+    ): ByteArray {
         return if (doChecks) {
             httpClient.get<HttpStatement>(url).execute {
                 val channel = it.receive<ByteReadChannel>()
@@ -193,7 +204,10 @@ object ImageUtils {
     //ByteArray (imageData)
     //String (urls)
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
-    suspend fun getImagesBytesNMessage(context: CommandContext, reqFormat: String? = null): Triple<Map<String, ByteArray>, Pair<Int, Int>, Boolean>? {
+    suspend fun getImagesBytesNMessage(
+        context: ICommandContext,
+        reqFormat: String? = null
+    ): Triple<Map<String, ByteArray>, Pair<Int, Int>, Boolean>? {
         val args = context.args
         val attachments = context.message.attachments
 
@@ -340,13 +354,18 @@ object ImageUtils {
         return Triple(imgMap, Pair(maxWidth, maxHeight), arg)
     }
 
-    private suspend fun checkFormat(context: CommandContext, url: String, reqFormat: String?): Boolean {
+    private suspend fun checkFormat(context: ICommandContext, url: String, reqFormat: String?): Boolean {
         if (reqFormat != null && !url.contains(reqFormat)) {
             val msg = context.getTranslation("message.notagif")
                 .withVariable("url", url)
             sendRsp(context, msg)
             return false
         }
+
+        return checkValidUrl(context, url)
+    }
+
+    private suspend fun checkValidUrl(context: ICommandContext, url: String): Boolean {
         if (!URL_PATTERN.matches(url)) {
             val msg = context.getTranslation("message.notaurl")
                 .withVariable("url", url)
@@ -372,7 +391,12 @@ object ImageUtils {
         }
 
         return when {
-            brightness >= whiteThreshold -> if (invertOffset) intArrayOf(78, 93, 148, a) else intArrayOf(254, 254, 254, a) //wit
+            brightness >= whiteThreshold -> if (invertOffset) intArrayOf(78, 93, 148, a) else intArrayOf(
+                254,
+                254,
+                254,
+                a
+            ) //wit
             brightness >= blurpleThreshold -> intArrayOf(114, 137, 218, a) //blurple
             else -> if (invertOffset) intArrayOf(254, 254, 254, a) else intArrayOf(78, 93, 148, a) //dark blurple
         }
@@ -391,16 +415,16 @@ object ImageUtils {
         } else {
             val i = offset.absoluteValue
             if (brightness >= i) intArrayOf(50, 50, 50, a) //DARK #323232
-            else intArrayOf(255, 128, 0, a) //ORANGE #FF8000
+            else intArrayOf(255, 128, 0, a) //ORANGE #FF8000jd
         }
     }
 
-    fun addEffectToGifFrames(
+    suspend fun addEffectToGifFrames(
         decoder: GifDecoder,
         fps: Float? = null,
         repeat: Boolean?,
         effect: (BufferedImage) -> Unit,
-        frameDebug: CommandContext? = null
+        frameDebug: ICommandContext? = null
     ): ByteArrayOutputStream {
         val outputStream = ByteArrayOutputStream()
         val repeatCount = if (repeat != null && repeat == true) {
@@ -467,12 +491,10 @@ object ImageUtils {
             })
         }
 
-        runBlocking {
-            for (job in jobs) job.join()
-        }
+        jobs.joinAll()
 
-        for (i in 0 until framesDone.size) {
-            val frame = framesDone[i] ?: continue
+        for (element in framesDone.entries.sortedBy { it.key }) {
+            val frame = element.value
             encoder.addImage(frame.rgbArr, frame.imageWidth, frame.options)
         }
 
@@ -582,7 +604,13 @@ object ImageUtils {
         }
     }
 
-    private fun getCroppedImage(image: BufferedImage, startx: Int, starty: Int, width: Int, height: Int): BufferedImage {
+    private fun getCroppedImage(
+        image: BufferedImage,
+        startx: Int,
+        starty: Int,
+        width: Int,
+        height: Int
+    ): BufferedImage {
         var startx1 = startx
         var starty1 = starty
         var width1 = width
@@ -655,13 +683,7 @@ object ImageUtils {
     fun blur(image: BufferedImage, radius: Int, isGif: Boolean = false) {
         val size = radius * 2 + 1
         val weight = 1.0f / (size * size)
-        val data = FloatArray(size * size)
-
-
-        for (index in data.indices) {
-            data[index] = weight
-        }
-
+        val data = FloatArray(size * size) { weight }
         val kernel = Kernel(size, size, data)
         useKernel(image, kernel, isGif)
     }
@@ -767,7 +789,8 @@ object ImageUtils {
 
                 }
 
-                dest.setPixel(x, y,
+                dest.setPixel(
+                    x, y,
                     floatBuffer
                 )
             }
@@ -775,7 +798,14 @@ object ImageUtils {
         image.data = dest
     }
 
-    fun putText(bufferedImage: BufferedImage, text: String, startX: Int, endX: Int, startY: Int, graphics: Graphics): BufferedImage {
+    fun putText(
+        bufferedImage: BufferedImage,
+        text: String,
+        startX: Int,
+        endX: Int,
+        startY: Int,
+        graphics: Graphics
+    ): BufferedImage {
         val fontMetrics = graphics.getFontMetrics(graphics.font)
         val lineWidth = endX - startX
         val lineHeight = fontMetrics.height

@@ -5,7 +5,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
@@ -30,7 +30,7 @@ class WarnCommand : AbstractCommand("command.warn") {
         commandCategory = CommandCategory.MODERATION
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -44,7 +44,12 @@ class WarnCommand : AbstractCommand("command.warn") {
             return
         }
 
-        if (!context.member.canInteract(targetMember) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+        if (!context.member.canInteract(targetMember) && !hasPermission(
+                context,
+                SpecialPermission.PUNISH_BYPASS_HIGHER.node,
+                true
+            )
+        ) {
             val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
                 .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
             sendRsp(context, msg)
@@ -78,7 +83,12 @@ class WarnCommand : AbstractCommand("command.warn") {
         continueWarning(context, targetMember, warn, message)
     }
 
-    private suspend fun continueWarning(context: CommandContext, targetMember: Member, warn: Warn, warningMessage: Message? = null) {
+    private suspend fun continueWarning(
+        context: ICommandContext,
+        targetMember: Member,
+        warn: Warn,
+        warningMessage: Message? = null
+    ) {
         val guild = context.guild
         val author = context.author
         val daoManager = context.daoManager
@@ -86,7 +96,17 @@ class WarnCommand : AbstractCommand("command.warn") {
         val privZoneId = getZoneId(daoManager, guild.idLong, targetMember.idLong)
         val language = context.getLanguage()
         val warnedMessageDm = getWarnMessage(language, privZoneId, guild, targetMember.user, author, warn)
-        val warnedMessageLc = getWarnMessage(language, zoneId, guild, targetMember.user, author, warn, true, targetMember.user.isBot, warningMessage != null)
+        val warnedMessageLc = getWarnMessage(
+            language,
+            zoneId,
+            guild,
+            targetMember.user,
+            author,
+            warn,
+            true,
+            targetMember.user.isBot,
+            warningMessage != null
+        )
 
         context.daoManager.warnWrapper.addWarn(warn)
 
@@ -134,7 +154,8 @@ fun getWarnMessage(
         .withVariable("warnId", warn.warnId)
 
     val extraDesc: String = if (!received || isBot) {
-        i18n.getTranslation(language,
+        i18n.getTranslation(
+            language,
             if (isBot) {
                 "message.punishment.extra.bot"
             } else {

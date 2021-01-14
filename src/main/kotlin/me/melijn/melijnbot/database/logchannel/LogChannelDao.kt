@@ -30,29 +30,33 @@ class LogChannelDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun set(guildId: Long, type: LogChannelType, channelId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId,  type) DO UPDATE SET channelId = ?",
-            guildId, type.toString(), channelId, channelId)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId,  type) DO UPDATE SET channelId = ?",
+            guildId, type.toString(), channelId, channelId
+        )
     }
 
     fun unset(guildId: Long, type: LogChannelType) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND type = ?",
-            guildId, type.toString())
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND type = ?",
+            guildId, type.toString()
+        )
     }
 
 
     fun bulkPut(guildId: Long, logChannelTypes: List<LogChannelType>, channelId: Long) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET channelId = ?").use { statement ->
-                statement.setLong(1, guildId)
-                statement.setLong(3, channelId)
-                statement.setLong(4, channelId)
-                for (type in logChannelTypes) {
-                    statement.setString(2, type.toString())
-                    statement.addBatch()
+            con.prepareStatement("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET channelId = ?")
+                .use { statement ->
+                    statement.setLong(1, guildId)
+                    statement.setLong(3, channelId)
+                    statement.setLong(4, channelId)
+                    for (type in logChannelTypes) {
+                        statement.setString(2, type.toString())
+                        statement.addBatch()
+                    }
+                    statement.executeBatch()
                 }
-                statement.executeBatch()
-            }
-
         }
     }
 
@@ -67,5 +71,9 @@ class LogChannelDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
                 statement.executeBatch()
             }
         }
+    }
+
+    fun migrateChannel(oldId: Long, newId: Long) {
+        driverManager.executeUpdate("UPDATE $table SET channelId = ? WHERE channelId = ?", newId, oldId)
     }
 }

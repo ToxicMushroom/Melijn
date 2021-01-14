@@ -2,7 +2,7 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.DISCORD_ID
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
@@ -21,7 +21,7 @@ class RolesCommand : AbstractCommand("command.roles") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: CommandContext) {
+    override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty() && !context.isFromGuild) {
             sendSyntax(context)
             return
@@ -30,7 +30,12 @@ class RolesCommand : AbstractCommand("command.roles") {
         val guild: Guild = if (context.args.isNotEmpty() && DISCORD_ID.matches(context.args[0])) {
             context.shardManager.getGuildById(context.args[0]) ?: context.guild
         } else {
-            context.guild
+            val guild = context.guildN
+            if (guild == null) {
+                sendSyntax(context)
+                return
+            }
+            guild
         }
 
         val available = context.args.isNotEmpty() && context.args[context.args.size - 1] == "available"
@@ -39,7 +44,8 @@ class RolesCommand : AbstractCommand("command.roles") {
             .withVariable("serverName", guild.name)
 
         val selfRolesGrouped = TaskManager.taskValueAsync { context.daoManager.selfRoleWrapper.getMap(context.guildId) }
-        val selfRoleGroups = TaskManager.taskValueAsync { context.daoManager.selfRoleGroupWrapper.getMap(context.guildId) }
+        val selfRoleGroups =
+            TaskManager.taskValueAsync { context.daoManager.selfRoleGroupWrapper.getMap(context.guildId) }
         val availableMap = mutableMapOf<String, List<Role>>()
         var content = if (available) "```MARKDOWN" else "```INI"
 

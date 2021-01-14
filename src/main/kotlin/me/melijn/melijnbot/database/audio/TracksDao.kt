@@ -16,8 +16,10 @@ class TracksDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     fun set(guildId: Long, position: Int, track: String, trackData: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, position, track, trackData) VALUES (?, ?, ?, ?)",
-            guildId, position, track, trackData)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, position, track, trackData) VALUES (?, ?, ?, ?)",
+            guildId, position, track, trackData
+        )
     }
 
     suspend fun getMap(): Map<Long, Map<Int, Pair<String, String>>> = suspendCoroutine {

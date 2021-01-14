@@ -20,21 +20,25 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun add(kick: Kick) {
         kick.apply {
-            driverManager.executeUpdate("INSERT INTO $table (kickId, guildId, kickedId, kickAuthorId, kickReason, kickMoment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
-                kickId, guildId, kickedId, kickAuthorId, reason, moment)
+            driverManager.executeUpdate(
+                "INSERT INTO $table (kickId, guildId, kickedId, kickAuthorId, kickReason, kickMoment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
+                kickId, guildId, kickedId, kickAuthorId, reason, moment
+            )
         }
     }
 
     fun get(guildId: Long, kickedId: Long, kickMoment: Long, kick: (Kick) -> Unit) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND kickedId = ? AND kickMoment = ?", { rs ->
-            kick.invoke(Kick(
-                rs.getLong("guildId"),
-                rs.getLong("kickedId"),
-                rs.getLong("kickAuthorId"),
-                rs.getString("kickReason"),
-                rs.getLong("kickMoment"),
-                rs.getString("kickId")
-            ))
+            kick.invoke(
+                Kick(
+                    rs.getLong("guildId"),
+                    rs.getLong("kickedId"),
+                    rs.getLong("kickAuthorId"),
+                    rs.getString("kickReason"),
+                    rs.getLong("kickMoment"),
+                    rs.getString("kickId")
+                )
+            )
         }, guildId, kickedId, kickMoment)
     }
 
@@ -43,14 +47,16 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND kickedId = ?", { rs ->
             val kicks = mutableListOf<Kick>()
             while (rs.next()) {
-                kicks.add(Kick(
-                    guildId,
-                    kickedId,
-                    rs.getLong("kickAuthorId"),
-                    rs.getString("kickReason"),
-                    rs.getLong("kickMoment"),
-                    rs.getString("kickId")
-                ))
+                kicks.add(
+                    Kick(
+                        guildId,
+                        kickedId,
+                        rs.getLong("kickAuthorId"),
+                        rs.getString("kickReason"),
+                        rs.getLong("kickMoment"),
+                        rs.getString("kickId")
+                    )
+                )
             }
             it.resume(kicks)
         }, guildId, kickedId)
@@ -60,27 +66,33 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE kickId = ?", { rs ->
             val kicks = mutableListOf<Kick>()
             while (rs.next()) {
-                kicks.add(Kick(
-                    rs.getLong("guildId"),
-                    rs.getLong("kickedId"),
-                    rs.getLong("kickAuthorId"),
-                    rs.getString("kickReason"),
-                    rs.getLong("kickMoment"),
-                    kickId
-                ))
+                kicks.add(
+                    Kick(
+                        rs.getLong("guildId"),
+                        rs.getLong("kickedId"),
+                        rs.getLong("kickAuthorId"),
+                        rs.getString("kickReason"),
+                        rs.getLong("kickMoment"),
+                        kickId
+                    )
+                )
             }
             it.resume(kicks)
         }, kickId)
     }
 
     suspend fun clear(guildId: Long, kickedId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND kickedId = ?",
-            guildId, kickedId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND kickedId = ?",
+            guildId, kickedId
+        )
     }
 
     suspend fun remove(kick: Kick) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND kickedId = ? AND kickId = ?",
-            kick.guildId, kick.kickedId, kick.kickId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND kickedId = ? AND kickId = ?",
+            kick.guildId, kick.kickedId, kick.kickId
+        )
     }
 }
 

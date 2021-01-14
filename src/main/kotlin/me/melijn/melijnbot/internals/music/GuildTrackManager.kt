@@ -7,10 +7,12 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import kotlinx.coroutines.delay
 import me.melijn.llklient.player.IPlayer
 import me.melijn.llklient.player.event.AudioEventAdapterWrapped
+import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.internals.threading.SafeList
 import me.melijn.melijnbot.internals.threading.Task
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.LogUtils
@@ -47,7 +49,7 @@ class GuildTrackManager(
     var loopedTrack = false
     var loopedQueue = false
 
-    var tracks: LinkedList<AudioTrack> = LinkedList()
+    var tracks: SafeList<AudioTrack> = SafeList()
     fun trackSize() = tracks.size
 
 
@@ -59,7 +61,6 @@ class GuildTrackManager(
                 iPlayer.playTrack(lastTrack.makeClone())
                 return
             }
-
 
             Task {
                 lavaManager.closeConnection(guildId)
@@ -74,7 +75,7 @@ class GuildTrackManager(
             return
         }
 
-        val track: AudioTrack = tracks.poll() ?: return
+        val track: AudioTrack = tracks.removeAtOrNull(0) ?: return
         chekNChangeGroup(track.info.uri)
         if (track == lastTrack) {
             iPlayer.playTrack(track.makeClone())
@@ -88,6 +89,7 @@ class GuildTrackManager(
     }
 
     private suspend fun chekNChangeGroup(uri: String) {
+        if (!Container.instance.settings.lavalink.enabled_http_nodes) return
         if (YTSearch.isUnknownHTTP(uri)) {
             if (groupId == "normal") {
                 lavaManager.changeGroup(guildId, "http")
@@ -108,23 +110,29 @@ class GuildTrackManager(
         } else {
             when (nextPos) {
                 NextSongPosition.BOTTOM -> {
-                    tracks.addLast(track)
+                    tracks.add(track)
                 }
                 NextSongPosition.TOP -> {
-                    tracks.addFirst(track)
+                    tracks.add(0, track)
                 }
                 NextSongPosition.RANDOM -> {
-                    val pos = Random.nextInt(tracks.size) + 1
-                    tracks.add(pos, track)
+                    if (tracks.size > 0) {
+                        val pos = Random.nextInt(tracks.size) + 1
+                        tracks.add(pos, track)
+                    } else {
+                        tracks.add(track)
+                    }
+                }
+                NextSongPosition.TOPSKIP -> {
+                    tracks.add(0, track)
+                    skip(1)
                 }
             }
         }
     }
 
-    fun shuffle() {
-        val tempList = LinkedList(tracks)
-        tempList.shuffle()
-        tracks = tempList
+    suspend fun shuffle() {
+        tracks.shuffle()
     }
 
 
@@ -216,18 +224,18 @@ class GuildTrackManager(
         }
     }
 
-    fun clear() {
+    suspend fun clear() {
         tracks.clear()
     }
 
-    fun getPosition(audioTrack: AudioTrack): Int =
+    suspend fun getPosition(audioTrack: AudioTrack): Int =
         if (iPlayer.playingTrack == audioTrack) {
             0
         } else {
-            tracks.toList().indexOf(audioTrack) + 1
+            tracks.indexOf(audioTrack) + 1
         }
 
-    //PLEASE RUN IN VOICE_SAFE
+    // PLEASE RUN IN VOICE_SAFE
     suspend fun stopAndDestroy() {
         clear()
         iPlayer.stopTrack()
@@ -239,10 +247,8 @@ class GuildTrackManager(
 
 
     suspend fun skip(amount: Int) {
-        var nextTrack: AudioTrack? = null
-        for (i in 0 until amount) {
-            nextTrack = tracks.poll()
-        }
+        val nextTrack: AudioTrack? = tracks.removeFirstAndGetNextOrNull(amount)
+
         if (nextTrack == null) {
             stopAndDestroy()
         } else {
@@ -256,7 +262,7 @@ class GuildTrackManager(
         iPlayer.setPaused(paused)
     }
 
-    fun removeAt(indexes: IntArray): Map<Int, AudioTrack> {
+    suspend fun removeAt(indexes: IntArray): Map<Int, AudioTrack> {
         val removed = HashMap<Int, AudioTrack>()
 
         for (index in indexes.sortedBy { it }.reversed()) {
