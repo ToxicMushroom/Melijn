@@ -52,18 +52,18 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
             globalDataArray.add(color.toHex())
         }
 
-        val globalUrl = if (gct.isEmpty()) {
-            null
-        } else {
-            context.webManager.binApis.postToHastebin("json", globalDataArray.toString())
-        }
+//        val globalUrl = if (gct.isEmpty()) {
+//            null
+//        } else {
+//            context.webManager.binApis.postToHastebin("json", globalDataArray.toString())
+//        }
 
         val gifInfoValue = context.getTranslation("$root.eb.gif.value")
             .withVariable("frames", "$frames")
             .withVariable("loops", loops)
             .withVariable("width", "$width")
             .withVariable("height", "$height")
-            .withVariable("gctUrl", globalUrl ?: "/")
+//            .withVariable("gctUrl", globalUrl ?: "/")
 
 
 
@@ -96,18 +96,18 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
                 da.add(color.toHex())
             }
 
-            val url = if (lct.isEmpty()) {
-                null
-            } else {
-                context.webManager.binApis.postToHastebin("json", da.toString())
-            }
+//            val url = if (lct.isEmpty()) {
+//                null
+//            } else {
+//                context.webManager.binApis.postToHastebin("json", da.toString())
+//            }
 
             val frameInfoTitle = context.getTranslation("$root.eb.frame.title")
             val frameInfoValue = context.getTranslation("$root.eb.frame.value")
                 .withVariable("delay", frameMeta.delay.toString())
                 .withVariable("transColor", transColor?.toHex() ?: "/")
                 .withVariable("bgColor", bgColor?.toHex() ?: "/")
-                .withVariable("lctUrl", url ?: "/")
+//                .withVariable("lctUrl", url ?: "/")
 
             eb.addField(frameInfoTitle, frameInfoValue, false)
         }
