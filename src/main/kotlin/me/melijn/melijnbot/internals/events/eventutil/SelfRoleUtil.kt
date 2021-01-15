@@ -9,6 +9,7 @@ import me.melijn.melijnbot.internals.utils.checks.CANNOT_INTERACT_CAUSE
 import me.melijn.melijnbot.internals.utils.checks.UNKNOWN_ID_CAUSE
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.getZoneId
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.message.guild.react.GenericGuildMessageReactionEvent
 import kotlin.random.Random
@@ -30,7 +31,7 @@ object SelfRoleUtil {
         val selfMember = guild.selfMember
         val daoManager = container.daoManager
 
-        if (!selfMember.canInteract(member)) return null
+        if (!selfMember.hasPermission(Permission.MANAGE_ROLES)) return null
         /* END INIT */
 
         //val channelId = daoManager.channelWrapper.channelCache.get(Pair(guildId, ChannelType.SELFROLE)).await()
