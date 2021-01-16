@@ -107,13 +107,13 @@ dependencies {
 
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-    implementation("com.fasterxml.jackson.core:jackson-core:2.12.0")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.12.1")
 
     // https://github.com/FasterXML/jackson-module-kotlin
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.1")
 
     // https://search.maven.org/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-xml
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.0")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.1")
 
 
     // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
@@ -122,22 +122,25 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:1.5.0")
     implementation("io.ktor:ktor-client-jackson:1.5.0")
 
-
+    // https://github.com/ToxicMushroom/gifencoder
     implementation("com.github.ToxicMushroom:gifencoder:23b3128881")
+
+    // https://github.com/ToxicMushroom/animated-gif-lib-for-java
     implementation("com.github.ToxicMushroom:animated-gif-lib-for-java:03e397e311")
 
     // https://github.com/GSculerlor/JikanKt/releases
     // implementation("com.github.GSculerlor:JikanKT:1.3.1")
     implementation("com.github.Melijn:JikanKt:dd5884b643")
 
+    // https://mvnrepository.com/artifact/org.mariuszgromada.math/MathParser.org-mXparser
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:4.4.2")
 
-
-    implementation("com.apollographql.apollo:apollo-runtime:2.4.1")
-    implementation("com.apollographql.apollo:apollo-coroutines-support:2.4.1")
+    // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
+    implementation("com.apollographql.apollo:apollo-runtime:2.5.2")
+    implementation("com.apollographql.apollo:apollo-coroutines-support:2.5.2")
 
     // implementation("com.github.husnjak:IGDB-API-JVM:0.7")
-    implementation("io.lettuce:lettuce-core:5.3.4.RELEASE")
+    implementation("io.lettuce:lettuce-core:5.3.6.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
