@@ -6,7 +6,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath("com.apollographql.apollo:apollo-gradle-plugin:2.4.1")
+        classpath("com.apollographql.apollo:apollo-gradle-plugin:2.5.2")
     }
 }
 
@@ -14,7 +14,7 @@ plugins {
     id("application")
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("org.jetbrains.kotlin.jvm") version "1.4.21"
-    id("com.apollographql.apollo") version "2.4.1"
+    id("com.apollographql.apollo") version "2.5.2"
 }
 
 application {
