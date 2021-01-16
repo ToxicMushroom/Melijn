@@ -23,6 +23,7 @@ class MessageReactionRemovedListener(container: Container) : AbstractListener(co
     }
 
     private suspend fun selfRoleHandler(event: GuildMessageReactionRemoveEvent) {
+        if (event.user?.isBot == true) return
         val guild = event.guild
         val member = event.member ?: guild.retrieveMemberById(event.userIdLong).awaitOrNull() ?: return
         if (member.user.isBot) return

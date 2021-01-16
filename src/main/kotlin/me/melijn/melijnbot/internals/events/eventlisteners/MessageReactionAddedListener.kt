@@ -281,7 +281,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
     }
 
     private fun pokerHandler(event: GuildMessageReactionAddEvent) {
-        if (event.reactionEmote.isEmote) return
+        if (event.reactionEmote.isEmote || event.user.isBot) return
 
         val game = PokerCommand.ongoingPoker.firstOrNull { game ->
             game.userId == event.userIdLong && game.msgId == event.messageIdLong
@@ -390,8 +390,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
     }
 
     private suspend fun searchMenuHandler(event: GuildMessageReactionAddEvent) {
+        if (event.reactionEmote.isEmote || event.user.isBot) return
         val guild = event.guild
-        if (event.reactionEmote.isEmote && event.user.isBot) return
         val guildPlayer = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(guild)
         val menus = guildPlayer.searchMenus
         val menu = menus.getOrElse(event.messageIdLong, {
@@ -548,6 +548,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
     }
 
     private suspend fun selfRoleHandler(event: GuildMessageReactionAddEvent) {
+        if (event.user.isBot) return
+
         val guild = event.guild
         val member = event.member
         val roles = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
