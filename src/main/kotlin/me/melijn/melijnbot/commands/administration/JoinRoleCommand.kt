@@ -145,10 +145,21 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             override suspend fun execute(context: ICommandContext) {
                 val joinRoleGroupInfo = getJoinRoleGroupByArgNMessage(context, 0) ?: return
                 val wrapper = context.daoManager.joinRoleGroupWrapper
+                val list = wrapper.getList(context.guildId).sortedBy { (groupName) ->
+                    groupName
+                }
                 wrapper.delete(context.guildId, joinRoleGroupInfo.groupName)
 
+                val index = list.withIndex()
+                    .firstOrNull {
+                        it.value.groupName == joinRoleGroupInfo.groupName
+                    }?.index?.plus(1)
+                    ?.toString() ?: "/"
+
                 val msg = context.getTranslation("$root.removed")
-                    .withVariable("group", name)
+                    .withVariable("group", joinRoleGroupInfo.groupName)
+                    .withVariable("index", index)
+
                 sendRsp(context, msg)
             }
         }
