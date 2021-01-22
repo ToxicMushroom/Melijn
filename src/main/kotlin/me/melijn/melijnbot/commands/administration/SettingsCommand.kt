@@ -92,11 +92,11 @@ class SettingsCommand : AbstractCommand("command.settings") {
             "\n**MaxVerificationFlowRate:** " + daoManager.verificationUserFlowRateWrapper.getFlowRate(guildId) +
             "\n" +
             "\n**Prefixes:" +
-            daoManager.guildPrefixWrapper.getPrefixes(guildId).joinToString { pref ->
+            daoManager.guildPrefixWrapper.getPrefixes(guildId).joinToString("") { pref ->
                 "\n  - **" + MarkdownSanitizer.escape(pref) + "**"
             } +
             "\nPrivatePrefixes:" +
-            daoManager.userPrefixWrapper.getPrefixes(context.authorId).joinToString { pref ->
+            daoManager.userPrefixWrapper.getPrefixes(context.authorId).joinToString("") { pref ->
                 "\n  - **" + MarkdownSanitizer.escape(pref) + "**"
             } +
             "\nEmbedState: **" + booleanToString(

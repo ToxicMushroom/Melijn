@@ -92,6 +92,12 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
                 Permission.VOICE_MOVE_OTHERS
             )
         ) return
+        if (notEnoughPermissionsAndMessage(
+                context,
+                voiceChannel,
+                Permission.VOICE_MOVE_OTHERS
+            )
+        ) return
 
         voiceChannel.members.forEach {
             if (voiceChannel.idLong != voiceChannelTarget.idLong) {
