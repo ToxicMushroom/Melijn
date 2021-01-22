@@ -4,8 +4,11 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
+import io.lettuce.core.SetArgs
 import io.lettuce.core.api.StatefulRedisConnection
+import io.lettuce.core.api.async.RedisAsyncCommands
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
@@ -205,8 +208,10 @@ class DriverManager(
                 }
             }
         } catch (e: SQLException) {
-            logger.error("Something went wrong when executing the query: $query\n" +
-                "Objects: ${objects.joinToString { o -> o.toString() }}")
+            logger.error(
+                "Something went wrong when executing the query: $query\n" +
+                    "Objects: ${objects.joinToString { o -> o.toString() }}"
+            )
             e.sendInGuild()
             e.printStackTrace()
         }
@@ -276,8 +281,10 @@ class DriverManager(
                 }
             }
         } catch (e: SQLException) {
-            logger.error("Something went wrong when executing the query: $query\n" +
-                "Objects: ${objects.joinToString { o -> o.toString() }}")
+            logger.error(
+                "Something went wrong when executing the query: $query\n" +
+                    "Objects: ${objects.joinToString { o -> o.toString() }}"
+            )
             e.sendInGuild()
             e.printStackTrace()
         }
@@ -287,5 +294,41 @@ class DriverManager(
         afterConnectToBeExecutedQueries.add(0, "DROP TABLE $table")
     }
 
+    fun getOpenRedisConnection(): RedisAsyncCommands<String, String?>? {
+        if (redisConnection?.async()?.isOpen == true) {
+            return redisConnection?.async()
+        }
+        return null
+    }
+
+    // ttl: minutes
+    fun setCacheEntry(key: String, value: String, ttlM: Int? = null) {
+        val async = getOpenRedisConnection() ?: return
+        if (ttlM == null) async.set(key, value)
+        else async.set(key, value, SetArgs().ex(ttlM * 60L))
+    }
+
+    fun setCacheEntryWithArgs(key: String, value: String, args: SetArgs? = null) {
+        val async = getOpenRedisConnection() ?: return
+        if (args == null) async.set(key, value)
+        else async.set(key, value, args)
+    }
+
+    // ttl: minutes
+    suspend fun getCacheEntry(key: String, ttlMinutes: Int? = null): String? {
+        val commands = getOpenRedisConnection() ?: return null
+        val result = commands
+            .get(key)
+            .await()
+        if (result != null && ttlMinutes != null) {
+            commands.expire(key, ttlMinutes * 60L)
+        }
+        return result
+    }
+
+    fun removeCacheEntry(key: String) {
+        val con = getOpenRedisConnection() ?: return
+        con.del(key)
+    }
 
 }

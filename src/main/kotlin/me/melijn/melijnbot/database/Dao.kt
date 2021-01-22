@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.database
 
 import io.lettuce.core.SetArgs
-import kotlinx.coroutines.future.await
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -29,62 +28,33 @@ abstract class CacheDao(val driverManager: DriverManager) {
 
     abstract val cacheName: String
 
-    fun setCacheEntry(key: Any, value: Any, ttlM: Int? = null) {
-        val async = driverManager.redisConnection?.async() ?: return
-        if (ttlM == null) async.set("$cacheName:$key", value.toString())
-        else async.set("$cacheName:$key", value.toString(), SetArgs().ex(ttlM * 60L))
-    }
+    fun setCacheEntry(key: Any, value: Any, ttlM: Int? = null) =
+        driverManager.setCacheEntry("$cacheName:$key", value.toString(), ttlM)
 
-    fun setCacheEntryWithArgs(key: Any, value: Any, args: SetArgs? = null) {
-        val async = driverManager.redisConnection?.async() ?: return
-        if (args == null) async.set("$cacheName:$key", value.toString())
-        else async.set("$cacheName:$key", value.toString(), args)
-    }
+    fun setCacheEntryWithArgs(key: Any, value: Any, args: SetArgs? = null) =
+        driverManager.setCacheEntryWithArgs("$cacheName:$key", value.toString(), args)
 
-    // ttl: minutes
-    suspend fun getCacheEntry(key: Any, newTTL: Int? = null): String? {
-        val commands = (driverManager.redisConnection?.async() ?: return null)
-        val result = commands
-            .get("$cacheName:$key")
-            .await()
-        if (result != null && newTTL != null) {
-            commands.expire("$cacheName:$key", newTTL * 60L)
-        }
-        return result
-    }
+    suspend fun getCacheEntry(key: Any, ttlM: Int? = null): String? =
+        driverManager.getCacheEntry("$cacheName:$key", ttlM)
+
+    fun removeCacheEntry(key: Any) =
+        driverManager.removeCacheEntry("$cacheName:$key")
 }
 
 abstract class CacheDBDao(driverManager: DriverManager) : Dao(driverManager) {
 
     abstract val cacheName: String
 
-    // ttl: minutes
-    fun setCacheEntry(key: Any, value: Any, ttlM: Int? = null) {
-        val async = (driverManager.redisConnection?.async() ?: return)
-        if (ttlM == null) async.set("$cacheName:$key", value.toString())
-        else async.set("$cacheName:$key", value.toString(), SetArgs().ex(ttlM * 60L))
-    }
+    fun setCacheEntry(key: Any, value: Any, ttlM: Int? = null) =
+        driverManager.setCacheEntry("$cacheName:$key", value.toString(), ttlM)
 
-    fun setCacheEntryWithArgs(key: Any, value: Any, args: SetArgs? = null) {
-        val async = (driverManager.redisConnection?.async() ?: return)
-        if (args == null) async.set("$cacheName:$key", value.toString())
-        else async.set("$cacheName:$key", value.toString(), args)
-    }
+    fun setCacheEntryWithArgs(key: Any, value: Any, args: SetArgs? = null) =
+        driverManager.setCacheEntryWithArgs("$cacheName:$key", value.toString(), args)
 
-    // ttl: minutes
-    suspend fun getCacheEntry(key: Any, newTTL: Int? = null): String? {
-        val commands = (driverManager.redisConnection?.async() ?: return null)
-        val result = commands
-            .get("$cacheName:$key")
-            .await()
-        if (result != null && newTTL != null) {
-            commands.expire("$cacheName:$key", newTTL * 60L)
-        }
-        return result
-    }
+    suspend fun getCacheEntry(key: Any, ttlM: Int? = null): String? =
+        driverManager.getCacheEntry("$cacheName:$key", ttlM)
 
-    fun removeCacheEntry(key: Any) {
-        driverManager.redisConnection?.async()
-            ?.del("$cacheName:${key}")
-    }
+    fun removeCacheEntry(key: Any) =
+        driverManager.removeCacheEntry("$cacheName:$key")
+
 }
