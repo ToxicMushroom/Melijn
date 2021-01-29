@@ -35,12 +35,17 @@ class BanCommand : AbstractCommand("command.ban") {
         discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
+    companion object {
+        val optionalDeldaysPattern = "-t([0-7])".toRegex()
+    }
+
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
         }
 
+        // ban <user> -t1 reason
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
         val member = context.guild.retrieveMember(targetUser).awaitOrNull()
         if (member != null) {
@@ -63,8 +68,19 @@ class BanCommand : AbstractCommand("command.ban") {
             }
         }
 
+        // ban user <-t1> reason
+        var deldays = 7
+        var offset = 0
+        if (context.args.size > 1) {
+            val firstArg = context.args[1]
+            if (firstArg.matches(optionalDeldaysPattern)) {
+                offset = 1
+                deldays = optionalDeldaysPattern.find(firstArg)?.groupValues?.get(1)?.toInt() ?: 0
+            }
+        }
 
-        var reason = context.getRawArgPart(1)
+        // ban user -t1 <reason>
+        var reason = context.getRawArgPart(1 + offset)
 
         if (reason.isBlank()) reason = "/"
         reason = reason.trim()
@@ -92,7 +108,7 @@ class BanCommand : AbstractCommand("command.ban") {
             sendMsgAwaitEL(it, banning)
         }?.firstOrNull()
 
-        continueBanning(context, targetUser, ban, activeBan, message)
+        continueBanning(context, targetUser, ban, activeBan, deldays, message)
     }
 
     private suspend fun continueBanning(
@@ -100,6 +116,7 @@ class BanCommand : AbstractCommand("command.ban") {
         targetUser: User,
         ban: Ban,
         activeBan: Ban?,
+        deldays: Int,
         banningMessage: Message? = null
     ) {
         val guild = context.guild
@@ -123,7 +140,7 @@ class BanCommand : AbstractCommand("command.ban") {
 
         val msg = try {
             context.guild
-                .ban(targetUser, 7)
+                .ban(targetUser, deldays)
                 .reason("(ban) " + context.author.asTag + ": " + ban.reason)
                 .async { daoManager.banWrapper.setBan(ban) }
 
