@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.withVariable
+import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.PrivateChannel
@@ -257,29 +258,25 @@ private suspend fun msgWithAttachmentsAction(
     httpClient: HttpClient,
     message: Message,
     attachments: Map<String, String>
-): MessageAction? {
-    var messageAction: MessageAction? = null
-    val guild = if (channel is TextChannel) channel.guild else null
-    for ((index, url) in attachments.iterator().withIndex()) {
-        val stream = ImageUtils.downloadImage(httpClient, url.key, true, guild, null)
-        messageAction = if (index == 0) {
-            var action = if (message.contentRaw.isNotBlank()) {
-                channel.sendMessage(message.contentRaw)
-            } else {
-                null
-            }
-
-            for (embed in message.embeds) {
-                if (action == null) action = channel.sendMessage(embed)
-                else action.embed(embed)
-            }
-
-            action
-        } else {
-            messageAction
-        }?.addFile(stream, url.value)
+): MessageAction {
+    val mb = MessageBuilder()
+    if (message.contentRaw.isNotBlank()) {
+        mb.setContent(message.contentRaw)
     }
-    return messageAction
+    for (embed in message.embeds) {
+        mb.setEmbed(embed)
+    }
+    if (message is DataMessage) {
+        mb.setAllowedMentions(message.allowedMentions)
+    }
+
+    val action = channel.sendMessage(mb.build())
+    val guild = if (channel is TextChannel) channel.guild else null
+    for ((url, fileName) in attachments.iterator()) {
+        val stream = ImageUtils.downloadImage(httpClient, url, true, guild, null)
+        action.addFile(stream, fileName)
+    }
+    return action
 }
 
 
