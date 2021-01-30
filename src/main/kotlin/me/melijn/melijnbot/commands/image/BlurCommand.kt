@@ -1,19 +1,15 @@
 package me.melijn.melijnbot.commands.image
 
-import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
-import me.melijn.melijnbot.commandutil.image.ImageCommandUtil.defaultOffsetArgParser
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.ImageUtils
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.utils.data.DataObject
-import java.awt.image.BufferedImage
-import java.lang.Integer.max
 
 class BlurCommand : AbstractCommand("command.blur") {
 
@@ -28,23 +24,29 @@ class BlurCommand : AbstractCommand("command.blur") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.commandParts[1].equals("blurGif", true)) {
-            executeGif(context)
+        val triple = ImageUtils.getImageBytesNMessage(context) ?: return
+        val offset = if (triple.third) 1 else 0
+        val radius = if (context.args.size > offset) {
+            getIntegerFromArgNMessage(context, offset, 1, 9) ?: return
         } else {
-            executeNormal(context)
+            3
         }
-    }
 
-    private suspend fun executeNormal(context: ICommandContext) {
-        val triple = ImageUtils.getImageBytesNMessage(context, "png") ?: return
-        val blurred = ImageUtils.blur(context, triple.first, 9, false)
+        val repeats = if (context.args.size > offset + 1) {
+            getIntegerFromArgNMessage(context, offset + 1, -1, 1000) ?: return
+        } else {
+            -1
+        }
 
-        sendFileRsp(context, blurred, "png")
-    }
+        val delayCentiseconds = if (context.args.size > offset + 2) {
+            getIntegerFromArgNMessage(context, offset + 2, 0, 65536) ?: return
+        } else {
+            0
+        }
 
-    private suspend fun executeGif(context: ICommandContext) {
-        val triple = ImageUtils.getImageBytesNMessage(context, "gif") ?: return
-        val blurReq = TaskManager.taskValueAsync { ImageUtils.blur(context, triple.first, 9, true) }
+        val blurReq = TaskManager.taskValueAsync {
+            ImageUtils.blur(context, triple.first, radius, repeats, delayCentiseconds)
+        }
 
         //╯︿╰
 

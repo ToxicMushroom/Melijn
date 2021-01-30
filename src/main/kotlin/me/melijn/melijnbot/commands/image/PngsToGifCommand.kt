@@ -26,7 +26,7 @@ class PngsToGifCommand : AbstractCommand("command.pngstogif") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        val triple = ImageUtils.getImagesBytesNMessage(context, "png") ?: return
+        val triple = ImageUtils.getImagesBytesNMessage(context) ?: return
 
         ByteArrayOutputStream().use { baos ->
             val argOffset = if (triple.third) 1 else 0

@@ -26,7 +26,7 @@ class PngsFromGifCommand : AbstractCommand("command.pngsfromgif") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        val triple = ImageUtils.getImageBytesNMessage(context, "gif") ?: return
+        val triple = ImageUtils.getImageBytesNMessage(context) ?: return
         val decoder = GifDecoder()
 
         ByteArrayInputStream(triple.first).use { bais ->

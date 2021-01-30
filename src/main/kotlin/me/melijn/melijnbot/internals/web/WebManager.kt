@@ -4,6 +4,7 @@ package me.melijn.melijnbot.internals.web
 import com.apollographql.apollo.ApolloClient
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
+import io.ktor.client.features.*
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.web.bins.BinApis
 import me.melijn.melijnbot.internals.web.booru.BooruApi
@@ -22,6 +23,7 @@ class WebManager(val settings: Settings) {
 
     val httpClient = HttpClient(OkHttp) {
         expectSuccess = false
+        install(HttpTimeout)
     }
     val proxiedHttpClient = HttpClient(OkHttp) {
         this.engine {

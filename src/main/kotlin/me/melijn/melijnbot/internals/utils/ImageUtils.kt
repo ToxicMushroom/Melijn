@@ -4,11 +4,13 @@ import com.madgag.gif.fmsware.GifDecoder
 import com.squareup.gifencoder.*
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.streams.*
 import kotlinx.coroutines.*
+import me.melijn.melijnbot.enums.ImageFormat
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
@@ -27,7 +29,6 @@ import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
 import javax.naming.SizeLimitExceededException
-import kotlin.io.use
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -50,7 +51,7 @@ object ImageUtils {
 
     suspend fun getImageBytesNMessage(
         context: ICommandContext,
-        reqFormat: String? = null
+        allowedFormats: List<ImageFormat> = listOf(ImageFormat.GIF, ImageFormat.PNG)
     ): Triple<ByteArray, String, Boolean>? {
         val args = context.args
         val attachments = context.message.attachments
@@ -64,7 +65,7 @@ object ImageUtils {
                 arg = false
                 url = attachments[0].url + discordSize
 
-                if (!checkFormat(context, attachments[0].url, reqFormat)) return null
+                if (!checkFormat(context, attachments[0].url, allowedFormats)) return null
 
                 img = downloadImage(context, url)
                 ByteArrayInputStream(img).use { bis ->
@@ -84,13 +85,17 @@ object ImageUtils {
             val user = retrieveUserByArgsN(context, 0)
             if (user != null) {
                 arg = true
-                val fixedForm = if (reqFormat == "png") {
+                val isGifAvatar = user.effectiveAvatarUrl.contains(".gif")
+
+                val fixedForm = if (allowedFormats.contains(ImageFormat.GIF) && isGifAvatar) {
+                    user.effectiveAvatarUrl
+                } else if (allowedFormats.contains(ImageFormat.PNG)) {
                     user.effectiveAvatarUrl.split(".").dropLast(1).joinToString(".") + ".png"
                 } else {
                     user.effectiveAvatarUrl
                 }
-                url = fixedForm + discordSize
-                if (!checkFormat(context, fixedForm, reqFormat)) return null
+                url = fixedForm
+                if (!checkFormat(context, fixedForm, allowedFormats)) return null
 
                 img = downloadImage(context, url)
                 ByteArrayInputStream(img).use { bis ->
@@ -109,7 +114,7 @@ object ImageUtils {
                 arg = true
                 url = args[0]
                 try {
-                    if (reqFormat == "gif" && !checkFormat(context, url, reqFormat)) return null
+                    if (!checkFormat(context, url, allowedFormats)) return null
                     if (!checkValidUrl(context, url)) return null
 
                     img = downloadImage(context.webManager.proxiedHttpClient, url)
@@ -132,13 +137,17 @@ object ImageUtils {
             }
         } else {
             arg = false
-            val fixedForm = if (reqFormat == "png") {
-                context.author.effectiveAvatarUrl.split(".").dropLast(1).joinToString(".") + ".png"
+            val user = context.author
+            val isGifAvatar = user.effectiveAvatarUrl.contains(".gif")
+            val fixedForm = if (allowedFormats.contains(ImageFormat.GIF) && isGifAvatar) {
+                user.effectiveAvatarUrl
+            } else if (allowedFormats.contains(ImageFormat.PNG)) {
+                user.effectiveAvatarUrl.split(".").dropLast(1).joinToString(".") + ".png"
             } else {
-                context.author.effectiveAvatarUrl
+                user.effectiveAvatarUrl
             }
-            url = fixedForm + discordSize
-            if (!checkFormat(context, fixedForm, reqFormat)) return null
+            url = fixedForm
+            if (!checkFormat(context, fixedForm, allowedFormats)) return null
             img = downloadImage(context, url)
         }
 
@@ -207,7 +216,7 @@ object ImageUtils {
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
     suspend fun getImagesBytesNMessage(
         context: ICommandContext,
-        reqFormat: String? = null
+        allowedFormats: List<ImageFormat> = emptyList()
     ): Triple<Map<String, ByteArray>, Pair<Int, Int>, Boolean>? {
         val args = context.args
         val attachments = context.message.attachments
@@ -257,7 +266,7 @@ object ImageUtils {
                     } else {
                         //Attachment is an image (should be)
                         url = attachment.url + "?size=2048"
-                        if (!checkFormat(context, attachment.url, reqFormat)) return null
+                        if (!checkFormat(context, attachment.url, allowedFormats)) return null
 
                         val img = withContext(Dispatchers.IO) {
                             context.webManager.httpClient.get<HttpResponse>(url).readBytes()
@@ -317,7 +326,7 @@ object ImageUtils {
                     } else {
                         // One of the arguments is an image
 
-                        if (!checkFormat(context, url1, reqFormat)) return null
+                        if (!checkFormat(context, url1, allowedFormats)) return null
 
                         val img = withContext(Dispatchers.IO) {
                             context.webManager.proxiedHttpClient.get<HttpResponse>(url1).readBytes()
@@ -355,8 +364,8 @@ object ImageUtils {
         return Triple(imgMap, Pair(maxWidth, maxHeight), arg)
     }
 
-    private suspend fun checkFormat(context: ICommandContext, url: String, reqFormat: String?): Boolean {
-        if (reqFormat != null && !url.contains(reqFormat)) {
+    private suspend fun checkFormat(context: ICommandContext, url: String, allowedFormats: List<ImageFormat>): Boolean {
+        if (allowedFormats.isNotEmpty() && allowedFormats.none { url.contains(".$it", true) }) {
             val msg = context.getTranslation("message.notagif")
                 .withVariable("url", url)
             sendRsp(context, msg)
@@ -684,22 +693,13 @@ object ImageUtils {
         image.data = dest
     }
 
-    suspend fun blur(context: ICommandContext, image: ByteArray, radius: Int, isGif: Boolean = false): ByteArray {
-//        if (!isGif) {
-        ByteArrayOutputStream().use {
-            return context.webManager.httpClient.post("http://127.0.0.1:8000/blur?sigma=$radius") {
-                body = image
+    suspend fun blur(context: ICommandContext, image: ByteArray, radius: Int, repeats: Int, delay: Int): ByteArray {
+        return context.webManager.httpClient.post<HttpResponse>("http://127.0.0.1:8000/blur?sigma=$radius&repeat=$repeats&delay=$delay") {
+            timeout {
+                this.socketTimeoutMillis = 30_000
             }
-        }
-
-//
-//        } else {
-//            val size = radius * 2 + 1
-//            val weight = 1.0f / (size * size)
-//            val data = FloatArray(size * size) { weight }
-//            val kernel = Kernel(size, size, data)
-//            useKernel(image, kernel, isGif)
-//        }
+            body = image
+        }.readBytes()
     }
 
 
