@@ -68,7 +68,7 @@ dependencies {
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
-    implementation("com.github.ToxicMushroom:lavaplayer-test:a2cd883a06")
+    implementation("com.sedmelluq:lavaplayer:1.3.67")
     // implementation("com.github.Melijn:lavaplayer:18000a1479")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
@@ -117,10 +117,10 @@ dependencies {
 
 
     // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
-    implementation("io.ktor:ktor:1.5.0")
-    implementation("io.ktor:ktor-client-okhttp:1.5.0")
-    implementation("io.ktor:ktor-server-netty:1.5.0")
-    implementation("io.ktor:ktor-client-jackson:1.5.0")
+    implementation("io.ktor:ktor:1.5.1")
+    implementation("io.ktor:ktor-client-okhttp:1.5.1")
+    implementation("io.ktor:ktor-server-netty:1.5.1")
+    implementation("io.ktor:ktor-client-jackson:1.5.1")
 
     // https://github.com/ToxicMushroom/gifencoder
     implementation("com.github.ToxicMushroom:gifencoder:23b3128881")
