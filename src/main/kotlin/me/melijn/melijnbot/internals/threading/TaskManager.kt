@@ -6,10 +6,7 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.User
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 
 object TaskManager {
 
@@ -20,7 +17,7 @@ object TaskManager {
         }
     }
 
-    val executorService: ExecutorService = Executors.newCachedThreadPool(threadFactory.invoke("Task"))
+    val executorService: ExecutorService = ForkJoinPool()
     val dispatcher = executorService.asCoroutineDispatcher()
     val scheduledExecutorService: ScheduledExecutorService =
         Executors.newScheduledThreadPool(15, threadFactory.invoke("Repeater"))
