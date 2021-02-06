@@ -193,11 +193,11 @@ fun getBanMessage(
     }
 
     description += i18n.getTranslation(language, "message.punishment.ban.description")
-        .withSafeVariable("banAuthor", banAuthor.asTag)
+        .withSafeVarInCodeblock("banAuthor", banAuthor.asTag)
         .withVariable("banAuthorId", banAuthor.id)
-        .withSafeVariable("banned", bannedUser.asTag)
+        .withSafeVarInCodeblock("banned", bannedUser.asTag)
         .withVariable("bannedId", bannedUser.id)
-        .withSafeVariable("reason", ban.reason)
+        .withSafeVarInCodeblock("reason", ban.reason)
         .withVariable("duration", banDuration)
         .withVariable("startTime", (ban.startTime.asEpochMillisToDateTime(zoneId)))
         .withVariable("endTime", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
@@ -219,7 +219,7 @@ fun getBanMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.ban.author")
-        .withSafeVariable(PLACEHOLDER_USER, banAuthor.asTag)
+        .withVariable(PLACEHOLDER_USER, banAuthor.asTag)
         .withVariable("spaces", " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B")
 
     return EmbedBuilder()
