@@ -16,13 +16,17 @@ class VoteReminderStatesDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     fun add(userId: Long, option: Int) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, option) VALUES (?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
-            userId, option)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (userId, option) VALUES (?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
+            userId, option
+        )
     }
 
     fun delete(userId: Long, option: Int) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND option = ?",
-            userId, option)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE userId = ? AND option = ?",
+            userId, option
+        )
     }
 
     suspend fun getFlags(userId: Long): List<Int> = suspendCoroutine {
