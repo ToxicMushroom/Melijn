@@ -106,6 +106,7 @@ data class Settings(
     data class Redis(
         val host: String,
         val port: Int,
+        val password: String,
         val enabled: Boolean
     )
 
@@ -214,6 +215,7 @@ data class Settings(
                 Redis(
                     get("redis.host"),
                     getInt("redis.port"),
+                    get("redis.password"),
                     getBoolean("redis.enabled")
                 ),
                 Emote(
