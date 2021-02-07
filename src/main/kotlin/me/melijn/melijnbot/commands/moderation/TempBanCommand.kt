@@ -150,7 +150,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             val msg = context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 .withVariable("endTime", endTime ?: "none")
-                .withSafeVariable("reason", ban.reason)
+                .withSafeVarInCodeblock("reason", ban.reason)
             sendRsp(context, msg)
         } catch (t: Throwable) {
 
@@ -159,7 +159,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
 
             val msg = context.getTranslation("$root.failure")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("cause", t.message ?: "/")
+                .withSafeVarInCodeblock("cause", t.message ?: "/")
             sendRsp(context, msg)
         }
     }

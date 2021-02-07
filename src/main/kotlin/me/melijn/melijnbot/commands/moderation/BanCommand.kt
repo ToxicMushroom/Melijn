@@ -155,7 +155,7 @@ class BanCommand : AbstractCommand("command.ban") {
 
             context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("reason", ban.reason)
+                .withSafeVarInCodeblock("reason", ban.reason)
 
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.banning.failed")
@@ -163,7 +163,7 @@ class BanCommand : AbstractCommand("command.ban") {
 
             context.getTranslation("$root.failure")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("cause", t.message ?: "/")
+                .withSafeVarInCodeblock("cause", t.message ?: "/")
         }
 
         sendRsp(context, msg)
@@ -188,7 +188,7 @@ fun getBanMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withVariable("serverName", guild.name)
+            .withSafeVarInCodeblock("serverName", guild.name)
             .withVariable("serverId", guild.id)
     }
 

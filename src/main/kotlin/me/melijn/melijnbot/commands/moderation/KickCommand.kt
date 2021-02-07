@@ -122,7 +122,7 @@ class KickCommand : AbstractCommand("command.kick") {
 
             context.getTranslation("$root.success")
                 .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
-                .withSafeVariable("reason", kick.reason)
+                .withSafeVarInCodeblock("reason", kick.reason)
 
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.kicking.failed")
@@ -130,7 +130,7 @@ class KickCommand : AbstractCommand("command.kick") {
 
             context.getTranslation("$root.failure")
                 .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
-                .withSafeVariable("cause", t.message ?: "/")
+                .withSafeVarInCodeblock("cause", t.message ?: "/")
 
         }
         sendRsp(context, msg)
@@ -151,16 +151,16 @@ fun getKickMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withVariable("serverName", guild.name)
+            .withSafeVarInCodeblock("serverName", guild.name)
             .withVariable("serverId", guild.id)
     }
 
     description += i18n.getTranslation(language, "message.punishment.kick.description")
-        .withSafeVariable("kickAuthor", kickAuthor.asTag)
+        .withSafeVarInCodeblock("kickAuthor", kickAuthor.asTag)
         .withVariable("kickAuthorId", kickAuthor.id)
-        .withSafeVariable("kicked", kickedUser.asTag)
+        .withSafeVarInCodeblock("kicked", kickedUser.asTag)
         .withVariable("kickedId", kickedUser.id)
-        .withSafeVariable("reason", kick.reason)
+        .withSafeVarInCodeblock("reason", kick.reason)
         .withVariable("moment", (kick.moment.asEpochMillisToDateTime(zoneId)))
         .withVariable("kickId", kick.kickId)
 
