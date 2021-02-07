@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import java.lang.management.ManagementFactory
 import java.text.DecimalFormat
+import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.ThreadPoolExecutor
 
 
@@ -50,7 +51,7 @@ class StatsCommand : AbstractCommand("command.stats") {
             queuedTracks += player.guildTrackManager.trackSize()
         }
 
-        val threadPoolExecutor = TaskManager.executorService as ThreadPoolExecutor
+        val threadPoolExecutor = TaskManager.executorService as ForkJoinPool
         val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
 
 
@@ -66,7 +67,7 @@ class StatsCommand : AbstractCommand("command.stats") {
             shardManager.guildCache.size(),
             voiceChannelsNotEmpty,
             voiceChannels,
-            threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size,
+            threadPoolExecutor.activeThreadCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size,
             getDurationString(ManagementFactory.getRuntimeMXBean().uptime),
             queuedTracks,
             musicPlayers
