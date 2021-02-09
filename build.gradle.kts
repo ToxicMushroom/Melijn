@@ -59,7 +59,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation("net.dv8tion:JDA:4.2.0_227") {
+    implementation("net.dv8tion:JDA:4.2.0_228") {
         exclude("opus-java")
     }
 
@@ -68,11 +68,10 @@ dependencies {
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
-    implementation("com.github.ToxicMushroom:lavaplayer-test:a2cd883a06")
-    // implementation("com.github.Melijn:lavaplayer:18000a1479")
+    implementation("com.sedmelluq:lavaplayer:1.3.67")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
-    implementation("com.github.ToxicMushroom:Lavalink-Klient:feb9022a64")
+    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.2")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))
@@ -117,10 +116,10 @@ dependencies {
 
 
     // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
-    implementation("io.ktor:ktor:1.5.0")
-    implementation("io.ktor:ktor-client-okhttp:1.5.0")
-    implementation("io.ktor:ktor-server-netty:1.5.0")
-    implementation("io.ktor:ktor-client-jackson:1.5.0")
+    implementation("io.ktor:ktor:1.5.1")
+    implementation("io.ktor:ktor-client-okhttp:1.5.1")
+    implementation("io.ktor:ktor-server-netty:1.5.1")
+    implementation("io.ktor:ktor-client-jackson:1.5.1")
 
     // https://github.com/ToxicMushroom/gifencoder
     implementation("com.github.ToxicMushroom:gifencoder:23b3128881")
