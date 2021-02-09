@@ -150,7 +150,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
 
             context.getTranslation("$root.success")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("reason", softBan.reason)
+                .withSafeVarInCodeblock("reason", softBan.reason)
 
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.softbanning.failed")
@@ -158,7 +158,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
 
             context.getTranslation("$root.failure")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("cause", t.message ?: "/")
+                .withSafeVarInCodeblock("cause", t.message ?: "/")
         }
         sendRsp(context, msg)
     }
@@ -185,11 +185,11 @@ fun getSoftBanMessage(
     }
 
     description += i18n.getTranslation(language, "message.punishment.softban.description")
-        .withSafeVariable("softBanAuthor", softBanAuthor.asTag)
+        .withSafeVarInCodeblock("softBanAuthor", softBanAuthor.asTag)
         .withVariable("softBanAuthorId", softBanAuthor.id)
-        .withSafeVariable("softBanned", softBannedUser.asTag)
+        .withSafeVarInCodeblock("softBanned", softBannedUser.asTag)
         .withVariable("softBannedId", softBannedUser.id)
-        .withSafeVariable("reason", softBan.reason)
+        .withSafeVarInCodeblock("reason", softBan.reason)
         .withVariable("moment", (softBan.moment.asEpochMillisToDateTime(zoneId)))
         .withVariable("softBanId", softBan.softBanId)
 

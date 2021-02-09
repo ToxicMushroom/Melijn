@@ -233,6 +233,11 @@ fun String.withVariable(toReplace: String, obj: Any): String {
     return this.replace("%$toReplace%", obj.toString())
 }
 
+fun String.escapeCodeblockMarkdown(): String {
+    return this
+        .replace("`", "'")
+}
+
 fun String.escapeMarkdown(): String {
     return this.replace("*", "\\*")
         .replace("||", "\\|\\|")
@@ -247,6 +252,19 @@ fun String.escapeDiscordInvites(): String {
         .replace("discord.com/invite", " yourFailedInviteLink ", ignoreCase = true)
         .replace("discordapp.com/invite", " yourFailedInviteLink ", ignoreCase = true)
         .replace("discord.media/invite", " yourFailedInviteLink ", ignoreCase = true)
+}
+
+// IC == In CodeBlock
+fun String.withSafeVarInCodeblock(toReplace: String, obj: Any, escapeInvites: Boolean = false): String {
+    val replacedResult = this.replace(
+        "%$toReplace%",
+        obj.toString().escapeCodeblockMarkdown()
+    )
+    return if (escapeInvites) {
+        replacedResult.escapeDiscordInvites()
+    } else {
+        replacedResult
+    }
 }
 
 fun String.withSafeVariable(toReplace: String, obj: Any): String {

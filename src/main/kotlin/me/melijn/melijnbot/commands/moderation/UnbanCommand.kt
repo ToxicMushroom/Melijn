@@ -139,7 +139,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
         val success = context.getTranslation("$root.success")
             .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-            .withSafeVariable("reason", ban.unbanReason ?: "/")
+            .withSafeVarInCodeblock("reason", ban.unbanReason ?: "/")
         sendRsp(context, success)
     }
 }
@@ -164,19 +164,19 @@ fun getUnbanMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withSafeVariable("serverName", guild.name)
+            .withSafeVarInCodeblock("serverName", guild.name)
             .withVariable("serverId", guild.id)
     }
 
     val deletedAccount = i18n.getTranslation(language, "message.deleted.user")
     description += i18n.getTranslation(language, "message.punishment.unban.description")
-        .withSafeVariable("banAuthor", banAuthor?.asTag ?: deletedAccount)
+        .withSafeVarInCodeblock("banAuthor", banAuthor?.asTag ?: deletedAccount)
         .withVariable("banAuthorId", ban.banAuthorId.toString())
         .withVariable("unBanAuthorId", ban.unbanAuthorId.toString())
-        .withSafeVariable("unBanned", bannedUser.asTag)
+        .withSafeVarInCodeblock("unBanned", bannedUser.asTag)
         .withVariable("unBannedId", ban.bannedId.toString())
-        .withSafeVariable("banReason", ban.reason)
-        .withSafeVariable("unbanReason", ban.unbanReason ?: "/")
+        .withSafeVarInCodeblock("banReason", ban.reason)
+        .withSafeVarInCodeblock("unbanReason", ban.unbanReason ?: "/")
         .withVariable("duration", banDuration)
         .withVariable("startTime", (ban.startTime.asEpochMillisToDateTime(zoneId)))
         .withVariable("endTime", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
@@ -199,7 +199,7 @@ fun getUnbanMessage(
         extraDesc += i18n.getTranslation(
             language,
             "message.punishment.extra.failed"
-        ).withVariable("cause", failedCause)
+        ).withSafeVarInCodeblock("cause", failedCause)
     }
 
     description += extraDesc

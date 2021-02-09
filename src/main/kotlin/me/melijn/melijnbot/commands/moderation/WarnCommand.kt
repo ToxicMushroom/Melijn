@@ -121,7 +121,7 @@ class WarnCommand : AbstractCommand("command.warn") {
 
         val msg = context.getTranslation("$root.success")
             .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
-            .withSafeVariable("reason", warn.reason)
+            .withSafeVarInCodeblock("reason", warn.reason)
         sendRsp(context, msg)
     }
 }
@@ -140,16 +140,16 @@ fun getWarnMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withVariable("serverName", guild.name)
+            .withSafeVarInCodeblock("serverName", guild.name)
             .withVariable("serverId", guild.id)
     }
 
     description += i18n.getTranslation(language, "message.punishment.warn.description")
-        .withSafeVariable("warnAuthor", warnAuthor.asTag)
+        .withSafeVarInCodeblock("warnAuthor", warnAuthor.asTag)
         .withVariable("warnAuthorId", warnAuthor.id)
-        .withSafeVariable("warned", warnedUser.asTag)
+        .withSafeVarInCodeblock("warned", warnedUser.asTag)
         .withVariable("warnedId", warnedUser.id)
-        .withSafeVariable("reason", warn.reason.take(1600))
+        .withSafeVarInCodeblock("reason", warn.reason.take(1600))
         .withVariable("moment", (warn.moment.asEpochMillisToDateTime(zoneId)))
         .withVariable("warnId", warn.warnId)
 

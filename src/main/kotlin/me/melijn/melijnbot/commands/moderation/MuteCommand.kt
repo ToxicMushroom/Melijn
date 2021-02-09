@@ -86,7 +86,7 @@ class MuteCommand : AbstractCommand("command.mute") {
                 muteRoleAquired(context, targetUser, reason, role)
             } catch (t: Throwable) {
                 val msgFailed = context.getTranslation("message.creatingmuterole.failed")
-                    .withSafeVariable("cause", t.message ?: "/")
+                    .withSafeVarInCodeblock("cause", t.message ?: "/")
                 sendRsp(context, msgFailed)
             }
 
@@ -175,7 +175,7 @@ class MuteCommand : AbstractCommand("command.mute") {
 
             context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("reason", mute.reason)
+                .withSafeVarInCodeblock("reason", mute.reason)
         } catch (t: Throwable) {
 
             val failedMsg = context.getTranslation("message.muting.failed")
@@ -183,7 +183,7 @@ class MuteCommand : AbstractCommand("command.mute") {
 
             context.getTranslation("$root.failure")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("cause", t.message ?: "/")
+                .withSafeVarInCodeblock("cause", t.message ?: "/")
         }
         sendRsp(context, msg)
     }
@@ -207,16 +207,16 @@ fun getMuteMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withVariable("serverName", guild.name)
+            .withSafeVarInCodeblock("serverName", guild.name)
             .withVariable("serverId", guild.id)
     }
 
     description += i18n.getTranslation(language, "message.punishment.mute.description")
-        .withSafeVariable("muteAuthor", muteAuthor.asTag)
+        .withSafeVarInCodeblock("muteAuthor", muteAuthor.asTag)
         .withVariable("muteAuthorId", muteAuthor.id)
-        .withSafeVariable("muted", mutedUser.asTag)
+        .withSafeVarInCodeblock("muted", mutedUser.asTag)
         .withVariable("mutedId", mutedUser.id)
-        .withSafeVariable("reason", mute.reason)
+        .withSafeVarInCodeblock("reason", mute.reason)
         .withVariable("duration", muteDuration)
         .withVariable("startTime", (mute.startTime.asEpochMillisToDateTime(zoneId)))
         .withVariable("endTime", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))

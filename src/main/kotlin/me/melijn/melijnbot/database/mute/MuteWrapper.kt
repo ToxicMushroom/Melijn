@@ -65,18 +65,18 @@ class MuteWrapper(private val muteDao: MuteDao) {
         } ?: context.getTranslation("infinite")
 
         return context.getTranslation("message.punishmenthistory.mute")
-            .withSafeVariable("muteAuthor", muteAuthor?.asTag ?: deletedUser)
+            .withSafeVarInCodeblock("muteAuthor", muteAuthor?.asTag ?: deletedUser)
             .withVariable("muteAuthorId", "${mute.muteAuthorId}")
-            .withSafeVariable(
+            .withSafeVarInCodeblock(
                 "unmuteAuthor",
                 if (mute.unmuteAuthorId == null) "/" else unmuteAuthor?.asTag ?: deletedUser
             )
             .withVariable("unmuteAuthorId", mute.unmuteAuthorId?.toString() ?: "/")
-            .withSafeVariable("muteReason", mute.reason.substring(0, min(mute.reason.length, 830)))
-            .withSafeVariable("unmuteReason", unmuteReason?.substring(0, min(unmuteReason.length, 830)) ?: "/")
+            .withSafeVarInCodeblock("muteReason", mute.reason.substring(0, min(mute.reason.length, 830)))
+            .withSafeVarInCodeblock("unmuteReason", unmuteReason?.substring(0, min(unmuteReason.length, 830)) ?: "/")
             .withVariable("startTime", mute.startTime.asEpochMillisToDateTime(zoneId))
             .withVariable("endTime", mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "/")
-            .withSafeVariable("duration", muteDuration)
+            .withSafeVarInCodeblock("duration", muteDuration)
             .withVariable("muteId", mute.muteId)
             .withVariable("active", "${mute.active}")
     }

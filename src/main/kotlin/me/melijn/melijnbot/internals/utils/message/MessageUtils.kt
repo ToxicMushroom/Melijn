@@ -338,14 +338,17 @@ fun sendMsg(
         }
     }
 
-    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(
-        msg.contentRaw
-    ) else null
+    val mb = MessageBuilder()
+    if (msg.contentRaw.isNotBlank()) mb.setContent(msg.contentRaw)
+
     for (embed in msg.embeds) {
-        if (action == null) action = channel.sendMessage(embed)
-        else action.embed(embed)
+        mb.setEmbed(embed)
     }
-    action?.queue(success, failed)
+    if (msg is DataMessage) {
+        mb.setAllowedMentions(msg.allowedMentions)
+    }
+
+    channel.sendMessage(mb.build()).queue(success, failed)
 }
 
 suspend fun sendMsgAwaitN(channel: TextChannel, msg: Message): Message? {
