@@ -16,9 +16,8 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
-import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 
 class JoinLeaveListener(container: Container) : AbstractListener(container) {
@@ -89,12 +88,10 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
                             MessageType.LEAVE
                         )
                     } else {
-                        val now =
-                            OffsetDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.of("GMT"))
                         var kicked = false
                         for (entry in auditKick) {
                             if (entry.targetIdLong == user.idLong) {
-                                if (OffsetDateTime.now().until(now, ChronoUnit.SECONDS) < 3) {
+                                if (OffsetDateTime.now(ZoneOffset.UTC).until(entry.timeCreated, ChronoUnit.SECONDS) < 3) {
                                     kicked = true
                                     break
                                 }
