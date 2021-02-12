@@ -9,7 +9,7 @@ class CommandWrapper(private val commandDao: CommandDao) {
         commandDao.clear()
     }
 
-    fun bulkInsert(commands: HashSet<AbstractCommand>) {
+    suspend fun bulkInsert(commands: HashSet<AbstractCommand>) {
         commandDao.bulkInsert(commands)
     }
 }

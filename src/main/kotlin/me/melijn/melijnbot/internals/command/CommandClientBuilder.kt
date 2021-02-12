@@ -27,7 +27,6 @@ class CommandClientBuilder(private val container: Container) {
 
     init {
         logger.info("Loading commands...")
-        container.daoManager.commandWrapper.clearCommands()
     }
 
     private val commands = hashSetOf<AbstractCommand>(
