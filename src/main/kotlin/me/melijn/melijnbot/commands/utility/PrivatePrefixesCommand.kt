@@ -1,13 +1,10 @@
 package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.*
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.internals.utils.isPremiumUser
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresPremiumMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.withSafeVariable
-import me.melijn.melijnbot.internals.utils.withVariable
 
 const val PRIVATE_PREFIXES_LIMIT = 1
 const val PREMIUM_PRIVATE_PREFIXES_LIMIT = 10
@@ -46,7 +43,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             var content = "```INI"
             val prefixes = context.daoManager.userPrefixWrapper.getPrefixes(context.authorId)
             for ((index, prefix) in prefixes.withIndex()) {
-                content += "\n${index + 1} - [$prefix]"
+                content += "\n${index + 1} - [${prefix.escapeCodeblockMarkdown().escapeDiscordInvites()}]"
             }
             content += "```"
 

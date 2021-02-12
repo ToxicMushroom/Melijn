@@ -6,7 +6,6 @@ import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 const val TOTAL_ALIASES_LIMIT = 25
 const val CMD_ALIASES_LIMIT = 3
@@ -54,7 +53,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
                 sb.append(indexer++).append(". [").append(rootCmd.name).append("]").append(idLessCmd.replace(".", " "))
                     .append("\n")
                 for ((index, alias) in aliases.sorted().withIndex()) {
-                    sb.append("    ").append(index + 1).append(": ").append(MarkdownSanitizer.escape(alias))
+                    sb.append("    ").append(index + 1).append(": ").append(alias.escapeCodeblockMarkdown().escapeDiscordInvites())
                         .append("\n")
                 }
             }

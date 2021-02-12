@@ -124,7 +124,7 @@ object ImageUtils {
                 } catch (e: Exception) {
                     e.printStackTrace()
                     val msg = context.getTranslation("message.notuserorurl")
-                        .withVariable(PLACEHOLDER_ARG, args[0])
+                        .withSafeVariable(PLACEHOLDER_ARG, args[0])
                     sendRsp(context, msg)
                     return null
                 }
@@ -143,7 +143,7 @@ object ImageUtils {
 
         if (img == null) {
             val msg = context.getTranslation("message.notimage")
-                .withVariable("url", url)
+                .withSafeVariable("url", url)
             sendRsp(context, msg)
             return null
         }
@@ -335,7 +335,7 @@ object ImageUtils {
                 }
             } catch (e: Throwable) {
                 val msg = context.getTranslation("message.attachmentnotanimage")
-                    .withVariable(PLACEHOLDER_ARG, args[0])
+                    .withSafeVariable(PLACEHOLDER_ARG, args[0])
                 sendRsp(context, msg)
                 return null
             }
@@ -346,7 +346,7 @@ object ImageUtils {
 
         if (error && imgMap.isEmpty()) {
             val msg = context.getTranslation("message.notimage")
-                .withVariable("url", errorFile ?: "")
+                .withSafeVariable("url", errorFile ?: "")
             sendRsp(context, msg)
             return null
         }
@@ -357,7 +357,7 @@ object ImageUtils {
     private suspend fun checkFormat(context: ICommandContext, url: String, reqFormat: String?): Boolean {
         if (reqFormat != null && !url.contains(reqFormat)) {
             val msg = context.getTranslation("message.notagif")
-                .withVariable("url", url)
+                .withSafeVariable("url", url)
             sendRsp(context, msg)
             return false
         }
@@ -368,7 +368,7 @@ object ImageUtils {
     private suspend fun checkValidUrl(context: ICommandContext, url: String): Boolean {
         if (!URL_PATTERN.matches(url)) {
             val msg = context.getTranslation("message.notaurl")
-                .withVariable("url", url)
+                .withSafeVariable("url", url)
             sendRsp(context, msg)
             return false
         }

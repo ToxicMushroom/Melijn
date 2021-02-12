@@ -21,6 +21,7 @@ class SetBannedOrKickedTriggersLeaveCommand : AbstractCommand("command.setbanned
             val state = wrapper.shouldTrigger(context.guildId)
             val msg = context.getTranslation("$root.show.$state")
             sendRsp(context, msg)
+            return
         }
 
         val newState = getBooleanFromArgNMessage(context, 0) ?: return
