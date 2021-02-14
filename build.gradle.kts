@@ -71,7 +71,7 @@ dependencies {
     implementation("com.sedmelluq:lavaplayer:1.3.69")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
-    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.3")
+    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.4")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))
