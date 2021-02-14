@@ -32,6 +32,7 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
 
         init {
             name = "removeAt"
+            aliases = arrayOf("rma")
         }
 
         override suspend fun execute(context: ICommandContext) {
@@ -49,7 +50,7 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
             context.daoManager.reminderWrapper.remove(context.authorId, reminderToRemove.remindAt)
 
             val msg = context.getTranslation("$root.removed")
-                .withSafeVariable("index", index)
+                .withSafeVariable("index", index + 1)
                 .withSafeVariable("message", reminderToRemove.message)
             sendRsp(context, msg)
         }
