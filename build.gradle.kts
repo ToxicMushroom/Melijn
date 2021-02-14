@@ -68,10 +68,10 @@ dependencies {
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
-    implementation("com.sedmelluq:lavaplayer:1.3.67")
+    implementation("com.sedmelluq:lavaplayer:1.3.69")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
-    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.2")
+    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.3")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))
