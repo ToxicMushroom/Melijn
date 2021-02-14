@@ -1,18 +1,22 @@
 package me.melijn.melijnbot.internals.web.osu
 
 import io.ktor.client.*
-import io.ktor.client.request.*
 import me.melijn.melijnbot.internals.translation.OSU_URL
+import me.melijn.melijnbot.internals.web.weebsh.getOrNull
 import net.dv8tion.jda.api.utils.data.DataArray
+import org.slf4j.LoggerFactory
 
 
 class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
+    val logger = LoggerFactory.getLogger(OsuApi::class.java)
+
     // k - api key (required).
     // u - specify a user_id or a username to return best scores from (required).
     // m - mode (0 = osu!, 1 = Taiko, 2 = CtB, 3 = osu!mania). Optional, default value is 0.
     // type - specify if u is a user_id or a username. Use string for usernames or id for user_ids. Optional, default behavior is automatic recognition (may be problematic for usernames made up of digits only).
     suspend fun getUserInfo(name: String, gameMode: Int = 0): OsuUser? {
-        val result = httpClient.get<String>("$OSU_URL/get_user?k=$apiKey&u=$name&type=string&m=$gameMode")
+        val urlString = "$OSU_URL/get_user?k=$apiKey&u=$name&type=string&m=$gameMode"
+        val result = httpClient.getOrNull<String>(urlString, {}, logger) ?: return null
         if (result.isEmpty()) return null
         val data = DataArray.fromJson(result)
         if (data.isEmpty) return null
@@ -39,7 +43,9 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
 
     // limit - amount of results (range between 1 and 100 - defaults to 10).
     suspend fun getUserTopPlays(name: String): List<OsuRankedScoreResult>? {
-        val result = httpClient.get<String>("$OSU_URL/get_user_best?k=$apiKey&u=$name&type=string&limit=25")
+        val urlString = "$OSU_URL/get_user_best?k=$apiKey&u=$name&type=string&limit=25"
+        val result = httpClient.getOrNull<String>(urlString, {}, logger) ?: return null
+
         if (result.isEmpty()) return null
 
         val data = DataArray.fromJson(result)
@@ -76,7 +82,8 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
     }
 
     suspend fun getBeatMap(beatmapId: Long): OsuBeatMap? {
-        val result = httpClient.get<String>("$OSU_URL/get_beatmaps?k=$apiKey&b=$beatmapId&limit=1")
+        val urlString = "$OSU_URL/get_beatmaps?k=$apiKey&b=$beatmapId&limit=1"
+        val result = httpClient.getOrNull<String>(urlString, {}, logger) ?: return null
         if (result.isEmpty()) return null
 
         val data = DataArray.fromJson(result)
@@ -128,7 +135,8 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
     }
 
     suspend fun getUserRecentPlays(user: String): List<OsuScoreResult>? {
-        val result = httpClient.get<String>("$OSU_URL/get_user_recent?k=$apiKey&u=$user&type=string&limit=25")
+        val urlString = "$OSU_URL/get_user_recent?k=$apiKey&u=$user&type=string&limit=25"
+        val result = httpClient.getOrNull<String>(urlString, {}, logger) ?: return null
         if (result.isEmpty()) return null
 
         val data = DataArray.fromJson(result)

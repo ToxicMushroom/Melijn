@@ -127,7 +127,8 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
 
 suspend inline fun <reified T> HttpClient.getOrNull(
     urlString: String,
-    block: HttpRequestBuilder.() -> Unit = {}
+    block: HttpRequestBuilder.() -> Unit = {},
+    logger: org.slf4j.Logger? = null,
 ): T? {
     return try {
         get {
@@ -135,6 +136,7 @@ suspend inline fun <reified T> HttpClient.getOrNull(
             block()
         }
     } catch (t: Throwable) {
+        logger?.error("Error getting result from: $urlString", t)
         null
     }
 }
