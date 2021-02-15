@@ -233,9 +233,11 @@ fun String.withVariable(toReplace: String, obj: Any): String {
     return this.replace("%$toReplace%", obj.toString())
 }
 
-fun String.escapeCodeblockMarkdown(): String {
-    return this
+fun String.escapeCodeblockMarkdown(andDiscordInvite: Boolean = false): String {
+    val replaced = this
         .replace("`", "'")
+    return if (andDiscordInvite) replaced.escapeDiscordInvites()
+    else replaced
 }
 
 fun String.escapeMarkdown(): String {

@@ -5,12 +5,12 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.DISCORD_ID
+import me.melijn.melijnbot.internals.utils.escapeCodeblockMarkdown
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Role
-import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 class RolesCommand : AbstractCommand("command.roles") {
 
@@ -74,14 +74,14 @@ class RolesCommand : AbstractCommand("command.roles") {
                     }
                 }
             } else {
-                content += "\n${index + 1} - [${MarkdownSanitizer.escape(role.name)}] - ${role.id}"
+                content += "\n${index + 1} - [${role.name.escapeCodeblockMarkdown(true)}] - ${role.id}"
             }
         }
 
         for ((groupName, roles) in availableMap) {
             content += "\n# $groupName\n"
             for ((index, role) in roles.withIndex()) {
-                content += "${index + 1}. ${role.name}\n"
+                content += "${index + 1}. ${role.name.escapeCodeblockMarkdown(true)}\n"
             }
         }
 
