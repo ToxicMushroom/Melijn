@@ -268,7 +268,8 @@ class CommandClientBuilder(private val container: Container) {
         TimeCommand(),
         NomCommand(),
         ConfusedCommand(),
-        FrogCommand()
+        FrogCommand(),
+        ChangeNameCommand()
     )
 
     fun build(): CommandClient {
