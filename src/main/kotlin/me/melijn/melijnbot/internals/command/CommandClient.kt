@@ -5,6 +5,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.command.CustomCommand
 import me.melijn.melijnbot.database.message.ModularMessage
+import me.melijn.melijnbot.database.scripts.Script
 import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.internals.events.SuspendListener
 import me.melijn.melijnbot.internals.jagtag.CCJagTagParser
@@ -72,9 +73,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         val ccsWithPrefix = mutableListOf<CustomCommand>()
         val ccsWithoutPrefix = mutableListOf<CustomCommand>()
-        if (event.isFromGuild) {
-            val ccWrapper = container.daoManager.customCommandWrapper
-            val ccs = ccWrapper.getList(event.guild.idLong)
+        val guildId = event.guild.idLong
+        val fromGuild = event.isFromGuild
+        val daoManager = container.daoManager
+        if (fromGuild) {
+            val ccWrapper = daoManager.customCommandWrapper
+            val ccs = ccWrapper.getList(guildId)
 
             for (cc in ccs) {
                 if (cc.prefix) {
@@ -101,41 +105,25 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     .split(SPACE_PATTERN)
             )
 
-
+            // Validate command parts (Checks if we have enough info to actually call any command)
             if (commandParts[0].isEmpty()) {
-                // Used a space :angry:
-                if (!melijnMentions.contains(prefix)) {
-                    val userTriState = container.daoManager.allowSpacedPrefixWrapper
-                        .getUserTriState(event.author.idLong)
-                    val allowSpace = if (userTriState == TriState.DEFAULT) {
-                        if (event.isFromGuild) {
-                            val guildAllows = container.daoManager.allowSpacedPrefixWrapper
-                                .getGuildState(event.guild.idLong)
-                            guildAllows
-
-                        } else false
-                    } else {
-                        when (userTriState) {
-                            TriState.TRUE -> true
-                            TriState.FALSE -> false
-                            else -> false
-                        }
-                    }
-
-                    if (!allowSpace) return
-
+                // Check if a spaced prefix is allowed or is suitable (mention), otherwise return
+                if (!melijnMentions.contains(prefix) && !isSpacedPrefixAllowed(event)) {
+                    return
                 }
                 commandParts[0] = prefix
             } else {
                 commandParts.add(0, prefix)
             }
             if (commandParts.size < 2) return // if only a prefix is found -> abort
+            commandPartsGlobal = commandParts
+
 
             // CC Finder
             for (cc in ccsWithPrefix) {
                 val aliases = cc.aliases
                 if (cc.name.equals(commandParts[1], true)) {
-                    commandPartsGlobal = commandParts
+
                     ccsWithPrefixMatches.add(cc)
                 } else if (aliases != null) {
                     for (alias in aliases) {
@@ -145,7 +133,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                             if (!matches) continue
                             val spaceCount = aliasParts.size - 1
 
-                            commandPartsGlobal = commandParts
                             spaceMap["cc.${cc.id}"] = spaceCount
                             ccsWithPrefixMatches.add(cc)
                         } else continue
@@ -153,13 +140,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 }
             }
 
-            var command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null })
+            var command = commandMap[commandParts[1].toLowerCase()]
             val aliasesMap = mutableMapOf<String, List<String>>()
             var searchedAliases = false
             if (command == null) {
-                val aliasCache = container.daoManager.aliasWrapper
-                if (event.isFromGuild) {
-                    aliasesMap.putAll(aliasCache.getAliases(event.guild.idLong))
+                val aliasCache = daoManager.aliasWrapper
+                if (fromGuild) {
+                    aliasesMap.putAll(aliasCache.getAliases(guildId))
                 }
 
                 for ((cmd, ls) in aliasCache.getAliases(event.author.idLong)) {
@@ -198,11 +185,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             if (command != null) {
                 val finalCommand = command ?: return
                 if (checksFailed(
-                        container,
-                        finalCommand,
-                        finalCommand.id.toString(),
-                        message,
-                        false,
+                        container, finalCommand, finalCommand.id.toString(), message, false,
                         commandParts
                     )
                 ) return
@@ -218,6 +201,16 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     )
                 )
                 return
+            } else if (fromGuild && isPremiumGuild(daoManager, guildId)) {
+                // Search for scripts
+                val scripts = daoManager.scriptWrapper.getScripts(guildId)
+                for (script in scripts) {
+                    val triggerParts = script.trigger.split(SPACE_REGEX)
+                    if (!eventIsForScript(triggerParts, commandParts, prefix)) continue
+                    runScript(event, script, triggerParts, prefix)
+                    return
+                }
+
             }
         }
 
@@ -260,6 +253,48 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     false
                 )
                 return
+            }
+        }
+    }
+
+    private fun runScript(event: MessageReceivedEvent, script: Script, triggerParts: List<String>, prefix: String?) {
+        var argBuilder = event.message.contentRaw
+        if (prefix != null) {
+            argBuilder = argBuilder.removePrefix(prefix, true).trimStart()
+        }
+        triggerParts.forEach {
+            argBuilder = argBuilder.removePrefix(it, true).trimStart()
+        }
+        val args = argBuilder
+        val argLines = args.split("\n")
+
+        for ((index, cmdInfo) in script.commands.entries.sortedBy { it.key }) {
+            val invoke = cmdInfo.first
+
+        }
+    }
+
+    private fun eventIsForScript(
+        triggerParts: List<String>,
+        commandParts: List<String>,
+        prefix: String?
+    ): Boolean {
+        val offset = if (prefix == null) 0 else 1
+        return triggerParts.withIndex().all { (i, part) ->
+            commandParts.getOrNull(i + offset)?.let { it.equals(part, true) } ?: false
+        }
+    }
+
+    private suspend fun isSpacedPrefixAllowed(
+        event: MessageReceivedEvent
+    ): Boolean {
+        val wrapper = container.daoManager.allowSpacedPrefixWrapper
+        return when (wrapper.getUserTriState(event.author.idLong)) {
+            TriState.TRUE -> true
+            TriState.FALSE -> false
+            TriState.DEFAULT -> {
+                if (event.isFromGuild) wrapper.getGuildState(event.guild.idLong)
+                else false
             }
         }
     }
@@ -424,7 +459,14 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             addConditions(conditions, command.runConditions)
 
             conditions.forEach {
-                if (!RunConditionUtil.runConditionCheckPassed(container, it, message, command, commandParts)) return true
+                if (!RunConditionUtil.runConditionCheckPassed(
+                        container,
+                        it,
+                        message,
+                        command,
+                        commandParts
+                    )
+                ) return true
             }
 
             if (message.isFromGuild && !isSubCommand) {

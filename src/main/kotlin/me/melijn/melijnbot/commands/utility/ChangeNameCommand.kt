@@ -18,6 +18,7 @@ class ChangeNameCommand : AbstractCommand("command.changename") {
         name = "changeName"
         aliases = arrayOf("nickname", "nick")
         discordPermissions = arrayOf(Permission.NICKNAME_MANAGE)
+        permissionRequired = true
         commandCategory = CommandCategory.UTILITY
     }
 
