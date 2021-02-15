@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.DISCORD_ID
 import me.melijn.melijnbot.internals.utils.escapeCodeblockMarkdown
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.withSafeVariable
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Role
 
@@ -41,7 +41,7 @@ class RolesCommand : AbstractCommand("command.roles") {
         val available = context.args.isNotEmpty() && context.args[context.args.size - 1] == "available"
 
         val title = context.getTranslation("$root.response1.title")
-            .withVariable("serverName", guild.name)
+            .withSafeVariable("serverName", guild.name)
 
         val selfRolesGrouped = TaskManager.taskValueAsync { context.daoManager.selfRoleWrapper.getMap(context.guildId) }
         val selfRoleGroups =
