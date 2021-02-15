@@ -58,6 +58,8 @@ import me.melijn.melijnbot.database.reminder.ReminderWrapper
 import me.melijn.melijnbot.database.rep.RepDao
 import me.melijn.melijnbot.database.rep.RepWrapper
 import me.melijn.melijnbot.database.role.*
+import me.melijn.melijnbot.database.scripts.ScriptDao
+import me.melijn.melijnbot.database.scripts.ScriptWrapper
 import me.melijn.melijnbot.database.settings.*
 import me.melijn.melijnbot.database.starboard.StarboardMessageDao
 import me.melijn.melijnbot.database.starboard.StarboardMessageWrapper
@@ -107,6 +109,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val commandWrapper: CommandWrapper
     val commandUsageWrapper: CommandUsageWrapper
     val customCommandWrapper: CustomCommandWrapper
+    val scriptWrapper: ScriptWrapper
 
     val guildLanguageWrapper: GuildLanguageWrapper
     val userLanguageWrapper: UserLanguageWrapper
@@ -218,7 +221,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
         commandWrapper = CommandWrapper(CommandDao(driverManager))
         commandUsageWrapper = CommandUsageWrapper(CommandUsageDao(driverManager))
-        customCommandWrapper = CustomCommandWrapper(CustomCommandDao((driverManager)))
+        customCommandWrapper = CustomCommandWrapper(CustomCommandDao(driverManager))
+        scriptWrapper = ScriptWrapper(ScriptDao(driverManager))
 
         guildLanguageWrapper = GuildLanguageWrapper(GuildLanguageDao(driverManager))
         userLanguageWrapper = UserLanguageWrapper(UserLanguageDao(driverManager))
