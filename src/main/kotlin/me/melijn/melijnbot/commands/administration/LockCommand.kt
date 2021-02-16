@@ -37,7 +37,6 @@ class LockCommand : AbstractCommand("command.lock") {
     }
 
 
-
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
@@ -193,6 +192,7 @@ class LockCommand : AbstractCommand("command.lock") {
             else -> throw IllegalStateException("unknown channeltype")
         }
 
+        // Save role overrides
         val pubRole = context.guild.publicRole
         val overrideMap = mutableMapOf<Long, Pair<Long, Long>>()
         overrideMap.putAll(
@@ -200,6 +200,14 @@ class LockCommand : AbstractCommand("command.lock") {
                 it.idLong to Pair(it.allowedRaw, it.deniedRaw)
             }.toMap()
         )
+
+        // Save melijn perm overrides
+        val melPerms = channel.memberPermissionOverrides.firstOrNull { it.idLong == context.selfUserId }
+
+        overrideMap[context.selfUserId] = if (melPerms == null) 0L to 0L
+        else melPerms.allowedRaw to melPerms.deniedRaw
+
+        // Save pubrole override
         if (!overrideMap.containsKey(pubRole.idLong)) {
             overrideMap[pubRole.idLong] = 0L to 0L
         }
@@ -214,6 +222,22 @@ class LockCommand : AbstractCommand("command.lock") {
 
         var overrideCounter = 0
         var permsChangedCounter = 0
+        // grant overrides for melijn
+        val melijnManager = channel.upsertPermissionOverride(context.guild.selfMember)
+        val melijnFlags = overrideMap[context.selfUserId] ?: 0L to 0L
+        var modifiedMelijnOverride = false
+        for (perm in denyList) {
+            if ((melijnFlags.first and perm.rawValue) == 0L) { // if the permission to allow is not yet allowed
+                melijnManager.grant(perm)
+                modifiedMelijnOverride = true
+            }
+        }
+        if (modifiedMelijnOverride) {
+            permsChangedCounter++
+            melijnManager.reason("(lock) " + context.author.asTag).queue()
+        }
+
+
         for ((id, flags) in overrideMap) {
             val role = context.guild.getRoleById(id) ?: continue
 
@@ -235,6 +259,7 @@ class LockCommand : AbstractCommand("command.lock") {
                 manager.reason("(lock) " + context.author.asTag).queue()
             }
         }
+
 
         val status = if (overrideCounter != 0) {
             UnlockCommand.LockStatus.SUCCESS
