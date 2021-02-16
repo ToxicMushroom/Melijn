@@ -48,7 +48,8 @@ abstract class CacheDBDao(driverManager: DriverManager) : Dao(driverManager) {
     abstract val cacheName: String
 
     fun setCacheEntry(key: Any, value: Any, ttlM: Int? = null) {
-        if (value is String || value is Int || value is Long || value is Double || value is Byte || value is Short || value is Short) {
+        if (value is String || value is Int || value is Long || value is Double || value is Byte || value is Short ||
+            value is Short || value is Enum<*>) {
             driverManager.setCacheEntry("$cacheName:$key", value.toString(), ttlM)
         } else {
             driverManager.setCacheEntry("$cacheName:$key", objectMapper.writeValueAsString(value), ttlM)

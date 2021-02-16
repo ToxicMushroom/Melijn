@@ -53,16 +53,20 @@ class UnlockCommand : AbstractCommand("command.unlock") {
                 break
             }
 
-            if (arg == "all") {
-                text.addAllIfNotPresent(context.guild.textChannels.filter { permissionFilter(context, it) })
-                voice.addAllIfNotPresent(context.guild.voiceChannels.filter { permissionFilter(context, it) })
-                break
-            } else if (arg == "all-text") {
-                text.addAllIfNotPresent(context.guild.textChannels.filter { permissionFilter(context, it) })
-                break
-            } else if (arg == "all-voice") {
-                voice.addAllIfNotPresent(context.guild.voiceChannels.filter { permissionFilter(context, it) })
-                break
+            when (arg.toLowerCase()) {
+                "all" -> {
+                    text.addAllIfNotPresent(context.guild.textChannels.filter { permissionFilter(context, it) })
+                    voice.addAllIfNotPresent(context.guild.voiceChannels.filter { permissionFilter(context, it) })
+                    break
+                }
+                "all-text" -> {
+                    text.addAllIfNotPresent(context.guild.textChannels.filter { permissionFilter(context, it) })
+                    break
+                }
+                "all-vc", "all-voice" -> {
+                    voice.addAllIfNotPresent(context.guild.voiceChannels.filter { permissionFilter(context, it) })
+                    break
+                }
             }
 
             unknown.addIfNotPresent(arg)
