@@ -203,13 +203,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 return
             } else if (fromGuild && isPremiumGuild(daoManager, guildId)) {
                 // Search for scripts
-                val scripts = daoManager.scriptWrapper.getScripts(guildId)
-                for (script in scripts) {
-                    val triggerParts = script.trigger.split(SPACE_REGEX)
-                    if (!eventIsForScript(triggerParts, commandParts, prefix)) continue
-                    runScript(event, script, triggerParts, prefix)
-                    return
-                }
+//                val scripts = daoManager.scriptWrapper.getScripts(guildId)
+//                for (script in scripts) {
+//                    val triggerParts = script.trigger.split(SPACE_REGEX)
+//                    if (!eventIsForScript(triggerParts, commandParts, prefix)) continue
+//                    runScript(event, script, triggerParts, prefix)
+//                    return
+//                }
 
             }
         }
@@ -270,7 +270,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         for ((index, cmdInfo) in script.commands.entries.sortedBy { it.key }) {
             val invoke = cmdInfo.first
-
+            println(invoke + argLines)
         }
     }
 

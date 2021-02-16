@@ -33,6 +33,10 @@ class LockCommand : AbstractCommand("command.lock") {
         val voiceDenyList = mutableListOf(Permission.VOICE_CONNECT)
     }
 
+    val permissionFilter: (context: ICommandContext, it: GuildChannel) -> Boolean = { context, it ->
+        context.selfMember.hasPermission(it, Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES)
+    }
+
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
@@ -56,14 +60,14 @@ class LockCommand : AbstractCommand("command.lock") {
             }
 
             if (arg == "all") {
-                text.addAllIfNotPresent(context.guild.textChannels)
-                voice.addAllIfNotPresent(context.guild.voiceChannels)
+                text.addAllIfNotPresent(context.guild.textChannels.filter { permissionFilter(context, it) })
+                voice.addAllIfNotPresent(context.guild.voiceChannels.filter { permissionFilter(context, it) })
                 break
             } else if (arg == "all-text") {
-                text.addAllIfNotPresent(context.guild.textChannels)
+                text.addAllIfNotPresent(context.guild.textChannels.filter { permissionFilter(context, it) })
                 break
             } else if (arg == "all-voice") {
-                voice.addAllIfNotPresent(context.guild.voiceChannels)
+                voice.addAllIfNotPresent(context.guild.voiceChannels.filter { permissionFilter(context, it) })
                 break
             }
 
