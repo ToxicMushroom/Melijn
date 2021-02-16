@@ -73,8 +73,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         val ccsWithPrefix = mutableListOf<CustomCommand>()
         val ccsWithoutPrefix = mutableListOf<CustomCommand>()
-        val guildId = event.guild.idLong
         val fromGuild = event.isFromGuild
+        val guildId = if (fromGuild) event.guild.idLong else -1L
         val daoManager = container.daoManager
         if (fromGuild) {
             val ccWrapper = daoManager.customCommandWrapper
