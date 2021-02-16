@@ -31,11 +31,12 @@ class LockCommand : AbstractCommand("command.lock") {
     companion object {
         val textDenyList = mutableListOf(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION)
         val voiceDenyList = mutableListOf(Permission.VOICE_CONNECT)
+        val permissionFilter: (context: ICommandContext, it: GuildChannel) -> Boolean = { context, it ->
+            context.selfMember.hasPermission(it, Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES)
+        }
     }
 
-    val permissionFilter: (context: ICommandContext, it: GuildChannel) -> Boolean = { context, it ->
-        context.selfMember.hasPermission(it, Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES)
-    }
+
 
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {

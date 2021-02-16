@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.administration
 
+import me.melijn.melijnbot.commands.administration.LockCommand.Companion.permissionFilter
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -52,14 +53,14 @@ class UnlockCommand : AbstractCommand("command.unlock") {
             }
 
             if (arg == "all") {
-                text.addAllIfNotPresent(context.guild.textChannels)
-                voice.addAllIfNotPresent(context.guild.voiceChannels)
+                text.addAllIfNotPresent(context.guild.textChannels.filter { permissionFilter(context, it) })
+                voice.addAllIfNotPresent(context.guild.voiceChannels.filter { permissionFilter(context, it) })
                 break
             } else if (arg == "all-text") {
-                text.addAllIfNotPresent(context.guild.textChannels)
+                text.addAllIfNotPresent(context.guild.textChannels.filter { permissionFilter(context, it) })
                 break
             } else if (arg == "all-voice") {
-                voice.addAllIfNotPresent(context.guild.voiceChannels)
+                voice.addAllIfNotPresent(context.guild.voiceChannels.filter { permissionFilter(context, it) })
                 break
             }
 
