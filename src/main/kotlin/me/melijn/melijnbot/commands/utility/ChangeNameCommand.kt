@@ -42,7 +42,7 @@ class ChangeNameCommand : AbstractCommand("command.changename") {
 
         val newNickname = getStringFromArgsNMessage(context, context.args.size - 1, 0, 32) ?: return
         val msg = if (newNickname == "-reset") {
-            member.modifyNickname(newNickname).reason("(changeName) ${context.author.asTag}").await()
+            member.modifyNickname(null).reason("(changeName) ${context.author.asTag}").await()
 
             if (member.idLong == context.member.idLong) {
                 context.getTranslation("$root.reset.self")
@@ -51,7 +51,7 @@ class ChangeNameCommand : AbstractCommand("command.changename") {
                     .withSafeVariable("user", member.asTag)
             }.withSafeVariable("newName", newNickname)
         } else {
-            member.modifyNickname(null).reason("(changeName) ${context.author.asTag}").await()
+            member.modifyNickname(newNickname).reason("(changeName) ${context.author.asTag}").await()
 
             if (member.idLong == context.member.idLong) {
                 context.getTranslation("$root.changed.self")
