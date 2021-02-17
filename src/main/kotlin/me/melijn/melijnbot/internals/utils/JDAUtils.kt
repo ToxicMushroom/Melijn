@@ -215,7 +215,10 @@ fun getRoleByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boo
         val id = (ROLE_MENTION.find(arg) ?: return null).groupValues[1]
         context.message.mentionedRoles.firstOrNull { it.id == id } ?: context.shardManager.getRoleById(id)
 
-    } else role
+    } else {
+        if (arg == "everyone") context.guild.publicRole
+        else role
+    }
 
     if (sameGuildAsContext && !context.guild.roles.contains(role)) return null
     return role
