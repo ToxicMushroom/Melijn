@@ -270,7 +270,7 @@ class CommandClientBuilder(private val container: Container) {
         ConfusedCommand(),
         FrogCommand(),
         ChangeNameCommand(),
-        // ScriptsCommand()
+        ScriptsCommand()
     )
 
     fun build(): CommandClient {

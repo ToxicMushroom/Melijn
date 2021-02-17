@@ -23,8 +23,8 @@ class ScriptWrapper(val scriptDao: ScriptDao) {
     }
 
     suspend fun getScripts(entityId: Long): List<Script> {
-        val cached = scriptDao.getKListFromCache<Script>(entityId, HIGHER_CACHE)
-        if (cached != null) return emptyList()
+        val cached = scriptDao.getValueFromCache<List<Script>>(entityId, HIGHER_CACHE)
+        if (cached != null) return cached
 
         val result = scriptDao.getScripts(entityId)
         scriptDao.setCacheEntry(entityId, result, NORMAL_CACHE)

@@ -84,7 +84,8 @@ suspend fun Throwable.sendInGuildSuspend(
         sb.appendLine("**Extra**")
         sb.appendLine(it)
     }
-
+    if (!stacktrace.contains("at me.melijn.melijnbot"))
+    this.cause?.sendInGuild(guild, channel, author, thread, extra, shouldSend)
     if (Container.instance.logToDiscord) {
         sendMsg(textChannel, sb.toString())
     }

@@ -2,6 +2,7 @@ package me.melijn.melijnbot.internals.command
 
 import io.ktor.client.*
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.commands.administration.ScriptsCommand
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.command.CustomCommand
 import me.melijn.melijnbot.database.message.ModularMessage
@@ -203,13 +204,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 return
             } else if (fromGuild && isPremiumGuild(daoManager, guildId)) {
                 // Search for scripts
-//                val scripts = daoManager.scriptWrapper.getScripts(guildId)
-//                for (script in scripts) {
-//                    val triggerParts = script.trigger.split(SPACE_REGEX)
-//                    if (!eventIsForScript(triggerParts, commandParts, prefix)) continue
-//                    runScript(event, script, triggerParts, prefix)
-//                    return
-//                }
+                val scripts = daoManager.scriptWrapper.getScripts(guildId)
+                for (script in scripts) {
+                    val triggerParts = script.trigger.split(SPACE_REGEX)
+                    if (!eventIsForScript(triggerParts, commandParts, prefix)) continue
+                    runScript(event, script, triggerParts, prefix)
+                    return
+                }
 
             }
         }
@@ -257,7 +258,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
     }
 
-    private fun runScript(event: MessageReceivedEvent, script: Script, triggerParts: List<String>, prefix: String?) {
+    private suspend fun runScript(
+        event: MessageReceivedEvent,
+        script: Script,
+        triggerParts: List<String>,
+        prefix: String?
+    ) {
         var argBuilder = event.message.contentRaw
         if (prefix != null) {
             argBuilder = argBuilder.removePrefix(prefix, true).trimStart()
@@ -265,12 +271,113 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         triggerParts.forEach {
             argBuilder = argBuilder.removePrefix(it, true).trimStart()
         }
-        val args = argBuilder
-        val argLines = args.split("\n")
+        val rawArg = argBuilder
+        val argLines = rawArg.split("\n")
+        val args = rawArg.split(SPACE_REGEX)
+        val lineArgMap: Map<Int, List<String>> =
+            argLines.withIndex().map { (i, it) -> i to it.split(SPACE_REGEX) }.toMap()
+
+        var missingArg = -1
+        var missingLine = -1
+        var missingLineArg = -1 to -1
 
         for ((index, cmdInfo) in script.commands.entries.sortedBy { it.key }) {
             val invoke = cmdInfo.first
-            println(invoke + argLines)
+            val filledArgs = mutableListOf<String>()
+            for (it in cmdInfo.second) {
+                when {
+                    it.matches(ScriptsCommand.argRegex) -> {
+                        val matchResult = ScriptsCommand.argRegex.find(it) ?: throw IllegalStateException()
+                        val argIndex = (matchResult.groupValues[1].toIntOrNull() ?: throw IllegalStateException()) - 1
+                        if (argIndex >= args.size) {
+                            missingArg = argIndex
+                            break
+                        }
+                        filledArgs.add(args[argIndex])
+                    }
+                    it.matches(ScriptsCommand.lineArgRegex) -> {
+                        val matchResult = ScriptsCommand.lineArgRegex.find(it) ?: throw IllegalStateException()
+                        val lineIndex = (matchResult.groupValues[1].toIntOrNull() ?: throw IllegalStateException()) - 1
+                        if (lineIndex >= argLines.size) {
+                            missingLine = lineIndex
+                            break
+                        }
+                        filledArgs.add(argLines[lineIndex])
+                    }
+                    it.matches(ScriptsCommand.scriptArgRegex) -> {
+                        val matchResult = ScriptsCommand.scriptArgRegex.find(it) ?: throw IllegalStateException()
+                        val lineIndex = (matchResult.groupValues[1].toIntOrNull() ?: throw IllegalStateException()) - 1
+                        val argIndex = (matchResult.groupValues[2].toIntOrNull() ?: throw IllegalStateException()) - 1
+                        if (argIndex >= lineArgMap[lineIndex]?.size ?: 0) {
+                            missingLineArg = lineIndex to argIndex
+                            break
+                        }
+                        lineArgMap[lineIndex]?.get(argIndex)?.let { it1 -> filledArgs.add(it1) }
+                    }
+                }
+            }
+            if (missingArg != -1 || missingLine != -1 || missingLineArg.first != -1) {
+                sendRsp(event.textChannel, container.daoManager, "Incorrect script args for `${script.trigger}`")
+                return
+            }
+
+            val rootInvoke = invoke.takeWhile { it != ' ' }
+            var command = commandMap[rootInvoke.toLowerCase()]
+            val aliasesMap = mutableMapOf<String, List<String>>()
+            val spaceMap = mutableMapOf<String, Int>()
+            var searchedAliases = false
+            val commandParts = invoke.split(" ").toMutableList()
+
+            if (command == null) {
+                val aliasCache = container.daoManager.aliasWrapper
+                aliasesMap.putAll(aliasCache.getAliases(event.guild.idLong))
+                searchedAliases = true
+                // Find command by custom alias v
+                for ((cmd, aliases) in aliasesMap) {
+                    val id = cmd.toIntOrNull() ?: continue
+
+                    for (alias in aliases) {
+                        val aliasParts = alias.split(SPACE_REGEX)
+                        if (aliasParts.size < commandParts.size) {
+                            val matches = aliasParts.withIndex().all { commandParts[it.index + 1] == it.value }
+                            if (!matches) continue
+
+                            spaceMap["$id"] = aliasParts.size - 1
+                            commandList.firstOrNull {
+                                it.id == id
+                            }?.let {
+                                command = it
+                            }
+                        }
+                    }
+                }
+            }
+
+            val finalCommand = command
+            if (finalCommand == null) {
+                sendRsp(event.textChannel, container.daoManager, "Unknown command")
+                return
+            }
+
+
+
+            if (checksFailed(
+                    container, finalCommand, finalCommand.id.toString(), event.message, false, commandParts
+                )
+            ) return
+
+            commandParts.add(0, ">")
+            val scriptCmd = CommandContext(
+                event.message,
+                commandParts,
+                container,
+                commandList,
+                spaceMap,
+                aliasesMap,
+                searchedAliases,
+                contentRaw = ">" + invoke + filledArgs.joinToString(" ", " ")
+            )
+            finalCommand.run(scriptCmd)
         }
     }
 

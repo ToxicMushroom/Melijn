@@ -68,11 +68,6 @@ abstract class CacheDBDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun getDoubleFromCache(key: Any, ttlM: Int? = null): Double? = getCacheEntry(key, ttlM)?.toDoubleOrNull()
     suspend fun getFloatFromCache(key: Any, ttlM: Int? = null): Float? = getCacheEntry(key, ttlM)?.toFloatOrNull()
 
-    suspend fun <K> getKListFromCache(key: Any, ttlM: Int? = null): List<K>? {
-        return getCacheEntry(key, ttlM)?.let {
-            objectMapper.readValue<List<K>>(it)
-        }
-    }
 
     suspend inline fun <reified K> getValueFromCache(key: Any, ttlM: Int? = null): K? {
         return getCacheEntry(key, ttlM)?.let { objectMapper.readValue<K>(it) }

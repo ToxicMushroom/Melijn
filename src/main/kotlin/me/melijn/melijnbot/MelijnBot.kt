@@ -34,6 +34,10 @@ class MelijnBot {
     init {
         instance = this
         Locale.setDefault(Locale.ENGLISH)
+        System.setProperty(
+            kotlinx.coroutines.DEBUG_PROPERTY_NAME,
+            kotlinx.coroutines.DEBUG_PROPERTY_VALUE_ON
+        )
         MessageActionImpl.setDefaultMentions(emptyList())
 
         val container = Container()
