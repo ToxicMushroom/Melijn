@@ -67,8 +67,8 @@ class ScriptDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
                         rs.getBoolean("enabled")
                     )
                 )
-                it.resume(list)
             }
+            it.resume(list)
         }, entityId)
     }
 
