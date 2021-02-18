@@ -28,6 +28,7 @@ class WebManager(val settings: Settings) {
         }
     }
     val proxiedHttpClient = HttpClient(OkHttp) {
+        expectSuccess = false
         this.engine {
             val cb = OkHttpClient.Builder()
             val client = cb.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress(settings.proxy.host, settings.proxy.port)))
