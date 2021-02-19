@@ -1021,8 +1021,19 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val roles: String
 
             if (context.args.size > 2) {
-                val roleId = getLongFromArgNMessage(context, 2) ?: return
-                roles = "<@&$roleId>"
+                val roleId = if (context.args[2].isPositiveNumber()) {
+                    roles = "<@&" + context.args[2] + ">"
+                    val roleId = context.args[2].toLongOrNull()
+                    if (roleId == null) {
+                        sendRsp(context, "Number too big")
+                        return
+                    }
+                    roleId
+                } else {
+                    val role = getRoleByArgsNMessage(context, 2) ?: return
+                    roles = role.asMention
+                    role.idLong
+                }
                 selfRoleWrapper.remove(context.guildId, group.groupName, emoteji, roleId)
             } else {
                 roles = roleIds.joinToString(", ", "<@&", ">")
