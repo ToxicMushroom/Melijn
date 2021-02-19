@@ -7,7 +7,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class GainProfileDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
-    override val table: String = "newGainProfiles"
+    override val table: String = "gain_profiles"
     override val tableStructure: String = "id bigint, name varchar(32), profile double precision[]"
     override val primaryKey: String = "id, name"
 
