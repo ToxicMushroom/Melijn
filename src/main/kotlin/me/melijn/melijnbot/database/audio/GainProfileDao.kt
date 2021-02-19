@@ -7,8 +7,8 @@ import kotlin.coroutines.suspendCoroutine
 
 class GainProfileDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
-    override val table: String = "gainProfiles"
-    override val tableStructure: String = "id bigint, name varchar(32), profile varchar(128)"
+    override val table: String = "newGainProfiles"
+    override val tableStructure: String = "id bigint, name varchar(32), profile double precision[]"
     override val primaryKey: String = "id, name"
 
     override val cacheName: String = "gainprofile"
@@ -17,7 +17,7 @@ class GainProfileDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    fun insert(id: Long, name: String, profile: String) {
+    fun insert(id: Long, name: String, profile: FloatArray) {
         driverManager.executeUpdate(
             "INSERT INTO $table (id, name, profile) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET profile = ?",
             id, name, profile, profile
