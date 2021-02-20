@@ -383,11 +383,10 @@ class LockCommand : AbstractCommand("command.lock") {
         val pubRole = context.guild.publicRole
         val overrideMap = mutableMapOf<Long, Pair<Long, Long>>()
         overrideMap.putAll(
-            channel.rolePermissionOverrides.filterNotNull().filter {
-                excludedRoles.contains(it.idLong)
-            }.map {
-                it.idLong to Pair(it.allowedRaw, it.deniedRaw)
-            }.toMap()
+            channel.rolePermissionOverrides.filterNotNull()
+                .map {
+                    it.idLong to Pair(it.allowedRaw, it.deniedRaw)
+                }.toMap()
         )
 
         // Save melijn perm overrides

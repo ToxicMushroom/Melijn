@@ -106,19 +106,26 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val user = retrieveUserByArgsNMessage(context, 0) ?: return
                 val permissionNode = if (context.args.size > 1) context.args[1] else "*"
-                val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
-
                 val title = context.getTranslation("$root.response1.title")
                     .withVariable(PLACEHOLDER_USER, user.asTag)
                     .withVariable("permissionNode", permissionNode)
 
                 var content = "\n```INI"
-                val dao = context.daoManager.userPermissionWrapper.getPermMap(context.guildId, user.idLong)
+                val map = context.daoManager.userPermissionWrapper.getPermMap(context.guildId, user.idLong)
+                if (map.isEmpty()) {
+                    sendRsp(
+                        context,
+                        "`${user.asTag.escapeCodeblockMarkdown(true)}` doesn't have any permissions set that match `${
+                            permissionNode.escapeCodeblockMarkdown(true)
+                        }`"
+                    )
+                    return
+                }
                 var index = 1
-                for (perm in permissions) {
-                    val state = dao.getOrDefault(perm, PermState.DEFAULT)
-                    if (state != PermState.DEFAULT)
+                for ((perm, state) in map) {
+                    if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
                         content += "\n${index++} - [$perm] - $state"
+                    }
                 }
                 content += "```"
 
@@ -225,19 +232,28 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val permissionNode = if (context.args.size > 1) context.args[1] else "*"
                 val role = getRoleByArgsNMessage(context, 0) ?: return
-                val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
                 val title = context.getTranslation("$root.response1.title")
                     .withVariable(PLACEHOLDER_ROLE, role.name)
                     .withVariable("permissionNode", permissionNode)
 
                 var content = "\n```INI"
-                val dao = context.daoManager.rolePermissionWrapper.getPermMap(role.idLong)
+                val map = context.daoManager.rolePermissionWrapper.getPermMap(role.idLong)
+                if (map.isEmpty()) {
+                    sendRsp(
+                        context,
+                        "`${role.name.escapeCodeblockMarkdown()}` doesn't have any permissions set that match `${
+                            permissionNode.escapeCodeblockMarkdown(true)
+                        }`"
+                    )
+                    return
+                }
+
                 var index = 1
-                for (perm in permissions) {
-                    val state = dao.getOrDefault(perm, PermState.DEFAULT)
-                    if (state != PermState.DEFAULT)
+                for ((perm, state) in map) {
+                    if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
                         content += "\n${index++} - [$perm] - $state"
+                    }
                 }
                 content += "```"
 
@@ -1098,6 +1114,47 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
     }
 }
+
+/**
+ * permMap: map with permission nodes mapped to states (can be for user, userchannel, role, rolechannel)
+ * lPermission: lowercase permission node to check
+ * cPermState: current permission state
+ * returns: new permission state or the cPermState depending on if arguments supplied
+ */
+fun nodeGrantsPerm(
+    granted: String,
+    toCheck: String,
+    commands: Set<AbstractCommand>
+): Boolean {
+    if (granted.last() == '*' && (toCheck.length > granted.length || toCheck.length == granted.length - 2)) { // rolePerm.* and rolePerm.something > 9
+        return if (granted == "*") {
+            true
+        } else {
+            val begin = granted.dropLast(2)
+            toCheck.startsWith(begin, true)
+        }
+    } else {
+        if (toCheck == granted) {
+            return true
+        } else {
+            val category = try {
+                CommandCategory.valueOf(granted.toUpperCase())
+            } catch (t: Throwable) {
+                null
+            }
+
+            return if (category != null) {
+                val foundCommand = commands.firstOrNull { cmd ->
+                    toCheck.takeWhile { it != '.' }.equals(cmd.name, true)
+                }
+                foundCommand?.commandCategory == category
+            } else {
+                false
+            }
+        }
+    }
+}
+
 
 // <count, compactPermissionNodes>
 suspend fun getPermissionsFromArgsNMessage(context: ICommandContext, args: List<String>): Pair<Int, List<String>>? {
