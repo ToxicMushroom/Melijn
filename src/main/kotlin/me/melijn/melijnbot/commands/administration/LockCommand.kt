@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.administration
 
+import me.melijn.melijnbot.database.locking.EntityType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -22,17 +23,199 @@ class LockCommand : AbstractCommand("command.lock") {
         id = 241
         name = "lock"
         aliases = arrayOf("lockChannel")
+        children = arrayOf(
+            RolesArg(root),
+            ChannelsArg(root)
+        )
         discordPermissions =
             (textDenyList + voiceDenyList).toTypedArray() // need the server permission in order to create overrides for it
         cooldown = 10_000
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
+    class ChannelsArg(parent: String) : AbstractCommand("$parent.channels") {
+
+        init {
+            name = "channels"
+            children = arrayOf(
+                ExcludeArg(root),
+                IncludeArg(root),
+                ListArg(root)
+            )
+            commandCategory = CommandCategory.ADMINISTRATION
+        }
+
+        class ListArg(parent: String) : AbstractCommand("$parent.list") {
+
+            init {
+                name = "list"
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                val locks = context.daoManager.lockExcludedWrapper.getExcluded(context.guildId, EntityType.TEXT_CHANNEL)
+                if (locks.isEmpty()) {
+                    sendRsp(context, "No channels are currently excluded from being locked out by `>lock`")
+                    return
+                }
+
+                var msg = "List of lock-excluded channels:\n```INI\n"
+                var i = 1
+                for (lock in locks) {
+                    msg += "${i++} - [" + (context.guild.getTextChannelById(lock)?.asTag
+                        ?: "deleted channel") + "] - $lock\n"
+                }
+                msg += "```"
+                sendRsp(context, msg)
+            }
+        }
+
+        class IncludeArg(parent: String) : AbstractCommand("$parent.include") {
+
+            init {
+                name = "include"
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                val roles = getTextChannelsByArgsNMessage(context, 0, context.args.size) ?: return
+                context.daoManager.lockExcludedWrapper.include(
+                    context.guildId,
+                    EntityType.TEXT_CHANNEL,
+                    roles.map { it.idLong }
+                )
+                val output = if (roles.size > 1) {
+                    "**${roles.size}** channels"
+                } else {
+                    "**${roles.first().name}**"
+                }
+                sendRsp(
+                    context,
+                    "Included $output back into the channels that will be locked by `>lock all`"
+                )
+            }
+        }
+
+        class ExcludeArg(parent: String) : AbstractCommand("$parent.exclude") {
+
+            init {
+                name = "exclude"
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                val roles = getTextChannelsByArgsNMessage(context, 0, context.args.size) ?: return
+                context.daoManager.lockExcludedWrapper.exclude(
+                    context.guildId,
+                    EntityType.TEXT_CHANNEL,
+                    roles.map { it.idLong }
+                )
+                val output = if (roles.size > 1) {
+                    "**${roles.size}** channels"
+                } else {
+                    "**${roles.first().name}**"
+                }
+                sendRsp(context, "Excluded $output from the channels that would be locked by `>lock all`")
+            }
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            sendSyntax(context)
+        }
+    }
+
+    class RolesArg(parent: String) : AbstractCommand("$parent.roles") {
+
+        init {
+            name = "roles"
+            children = arrayOf(
+                ExcludeArg(root),
+                IncludeArg(root),
+                ListArg(root)
+            )
+            commandCategory = CommandCategory.ADMINISTRATION
+        }
+
+        class ListArg(parent: String) : AbstractCommand("$parent.list") {
+
+            init {
+                name = "list"
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                val locks = context.daoManager.lockExcludedWrapper.getExcluded(context.guildId, EntityType.ROLE)
+                if (locks.isEmpty()) {
+                    sendRsp(context, "No roles are currently excluded from being locked out by `>lock`")
+                    return
+                }
+
+                var msg = "List of lock-excluded roles:\n```INI\n"
+                var i = 1
+                for (lock in locks) {
+                    msg += "${i++} - [" + (context.guild.getRoleById(lock)?.name ?: "deleted role") + "] - $lock\n"
+                }
+                msg += "```"
+                sendRsp(context, msg)
+            }
+        }
+
+        class IncludeArg(parent: String) : AbstractCommand("$parent.include") {
+
+            init {
+                name = "include"
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                val roles = getRolesByArgsNMessage(context, 0, context.args.size) ?: return
+                context.daoManager.lockExcludedWrapper.include(
+                    context.guildId,
+                    EntityType.ROLE,
+                    roles.map { it.idLong }
+                )
+                val output = if (roles.size > 1) {
+                    "**${roles.size}** roles"
+                } else {
+                    "**${roles.first().name}**"
+                }
+                sendRsp(context, "Included $output back into the roles that will be locked out by `>lock`")
+            }
+        }
+
+        class ExcludeArg(parent: String) : AbstractCommand("$parent.exclude") {
+
+            init {
+                name = "exclude"
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                val roles = getRolesByArgsNMessage(context, 0, context.args.size) ?: return
+                context.daoManager.lockExcludedWrapper.exclude(
+                    context.guildId,
+                    EntityType.ROLE,
+                    roles.map { it.idLong }
+                )
+                val output = if (roles.size > 1) {
+                    "**${roles.size}** roles"
+                } else {
+                    "**${roles.first().name}**"
+                }
+                sendRsp(context, "Excluded $output from the roles that would be locked out by `>lock`")
+            }
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            sendSyntax(context)
+        }
+    }
+
     companion object {
         val textDenyList = mutableListOf(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION)
         val voiceDenyList = mutableListOf(Permission.VOICE_CONNECT)
-        val permissionFilter: (context: ICommandContext, it: GuildChannel) -> Boolean = { context, it ->
-            context.selfMember.hasPermission(it, Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES)
+        val channelFilter: suspend (context: ICommandContext, it: GuildChannel) -> Boolean = { context, channel ->
+            val wrapper = context.daoManager.lockExcludedWrapper
+            val excludedChannels = wrapper.getExcluded(context.guildId, EntityType.TEXT_CHANNEL)
+            !excludedChannels.contains(channel.idLong) && context.selfMember.hasPermission(
+                channel,
+                Permission.MANAGE_CHANNEL,
+                Permission.MANAGE_ROLES
+            )
         }
     }
 
@@ -60,14 +243,14 @@ class LockCommand : AbstractCommand("command.lock") {
             }
 
             if (arg == "all") {
-                text.addAllIfNotPresent(context.guild.textChannels.filter { permissionFilter(context, it) })
-                voice.addAllIfNotPresent(context.guild.voiceChannels.filter { permissionFilter(context, it) })
+                text.addAllIfNotPresent(context.guild.textChannels.filter { channelFilter(context, it) })
+                voice.addAllIfNotPresent(context.guild.voiceChannels.filter { channelFilter(context, it) })
                 break
             } else if (arg == "all-text") {
-                text.addAllIfNotPresent(context.guild.textChannels.filter { permissionFilter(context, it) })
+                text.addAllIfNotPresent(context.guild.textChannels.filter { channelFilter(context, it) })
                 break
             } else if (arg == "all-voice") {
-                voice.addAllIfNotPresent(context.guild.voiceChannels.filter { permissionFilter(context, it) })
+                voice.addAllIfNotPresent(context.guild.voiceChannels.filter { channelFilter(context, it) })
                 break
             }
 
@@ -80,7 +263,7 @@ class LockCommand : AbstractCommand("command.lock") {
             lockChannel(context, text.first())
         } else if (text.size == 0 && voice.size == 0) {
             val msg = context.getTranslation("$root.notfound")
-                .withSafeVariable("arg", unknown.joinToString())
+                .withSafeVarInCodeblock("arg", unknown.joinToString())
             sendRsp(context, msg)
         } else {
             val msg = context.getTranslation("$root.questionmany")
@@ -95,11 +278,11 @@ class LockCommand : AbstractCommand("command.lock") {
                 if (it.message.contentRaw == "yes") {
                     lockMany(context, voice + text)
                 } else {
-                    val rsp = context.getTranslation("$root.manyquestion.denied")
+                    val rsp = context.getTranslation("$root.questionmany.denied")
                     sendRsp(context, rsp)
                 }
             }, {
-                val rsp = context.getTranslation("$root.manyquestion.expired")
+                val rsp = context.getTranslation("$root.questionmany.expired")
                 sendRsp(context, rsp)
             }, 120)
         }
@@ -123,8 +306,9 @@ class LockCommand : AbstractCommand("command.lock") {
         var textPermChanges = 0
         var voiceOverrides = 0
         var voicePermChanges = 0
+        val excludedRoles = context.daoManager.lockExcludedWrapper.getExcluded(context.guildId, EntityType.ROLE)
         for (channel in list) {
-            val unlockStatus = internalLock(context, channel)
+            val unlockStatus = internalLock(context, channel, excludedRoles)
             when (unlockStatus.third) {
                 UnlockCommand.LockStatus.SUCCESS, UnlockCommand.LockStatus.NO_OVERRIDE -> locked.add(channel)
                 UnlockCommand.LockStatus.ALREADY_LOCKED -> alreadyLocked.add(channel)
@@ -158,8 +342,9 @@ class LockCommand : AbstractCommand("command.lock") {
 
     private suspend fun lockChannel(context: ICommandContext, channel: GuildChannel) {
         if (notEnoughPermissionsAndMessage(context, channel, Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES)) return
+        val excludedRoles = context.daoManager.lockExcludedWrapper.getExcluded(context.guildId, EntityType.ROLE)
 
-        val status = internalLock(context, channel)
+        val status = internalLock(context, channel, excludedRoles)
         val msg = when (status.third) {
             UnlockCommand.LockStatus.SUCCESS, UnlockCommand.LockStatus.NO_OVERRIDE -> {
                 context.getTranslation("$root.locked")
@@ -184,7 +369,8 @@ class LockCommand : AbstractCommand("command.lock") {
     // -> overrideCount, permissionsSwitched, status
     private suspend fun internalLock(
         context: ICommandContext,
-        channel: GuildChannel
+        channel: GuildChannel,
+        excludedRoles: List<Long>
     ): Triple<Int, Int, UnlockCommand.LockStatus> {
         val denyList = when (channel) {
             is TextChannel -> textDenyList
@@ -192,11 +378,14 @@ class LockCommand : AbstractCommand("command.lock") {
             else -> throw IllegalStateException("unknown channeltype")
         }
 
+
         // Save role overrides
         val pubRole = context.guild.publicRole
         val overrideMap = mutableMapOf<Long, Pair<Long, Long>>()
         overrideMap.putAll(
-            channel.rolePermissionOverrides.filterNotNull().map {
+            channel.rolePermissionOverrides.filterNotNull().filter {
+                !excludedRoles.contains(it.idLong)
+            }.map {
                 it.idLong to Pair(it.allowedRaw, it.deniedRaw)
             }.toMap()
         )

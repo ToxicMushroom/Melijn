@@ -224,6 +224,37 @@ fun getRoleByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boo
     return role
 }
 
+suspend fun getTextChannelsByArgsNMessage(
+    context: ICommandContext,
+    indexFrom: Int,
+    indexTo: Int,
+    sameGuildAsContext: Boolean = true
+): List<TextChannel>? {
+    val roles = mutableListOf<TextChannel>()
+    for (i in indexFrom until indexTo) {
+        val channel = getTextChannelByArgsNMessage(context, i, sameGuildAsContext) ?: return null
+        roles.add(channel)
+    }
+    return roles
+}
+
+
+suspend fun getRolesByArgsNMessage(
+    context: ICommandContext,
+    indexFrom: Int,
+    indexTo: Int,
+    sameGuildAsContext: Boolean = true,
+    canInteract: Boolean = false
+): List<Role>? {
+    val roles = mutableListOf<Role>()
+    for (i in indexFrom until indexTo) {
+        val role = getRoleByArgsNMessage(context, i, sameGuildAsContext, canInteract) ?: return null
+        roles.add(role)
+    }
+    return roles
+}
+
+
 suspend fun getRoleByArgsNMessage(
     context: ICommandContext,
     index: Int,

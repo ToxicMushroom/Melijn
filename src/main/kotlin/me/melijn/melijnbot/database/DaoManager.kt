@@ -36,6 +36,8 @@ import me.melijn.melijnbot.database.language.GuildLanguageDao
 import me.melijn.melijnbot.database.language.GuildLanguageWrapper
 import me.melijn.melijnbot.database.language.UserLanguageDao
 import me.melijn.melijnbot.database.language.UserLanguageWrapper
+import me.melijn.melijnbot.database.locking.LockExcludedDao
+import me.melijn.melijnbot.database.locking.LockExcludedWrapper
 import me.melijn.melijnbot.database.logchannel.LogChannelDao
 import me.melijn.melijnbot.database.logchannel.LogChannelWrapper
 import me.melijn.melijnbot.database.message.MessageDao
@@ -119,6 +121,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val channelRolePermissionWrapper: ChannelRolePermissionWrapper
     val channelUserPermissionWrapper: ChannelUserPermissionWrapper
     val discordChannelOverridesWrapper: DiscordChannelOverridesWrapper
+    val lockExcludedWrapper: LockExcludedWrapper
 
     val disabledCommandWrapper: DisabledCommandWrapper
     val channelCommandStateWrapper: ChannelCommandStateWrapper
@@ -232,6 +235,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         channelRolePermissionWrapper = ChannelRolePermissionWrapper(ChannelRolePermissionDao(driverManager))
         channelUserPermissionWrapper = ChannelUserPermissionWrapper(ChannelUserPermissionDao(driverManager))
         discordChannelOverridesWrapper = DiscordChannelOverridesWrapper(DiscordChannelOverridesDao(driverManager))
+        lockExcludedWrapper = LockExcludedWrapper(LockExcludedDao(driverManager))
 
         disabledCommandWrapper = DisabledCommandWrapper(DisabledCommandDao(driverManager))
 
