@@ -1238,49 +1238,6 @@ fun getPermissionsNodesFromArg(context: ICommandContext, arg: String): Pair<Int,
     return if (perms.isEmpty()) null else perms.size to arg
 }
 
-
-fun getPermissionsFromArg(context: ICommandContext, arg: String): List<String>? {
-    val category: CommandCategory? = enumValueOrNull(arg)
-    val permParts = arg.split(".")
-
-    val commands = if (category == null) {
-        if (arg == "*") {
-            context.commandList
-        } else context.commandList.filter { command -> command.isCommandFor(permParts[0]) }
-    } else {
-        context.commandList.filter { command -> command.commandCategory == category }
-    }
-
-    val regex: Regex = when {
-        arg == "*" || category != null -> ".*".toRegex()
-        permParts.last() == "*" -> (
-            Pattern.quote(
-                permParts.subList(0, permParts.size - 1)
-                    .joinToString(".")
-            ) + "(..*)?"
-            ).toRegex(RegexOption.IGNORE_CASE)
-
-        else -> Pattern.quote(arg).toRegex(RegexOption.IGNORE_CASE)
-    }
-
-    val perms = getPermissions(commands)
-        .filter { perm ->
-            perm.matches(regex)
-        }.toMutableList()
-
-    val extraNodes = SpecialPermission.values()
-        .filter { perm -> regex.matches(perm.node) }
-        .map { perm -> perm.node.toLowerCase() }
-    perms.addAll(extraNodes)
-
-    val matcher = ccTagPattern.matcher(arg)
-    if (perms.isEmpty() && matcher.matches()) {
-        perms.add(arg.toLowerCase())
-    }
-
-    return if (perms.isEmpty()) null else perms
-}
-
 fun getPermissions(commands: Collection<AbstractCommand>, prefix: String = ""): List<String> {
     val permissionList = ArrayList<String>()
     commands.forEach { cmd ->
