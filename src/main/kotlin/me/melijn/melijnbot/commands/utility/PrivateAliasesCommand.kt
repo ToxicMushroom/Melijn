@@ -154,7 +154,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             }
 
             val index = getIntegerFromArgNMessage(context, 1, 1, aliases.size) ?: return
-            val alias = aliases[index]
+            val alias = aliases[index - 1]
 
             aliasWrapper.remove(context.authorId, pathInfo.fullPath, alias)
 
