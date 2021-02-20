@@ -384,7 +384,7 @@ class LockCommand : AbstractCommand("command.lock") {
         val overrideMap = mutableMapOf<Long, Pair<Long, Long>>()
         overrideMap.putAll(
             channel.rolePermissionOverrides.filterNotNull().filter {
-                !excludedRoles.contains(it.idLong)
+                excludedRoles.contains(it.idLong)
             }.map {
                 it.idLong to Pair(it.allowedRaw, it.deniedRaw)
             }.toMap()
@@ -399,6 +399,13 @@ class LockCommand : AbstractCommand("command.lock") {
         // Save pubrole override
         if (!overrideMap.containsKey(pubRole.idLong)) {
             overrideMap[pubRole.idLong] = 0L to 0L
+        }
+
+        // Save other excluded roles that didnt have an override (they will be overridden like melijn)
+        for (excluded in excludedRoles) {
+            if (!overrideMap.containsKey(excluded)) {
+                overrideMap[excluded] = 0L to 0L
+            }
         }
 
 
@@ -429,13 +436,18 @@ class LockCommand : AbstractCommand("command.lock") {
 
         for ((id, flags) in overrideMap) {
             val role = context.guild.getRoleById(id) ?: continue
-
             val manager = channel.upsertPermissionOverride(role)
 
             var permsChangedHere = 0
             for (perm in denyList) {
-                when {
-                    (flags.second and perm.rawValue) == 0L -> { // if the permission to deny is not yet denied
+                if (excludedRoles.contains(role.idLong)) {
+                    // Exclude excluded roles
+                    if ((flags.first and perm.rawValue) == 0L) { // if the permission to allow is not yet allowed
+                        manager.grant(perm)
+                        permsChangedHere++
+                    }
+                } else {
+                    if ((flags.second and perm.rawValue) == 0L) { // if the permission to deny is not yet denied
                         manager.deny(perm)
                         permsChangedHere++
                     }
