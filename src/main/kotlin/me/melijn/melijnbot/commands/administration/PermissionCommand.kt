@@ -110,26 +110,29 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .withVariable(PLACEHOLDER_USER, user.asTag)
                     .withVariable("permissionNode", permissionNode)
 
-                var content = "\n```INI"
+                val content = StringBuilder("\n```INI")
                 val map = context.daoManager.userPermissionWrapper.getPermMap(context.guildId, user.idLong)
-                if (map.isEmpty()) {
+
+                var index = 1
+                for ((perm, state) in map) {
+                    if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
+                        content.append("\n${index++} - [$perm] - $state")
+                    }
+                }
+                if (index == 1) {
                     sendRsp(
                         context,
-                        "`${user.asTag.escapeCodeblockMarkdown(true)}` doesn't have any permissions set that match `${
+                        "**${
+                            user.asTag.escapeMarkdown().escapeDiscordInvites()
+                        }** doesn't have any permissions set that match `${
                             permissionNode.escapeCodeblockMarkdown(true)
                         }`"
                     )
                     return
                 }
-                var index = 1
-                for ((perm, state) in map) {
-                    if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
-                        content += "\n${index++} - [$perm] - $state"
-                    }
-                }
-                content += "```"
+                content.append("```")
 
-                sendRspCodeBlock(context, title + content, "INI", true)
+                sendRspCodeBlock(context, title + content.toString(), "INI", true)
             }
         }
 
@@ -239,21 +242,21 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 var content = "\n```INI"
                 val map = context.daoManager.rolePermissionWrapper.getPermMap(role.idLong)
-                if (map.isEmpty()) {
-                    sendRsp(
-                        context,
-                        "`${role.name.escapeCodeblockMarkdown()}` doesn't have any permissions set that match `${
-                            permissionNode.escapeCodeblockMarkdown(true)
-                        }`"
-                    )
-                    return
-                }
 
                 var index = 1
                 for ((perm, state) in map) {
                     if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
                         content += "\n${index++} - [$perm] - $state"
                     }
+                }
+                if (index == 1) {
+                    sendRsp(
+                        context,
+                        "**${role.name.escapeMarkdown()}** doesn't have any permissions set that match `${
+                            permissionNode.escapeCodeblockMarkdown(true)
+                        }`"
+                    )
+                    return
                 }
                 content += "```"
 
@@ -382,8 +385,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                     val role = getRoleByArgsNMessage(context, 1) ?: return
-                    val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
-
 
                     val title = context.getTranslation("$root.response1.title")
                         .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
@@ -391,15 +392,24 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable("permissionNode", permissionNode)
 
 
-                    val channelRole =
-                        context.daoManager.channelRolePermissionWrapper.getPermMap(channel.idLong, role.idLong)
+                    val wrapper = context.daoManager.channelRolePermissionWrapper
+                    val map = wrapper.getPermMap(channel.idLong, role.idLong)
 
                     var content = "```INI"
-                    for ((index, perm) in permissions.withIndex()) {
-                        val state = channelRole.getOrDefault(perm, PermState.DEFAULT)
-                        if (state != PermState.DEFAULT) {
-                            content += "\n${index + 1} - [$perm] - $state"
+                    var index = 1
+                    for ((perm, state) in map) {
+                        if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
+                            content += "\n${index++} - [$perm] - $state"
                         }
+                    }
+                    if (index == 1) {
+                        sendRsp(
+                            context,
+                            "**${role.name.escapeMarkdown()}** doesn't have any permissions set in **${channel.asTag}** that match `${
+                                permissionNode.escapeCodeblockMarkdown(true)
+                            }`"
+                        )
+                        return
                     }
                     content += "```"
 
@@ -515,22 +525,32 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                     val user = retrieveUserByArgsNMessage(context, 1) ?: return
-                    val permissions = getPermissionsFromArg(context, permissionNode) ?: return
-
 
                     val title = context.getTranslation("$root.response1.title")
                         .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
                         .withVariable(PLACEHOLDER_USER, user.asTag)
                         .withVariable("permissionNode", permissionNode)
                     val wrapper = context.daoManager.channelUserPermissionWrapper
-                    val channelUser = wrapper.getPermMap(channel.idLong, user.idLong)
+                    val map = wrapper.getPermMap(channel.idLong, user.idLong)
 
                     var content = "```INI"
-                    for ((index, perm) in permissions.withIndex()) {
-                        val state = channelUser.getOrDefault(perm, PermState.DEFAULT)
-                        if (state != PermState.DEFAULT) {
-                            content += "\n${index + 1} - [$perm] - $state"
+
+                    var index = 1
+                    for ((perm, state) in map) {
+                        if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
+                            content += "\n${index++} - [$perm] - $state"
                         }
+                    }
+                    if (index == 1) {
+                        sendRsp(
+                            context,
+                            "**${
+                                user.asTag.escapeMarkdown().escapeDiscordInvites()
+                            }** doesn't have any permissions set in **${channel.asTag}** that match `${
+                                permissionNode.escapeCodeblockMarkdown(true)
+                            }`"
+                        )
+                        return
                     }
                     content += "```"
 
@@ -1218,17 +1238,6 @@ fun getPermissionsNodesFromArg(context: ICommandContext, arg: String): Pair<Int,
     return if (perms.isEmpty()) null else perms.size to arg
 }
 
-
-suspend fun getPermissionsFromArgNMessage(context: ICommandContext, arg: String): List<String>? {
-    val permissions = getPermissionsFromArg(context, arg)
-    if (permissions == null) {
-
-        val msg = context.getTranslation(MESSAGE_UNKNOWN_PERMISSIONNODE)
-            .withVariable(PLACEHOLDER_ARG, arg)
-        sendRsp(context, msg)
-    }
-    return permissions
-}
 
 fun getPermissionsFromArg(context: ICommandContext, arg: String): List<String>? {
     val category: CommandCategory? = enumValueOrNull(arg)
