@@ -68,7 +68,7 @@ dependencies {
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
-    implementation("com.sedmelluq:lavaplayer:1.3.69")
+    implementation("com.sedmelluq:lavaplayer:1.3.71")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
     implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.4")
