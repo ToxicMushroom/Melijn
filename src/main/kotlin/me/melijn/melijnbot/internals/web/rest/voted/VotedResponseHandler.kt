@@ -79,7 +79,7 @@ object VotedResponseHandler {
         TaskManager.async {
             if (voteType == "test") {
                 LogUtils.sendReceivedVoteTest(context.container, userId, botlist)
-            } else if (voteType == "vote") {
+            } else {
 
                 val multiplier = (if (daoManager.supporterWrapper.getUsers().contains(userId)) {
                     premiumMultiplier
