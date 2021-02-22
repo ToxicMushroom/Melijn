@@ -51,6 +51,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         services.add(RedditService(webManager.httpClient, daoManager.driverManager))
         services.add(RedditAboutService(webManager.httpClient, daoManager.driverManager))
         services.add(PPExpireService(daoManager.autoPunishmentWrapper))
+        //services.add(TwitterService(webManager.httpClient))
         services.add(RSPService(shardManager, daoManager))
     }
 

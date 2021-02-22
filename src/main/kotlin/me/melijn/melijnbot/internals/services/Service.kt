@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 abstract class Service(
     val name: String,
-    private val period: Long,
+    protected val period: Long,
     private val initialDelay: Long = 0,
     private val unit: TimeUnit = TimeUnit.SECONDS
 ) {

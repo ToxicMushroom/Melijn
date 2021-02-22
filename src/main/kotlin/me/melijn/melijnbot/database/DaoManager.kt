@@ -63,6 +63,8 @@ import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.scripts.ScriptDao
 import me.melijn.melijnbot.database.scripts.ScriptWrapper
 import me.melijn.melijnbot.database.settings.*
+import me.melijn.melijnbot.database.socialmedia.TwitterDao
+import me.melijn.melijnbot.database.socialmedia.TwitterWrapper
 import me.melijn.melijnbot.database.starboard.StarboardMessageDao
 import me.melijn.melijnbot.database.starboard.StarboardMessageWrapper
 import me.melijn.melijnbot.database.starboard.StarboardSettingsDao
@@ -200,6 +202,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val starboardSettingsWrapper: StarboardSettingsWrapper
     val starboardMessageWrapper: StarboardMessageWrapper
 
+    val twitterWrapper: TwitterWrapper
+
     val osuWrapper: OsuWrapper
 
     val newYearWrapper: NewYearWrapper
@@ -311,6 +315,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
         starboardSettingsWrapper = StarboardSettingsWrapper(StarboardSettingsDao(driverManager))
         starboardMessageWrapper = StarboardMessageWrapper(StarboardMessageDao(driverManager))
+
+        twitterWrapper = TwitterWrapper(TwitterDao(driverManager))
 
         osuWrapper = OsuWrapper(OsuDao(driverManager))
 
