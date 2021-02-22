@@ -71,12 +71,12 @@ class TwitterService(
         for (i in 0 until arrSize) {
             val tweetData = arr.getObject(i)
 
-
-            list.add(
-                TweetInfo(
-
-                )
-            )
+//
+//            list.add(
+//                TweetInfo(
+//
+//                )
+//            )
         }
         return list
     }
