@@ -29,7 +29,9 @@ class GainProfileDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
             val map = mutableMapOf<String, GainProfile>()
 
             while (rs.next()) {
-                map[rs.getString("name")] = GainProfile.fromString(rs.getString("profile"))
+                map[rs.getString("name")] = GainProfile.fromString(
+                    rs.getString("profile").removeSurrounding("{", "}")
+                )
             }
 
             it.resume(map)
