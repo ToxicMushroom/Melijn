@@ -12,7 +12,7 @@ abstract class Service(
     val name: String,
     protected val period: Long,
     private val initialDelay: Long = 0,
-    private val unit: TimeUnit = TimeUnit.SECONDS
+    val unit: TimeUnit = TimeUnit.SECONDS
 ) {
 
     companion object {

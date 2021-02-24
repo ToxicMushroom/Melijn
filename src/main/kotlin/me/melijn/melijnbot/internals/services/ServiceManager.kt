@@ -15,6 +15,7 @@ import me.melijn.melijnbot.internals.services.reminders.ReminderService
 import me.melijn.melijnbot.internals.services.rockpaperscissors.RSPService
 import me.melijn.melijnbot.internals.services.roles.RolesService
 import me.melijn.melijnbot.internals.services.stats.StatsService
+import me.melijn.melijnbot.internals.services.twitter.TwitterService
 import me.melijn.melijnbot.internals.services.voice.VoiceScoutService
 import me.melijn.melijnbot.internals.services.voice.VoiceService
 import me.melijn.melijnbot.internals.services.votes.VoteReminderService
@@ -51,7 +52,14 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         services.add(RedditService(webManager.httpClient, daoManager.driverManager))
         services.add(RedditAboutService(webManager.httpClient, daoManager.driverManager))
         services.add(PPExpireService(daoManager.autoPunishmentWrapper))
-        //services.add(TwitterService(webManager.httpClient))
+        slowServices.add(
+            TwitterService(
+                webManager.proxiedHttpClient,
+                container.settings.api.twitter.bearerToken,
+                daoManager.twitterWrapper,
+                shardManager
+            )
+        )
         services.add(RSPService(shardManager, daoManager))
     }
 

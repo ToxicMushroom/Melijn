@@ -39,7 +39,8 @@ data class Settings(
         val jikan: Jikan,
         val spotify: Spotify,
         val imgHoard: ImgHoard,
-        val sauceNao: SauceNao
+        val sauceNao: SauceNao,
+        val twitter: Twitter
     ) {
 
         data class Spotify(
@@ -60,6 +61,12 @@ data class Settings(
 
         data class SauceNao(
             var token: String
+        )
+
+        data class Twitter(
+            var key: String,
+            var secretKey: String,
+            var bearerToken: String,
         )
     }
 
@@ -177,6 +184,11 @@ data class Settings(
                     ),
                     Api.SauceNao(
                         get("api.saucenao.token")
+                    ),
+                    Api.Twitter(
+                        get("api.twitter.key"),
+                        get("api.twitter.secretkey"),
+                        get("api.twitter.bearertoken"),
                     )
                 ),
                 Proxy(

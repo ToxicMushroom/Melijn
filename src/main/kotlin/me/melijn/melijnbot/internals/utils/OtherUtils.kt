@@ -13,6 +13,8 @@ import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.utils.data.DataArray
+import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -530,4 +532,12 @@ fun String.replace(oldValue: String, newValue: Int): String {
 
 fun String.replace(oldValue: String, newValue: Long): String {
     return this.replace(oldValue, "$newValue")
+}
+
+operator fun DataObject.set(key: String, value: Any) = this.put(key, value)
+fun DataObject.getObjectN(key: String): DataObject? {
+    return if (this.hasKey(key)) getObject(key) else null
+}
+fun DataObject.getArrayN(key: String): DataArray? {
+    return if (this.hasKey(key)) getArray(key) else null
 }
