@@ -252,7 +252,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             .setAuthor(author?.asTag ?: "deleted_user#0000", null, author?.effectiveAvatarUrl)
         if (ogMessage.embeds.size > 0) {
             val embed = ogMessage.embeds[0]
-            eb.setTitle(embed.title, embed.url)
+            eb.setTitle(embed.title, ogMessage.jumpUrl)
                 .setDescription(embed.description)
                 .setColor(embed.color)
                 .setImage(embed.image?.url)
