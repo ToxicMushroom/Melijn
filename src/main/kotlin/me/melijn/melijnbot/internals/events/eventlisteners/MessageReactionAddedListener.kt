@@ -249,10 +249,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             container.daoManager, event.guild.idLong, author?.idLong
                 ?: -1
         )
-            .setAuthor(author?.asTag ?: "deleted_user#0000", null, author?.effectiveAvatarUrl)
+            .setAuthor(author?.asTag ?: "deleted_user#0000", ogMessage.jumpUrl, author?.effectiveAvatarUrl)
         if (ogMessage.embeds.size > 0) {
             val embed = ogMessage.embeds[0]
-            eb.setTitle(embed.title, ogMessage.jumpUrl)
+            eb.setTitle(embed.title, embed.url)
                 .setDescription(embed.description)
                 .setColor(embed.color)
                 .setImage(embed.image?.url)
