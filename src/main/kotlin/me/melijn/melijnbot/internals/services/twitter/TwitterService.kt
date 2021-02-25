@@ -26,14 +26,18 @@ class TwitterService(
     private val twitterToken: String,
     private val twitterWrapper: TwitterWrapper,
     val shardManager: ShardManager
-) : Service("Twitter", 25, 5, TimeUnit.SECONDS) {
+) : Service("Twitter", 5, 1, TimeUnit.MINUTES) {
 
     override val service: RunnableTask = RunnableTask {
         val twitterWebhooks = twitterWrapper.getAll()
         val size = twitterWebhooks.size.toDouble()
         val delay = TimeUnit.MILLISECONDS.convert(floor(period / size).toLong(), unit)
 
+        val map = mutableMapOf<Long, Int>()
         for (twitterWebhook in twitterWebhooks) {
+            map[twitterWebhook.guildId] = map.getOrDefault(twitterWebhook.guildId, 0) + 1
+            if ((map[twitterWebhook.guildId] ?: 0) > 3) return@RunnableTask // current mitigations
+            if (twitterWebhook.monthlyTweetCount > 200) return@RunnableTask
             val tweets = fetchNewTweets(twitterWebhook) ?: continue
             postNewTweets(twitterWebhook, tweets)
             updateTwitterWebhookInfo(twitterWebhook, tweets)
