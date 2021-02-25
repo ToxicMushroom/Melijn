@@ -112,7 +112,7 @@ class PokerCommand : AbstractCommand("command.poker") {
             )
 
             context.container.eventWaiter.waitFor(MessageReceivedEvent::class.java, { event ->
-                event.message.contentRaw == "${context.prefix}draw" &&
+                event.message.contentRaw == "${context.usedPrefix}draw" &&
                     ongoingPoker.any { it.userId == event.author.idLong && it.channelId == event.channel.idLong }
             }, func@{ event ->
                 val pokerGame = ongoingPoker.first { it.userId == event.author.idLong }
