@@ -19,6 +19,17 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
+import kotlin.collections.List
+import kotlin.collections.Set
+import kotlin.collections.first
+import kotlin.collections.firstOrNull
+import kotlin.collections.isNotEmpty
+import kotlin.collections.mutableListOf
+import kotlin.collections.mutableMapOf
+import kotlin.collections.reversed
+import kotlin.collections.set
+import kotlin.collections.setOf
+import kotlin.collections.sortedBy
 import kotlin.math.floor
 
 class TwitterService(
@@ -36,8 +47,8 @@ class TwitterService(
         val map = mutableMapOf<Long, Int>()
         for (twitterWebhook in twitterWebhooks) {
             map[twitterWebhook.guildId] = map.getOrDefault(twitterWebhook.guildId, 0) + 1
-            if ((map[twitterWebhook.guildId] ?: 0) > 3) return@RunnableTask // current mitigations
-            if (twitterWebhook.monthlyTweetCount > 200) return@RunnableTask
+            if ((map[twitterWebhook.guildId] ?: 0) > 3) continue // current mitigations
+            if (twitterWebhook.monthlyTweetCount > 200) continue
             val tweets = fetchNewTweets(twitterWebhook) ?: continue
             postNewTweets(twitterWebhook, tweets)
             updateTwitterWebhookInfo(twitterWebhook, tweets)
