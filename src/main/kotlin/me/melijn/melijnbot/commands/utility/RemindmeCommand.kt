@@ -12,9 +12,11 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class RemindmeCommand : AbstractCommand("command.remindme") {
 
-    private val REMINDER_LIMIT = 5
-    private val PREMIUM_REMINDER_LIMIT = 40
-    private val REMINDER_LIMIT_PATH = "premium.feature.reminders.limit"
+    companion object {
+        private const val REMINDER_LIMIT = 5
+        private const val PREMIUM_REMINDER_LIMIT = 40
+        private const val REMINDER_LIMIT_PATH = "premium.feature.reminders.limit"
+    }
 
     init {
         id = 226
@@ -103,7 +105,7 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
             sendRsp(context, "Please use brain to remind you of thing under 10 seconds.")
             return
         }
-        val duraionMillis = duration * 1000
+        val durationMillis = duration * 1000
 
         context.initCooldown()
 
@@ -113,8 +115,8 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
 
         if (reminders.size > REMINDER_LIMIT && !isPremiumUser(context)) {
             val replaceMap = mapOf(
-                Pair("limit", "$REMINDER_LIMIT"),
-                Pair("premiumLimit", "$PREMIUM_REMINDER_LIMIT")
+                "limit" to "$REMINDER_LIMIT",
+                "premiumLimit" to "$PREMIUM_REMINDER_LIMIT"
             )
 
             sendFeatureRequiresGuildPremiumMessage(context, REMINDER_LIMIT_PATH, replaceMap)
@@ -126,12 +128,12 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
             return
         }
 
-        reminderWrapper.add(Reminder(context.authorId, System.currentTimeMillis() + duraionMillis, reason))
+        reminderWrapper.add(Reminder(context.authorId, System.currentTimeMillis() + durationMillis, reason))
 
         val msg = "Reminder added, will remind you at **%time%** about `%thing%`"
             .withSafeVariable(
                 "time",
-                (System.currentTimeMillis() + duraionMillis).asEpochMillisToDateTime(context.getTimeZoneId())
+                (System.currentTimeMillis() + durationMillis).asEpochMillisToDateTime(context.getTimeZoneId())
             )
             .withSafeVariable("thing", reason)
         sendRsp(context, msg)
