@@ -8,11 +8,11 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.isPositiveNumber
-import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
-import me.melijn.melijnbot.internals.utils.message.sendEmbedRspAwaitEL
-import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.isPremiumUser
+import me.melijn.melijnbot.internals.utils.message.*
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 class TwitterCommand : AbstractCommand("command.twitter") {
@@ -28,6 +28,12 @@ class TwitterCommand : AbstractCommand("command.twitter") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
+    companion object {
+        private const val TWITTER_LIMIT = 1
+        private const val PREMIUM_TWITTER_LIMIT = 5
+        private const val TWITTER_LIMIT_PATH = "premium.feature.twitter.limit"
+    }
+
     class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
 
         init {
@@ -36,7 +42,19 @@ class TwitterCommand : AbstractCommand("command.twitter") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            sendRsp(context, "not implemented")
+            val twitterWrapper = context.daoManager.twitterWrapper
+            val list = twitterWrapper.getAll(context.guildId)
+            if (list.isEmpty()) {
+                sendRsp(context, "You don't track any twitter users")
+                return
+            }
+
+            val index = (getIntegerFromArgNMessage(context, 0, 1, list.size) ?: return) - 1
+            val toRemove = list[index]
+            twitterWrapper.delete(context.guildId, toRemove.handle)
+
+            val msg = "Removed tracking `" + toRemove.handle + "`"
+            sendRsp(context, msg)
         }
     }
 
@@ -71,6 +89,22 @@ class TwitterCommand : AbstractCommand("command.twitter") {
         }
 
         override suspend fun execute(context: ICommandContext) {
+            val twitters = context.daoManager.twitterWrapper.getAll(context.guildId)
+            if (twitters.size > TWITTER_LIMIT && !isPremiumUser(context)) {
+                val replaceMap = mapOf(
+                    "limit" to "$TWITTER_LIMIT",
+                    "premiumLimit" to "$PREMIUM_TWITTER_LIMIT"
+                )
+
+                sendFeatureRequiresGuildPremiumMessage(context, TWITTER_LIMIT_PATH, replaceMap)
+                return
+            } else if (twitters.size >= PREMIUM_TWITTER_LIMIT) {
+                val msg = context.getTranslation("$root.limit.total")
+                    .withVariable("limit", "$PREMIUM_TWITTER_LIMIT")
+                sendRsp(context, msg)
+                return
+            }
+
             val eb = Embedder(context)
                 .setDescription("Whose twitter feed do you wanna track? Example: `@PixelHamster`")
             sendEmbedRspAwaitEL(context, eb.build())

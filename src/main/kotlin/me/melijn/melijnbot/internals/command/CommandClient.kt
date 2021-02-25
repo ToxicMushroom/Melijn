@@ -461,16 +461,16 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             .trim()
         val modularMessage = replaceVariablesInCCMessage(member, rawArg, cc)
 
-        val message: Message? = modularMessage.toMessage()
+        val rsp: Message? = modularMessage.toMessage()
         when {
-            message == null -> sendAttachmentsAwaitN(channel, httpClient, modularMessage.attachments)
+            rsp == null -> sendAttachmentsAwaitN(channel, httpClient, modularMessage.attachments)
             modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(
                 channel,
                 httpClient,
-                message,
+                rsp,
                 modularMessage.attachments
             )
-            else -> sendMsgAwaitN(channel, message)
+            else -> sendMsgAwaitN(channel, rsp)
         }
     }
 

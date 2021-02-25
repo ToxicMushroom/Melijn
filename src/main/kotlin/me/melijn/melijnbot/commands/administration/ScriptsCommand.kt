@@ -5,11 +5,10 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
-import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
-import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresGuildPremiumMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.withSafeVariable
 
 class ScriptsCommand : AbstractCommand("command.scripts") {
 
@@ -29,6 +28,14 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
         val argRegex = "%arg(\\d+)%".toRegex()
         val lineArgRegex = "%line(\\d+)%".toRegex()
         val scriptArgRegex = "%line(\\d+)arg(\\d+)%".toRegex()
+        private const val SCRIPTS_LIMIT = 5
+        private const val PREMIUM_SCRIPTS_LIMIT = 25
+        private const val CMD_PER_SCRIPT_LIMIT = 4
+        private const val PREMIUM_CMD_PER_SCRIPT_LIMIT = 10
+        private const val SCRIPT_PER_CMD_COOLDOWN = 1000
+        private const val PREMIUM_SCRIPT_PER_CMD_COOLDOWN = 500
+
+        private const val SCRIPTS_LIMIT_PATH = "premium.feature.scripts.limit"
     }
 
     override suspend fun execute(context: ICommandContext) {
@@ -82,6 +89,22 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
         override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
+                return
+            }
+
+            val scripts = context.daoManager.scriptWrapper.getScripts(context.guildId)
+            if (scripts.size > SCRIPTS_LIMIT && !isPremiumUser(context)) {
+                val replaceMap = mapOf(
+                    "limit" to "$SCRIPTS_LIMIT",
+                    "premiumLimit" to "$PREMIUM_SCRIPTS_LIMIT"
+                )
+
+                sendFeatureRequiresGuildPremiumMessage(context, SCRIPTS_LIMIT_PATH, replaceMap)
+                return
+            } else if (scripts.size >= PREMIUM_SCRIPTS_LIMIT) {
+                val msg = context.getTranslation("$root.limit.total")
+                    .withVariable("limit", "$PREMIUM_SCRIPTS_LIMIT")
+                sendRsp(context, msg)
                 return
             }
 
