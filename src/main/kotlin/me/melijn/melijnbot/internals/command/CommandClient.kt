@@ -43,6 +43,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
         }
         container.commandMap = commandList.map { it.id to it }.toMap()
+        container.commandSet = commandList
     }
 
 
