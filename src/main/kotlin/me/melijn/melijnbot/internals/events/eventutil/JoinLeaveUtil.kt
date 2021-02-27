@@ -46,7 +46,7 @@ object JoinLeaveUtil {
     ) {
         val guildId = guild.idLong
 
-        val channel =
+        var channel =
             guild.getAndVerifyChannelByType(daoManager, channelType, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ)
                 ?: return
 
@@ -57,6 +57,10 @@ object JoinLeaveUtil {
         modularMessage = replaceVariablesInWelcomeMessage(guild, user, modularMessage)
 
         val message: Message? = modularMessage.toMessage()
+        if (message?.embeds?.isNotEmpty() == true) {
+            channel = guild.getAndVerifyChannelByType(daoManager, channelType, Permission.MESSAGE_EMBED_LINKS) ?: return
+        }
+
         when {
             message == null -> sendAttachments(channel, httpClient, modularMessage.attachments)
             modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(
