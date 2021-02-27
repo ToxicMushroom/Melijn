@@ -19,17 +19,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
-import kotlin.collections.List
-import kotlin.collections.Set
-import kotlin.collections.first
-import kotlin.collections.firstOrNull
-import kotlin.collections.isNotEmpty
-import kotlin.collections.mutableListOf
-import kotlin.collections.mutableMapOf
-import kotlin.collections.reversed
 import kotlin.collections.set
-import kotlin.collections.setOf
-import kotlin.collections.sortedBy
 import kotlin.math.floor
 
 class TwitterService(
@@ -114,9 +104,14 @@ class TwitterService(
             embeds.add(embed)
             body["embeds"] = embeds
 
-            httpClient.post<HttpResponse>(twitterWebhook.webhookUrl) {
-                this.body = body.toString()
-                header("content-type", "application/json")
+            try {
+                httpClient.post<HttpResponse>(twitterWebhook.webhookUrl) {
+                    this.body = body.toString()
+                    header("content-type", "application/json")
+                }
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                return
             }
         }
     }
@@ -136,7 +131,10 @@ class TwitterService(
             if (twitterWebhook.lastTweetId != 0L)
                 parameter("since_id", twitterWebhook.lastTweetId)
             parameter("max_results", 5)
-            parameter("expansions", "author_id,entities.mentions.username,attachments.media_keys,referenced_tweets.id")
+            parameter(
+                "expansions",
+                "author_id,entities.mentions.username,attachments.media_keys,referenced_tweets.id"
+            )
             parameter("tweet.fields", "created_at")
             parameter("media.fields", "preview_image_url,type,url")
             parameter("user.fields", "profile_image_url,username")
@@ -223,6 +221,7 @@ class TwitterService(
                     when (referenceType) {
                         "retweeted" -> TweetInfo.TweetType.RETWEET
                         "quoted" -> TweetInfo.TweetType.QUOTED
+                        "replied_to" -> TweetInfo.TweetType.REPLY
                         else -> {
                             logger.warn("$referenceType is an unimplemented twitter reference type")
                             return null
@@ -232,7 +231,7 @@ class TwitterService(
                 else -> TweetInfo.TweetType.POST
             }
 
-            val contentType =  if (text.matches(twitterDotCoRegex)) {
+            val contentType = if (text.matches(twitterDotCoRegex)) {
                 TweetInfo.TweetContentType.MEDIA
             } else {
                 if (media.isNotEmpty()) TweetInfo.TweetContentType.TEXT_MEDIA
@@ -303,7 +302,8 @@ data class TweetInfo(
             TweetContentType.MEDIA,
             TweetContentType.TEXT_MEDIA
         ),
-        val enabled: Boolean = true) {
+        val enabled: Boolean = true
+    ) {
         POST(0),
         REPLY(1),
         POLL(2),
