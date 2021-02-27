@@ -4,7 +4,6 @@ import me.melijn.melijnbot.database.scripts.Script
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresGuildPremiumMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -20,7 +19,6 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
             RemoveArg(root),
             ListArg(root)
         )
-        runConditions = arrayOf(RunCondition.GUILD_SUPPORTER)
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
@@ -32,8 +30,8 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
         private const val PREMIUM_SCRIPTS_LIMIT = 25
         private const val CMD_PER_SCRIPT_LIMIT = 4
         private const val PREMIUM_CMD_PER_SCRIPT_LIMIT = 10
-        private const val SCRIPT_PER_CMD_COOLDOWN = 1000
-        private const val PREMIUM_SCRIPT_PER_CMD_COOLDOWN = 500
+//        private const val SCRIPT_PER_CMD_COOLDOWN = 1000
+//        private const val PREMIUM_SCRIPT_PER_CMD_COOLDOWN = 500
 
         private const val SCRIPTS_LIMIT_PATH = "premium.feature.scripts.limit"
     }
@@ -110,7 +108,10 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
 
             val trigger = getStringFromArgsNMessage(context, 0, 1, 128) ?: return
             val scriptBody = mutableMapOf<Int, Pair<String, List<String>>>()
-            for ((index, arg) in context.args.drop(1).withIndex()) {
+
+            val isPremium = isPremiumGuild(context)
+            val correctLimit = if (isPremium) PREMIUM_CMD_PER_SCRIPT_LIMIT else CMD_PER_SCRIPT_LIMIT
+            for ((index, arg) in context.args.drop(1).withIndex().take(correctLimit)) {
                 val parts = arg.split(SPACE_PATTERN)
                 val scriptArgs = mutableListOf<String>()
                 var command = ""
