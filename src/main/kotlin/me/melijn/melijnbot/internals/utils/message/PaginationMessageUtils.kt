@@ -7,6 +7,7 @@ import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.ModularPaginationInfo
 import me.melijn.melijnbot.internals.utils.PaginationInfo
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
@@ -70,7 +71,7 @@ suspend fun sendPaginationModularMsg(context: ICommandContext, msgList: List<Mod
 }
 
 
-fun registerPaginationModularMessage(
+suspend fun registerPaginationModularMessage(
     textChannel: TextChannel,
     authorId: Long,
     message: Message,
@@ -89,7 +90,7 @@ fun registerPaginationModularMessage(
     addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun registerPaginationModularMessage(
+suspend fun registerPaginationModularMessage(
     privateChannel: PrivateChannel,
     authorId: Long,
     message: Message,
@@ -108,7 +109,7 @@ fun registerPaginationModularMessage(
     addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun registerPaginationMessage(
+suspend fun registerPaginationMessage(
     textChannel: TextChannel,
     authorId: Long,
     message: Message,
@@ -127,7 +128,7 @@ fun registerPaginationMessage(
     addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun registerPaginationMessage(
+suspend fun registerPaginationMessage(
     privateChannel: PrivateChannel,
     authorId: Long,
     message: Message,
@@ -146,7 +147,19 @@ fun registerPaginationMessage(
     addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun addPaginationEmotes(message: Message, morePages: Boolean) {
+suspend fun addPaginationEmotes(message: Message, morePages: Boolean) {
+    if (message.isFromGuild) {
+        if (!message.guild.selfMember.hasPermission(message.textChannel, Permission.MESSAGE_HISTORY)) {
+            sendMelijnMissingChannelPermissionMessage(
+                message.textChannel,
+                "en",
+                Container.instance.daoManager,
+                listOf(Permission.MESSAGE_HISTORY)
+            )
+            return
+        }
+    }
+
     if (morePages) message.addReaction("⏪").queue()
     message.addReaction("◀️").queue()
     message.addReaction("▶️").queue()
