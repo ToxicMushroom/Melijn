@@ -18,10 +18,8 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.SC_SELECTOR
 import me.melijn.melijnbot.internals.translation.YT_SELECTOR
 import me.melijn.melijnbot.internals.utils.*
-import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
-import me.melijn.melijnbot.internals.utils.message.sendEmbedRspAwaitEL
-import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendRspAwaitEL
+import me.melijn.melijnbot.internals.utils.message.*
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.VoiceChannel
@@ -477,6 +475,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         for ((index, track) in tracks.withIndex()) {
             track.userData = TrackUserData(context.author)
             tracks[index] = track
+        }
+
+        if (!context.selfMember.hasPermission(context.textChannel, Permission.MESSAGE_HISTORY)) {
+            sendMelijnMissingChannelPermissionMessage(context, listOf(Permission.MESSAGE_HISTORY))
+            return
         }
 
         TaskManager.async(context) {
