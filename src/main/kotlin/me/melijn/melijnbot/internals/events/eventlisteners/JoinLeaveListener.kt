@@ -167,7 +167,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
                 event.guild,
                 user,
                 ChannelType.PRE_VERIFICATION_LEAVE,
-                MessageType.PRE_VERIFICATION_LEAVE_MESSAGE
+                MessageType.PRE_VERIFICATION_LEAVE
             )
         }
     }

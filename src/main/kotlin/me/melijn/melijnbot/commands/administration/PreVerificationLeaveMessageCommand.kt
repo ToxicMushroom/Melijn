@@ -13,11 +13,11 @@ class PreVerificationLeaveMessageCommand : AbstractCommand("command.preverificat
         name = "preVerificationLeaveMessage"
         aliases = arrayOf("pvlm")
         children = arrayOf(
-            LeaveMessageCommand.SetContentArg(root, MessageType.PRE_VERIFICATION_LEAVE_MESSAGE),
-            LeaveMessageCommand.EmbedArg(root, MessageType.PRE_VERIFICATION_LEAVE_MESSAGE),
-            LeaveMessageCommand.AttachmentsArg(root, MessageType.PRE_VERIFICATION_LEAVE_MESSAGE),
-            LeaveMessageCommand.ViewArg(root, MessageType.PRE_VERIFICATION_LEAVE_MESSAGE),
-            LeaveMessageCommand.SetPingableArg(root, MessageType.PRE_VERIFICATION_LEAVE_MESSAGE)
+            LeaveMessageCommand.SetContentArg(root, MessageType.PRE_VERIFICATION_LEAVE),
+            LeaveMessageCommand.EmbedArg(root, MessageType.PRE_VERIFICATION_LEAVE),
+            LeaveMessageCommand.AttachmentsArg(root, MessageType.PRE_VERIFICATION_LEAVE),
+            LeaveMessageCommand.ViewArg(root, MessageType.PRE_VERIFICATION_LEAVE),
+            LeaveMessageCommand.SetPingableArg(root, MessageType.PRE_VERIFICATION_LEAVE)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }

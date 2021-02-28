@@ -13,11 +13,11 @@ class PreVerificationJoinMessageCommand : AbstractCommand("command.preverificati
         name = "preVerificationJoinMessage"
         aliases = arrayOf("pvjm")
         children = arrayOf(
-            LeaveMessageCommand.SetContentArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE),
-            LeaveMessageCommand.EmbedArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE),
-            LeaveMessageCommand.AttachmentsArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE),
-            LeaveMessageCommand.ViewArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE),
-            LeaveMessageCommand.SetPingableArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE)
+            LeaveMessageCommand.SetContentArg(root, MessageType.PRE_VERIFICATION_JOIN),
+            LeaveMessageCommand.EmbedArg(root, MessageType.PRE_VERIFICATION_JOIN),
+            LeaveMessageCommand.AttachmentsArg(root, MessageType.PRE_VERIFICATION_JOIN),
+            LeaveMessageCommand.ViewArg(root, MessageType.PRE_VERIFICATION_JOIN),
+            LeaveMessageCommand.SetPingableArg(root, MessageType.PRE_VERIFICATION_JOIN)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }

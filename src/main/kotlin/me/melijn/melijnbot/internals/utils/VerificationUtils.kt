@@ -123,7 +123,7 @@ object VerificationUtils {
             httpClient,
             member,
             ChannelType.PRE_VERIFICATION_JOIN,
-            MessageType.PRE_VERIFICATION_JOIN_MESSAGE
+            MessageType.PRE_VERIFICATION_JOIN
         )
 
         val role = guild.getAndVerifyRoleByType(daoManager, RoleType.UNVERIFIED, true) ?: return
