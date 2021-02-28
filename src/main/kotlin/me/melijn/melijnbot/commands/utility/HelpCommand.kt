@@ -279,14 +279,21 @@ class HelpCommand : AbstractCommand("command.help") {
             }
         }
 
-        if (command.children.isNotEmpty())
-            embedder.addField("SubCommands", command.children.joinToString("\n") {
+        if (command.children.isNotEmpty()) {
+
+            val parts = StringUtils.splitMessage(command.children.joinToString("\n") {
                 val subDesc = runBlocking { context.getTranslation(it.description) }
                 " 🔹 **$name ${it.name}** - $subDesc"
-            }, false)
-
+            }, splitAtLeast = 750, maxLength = 1024)
+            for ((index, part) in parts.withIndex()) {
+                embedder.addField(
+                    (if (index > 0) "More " else "") + "SubCommands",
+                    part,
+                    false
+                )
+            }
+        }
         embedder.setFooter("$cmdCategory: " + parent.commandCategory.toUCC())
-
         sendEmbedRsp(context, embedder.build())
     }
 
