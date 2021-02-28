@@ -1,5 +1,6 @@
-package me.melijn.melijnbot.commands.utility
+package me.melijn.melijnbot.commands.administration
 
+import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -20,8 +21,7 @@ class ChangeNameCommand : AbstractCommand("command.changename") {
         name = "changeName"
         aliases = arrayOf("nickname", "nick")
         discordPermissions = arrayOf(Permission.NICKNAME_MANAGE)
-        permissionRequired = true
-        commandCategory = CommandCategory.UTILITY
+        commandCategory = CommandCategory.ADMINISTRATION
     }
 
     override suspend fun execute(context: ICommandContext) {
@@ -34,7 +34,7 @@ class ChangeNameCommand : AbstractCommand("command.changename") {
             context.member
         } else {
             val other = retrieveMemberByArgsNMessage(context, 0, true) ?: return
-            val otherPerm = "changename.other"
+            val otherPerm = SpecialPermission.CHANGENAME_OTHER.node
             if (!hasPermission(context, otherPerm, true)) {
                 sendMissingPermissionMessage(context, otherPerm)
                 return
