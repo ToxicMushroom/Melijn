@@ -209,6 +209,16 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 for (script in scripts) {
                     val triggerParts = script.trigger.split(SPACE_REGEX)
                     if (!eventIsForScript(triggerParts, commandParts, prefix)) continue
+                    val cooldownSize = script.commands.size + 1
+                    if (daoManager.scriptCooldownWrapper.isOnCooldown(guildId, script.trigger)) {
+                        sendRsp(
+                            event.textChannel,
+                            daoManager,
+                            "`${script.trigger}` is on cooldown for **<${cooldownSize}s**"
+                        )
+                        return
+                    }
+                    daoManager.scriptCooldownWrapper.addCooldown(guildId, script.trigger, cooldownSize)
                     runScript(event, script, triggerParts, prefix)
                     return
                 }

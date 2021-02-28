@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.objectMapper
 
-class ScriptWrapper(val scriptDao: ScriptDao) {
+class ScriptWrapper(private val scriptDao: ScriptDao) {
 
     fun addScript(entityId: Long, script: Script) {
         scriptDao.removeCacheEntry(entityId)

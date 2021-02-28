@@ -17,6 +17,7 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
+import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -308,10 +309,13 @@ class DriverManager(
     }
 
     // ttl: minutes
-    fun setCacheEntry(key: String, value: String, ttlM: Int? = null) {
+    fun setCacheEntry(key: String, value: String, ttl: Int? = null, ttlUnit: TimeUnit = TimeUnit.MINUTES) {
         val async = getOpenRedisConnection() ?: return
-        if (ttlM == null) async.set(key, value)
-        else async.set(key, value, SetArgs().ex(ttlM * 60L))
+        if (ttl == null) async.set(key, value)
+        else {
+            val ttlSeconds = ttlUnit.convert(ttl.toLong(), TimeUnit.SECONDS)
+            async.set(key, value, SetArgs().ex(ttlSeconds))
+        }
     }
 
     fun setCacheEntryWithArgs(key: String, value: String, args: SetArgs? = null) {
