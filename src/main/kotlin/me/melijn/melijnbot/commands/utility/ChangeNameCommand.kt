@@ -3,9 +3,11 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
@@ -31,8 +33,15 @@ class ChangeNameCommand : AbstractCommand("command.changename") {
         val member: Member = if (context.args.size == 1) {
             context.member
         } else {
-            retrieveMemberByArgsNMessage(context, 0) ?: return
+            val other = retrieveMemberByArgsNMessage(context, 0, true) ?: return
+            val otherPerm = "changename.other"
+            if (!hasPermission(context, otherPerm, true)) {
+                sendMissingPermissionMessage(context, otherPerm)
+                return
+            }
+            other
         }
+
         if (!context.selfMember.canInteract(member)) {
             val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
                 .withSafeVariable(PLACEHOLDER_USER, member.asTag)

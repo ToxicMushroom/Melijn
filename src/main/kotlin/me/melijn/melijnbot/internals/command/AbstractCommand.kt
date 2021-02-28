@@ -292,13 +292,16 @@ fun getStateFromMap(
 }
 
 
-suspend fun hasPermission(context: ICommandContext, permission: String, required: Boolean = false): Boolean {
+suspend fun hasPermission(context: ICommandContext, permission: String, required: Boolean? = null): Boolean {
+    val commandOrder = context.commandOrder
+    val rootCommand = commandOrder.first()
+    val lowestCommand = commandOrder.last()
     return hasPermission(
         context.container,
         context.message,
         permission,
-        context.commandOrder.first().commandCategory,
-        required
+        rootCommand.commandCategory,
+        required ?: (rootCommand.permissionRequired || lowestCommand.permissionRequired)
     )
 }
 
