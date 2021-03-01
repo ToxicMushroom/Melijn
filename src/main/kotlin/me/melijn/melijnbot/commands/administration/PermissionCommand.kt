@@ -395,7 +395,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val wrapper = context.daoManager.channelRolePermissionWrapper
                     val map = wrapper.getPermMap(channel.idLong, role.idLong)
 
-                    var content = "```INI"
+                    var content = "\n```INI"
                     var index = 1
                     for ((perm, state) in map) {
                         if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
@@ -533,7 +533,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val wrapper = context.daoManager.channelUserPermissionWrapper
                     val map = wrapper.getPermMap(channel.idLong, user.idLong)
 
-                    var content = "```INI"
+                    var content = "\n```INI"
 
                     var index = 1
                     for ((perm, state) in map) {
