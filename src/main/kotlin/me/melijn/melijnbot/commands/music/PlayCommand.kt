@@ -59,8 +59,8 @@ class PlayCommand : AbstractCommand("command.play") {
                 songArg.startsWith("<https://") || songArg.startsWith("<http://"))
         ) {
             songArg = songArg.removeSurrounding("<", ">")
-            if (!hasPermission(context, "$root.url")) {
-                sendMissingPermissionMessage(context, "$root.url")
+            if (!hasPermission(context, "play.url")) {
+                sendMissingPermissionMessage(context, "play.url")
                 return
             }
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(
@@ -75,8 +75,8 @@ class PlayCommand : AbstractCommand("command.play") {
                 context.audioLoader.loadNewTrackNMessage(context, songArg, true, songPosition)
             }
         } else if (songArg.isNotBlank()) {
-            if (!hasPermission(context, "$root.yt")) {
-                sendMissingPermissionMessage(context, "$root.yt")
+            if (!hasPermission(context, "play.yt")) {
+                sendMissingPermissionMessage(context, "play.yt")
                 return
             }
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(
@@ -93,8 +93,8 @@ class PlayCommand : AbstractCommand("command.play") {
             }
         } else {
             val tracks = context.message.attachments.map { attachment -> attachment.url }
-            if (!hasPermission(context, "$root.attachment")) {
-                sendMissingPermissionMessage(context, "$root.attachment")
+            if (!hasPermission(context, "play.attachment")) {
+                sendMissingPermissionMessage(context, "play.attachment")
                 return
             }
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(
