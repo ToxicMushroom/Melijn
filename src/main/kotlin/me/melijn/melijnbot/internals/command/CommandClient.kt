@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.internals.command
 
 import io.ktor.client.*
+import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.administration.ScriptsCommand
 import me.melijn.melijnbot.database.DaoManager
@@ -331,6 +332,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         }
                         lineArgMap[lineIndex]?.get(argIndex)?.let { it1 -> filledArgs.add(it1) }
                     }
+                    else -> filledArgs.add(it)
                 }
             }
             if (missingArg != -1 || missingLine != -1 || missingLineArg.first != -1) {
@@ -395,6 +397,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 contentRaw = ">" + invoke + filledArgs.joinToString(" ", " ")
             )
             finalCommand.run(scriptCmd)
+            delay(1000)
         }
     }
 
