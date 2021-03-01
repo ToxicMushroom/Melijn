@@ -100,11 +100,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         for (prefix in prefixes) {
             if (!message.contentRaw.startsWith(prefix, true)) continue
 
+            val noPrefixContent = message.contentRaw
+                .removeFirst(prefix, ignoreCase = true)
+                .trimEnd()
             val commandParts: ArrayList<String> = ArrayList(
-                message.contentRaw
-                    .removeFirst(prefix, ignoreCase = true)
-                    .trimEnd()
-                    .split(SPACE_PATTERN)
+                noPrefixContent.split(SPACE_PATTERN)
             )
 
             // Validate command parts (Checks if we have enough info to actually call any command)
@@ -122,25 +122,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
 
             // CC Finder
-            for (cc in ccsWithPrefix) {
-                val aliases = cc.aliases
-                if (cc.name.equals(commandParts[1], true)) {
-
-                    ccsWithPrefixMatches.add(cc)
-                } else if (aliases != null) {
-                    for (alias in aliases) {
-                        val aliasParts = alias.split(SPACE_PATTERN)
-                        if (alias.count() < commandParts.size) {
-                            val matches = aliasParts.withIndex().all { commandParts[it.index + 1] == it.value }
-                            if (!matches) continue
-                            val spaceCount = aliasParts.size - 1
-
-                            spaceMap["cc.${cc.id}"] = spaceCount
-                            ccsWithPrefixMatches.add(cc)
-                        } else continue
-                    }
-                }
-            }
+            findCustomCommands(ccsWithPrefix, commandParts, true, spaceMap, ccsWithPrefixMatches)
 
             var command = commandMap[commandParts[1].toLowerCase()]
             val aliasesMap = mutableMapOf<String, List<String>>()
@@ -243,18 +225,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     .split(SPACE_PATTERN)
             )
 
-            for (cc in ccsWithoutPrefix) {
-                val aliases = cc.aliases
-                if (prefixLessCommandParts[0].equals(cc.name, true)) {
-                    ccsWithoutPrefixMatches.add(cc)
-                } else if (aliases != null) {
-                    for (alias in aliases) {
-                        if (alias.equals(prefixLessCommandParts[0], true)) {
-                            ccsWithoutPrefixMatches.add(cc)
-                        }
-                    }
-                }
-            }
+            findCustomCommands(ccsWithoutPrefix, prefixLessCommandParts, false, spaceMap, ccsWithoutPrefixMatches)
 
             if (ccsWithoutPrefixMatches.isNotEmpty()) {
                 runCustomCommandByChance(
@@ -265,6 +236,41 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     false
                 )
                 return
+            }
+        }
+    }
+
+    private inline fun findCustomCommands(
+        customCommands: List<CustomCommand>,
+        cmdParts: List<String>,
+        prefix: Boolean,
+        spaceMap: MutableMap<String, Int>,
+        ccMatches: MutableList<CustomCommand>
+    ) {
+        for (cc in customCommands) {
+            val aliases = cc.aliases
+            val ccNameParts = cc.name.split(SPACE_REGEX)
+            val offset = if (prefix) 1 else 0
+            if (ccNameParts.size <= (cmdParts.size - offset)) {
+                val matches = ccNameParts.withIndex().all { cmdParts[it.index + offset] == it.value }
+                if (matches) {
+                    val spaceCount = ccNameParts.size - 1
+                    spaceMap["cc.${cc.id}"] = spaceCount
+                    ccMatches.add(cc)
+                }
+            }
+            if (aliases != null) {
+                for (alias in aliases) {
+                    val aliasParts = alias.split(SPACE_PATTERN)
+                    if (aliasParts.size <= (cmdParts.size - offset)) {
+                        val matches = aliasParts.withIndex().all { cmdParts[it.index + offset] == it.value }
+                        if (!matches) continue
+                        val spaceCount = aliasParts.size - 1
+
+                        spaceMap["cc.${cc.id}"] = spaceCount
+                        ccMatches.add(cc)
+                    } else continue
+                }
             }
         }
     }
