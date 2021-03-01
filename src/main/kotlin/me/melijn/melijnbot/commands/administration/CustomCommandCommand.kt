@@ -189,7 +189,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
 
             val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
-            var content = context.rawArg.removeFirst(name).trim()
+            var content = context.fullArg.removeFirst(name).trim()
             if (content.isBlank()) content = "empty"
 
             val cc = CustomCommand(0, name, ModularMessage(content))
