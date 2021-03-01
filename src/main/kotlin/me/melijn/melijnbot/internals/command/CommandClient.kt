@@ -186,7 +186,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     )
                 )
                 return
-            } else if (fromGuild && isPremiumGuild(daoManager, guildId)) {
+            } else if (fromGuild) {
                 // Search for scripts
                 val scripts = daoManager.scriptWrapper.getScripts(guildId)
                 for (script in scripts) {
@@ -377,8 +377,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 sendRsp(event.textChannel, container.daoManager, "Unknown command")
                 return
             }
-
-
 
             if (checksFailed(
                     container, finalCommand, finalCommand.id.toString(), event.message, false, commandParts
