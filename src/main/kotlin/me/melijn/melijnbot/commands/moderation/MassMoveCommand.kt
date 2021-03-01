@@ -53,7 +53,12 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
                 )
             ) return
 
+            var failed = 0
             for (voiceChannel in context.guild.voiceChannels) {
+                if (!voiceChannel.guild.selfMember.hasPermission(voiceChannel, Permission.VOICE_MOVE_OTHERS)) {
+                    failed += voiceChannel.members.size
+                    continue
+                }
                 voiceChannel.members.forEach {
                     if (voiceChannel.idLong != voiceChannelTarget.idLong) {
                         voiceChannel.guild.moveVoiceMember(it, voiceChannelTarget).queue()
@@ -64,6 +69,7 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
 
             val msg = context.getTranslation("$root.moved.all")
                 .withVariable("amount", "$total")
+                .withVariable("failed", "$failed")
                 .withSafeVariable(PLACEHOLDER_CHANNEL, voiceChannelTarget.name)
             sendRsp(context, msg)
             return
