@@ -302,7 +302,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            sendRsp(context, "Channel Permissions")
+            sendSyntax(context)
         }
 
         class RoleChannelArg(parent: String) : AbstractCommand("$parent.role") {
