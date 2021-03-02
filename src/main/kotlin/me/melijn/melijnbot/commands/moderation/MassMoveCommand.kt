@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.moderation
 
+import kotlinx.coroutines.delay
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -33,7 +34,11 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
             if (context.args[1] == "null") {
                 for (voiceChannel in context.guild.voiceChannels) {
                     voiceChannel.members.forEach {
-                        voiceChannel.guild.moveVoiceMember(it, null).queue()
+                        if (it.idLong == context.selfUserId) {
+                            val guildMusicPlayer = context.musicPlayerManager.getGuildMusicPlayer(context.guild)
+                            guildMusicPlayer.guildTrackManager.clear()
+                            guildMusicPlayer.guildTrackManager.stopAndDestroy()
+                        } else voiceChannel.guild.moveVoiceMember(it, null).queue()
                         total++
                     }
                 }
@@ -61,7 +66,19 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
                 }
                 voiceChannel.members.forEach {
                     if (voiceChannel.idLong != voiceChannelTarget.idLong) {
-                        voiceChannel.guild.moveVoiceMember(it, voiceChannelTarget).queue()
+                        if (it.idLong == context.selfUserId) {
+                            val groupId = context.getGuildMusicPlayer().groupId
+                            context.lavaManager.openConnection(voiceChannelTarget, groupId)
+                            val manager = context.getGuildMusicPlayer().guildTrackManager
+                            if (!manager.iPlayer.paused) {
+                                delay(2000)
+                                manager.iPlayer.setPaused(true)
+                                delay(1000)
+                                manager.iPlayer.setPaused(false)
+                            }
+                        } else {
+                            voiceChannel.guild.moveVoiceMember(it, voiceChannelTarget).queue()
+                        }
                         total++
                     }
                 }
