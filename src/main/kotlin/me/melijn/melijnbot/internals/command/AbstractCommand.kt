@@ -351,8 +351,7 @@ suspend fun hasPermission(
             daoManager.channelRolePermissionWrapper.getPermMap(channelId, roleId).toSortedMap(comparator)
         channelRoleResult = getStateFromMap(channelPermMap, lPermission, commands, channelRoleResult)
 
-        // if (channelRoleResult == PermState.ALLOW) break
-        if (channelRoleResult != PermState.DEFAULT) break
+        if (channelRoleResult == PermState.ALLOW) break
         if (roleResult != PermState.ALLOW) {
             val rolePermMap = daoManager.rolePermissionWrapper.getPermMap(roleId).toSortedMap(comparator)
             roleResult = getStateFromMap(rolePermMap, lPermission, commands, roleResult)
