@@ -72,9 +72,9 @@ class TwitterCommand : AbstractCommand("command.twitter") {
                 return
             }
 
-            var msg = "Tracked Twitter Users```INI\n[index] - [@user] - [twitterId]"
+            var msg = "Tracked Twitter Users```INI\n[index] - [@user] - [twitterId]\n"
             for ((index, webHook) in list.withIndex().sortedBy { it.value.handle }) {
-                msg += "${index + 1}. - [@" + webHook.handle + "] - " + webHook.twitterUserId + "\n"
+                msg += "${index + 1}. - [" + webHook.handle + "] - " + webHook.twitterUserId + "\n"
             }
             msg += "```"
             sendRsp(context, msg)
