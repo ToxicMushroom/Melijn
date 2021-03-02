@@ -264,8 +264,8 @@ fun getStateFromMap(
                 val begin = rolePerm.dropLast(2)
                 if (lPermission.startsWith(begin, true)) {
                     nPermState = getSuitableResult
+                    break
                 }
-                break
             }
         } else {
             if (lPermission == rolePerm) {
@@ -279,9 +279,10 @@ fun getStateFromMap(
                 }
                 if (category != null) {
                     if (commands.firstOrNull { cmd ->
-                            lPermission.takeWhile { it != '.' }.equals(cmd.name, true)
+                            val permPart = lPermission.takeWhile { it != '.' }
+                            permPart.equals(cmd.name, true)
                         }?.commandCategory == category) {
-                        nPermState = state
+                        nPermState = getSuitableResult
                         break
                     }
                 }
