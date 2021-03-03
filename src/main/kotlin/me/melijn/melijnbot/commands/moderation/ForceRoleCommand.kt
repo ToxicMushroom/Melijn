@@ -106,6 +106,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
         init {
             name = "add"
+            aliases = arrayOf("a")
         }
 
         override suspend fun execute(context: ICommandContext) {
@@ -156,6 +157,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
         init {
             name = "remove"
+            aliases = arrayOf("rm")
         }
 
         override suspend fun execute(context: ICommandContext) {
@@ -187,6 +189,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
         init {
             name = "list"
+            aliases = arrayOf("ls")
         }
 
         override suspend fun execute(context: ICommandContext) {
