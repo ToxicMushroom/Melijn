@@ -115,10 +115,14 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
                 val parts = arg.split(SPACE_PATTERN)
                 val scriptArgs = mutableListOf<String>()
                 var command = ""
+                var scriptArgPartStarted = false
                 for (scriptArg in parts) {
-                    if (argRegex.matches(scriptArg) || lineArgRegex.matches(scriptArg) ||
-                        scriptArgRegex.matches(scriptArg)
+                    if (!scriptArgPartStarted && (argRegex.matches(scriptArg) || lineArgRegex.matches(scriptArg) ||
+                        scriptArgRegex.matches(scriptArg))
                     ) {
+                        scriptArgPartStarted = true
+                    }
+                    if (scriptArgPartStarted) {
                         scriptArgs.add(scriptArg)
                     } else {
                         command += "$scriptArg "
