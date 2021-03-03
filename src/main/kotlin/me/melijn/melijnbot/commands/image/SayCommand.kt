@@ -29,6 +29,7 @@ class SayCommand : AbstractCommand("command.say") {
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
+            return
         }
 
         context.initCooldown()
