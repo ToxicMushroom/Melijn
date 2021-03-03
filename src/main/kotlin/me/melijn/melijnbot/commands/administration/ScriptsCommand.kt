@@ -17,7 +17,9 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
         children = arrayOf(
             AddArg(root),
             RemoveArg(root),
-            ListArg(root)
+            ListArg(root),
+            ViewArg(root),
+            RemoveAtArg(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
@@ -59,9 +61,9 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
                 return
             }
 
-            val blub = script.trigger + script.commands.values.joinToString {
+            val blub = "```" + script.trigger + script.commands.values.joinToString(" ", " ") {
                 "\"" + it.first + it.second.joinToString(" ", " ") + "\""
-            }
+            } + "```"
             sendRsp(context, blub)
         }
     }
@@ -103,7 +105,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
 
         init {
             name = "list"
-            aliases = arrayOf("ls", "view")
+            aliases = arrayOf("ls")
         }
 
         override suspend fun execute(context: ICommandContext) {
@@ -119,7 +121,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
 
             var i = 1
             for ((_, trigger, commands) in scripts) {
-                msg += "\n ${i++} - [$trigger] - ${commands.size} commands"
+                msg += "\n${i++} - [$trigger] - ${commands.size} commands"
             }
             msg += "```"
             sendRsp(context, msg)
