@@ -217,11 +217,12 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                 val playlistNames = playlists.keys.sorted()
 
                 val title = context.getTranslation("$root.playlist.title")
-                val sb = StringBuilder("```INI\n# [name] - tracks")
+                val sb = StringBuilder("```INI\n# index - [name] - tracks")
 
 
-                for (playlistName in playlistNames) {
-                    sb.append("\n[").append(playlistName.escapeMarkdown()).append("] - ")
+                for ((index, playlistName) in playlistNames.withIndex()) {
+                    sb.append("\n").append(index + 1).append(" - [").append(playlistName.escapeMarkdown())
+                        .append("] - ")
                         .append(playlists[playlistName]?.size ?: 0)
                 }
                 sb.append("```")
@@ -406,8 +407,15 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
     companion object {
         private suspend fun getPlaylistByNameN(context: ICommandContext, index: Int): Map<Int, String>? {
             val playlist = getStringFromArgsNMessage(context, index, 1, 128) ?: return null
+            val plIndex = playlist.toIntOrNull()
             val playlistsMap = context.daoManager.playlistWrapper.getPlaylists(context.authorId)
-            return playlistsMap[playlist]
+            val indexed = plIndex?.takeIf {
+                (it - 1) < playlistsMap.size && (it - 1) >= 0
+            }?.let {
+                playlistsMap[playlistsMap.keys.sorted()[it - 1]]
+            }
+
+            return playlistsMap[playlist] ?: indexed
         }
 
         private suspend fun getPlaylistByNameNMessage(context: ICommandContext, index: Int): Map<Int, String>? {
