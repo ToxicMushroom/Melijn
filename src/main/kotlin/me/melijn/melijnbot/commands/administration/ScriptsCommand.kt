@@ -30,14 +30,58 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
         private const val PREMIUM_SCRIPTS_LIMIT = 25
         private const val CMD_PER_SCRIPT_LIMIT = 4
         private const val PREMIUM_CMD_PER_SCRIPT_LIMIT = 10
-//        private const val SCRIPT_PER_CMD_COOLDOWN = 1000
-//        private const val PREMIUM_SCRIPT_PER_CMD_COOLDOWN = 500
-
         private const val SCRIPTS_LIMIT_PATH = "premium.feature.scripts.limit"
     }
 
     override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
+    }
+
+    class ViewArg(parent: String) : AbstractCommand("$parent.view") {
+
+        init {
+            name = "view"
+            aliases = arrayOf("vw")
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            val trigger = getStringFromArgsNMessage(context, 0, 1, 128) ?: return
+            val script = context.daoManager.scriptWrapper.getScripts(context.guildId)
+                .firstOrNull { it.trigger.equals(trigger, true) }
+            if (script == null) {
+                sendRsp(
+                    context,
+                    "That script doesn't exist, see `%prefix%scripts list`".withSafeVarInCodeblock(
+                        "prefix",
+                        context.usedPrefix
+                    )
+                )
+                return
+            }
+
+            val blub = script.trigger + script.commands.values.joinToString {
+                "\"" + it.first + it.second.joinToString(" ", " ") + "\""
+            }
+            sendRsp(context, blub)
+        }
+    }
+
+    class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
+
+        init {
+            name = "removeAt"
+            aliases = arrayOf("rma")
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            val scripts = context.daoManager.scriptWrapper.getScripts(context.guildId)
+                .sortedBy { it.trigger }
+            val index = getIntegerFromArgNMessage(context, 0, 1, scripts.size) ?: return
+            val trigger = scripts[index].trigger
+            context.daoManager.scriptWrapper.removeScript(context.guildId, trigger)
+
+            sendRsp(context, "Removed the **%script%** script at **$index**".withSafeVariable("script", trigger))
+        }
     }
 
     class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
@@ -64,15 +108,20 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
 
         override suspend fun execute(context: ICommandContext) {
             val scripts = context.daoManager.scriptWrapper.getScripts(context.guildId)
+                .sortedBy { it.trigger }
 
             if (scripts.isEmpty()) {
                 sendRsp(context, "This server does not have any scripts")
                 return
             }
-            var msg = "Script list:"
+            var msg = "Script list:```INI\n" +
+                "# id - [trigger] - commandCount"
+
+            var i = 1
             for ((_, trigger, commands) in scripts) {
-                msg += "\n ◦ $trigger - ${commands.size} commands"
+                msg += "\n ${i++} - [$trigger] - ${commands.size} commands"
             }
+            msg += "```"
             sendRsp(context, msg)
         }
     }
@@ -118,7 +167,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
                 var scriptArgPartStarted = false
                 for (scriptArg in parts) {
                     if (!scriptArgPartStarted && (argRegex.matches(scriptArg) || lineArgRegex.matches(scriptArg) ||
-                        scriptArgRegex.matches(scriptArg))
+                            scriptArgRegex.matches(scriptArg))
                     ) {
                         scriptArgPartStarted = true
                     }
