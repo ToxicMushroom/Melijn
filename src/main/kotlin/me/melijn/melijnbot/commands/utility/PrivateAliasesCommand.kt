@@ -174,6 +174,10 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
         }
 
         override suspend fun execute(context: ICommandContext) {
+            if (context.args.size < 2)  {
+                sendSyntax(context)
+                return
+            }
             val pathInfo = getCommandPathInfo(context, 0) ?: return
             val alias = getStringFromArgsNMessage(
                 context, 1, 1, 64,
