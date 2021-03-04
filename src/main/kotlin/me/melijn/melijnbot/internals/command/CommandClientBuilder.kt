@@ -271,7 +271,8 @@ class CommandClientBuilder(private val container: Container) {
         FrogCommand(),
         ChangeNameCommand(),
         ScriptsCommand(),
-        TwitterCommand()
+        TwitterCommand(),
+        LynxCommand()
     )
 
     fun build(): CommandClient {
