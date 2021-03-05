@@ -1,14 +1,18 @@
 package me.melijn.melijnbot.internals.music.lavaimpl
 
-import me.melijn.melijnbot.internals.utils.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 import java.util.concurrent.*
 
 
 /**
  * Wrapper for executor services which ensures that tasks with the same key are processed in order.
  */
-class MelijnOrderedExecutor(private val delegateService: ExecutorService) {
+class MelijnOrderedExecutor(delegateService: ExecutorService) {
     private val states: ConcurrentMap<Any, BlockingQueue<suspend () -> Unit>?>
+    val coroutineScope = CoroutineScope(delegateService.asCoroutineDispatcher())
+
 
     /**
      * @param orderingKey Key for the ordering channel
@@ -26,10 +30,10 @@ class MelijnOrderedExecutor(private val delegateService: ExecutorService) {
         if (existing != null) {
             existing.add(func)
             if (states.putIfAbsent(runnable.key, existing) == null) {
-                delegateService.launch { ChannelRunnable(runnable.key) }
+                coroutineScope.launch { ChannelRunnable(runnable.key) }
             }
         } else {
-            delegateService.launch { runnable.run() }
+            coroutineScope.launch { runnable.run() }
         }
     }
 
@@ -60,7 +64,7 @@ class MelijnOrderedExecutor(private val delegateService: ExecutorService) {
                     true
                 } finally {
                     if (!finished) {
-                        delegateService.launch { ChannelRunnable(key).run() }
+                        coroutineScope.launch { ChannelRunnable(key).run() }
                     }
                 }
             } while (true)

@@ -5,10 +5,7 @@ import com.wrapper.spotify.SpotifyApi
 import com.wrapper.spotify.exceptions.SpotifyWebApiException
 import com.wrapper.spotify.model_objects.specification.Track
 import com.wrapper.spotify.model_objects.specification.TrackSimplified
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
-import kotlinx.coroutines.launch
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
 import java.io.IOException
@@ -27,7 +24,7 @@ class MySpotifyApi(spotifySettings: Settings.Api.Spotify) {
 
     fun updateSpotifyCredentials() {
         val credentialsRequest = spotifyApi.clientCredentials().build()
-        CoroutineScope(Dispatchers.IO).launch {
+        TaskManager.async {
             spotifyApi.accessToken = credentialsRequest.executeAsync().await().accessToken
         }
     }

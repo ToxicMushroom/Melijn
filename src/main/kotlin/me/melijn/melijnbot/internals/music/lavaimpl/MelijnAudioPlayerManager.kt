@@ -16,9 +16,6 @@ import com.sedmelluq.discord.lavaplayer.track.playback.AudioTrackExecutor
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor
 import com.sedmelluq.lava.common.tools.DaemonThreadFactory
 import com.sedmelluq.lava.common.tools.ExecutorTools
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
 import me.melijn.melijnbot.internals.music.SuspendingAudioLoadResultHandler
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.impl.client.HttpClientBuilder
@@ -117,16 +114,6 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
         throw IllegalArgumentException("ugly, don't call")
     }
 
-    suspend fun loadItem(identifier: String, resultHandler: SuspendingAudioLoadResultHandler) {
-        try {
-            CoroutineScope(trackInfoExecutorService.asCoroutineDispatcher()).launch {
-                createItemLoader(identifier, resultHandler)
-            }
-        } catch (e: RejectedExecutionException) {
-            handleLoadRejected(identifier, resultHandler, e)
-        }
-    }
-
     suspend fun loadItemOrdered(orderingKey: Any, identifier: String, resultHandler: SuspendingAudioLoadResultHandler) {
         try {
             orderedInfoExecutor.submit(orderingKey) {
@@ -134,30 +121,6 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
             }
         } catch (e: RejectedExecutionException) {
             handleLoadRejected(identifier, resultHandler, e)
-        }
-    }
-
-    class CompletedVoidFuture : Future<Void?> {
-        override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
-            return false
-        }
-
-        override fun isCancelled(): Boolean {
-            return false
-        }
-
-        override fun isDone(): Boolean {
-            return true
-        }
-
-        @Throws(InterruptedException::class, ExecutionException::class)
-        override fun get(): Void? {
-            return null
-        }
-
-        @Throws(InterruptedException::class, ExecutionException::class, TimeoutException::class)
-        override fun get(timeout: Long, unit: TimeUnit): Void? {
-            return null
         }
     }
 

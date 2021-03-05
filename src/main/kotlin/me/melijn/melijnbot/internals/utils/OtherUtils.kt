@@ -1,9 +1,5 @@
 package me.melijn.melijnbot.internals.utils
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.DateFormat
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -23,7 +19,6 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.Year
 import java.util.*
-import java.util.concurrent.Executor
 import java.util.regex.Pattern
 
 
@@ -451,12 +446,6 @@ fun getIntegerFromArgN(context: ICommandContext, index: Int, min: Int = Int.MIN_
     val number = (if (context.args.size > index) context.args[index].toIntOrNull() else null) ?: return null
     if (number > max || number < min) return null
     return number
-}
-
-fun Executor.launch(block: suspend CoroutineScope.() -> Unit): Job {
-    return CoroutineScope(this.asCoroutineDispatcher()).launch {
-        block.invoke(this)
-    }
 }
 
 //UpperCamelCase
