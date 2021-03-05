@@ -40,7 +40,8 @@ suspend fun sendPaginationModularRsp(
 
     val message = sendRspAwaitN(textChannel, httpClient, daoManager, msg)
         ?: throw IllegalArgumentException("Couldn't send the message")
-    registerPaginationModularMessage(textChannel, authorId, message, modularMessages, index)
+    if (modularMessages.size > 1)
+        registerPaginationModularMessage(textChannel, authorId, message, modularMessages, index)
 }
 
 suspend fun sendPaginationMsg(context: ICommandContext, msgList: List<String>, index: Int) {
@@ -49,10 +50,12 @@ suspend fun sendPaginationMsg(context: ICommandContext, msgList: List<String>, i
 
     if (context.isFromGuild) {
         val message = sendMsgAwaitEL(context.textChannel, msg).first()
-        registerPaginationMessage(context.textChannel, context.authorId, message, msgList, index)
+        if (msgList.size > 1)
+            registerPaginationMessage(context.textChannel, context.authorId, message, msgList, index)
     } else {
         val message = sendMsgAwaitEL(context.privateChannel, msg).first()
-        registerPaginationMessage(context.privateChannel, context.authorId, message, msgList, index)
+        if (msgList.size > 1)
+            registerPaginationMessage(context.privateChannel, context.authorId, message, msgList, index)
     }
 }
 
@@ -62,11 +65,13 @@ suspend fun sendPaginationModularMsg(context: ICommandContext, msgList: List<Mod
     if (context.isFromGuild) {
         val message = sendMsgAwaitN(context.textChannel, context.webManager.proxiedHttpClient, msg)
             ?: throw IllegalArgumentException("Couldn't send the message")
-        registerPaginationModularMessage(context.textChannel, context.authorId, message, msgList, index)
+        if (msgList.size > 1)
+            registerPaginationModularMessage(context.textChannel, context.authorId, message, msgList, index)
     } else {
         val message = sendMsgAwaitN(context.privateChannel, context.webManager.proxiedHttpClient, msg)
             ?: throw IllegalArgumentException("Couldn't send the message")
-        registerPaginationModularMessage(context.privateChannel, context.authorId, message, msgList, index)
+        if (msgList.size > 1)
+            registerPaginationModularMessage(context.privateChannel, context.authorId, message, msgList, index)
     }
 }
 
