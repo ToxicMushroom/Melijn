@@ -19,6 +19,8 @@ class ScriptWrapper(private val scriptDao: ScriptDao) {
     }
 
     fun removeScript(entityId: Long, trigger: String) {
+        scriptDao.removeCacheEntry(entityId)
+
         scriptDao.removeScript(entityId, trigger)
     }
 
