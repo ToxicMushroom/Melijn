@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.database.role.JoinRoleGroupInfo
+import me.melijn.melijnbot.database.role.UserType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -38,9 +39,63 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 RemoveArg(root),
                 RemoveAtArg(root),
                 ListArg(root),
+                SetUserTypesArg(root),
                 SetEnabledArg(root),
                 SetGetAllRolesArg(root)
             )
+        }
+
+        class SetUserTypesArg(parent: String) : AbstractCommand("$parent.setusertypes") {
+
+            init {
+                name = "setUserTypes"
+                aliases = arrayOf("sut")
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+                val group = getJoinRoleGroupByArgNMessage(context, 0) ?: return
+                if (context.args.size == 1) {
+                    val enabledTypes = UserType.setFromInt(group.forUserTypes).joinToString(", ") { it.toUCC() }
+                    sendRsp(
+                        context, "Current enabled usertypes for **%group%** are: `%types%`"
+                            .withVariable("group", group.groupName)
+                            .withVariable("types", enabledTypes)
+                    )
+                    return
+                }
+
+                val types = mutableSetOf<UserType>()
+                for (arg in context.args.drop(1)) {
+                    val parts = arg.replace(",", " ").trim().splitIETEL(" ")
+                    for (part in parts) {
+                        if (part.isBlank()) continue
+                        val type = try {
+                            UserType.valueOf(part.toUpperCase())
+                        } catch (t: Throwable) {
+                            sendRsp(context, "`%type%` is not a valid UserType".withSafeVarInCodeblock("type", arg))
+                            return
+                        }
+                        types.add(type)
+                    }
+                }
+
+                group.forUserTypes = UserType.intFromSet(types)
+                val wrapper = context.daoManager.joinRoleGroupWrapper
+                wrapper.insertOrUpdate(context.guildId, group)
+
+                val typesArg = types.joinToString(", ") { it.toUCC() }
+                sendRsp(
+                    context,
+                    "Enabled usertypes have been set to: `%types%` in group **%group%**"
+                        .withSafeVarInCodeblock("types", typesArg)
+                        .withVariable("group", group.groupName)
+                )
+            }
+
         }
 
         class SetGetAllRolesArg(parent: String) : AbstractCommand("$parent.setgetallroles") {
@@ -125,7 +180,8 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                     return
                 }
 
-                val newJr = JoinRoleGroupInfo(name, true, true)
+                val bitFlag = UserType.intFromSet(setOf(UserType.USER))
+                val newJr = JoinRoleGroupInfo(name, true, bitFlag, true)
                 wrapper.insertOrUpdate(context.guildId, newJr)
 
                 val msg = context.getTranslation("$root.added")

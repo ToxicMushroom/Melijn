@@ -5,6 +5,7 @@ import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.database.role.JoinRoleInfo
+import me.melijn.melijnbot.database.role.UserType
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.RoleType
@@ -89,7 +90,7 @@ object JoinLeaveUtil {
 
     suspend fun joinRole(daoManager: DaoManager, member: Member) {
         val guild = member.guild
-        if (!guild.selfMember.canInteract(member) || !guild.selfMember.hasPermission(Permission.MANAGE_ROLES)) return
+        if (!guild.selfMember.hasPermission(Permission.MANAGE_ROLES)) return
 
         val groups = daoManager.joinRoleGroupWrapper.getList(guild.idLong)
         val joinRoleInfo = daoManager.joinRoleWrapper.getJRI(guild.idLong)
@@ -97,7 +98,13 @@ object JoinLeaveUtil {
         for ((groupName, list) in map) {
             val group = groups.firstOrNull { it.groupName == groupName } ?: continue
             if (!group.isEnabled) continue
+            val acceptedTypes = UserType.setFromInt(group.forUserTypes)
+            val isBot = member.user.isBot
+            if (isBot && !acceptedTypes.contains(UserType.BOT)) continue
+            else if (!isBot && !acceptedTypes.contains(UserType.USER)) continue
             if (group.getAllRoles) {
+
+
                 for ((roleId) in list) {
                     val role = roleId?.let { guild.getRoleById(it) } ?: continue
                     if (guild.selfMember.canInteract(role)) {
