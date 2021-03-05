@@ -272,16 +272,15 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 }
 
                 val title = context.getTranslation("$root.title")
-                var content = "```INI\n[index] - [group] - [getAllRoles] - [enabled]"
+                var content = "```INI\n# [index] - [group] - [getAllRoles] - [userTypes] - [enabled]"
 
                 for ((index, roleInfo) in list.withIndex()) {
-                    content += "\n${index + 1} - [${roleInfo.groupName}] - ${roleInfo.getAllRoles} - ${roleInfo.isEnabled}"
+                    val userTypesArg = UserType.setFromInt(roleInfo.forUserTypes).joinToString(",") { "${it.toUCC()}" }
+                    content += "\n${index + 1} - [${roleInfo.groupName}] - ${roleInfo.getAllRoles} - [$userTypesArg] - ${roleInfo.isEnabled}"
                 }
 
                 content += "```"
-                content = title + content
-
-                sendRsp(context, content)
+                sendRsp(context, title + content)
             }
         }
 
@@ -310,22 +309,19 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             val role: Role? = if (context.args[1] == "null") null else getRoleByArgsNMessage(context, 1) ?: return
             val extra = if (role == null) "null" else "role"
 
+            val joinRoleWrapper = context.daoManager.joinRoleWrapper
             val msg = if (context.args.size > 2) {
                 val chance = getIntegerFromArgNMessage(context, 2, 1) ?: return
-
-                context.daoManager.joinRoleWrapper.set(context.guildId, group.groupName, role?.idLong ?: -1, chance)
+                joinRoleWrapper.set(context.guildId, group.groupName, role?.idLong ?: -1, chance)
 
                 context.getTranslation("$root.added.chance.$extra")
-                    .withVariable("group", group.groupName)
-                    .withVariable(PLACEHOLDER_ROLE, role?.name ?: "kek")
                     .withVariable("chance", "$chance")
             } else {
-                context.daoManager.joinRoleWrapper.set(context.guildId, group.groupName, role?.idLong ?: -1, 100)
-
+                joinRoleWrapper.set(context.guildId, group.groupName, role?.idLong ?: -1, 100)
                 context.getTranslation("$root.added.$extra")
-                    .withVariable("group", group.groupName)
-                    .withVariable(PLACEHOLDER_ROLE, role?.name ?: "kek")
-            }
+
+            }.withVariable("group", group.groupName)
+                .withVariable(PLACEHOLDER_ROLE, role?.name ?: "kek")
 
             sendRsp(context, msg)
         }
@@ -351,15 +347,11 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             val extra = if (role == null) "null" else "role"
 
             val existed = context.daoManager.joinRoleWrapper.remove(context.guildId, group.groupName, role?.idLong)
-            val msg = if (existed) {
-                context.getTranslation("$root.removed.$extra")
-                    .withVariable("group", group.groupName)
-                    .withVariable("role", role?.name ?: "kek")
-            } else {
-                context.getTranslation("$root.noentry.$extra")
-                    .withVariable("group", group.groupName)
-                    .withVariable("role", role?.name ?: "kek")
-            }
+            val msg = context.getTranslation(
+                if (existed) "$root.removed.$extra"
+                else "$root.noentry.$extra"
+            ).withVariable("group", group.groupName)
+                .withVariable("role", role?.name ?: "kek")
 
             sendRsp(context, msg)
         }

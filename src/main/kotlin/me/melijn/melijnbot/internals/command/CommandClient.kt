@@ -304,8 +304,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             val filledArgs = mutableListOf<String>()
             for (it in cmdInfo.second) {
                 when {
-                    it.matches(ScriptsCommand.argRegex) -> {
-                        val matchResult = ScriptsCommand.argRegex.find(it) ?: throw IllegalStateException()
+                    it.matches(ScriptsCommand.scriptArgRegex) -> {
+                        val matchResult = ScriptsCommand.scriptArgRegex.find(it) ?: throw IllegalStateException()
                         val argIndex = (matchResult.groupValues[1].toIntOrNull() ?: throw IllegalStateException()) - 1
                         if (argIndex >= args.size) {
                             missingArg = argIndex
@@ -313,8 +313,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         }
                         filledArgs.add(args[argIndex])
                     }
-                    it.matches(ScriptsCommand.lineArgRegex) -> {
-                        val matchResult = ScriptsCommand.lineArgRegex.find(it) ?: throw IllegalStateException()
+                    it.matches(ScriptsCommand.scriptLineRegex) -> {
+                        val matchResult = ScriptsCommand.scriptLineRegex.find(it) ?: throw IllegalStateException()
                         val lineIndex = (matchResult.groupValues[1].toIntOrNull() ?: throw IllegalStateException()) - 1
                         if (lineIndex >= argLines.size) {
                             missingLine = lineIndex
@@ -322,8 +322,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         }
                         filledArgs.add(argLines[lineIndex])
                     }
-                    it.matches(ScriptsCommand.scriptArgRegex) -> {
-                        val matchResult = ScriptsCommand.scriptArgRegex.find(it) ?: throw IllegalStateException()
+                    it.matches(ScriptsCommand.scriptLineArgRegex) -> {
+                        val matchResult = ScriptsCommand.scriptLineArgRegex.find(it) ?: throw IllegalStateException()
                         val lineIndex = (matchResult.groupValues[1].toIntOrNull() ?: throw IllegalStateException()) - 1
                         val argIndex = (matchResult.groupValues[2].toIntOrNull() ?: throw IllegalStateException()) - 1
                         if (argIndex >= lineArgMap[lineIndex]?.size ?: 0) {

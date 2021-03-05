@@ -25,9 +25,9 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
     }
 
     companion object {
-        val argRegex = "%arg(\\d+)%".toRegex()
-        val lineArgRegex = "%line(\\d+)%".toRegex()
-        val scriptArgRegex = "%line(\\d+)arg(\\d+)%".toRegex()
+        val scriptArgRegex = "%arg(\\d+)%".toRegex()
+        val scriptLineRegex = "%line(\\d+)%".toRegex()
+        val scriptLineArgRegex = "%line(\\d+)arg(\\d+)%".toRegex()
         private const val SCRIPTS_LIMIT = 5
         private const val PREMIUM_SCRIPTS_LIMIT = 25
         private const val CMD_PER_SCRIPT_LIMIT = 4
@@ -79,7 +79,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
             val scripts = context.daoManager.scriptWrapper.getScripts(context.guildId)
                 .sortedBy { it.trigger }
             val index = getIntegerFromArgNMessage(context, 0, 1, scripts.size) ?: return
-            val trigger = scripts[index].trigger
+            val trigger = scripts[index - 1].trigger
             context.daoManager.scriptWrapper.removeScript(context.guildId, trigger)
 
             sendRsp(context, "Removed the **%script%** script at **$index**".withSafeVariable("script", trigger))
@@ -168,8 +168,8 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
                 var command = ""
                 var scriptArgPartStarted = false
                 for (scriptArg in parts) {
-                    if (!scriptArgPartStarted && (argRegex.matches(scriptArg) || lineArgRegex.matches(scriptArg) ||
-                            scriptArgRegex.matches(scriptArg))
+                    if (!scriptArgPartStarted && (scriptArgRegex.matches(scriptArg) || scriptLineRegex.matches(scriptArg) ||
+                            scriptLineArgRegex.matches(scriptArg))
                     ) {
                         scriptArgPartStarted = true
                     }
