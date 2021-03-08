@@ -59,7 +59,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation("net.dv8tion:JDA:4.2.0_231") {
+    implementation("net.dv8tion:JDA:4.2.0_236") {
         exclude("opus-java")
     }
 
@@ -68,7 +68,7 @@ dependencies {
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
-    implementation("com.sedmelluq:lavaplayer:1.3.71")
+    implementation("com.sedmelluq:lavaplayer:1.3.73")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
     implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.4")
@@ -84,16 +84,16 @@ dependencies {
     implementation("com.github.ToxicMushroom:JagTag-Kotlin:0.6.4")
 
     // https://search.maven.org/artifact/com.zaxxer/HikariCP
-    implementation("com.zaxxer:HikariCP:4.0.2")
+    implementation("com.zaxxer:HikariCP:4.0.3")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation("org.postgresql:postgresql:42.2.19")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-jdk8
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.3")
 
     // https://bintray.com/duncte123/weeb.java/weeb.java
     implementation("me.duncte123:weebJava:2.2.0_29")
@@ -106,13 +106,13 @@ dependencies {
 
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-    implementation("com.fasterxml.jackson.core:jackson-core:2.12.1")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.12.2")
 
     // https://github.com/FasterXML/jackson-module-kotlin
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.2")
 
     // https://search.maven.org/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-xml
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.1")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.2")
 
 
     // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
@@ -151,8 +151,7 @@ tasks {
     }
     withType(KotlinCompile::class) {
         kotlinOptions {
-            // 15 not supported at this time 25/10/2020 | latest kotlin: 1.4.10
-            jvmTarget = "14"
+            jvmTarget = "15"
         }
     }
 
