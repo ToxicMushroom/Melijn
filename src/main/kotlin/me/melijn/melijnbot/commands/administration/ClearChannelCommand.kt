@@ -46,6 +46,13 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
             val content = event.message.contentRaw
             if (content.equals("confirm", true)) {
                 context.initCooldown()
+                // permission check for bot
+                if (notEnoughPermissionsAndMessage(context, textChannel, Permission.MANAGE_CHANNEL)) return@waitFor
+                if (textChannel.parent?.channels?.size ?: 0 == 50) { // category size check
+                    sendRsp(context, "I cant create a new channel here, the limit under each category is 50 channels")
+                    return@waitFor
+                }
+
                 val copy = textChannel.createCopy().reason("(clearChannel) ${context.author.asTag}").await()
                 copy.manager.setPosition(textChannel.position)
 
