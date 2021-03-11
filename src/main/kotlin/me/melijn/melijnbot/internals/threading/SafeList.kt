@@ -108,5 +108,15 @@ class SafeList<E> {
         }
     }
 
+    suspend fun any(function: (E) -> Boolean): Boolean {
+        lock.withLock {
+            return list.any(function)
+        }
+    }
 
+    suspend fun firstOrNull(function: (E) -> Boolean): E? {
+        lock.withLock {
+            return list.firstOrNull(function)
+        }
+    }
 }
