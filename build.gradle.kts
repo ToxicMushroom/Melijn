@@ -59,7 +59,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation("net.dv8tion:JDA:4.2.0_240") {
+    implementation("net.dv8tion:JDA:4.2.0_241") {
         exclude("opus-java")
     }
 
