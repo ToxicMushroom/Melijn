@@ -157,6 +157,7 @@ suspend fun addPaginationEmotes(message: Message, morePages: Boolean) {
         if (!message.guild.selfMember.hasPermission(message.textChannel, Permission.MESSAGE_HISTORY)) {
             sendMelijnMissingChannelPermissionMessage(
                 message.textChannel,
+                message.textChannel,
                 "en",
                 Container.instance.daoManager,
                 listOf(Permission.MESSAGE_HISTORY)

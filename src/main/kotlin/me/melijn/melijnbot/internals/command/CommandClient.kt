@@ -606,6 +606,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     val language = getLanguage(container.daoManager, message.author.idLong, message.guild.idLong)
                     sendMelijnMissingChannelPermissionMessage(
                         message.textChannel,
+                        message.textChannel,
                         language,
                         container.daoManager,
                         missingChannelPermissions
