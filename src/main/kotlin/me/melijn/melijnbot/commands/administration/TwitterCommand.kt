@@ -34,13 +34,13 @@ class TwitterCommand : AbstractCommand("command.twitter") {
         private const val TWITTER_LIMIT_PATH = "premium.feature.twitter.limit"
 
         suspend fun getTwitterWebhookByArgsNMessage(context: ICommandContext, index: Int): TwitterWebhook? {
-            val list = context.daoManager.twitterWrapper.getAll().sortedBy { it.handle }
+            val list = context.daoManager.twitterWrapper.getAll(context.guildId).sortedBy { it.handle }
             if (list.isEmpty()) {
                 sendRsp(context, "You don't track any twitter users")
                 return null
             }
-            val id = getIntegerFromArgNMessage(context, index, list.size) ?: return null
-            return list[id]
+            val id = getIntegerFromArgNMessage(context, index, 1, list.size) ?: return null
+            return list[id - 1]
         }
     }
 
@@ -130,14 +130,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
 
         override suspend fun execute(context: ICommandContext) {
             val twitterWrapper = context.daoManager.twitterWrapper
-            val list = twitterWrapper.getAll(context.guildId)
-            if (list.isEmpty()) {
-                sendRsp(context, "You don't track any twitter users")
-                return
-            }
-
-            val index = (getIntegerFromArgNMessage(context, 0, 1, list.size) ?: return) - 1
-            val toRemove = list[index]
+            val toRemove = getTwitterWebhookByArgsNMessage(context, 0) ?: return
             twitterWrapper.delete(context.guildId, toRemove.handle)
 
             val msg = "Removed tracking `" + toRemove.handle + "`"
