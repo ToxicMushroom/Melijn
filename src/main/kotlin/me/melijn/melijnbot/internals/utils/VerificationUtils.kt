@@ -81,7 +81,7 @@ object VerificationUtils {
                 false
             }
             if (!result) {
-                LogUtils.sendMessageFailedToAddRoleToMember(daoManager, member, unverifiedRole)
+                LogUtils.sendMessageFailedToRemoveRoleFromMember(daoManager, member, unverifiedRole)
                 return false
             }
         }

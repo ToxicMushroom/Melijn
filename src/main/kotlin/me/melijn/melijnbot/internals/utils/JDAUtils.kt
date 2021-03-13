@@ -558,7 +558,7 @@ suspend fun getChannelByArgsNMessage(
     if (argSizeCheckFailed(context, index)) return null
     val textChannel = getChannelByArgsN(context, index, sameGuildAsContext)
     if (textChannel == null) {
-        val msg = context.getTranslation("message.unknown.channel")
+        val msg = context.getTranslation(MESSAGE_UNKNOWN_CHANNEL)
             .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
@@ -600,7 +600,7 @@ suspend fun getCategoryByArgsNMessage(
     if (argSizeCheckFailed(context, index)) return null
     val category = getCategoryByArgsN(context, index, sameGuildAsContext)
     if (category == null) {
-        val msg = context.getTranslation("message.unknown.category")
+        val msg = context.getTranslation(MESSAGE_UNKNOWN_CATEGORY)
             .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
