@@ -468,7 +468,7 @@ object MessageCommandUtil {
             eb.setAuthor(null)
             context.getTranslation("message.embed.authorname.unset")
         } else {
-            eb.setTitle(arg)
+            eb.setAuthor(arg)
             context.getTranslation("message.embed.authorname.set")
                 .withVariable(PLACEHOLDER_ARG, arg)
         }.withVariable(PLACEHOLDER_TYPE, type.text)
@@ -787,6 +787,7 @@ object MessageCommandUtil {
         val fieldsJSON = embedJSON.getArray("fields")
         val field = fieldsJSON.getObject(index)
         field.put(partName, value)
+        fieldsJSON.remove(index)
         fieldsJSON.insert(index, field)
         embedJSON.put("fields", fieldsJSON)
         json.put("embed", embedJSON)
