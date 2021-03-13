@@ -67,7 +67,7 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
         title: String,
         author: String?
     ): Pair<String, String>? {
-        val json = WebUtils.getJsonFromUrl(context.webManager.httpClient,
+        val json = WebUtils.getJsonFromUrl(context.webManager.proxiedHttpClient,
             "$KSOFT_SI/lyrics/search",
             mutableMapOf(
                 Pair("q", title + (author?.let { " $author" } ?: "")),
