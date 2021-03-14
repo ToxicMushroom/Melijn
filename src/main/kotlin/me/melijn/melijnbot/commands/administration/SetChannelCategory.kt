@@ -20,7 +20,7 @@ class SetChannelCategory : AbstractCommand("command.setchannelcategory") {
         if (argSizeCheckFailed(context, 1)) return
         val channel = getChannelByArgsNMessage(context, 0, true) ?: return
         val category = getCategoryByArgsNMessage(context, 1, true) ?: return
-        if(notEnoughPermissionsAndMessage(context, channel, Permission.VIEW_CHANNEL)) return
+        if (notEnoughPermissionsAndMessage(context, channel, Permission.VIEW_CHANNEL)) return
 
         channel.manager
             .setParent(category)

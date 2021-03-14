@@ -32,42 +32,42 @@ class MoveChannelCommand : AbstractCommand("command.moveChannel") {
             GuildMessageReceivedEvent::class.java,
             { context.channelId == it.channel.idLong && context.authorId == it.author.idLong },
             { event ->
-                if (event.message.contentRaw.equals("yes", true)) {
-                    // Check if we cannot see any channel in category and thus not see the category
-                    if (target.parent?.channels?.none {
-                            context.selfMember.hasPermission(it, Permission.VIEW_CHANNEL)
-                        } == true
-                    ) {
-                        sendRsp(
-                            context,
-                            "Cannot move **%channel%** %relativePosition% **%target%** because I cannot see any channel in **%category%**"
-                                .withVariable("channel", toMove.name)
-                                .withVariable("target", target.name)
-                                .withVariable("category", target.parent?.name ?: "error")
-                                .withVariable("relativePosition", position.toLC())
-                        )
-                        return@waitFor
-                    }
-
-                    if (notEnoughPermissionsAndMessage(context, toMove, Permission.VIEW_CHANNEL)) return@waitFor
-
-                    toMove.manager
-                        .setParent(target.parent)
-                        .setPosition(target.position + offset)
-                        .await()
-
+                if (!event.message.contentRaw.equals("yes", true)) {
                     sendRsp(
-                        context, "Moved **%channel%** %relativePosition% **%target%**"
+                        context, "Okay, not moving **%channel%**"
                             .withVariable("channel", toMove.asTag)
-                            .withVariable("target", target.asTag)
+                    )
+                    return@waitFor
+                }
+                // Check if we cannot see any channel in category and thus not see the category
+                if (target.parent?.channels?.none {
+                        context.selfMember.hasPermission(it, Permission.VIEW_CHANNEL)
+                    } == true
+                ) {
+                    sendRsp(
+                        context,
+                        "Cannot move **%channel%** %relativePosition% **%target%** because I cannot see any channel in **%category%**"
+                            .withVariable("channel", toMove.name)
+                            .withVariable("target", target.name)
+                            .withVariable("category", target.parent?.name ?: "error")
                             .withVariable("relativePosition", position.toLC())
                     )
-                } else {
-                    sendRsp(
-                        context, "Okay, not movingye **%channel%**"
-                            .withVariable("channel", toMove.asTag)
-                    )
+                    return@waitFor
                 }
+
+                if (notEnoughPermissionsAndMessage(context, toMove, Permission.VIEW_CHANNEL)) return@waitFor
+
+                toMove.manager
+                    .setParent(target.parent)
+                    .setPosition(target.position + offset)
+                    .await()
+
+                sendRsp(
+                    context, "Moved **%channel%** %relativePosition% **%target%**"
+                        .withVariable("channel", toMove.asTag)
+                        .withVariable("target", target.asTag)
+                        .withVariable("relativePosition", position.toLC())
+                )
             })
         sendRsp(
             context,
@@ -76,8 +76,6 @@ class MoveChannelCommand : AbstractCommand("command.moveChannel") {
                 .withVariable("target", target.asTag)
                 .withVariable("relativePosition", position.toLC())
         )
-
-
     }
 }
 
