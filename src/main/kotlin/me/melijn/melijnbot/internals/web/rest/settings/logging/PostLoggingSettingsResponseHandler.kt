@@ -45,7 +45,6 @@ object PostLoggingSettingsResponseHandler {
             }
 
             val settings = jsonBody.getObject("settings")
-
             val jobs = mutableListOf<Job>()
             val daoManager = context.daoManager
 
@@ -53,12 +52,16 @@ object PostLoggingSettingsResponseHandler {
             val availableChannels = guild.textChannels.filter { it.canTalk() }.map { it.idLong }
             for (i in 0 until logChannels.length()) {
                 val logchannel = logChannels.getObject(i)
-                val type = LogChannelType.valueOf(logchannel.getString("type"))
-                val value = logchannel.getString("value", null)?.toLongOrNull()
-                if (value == null || availableChannels.contains(value)) {
-                    jobs.add(TaskManager.async {
-                        daoManager.logChannelWrapper.setChannel(guild.idLong, type, value ?: -1)
-                    })
+                val channels = logchannel.getArray("channels")
+                for (j in 0 until channels.length()) {
+                    val channelObj = channels.getObject(j)
+                    val type = LogChannelType.valueOf(channelObj.getString("type"))
+                    val value = channelObj.getString("value", null)?.toLongOrNull()
+                    if (value == null || availableChannels.contains(value)) {
+                        jobs.add(TaskManager.async {
+                            daoManager.logChannelWrapper.setChannel(guild.idLong, type, value ?: -1)
+                        })
+                    }
                 }
             }
 
@@ -69,6 +72,7 @@ object PostLoggingSettingsResponseHandler {
                     .put("success", true)
             )
         } catch (t: Throwable) {
+            t.printStackTrace()
             context.call.respondJson(
                 DataObject.empty()
                     .put("success", false)
