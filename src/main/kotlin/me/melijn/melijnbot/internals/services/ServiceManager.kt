@@ -6,6 +6,7 @@ import me.melijn.melijnbot.internals.services.bans.BanService
 import me.melijn.melijnbot.internals.services.birthday.BirthdayService
 import me.melijn.melijnbot.internals.services.donator.DonatorService
 import me.melijn.melijnbot.internals.services.message.MessageCleanerService
+import me.melijn.melijnbot.internals.services.messagedeletion.MessageDeletionService
 import me.melijn.melijnbot.internals.services.music.SpotifyService
 import me.melijn.melijnbot.internals.services.mutes.MuteService
 import me.melijn.melijnbot.internals.services.ppexpiry.PPExpireService
@@ -52,6 +53,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         services.add(RedditService(webManager.httpClient, daoManager.driverManager))
         services.add(RedditAboutService(webManager.httpClient, daoManager.driverManager))
         services.add(PPExpireService(daoManager.autoPunishmentWrapper))
+        services.add(MessageDeletionService(shardManager))
         slowServices.add(
             TwitterService(
                 webManager.proxiedHttpClient,

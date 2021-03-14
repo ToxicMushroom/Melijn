@@ -977,6 +977,7 @@ object MessageCommandUtil {
         messageWrapper.update(context.guildId, cc)
 
         val msg = context.getTranslation("message.pingable.show.$isPingable")
+            .withVariable("type", MessageType.CUSTOM_COMMAND.text)
         sendRsp(context, msg)
     }
 }

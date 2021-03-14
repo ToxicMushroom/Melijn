@@ -275,7 +275,8 @@ class CommandClientBuilder(private val container: Container) {
         LynxCommand(),
         SyncChannelCommand(),
         MoveChannelCommand(),
-        SetChannelCategory()
+        SetChannelCategory(),
+        SetAutoRemoveInactiveJoinMessagesDuration()
     )
 
     fun build(): CommandClient {
