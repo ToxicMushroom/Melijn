@@ -5,6 +5,7 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendMelijnMissingChannelPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
@@ -14,7 +15,7 @@ class SyncChannelCommand : AbstractCommand("command.moveandsyncchannel") {
     init {
         name = "syncChannel"
         aliases = arrayOf("syncC")
-        discordPermissions = arrayOf(Permission.MANAGE_CHANNEL)
+        discordPermissions = arrayOf(Permission.MANAGE_PERMISSIONS)
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
@@ -37,22 +38,28 @@ class SyncChannelCommand : AbstractCommand("command.moveandsyncchannel") {
                     )
                     return@waitFor
                 }
-                if (context.selfMember.canSync(textChannel)) {
-                    if (textChannel.parent == null) {
-                        sendRsp(
-                            context,
-                            "I cannot sync **%channel%** because I don't have permission to do so"
-                                .withVariable("channel", textChannel.asTag)
-                        )
-                        return@waitFor
-                    }
-                    textChannel.manager.sync().await()
-                    sendRsp(
-                        context, "Synced **%channel%** with it's parent category **%category%**"
-                            .withVariable("channel", textChannel.asTag)
-                            .withVariable("category", textChannel.parent?.name ?: "error")
+                if (!context.selfMember.canSync(textChannel)) {
+                    sendMelijnMissingChannelPermissionMessage(
+                        context,
+                        listOf(Permission.MANAGE_PERMISSIONS),
+                        textChannel
                     )
+                    return@waitFor
                 }
+                if (textChannel.parent == null) {
+                    sendRsp(
+                        context,
+                        "I cannot sync **%channel%** because it is not inside a category"
+                            .withVariable("channel", textChannel.asTag)
+                    )
+                    return@waitFor
+                }
+                textChannel.manager.sync().await()
+                sendRsp(
+                    context, "Synced **%channel%** with it's parent category **%category%**"
+                        .withVariable("channel", textChannel.asTag)
+                        .withVariable("category", textChannel.parent?.name ?: "error")
+                )
             })
         sendRsp(
             context,
