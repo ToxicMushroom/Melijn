@@ -53,12 +53,12 @@ class SyncChannelCommand : AbstractCommand("command.moveandsyncchannel") {
                             .withVariable("category", textChannel.parent?.name ?: "error")
                     )
                 }
-                sendRsp(
-                    context,
-                    "Are you sure you want to sync **%channel%** with it's parent category **%category%** ?\nRespond `yes` to confirm, `no` to cancel"
-                        .withVariable("channel", textChannel.asTag)
-                        .withVariable("category", textChannel.parent?.name ?: "error")
-                )
             })
+        sendRsp(
+            context,
+            "Are you sure you want to sync **%channel%** with it's parent category **%category%** ?\nRespond `yes` to confirm, `no` to cancel"
+                .withVariable("channel", textChannel.asTag)
+                .withVariable("category", textChannel.parent?.name ?: "error")
+        )
     }
 }
