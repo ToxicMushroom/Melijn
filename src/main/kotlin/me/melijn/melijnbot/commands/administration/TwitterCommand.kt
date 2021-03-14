@@ -71,7 +71,11 @@ class TwitterCommand : AbstractCommand("command.twitter") {
                 twitterWebhook.excludedTweetTypes = twitterWebhook.excludedTweetTypes - toInclude
                 context.daoManager.twitterWrapper.store(twitterWebhook)
 
-                sendRsp(context, "Removed `%tweetType%` from `%handle%`'s ignored tweetTypes")
+                sendRsp(
+                    context, "Removed `%tweetType%` from `%handle%`'s ignored tweetTypes"
+                        .withSafeVarInCodeblock("tweetType", toInclude.toUCC())
+                        .withSafeVarInCodeblock("handle", twitterWebhook.handle)
+                )
             }
         }
 
@@ -90,7 +94,11 @@ class TwitterCommand : AbstractCommand("command.twitter") {
                 twitterWebhook.excludedTweetTypes = twitterWebhook.excludedTweetTypes + toExclude
                 context.daoManager.twitterWrapper.store(twitterWebhook)
 
-                sendRsp(context, "Added `%tweetType%` to `%handle%`'s ignored tweetTypes")
+                sendRsp(
+                    context, "Added `%tweetType%` to `%handle%`'s ignored tweetTypes"
+                        .withSafeVarInCodeblock("tweetType", toExclude.toUCC())
+                        .withSafeVarInCodeblock("handle", twitterWebhook.handle)
+                )
             }
 
         }
@@ -106,6 +114,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
                 val twitterWebhook = getTwitterWebhookByArgsNMessage(context, 0) ?: return
 
                 val title = "List of `%handle%`'s ignored tweetTypes:"
+                    .withSafeVarInCodeblock("handle", twitterWebhook.handle)
                 var body = "```INI"
                 for (type in twitterWebhook.excludedTweetTypes) {
                     body += "\n - ${type.toUCC()}"
