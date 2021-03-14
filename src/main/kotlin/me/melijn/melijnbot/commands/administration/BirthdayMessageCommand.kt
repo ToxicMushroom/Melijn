@@ -11,7 +11,7 @@ class BirthdayMessageCommand : AbstractCommand("command.birthdaymessage") {
     init {
         id = 142
         name = "birthdayMessage"
-        aliases = arrayOf("bm")
+        aliases = arrayOf("bdm")
         children = arrayOf(
             LeaveMessageCommand.SetContentArg(root, MessageType.BIRTHDAY),
             LeaveMessageCommand.EmbedArg(root, MessageType.BIRTHDAY),
