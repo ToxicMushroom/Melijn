@@ -44,9 +44,9 @@ object BirthdayMethods {
                     calendar[Calendar.DAY_OF_YEAR] - 1
                 } else calendar[Calendar.DAY_OF_YEAR]
 
-                val bornMillis = (((born - 1970) * 365.25) + dayOfYear) * 24 * 60 * 60 * 1000
+                val bornMillis = (((born - 1970) * 365.25) + dayOfYear) * 24 * 3600_000
                 val millisDifference = System.currentTimeMillis() - bornMillis
-                val age = (millisDifference / 1000 / 60 / 60 / 24 / 365.25).roundToInt()
+                val age = (millisDifference / 3600_000 / 24 / 365.25).roundToInt()
 
                 age.toString()
             }
