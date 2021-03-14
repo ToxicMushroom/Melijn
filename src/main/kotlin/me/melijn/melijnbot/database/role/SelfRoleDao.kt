@@ -36,8 +36,8 @@ class SelfRoleDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         )
     }
 
-    fun clear(guildId: Long, groupName: String) {
-        driverManager.executeUpdate(
+    suspend fun clear(guildId: Long, groupName: String): Int {
+        return driverManager.executeUpdateGetChanged(
             "DELETE FROM $table WHERE guildId = ? AND groupName = ?",
             guildId, groupName
         )

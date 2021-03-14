@@ -555,15 +555,13 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val roles = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
 
         for (role in roles) {
-            if (!member.roles.contains(role)) {
-                val added = try {
-                    guild.addRoleToMember(member, role).reason("SelfRole").awaitBool()
-                } catch (t: Throwable) {
-                    false
-                }
-                if (!added) {
-                    LogUtils.sendMessageFailedToAddRoleToMember(container.daoManager, member, role)
-                }
+            val added = try {
+                guild.addRoleToMember(member, role).reason("SelfRole").awaitBool()
+            } catch (t: Throwable) {
+                false
+            }
+            if (!added) {
+                LogUtils.sendMessageFailedToAddRoleToMember(container.daoManager, member, role)
             }
         }
     }
