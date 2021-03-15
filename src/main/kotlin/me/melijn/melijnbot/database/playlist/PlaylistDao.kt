@@ -85,7 +85,12 @@ class PlaylistDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         )
     }
 
-    fun rename(previousName: String, newName: String) {
-        driverManager.executeUpdate("UPDATE $table SET playlist = ? WHERE playlist = ?", newName, previousName)
+    fun rename(previousName: String, idOffset: Int, newName: String) {
+        driverManager.executeUpdate(
+            "UPDATE $table SET playlist = ?, id = id + ? WHERE playlist = ?",
+            newName,
+            idOffset,
+            previousName
+        )
     }
 }

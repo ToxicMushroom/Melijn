@@ -75,8 +75,9 @@ class PlaylistWrapper(private val playlistDao: PlaylistDao) {
         playlistDao.clear(userId, playlist)
     }
 
-    fun rename(userId: Long, previousName: String, newName: String) {
-        playlistDao.rename(previousName, newName)
+    suspend fun rename(userId: Long, previousName: String, newName: String) {
+        val idOffset = getPlaylists(userId)[newName]?.size ?: 0
+        playlistDao.rename(previousName, idOffset, newName)
         playlistDao.removeCacheEntry(userId)
     }
 }
