@@ -167,9 +167,9 @@ object StringUtils {
                     }
                 }
                 messages.addAll(splitMessage(msg.substring(0, index + 1)))
-                msg = msg.substring(index + 1, msg.length + 1)
+                msg = msg.substring(index + 1, msg.length)
             }
-            messages.addAll(splitMessage(msg.substring(0, msg.length + 1)))
+            messages.addAll(splitMessage(msg.substring(0, msg.length)))
         } else if (maxLength > msg.length) {
             messages.addAll(splitMessage(msg))
         } else {

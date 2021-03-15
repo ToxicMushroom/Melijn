@@ -16,7 +16,6 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
-import kotlin.math.max
 
 // const val UNKNOWN_SELFROLEMODE_PATH = "message.unknown.selfrolemode"
 
@@ -240,7 +239,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val embedder = Embedder(context)
 
             val emotejiList = mutableListOf<String>()
-            var body = ""
+            val entries = mutableListOf<String>()
             val size = selfRoles.length()
             for (i in 0 until size) {
                 val dataEntry = selfRoles.getArray(i)
@@ -258,92 +257,82 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                 val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
 
-                body += bodyFormat
-                    .withVariable("name", name)
-                    .withVariable("role", roleMention)
-                    .withVariable("roleMention", roleMention) // legacy support
-                    .withVariable("enter", "\n")
-                    .withVariable(
-                        "emoteji",
-                        if (isEmoji) {
-                            emoteji
-                        } else {
-                            val emote = context.guild.getEmoteById(emoteji)
-                                ?: context.shardManager.getEmoteById(emoteji)
-                            emote?.asMention ?: "error"
-                        }
-                    )
+                entries.add(
+                    bodyFormat
+                        .withVariable("name", name)
+                        .withVariable("role", roleMention)
+                        .withVariable("roleMention", roleMention) // legacy support
+                        .withVariable("enter", "\n")
+                        .withVariable(
+                            "emoteji",
+                            if (isEmoji) {
+                                emoteji
+                            } else {
+                                val emote = context.guild.getEmoteById(emoteji)
+                                    ?: context.shardManager.getEmoteById(emoteji)
+                                emote?.asMention ?: "error"
+                            }
+                        )
+                )
 
             }
 
-            val totalCount = body.count { c -> c == '\n' }
-            val shouldCount = selfRoles.length()
-            val ratio = totalCount / shouldCount
+            var alreadyUsedEmotesAmount = 0
+            val messages = mutableListOf<Long>()
 
-            var alreadyEmotesAmount = 0
-            val messages: List<Message> = if (size > 20 || body.length > MessageEmbed.TEXT_MAX_LENGTH) {
-                val splitted =
-                    StringUtils.splitMessageAtMaxCharAmountOrLength(body, 20, '\n', MessageEmbed.TEXT_MAX_LENGTH)
-
-                val messages = mutableListOf<Message>()
+            val totalLength = entries.sumBy { it.length }
+            if (entries.size > 20 || totalLength > MessageEmbed.TEXT_MAX_LENGTH) {
                 val titleFormat = context.getTranslation("$root.titleformat.part")
-                for ((index, part) in splitted.withIndex()) {
+                val body = StringBuilder()
+                var part = 1
+                for ((index, entry) in entries.withIndex()) {
+                    if (body.length + entry.length > MessageEmbed.TEXT_MAX_LENGTH) {
+                        embedder.setTitle(
+                            titleFormat
+                                .withVariable("group", group.groupName)
+                                .withVariable("part", part++)
+                        )
+                        embedder.setDescription(body)
+                        val msg = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build()).firstOrNull()
+                        if (msg != null) {
+                            messages.add(msg.idLong)
+                            val emotejisForMsg = emotejiList.subList(alreadyUsedEmotesAmount, index)
+                            alreadyUsedEmotesAmount += emotejisForMsg.size
+                            addEmotejisToMsg(emotejisForMsg, msg, context)
+                        }
+                        body.clear()
+                    }
+                    body.append(entry)
 
+                }
+                if (body.isNotBlank()) {
                     embedder.setTitle(
                         titleFormat
                             .withVariable("group", group.groupName)
-                            .withVariable("part", index + 1)
+                            .withVariable("part", part)
                     )
-
-                    embedder.setDescription(part)
-                    val messagesPart =
-                        sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build())
-
-                    val emoteAmount = part.count { c -> c == '\n' } / max(ratio, 1)
-                    val emoteMessage = messagesPart.last()
-                    for (emoteIndex in alreadyEmotesAmount until (alreadyEmotesAmount + emoteAmount)) {
-                        val emoteji = emotejiList[emoteIndex]
-                        val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
-                        if (isEmoji) {
-                            emoteMessage.addReaction(emoteji).queue()
-                        } else {
-                            val emote = context.guild.getEmoteById(emoteji)
-                                ?: context.shardManager.getEmoteById(emoteji)
-                            emote?.let { emoteMessage.addReaction(it).queue() }
-                        }
+                    embedder.setDescription(body)
+                    val msg = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build()).firstOrNull()
+                    if (msg != null) {
+                        messages.add(msg.idLong)
+                        val emotejisForMsg = emotejiList.drop(alreadyUsedEmotesAmount)
+                        addEmotejisToMsg(emotejisForMsg, msg, context)
                     }
-
-
-                    alreadyEmotesAmount += emoteAmount
-                    messages.addAll(messagesPart)
                 }
-                messages.toList()
             } else {
                 val titleFormat = context.getTranslation("$root.titleformat")
                 embedder.setTitle(titleFormat.withVariable("group", group.groupName))
-                embedder.setDescription(body)
-                val messagesPart = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build())
-
-                val emoteMessage = messagesPart.last()
-                for (emoteIndex in alreadyEmotesAmount until (alreadyEmotesAmount + shouldCount)) {
-                    val emoteji = emotejiList[emoteIndex]
-                    val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
-                    if (isEmoji) {
-                        emoteMessage.addReaction(emoteji).queue()
-                    } else {
-                        val emote = context.guild.getEmoteById(emoteji)
-                            ?: context.shardManager.getEmoteById(emoteji)
-                        emote?.let { emoteMessage.addReaction(it).queue() }
-                    }
+                for (entry in entries) {
+                    embedder.appendDescription(entry)
                 }
-
-
-                alreadyEmotesAmount += shouldCount
-                messagesPart
+                val msg = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build()).firstOrNull()
+                if (msg != null) {
+                    messages.add(msg.idLong)
+                    addEmotejisToMsg(emotejiList, msg, context)
+                }
             }
 
-
-            val messageIds = messages.map { it.idLong }.sorted()
+            val messageIds = messages.sorted()
 
             group.messageIds = messageIds
             group.channelId = channel.idLong
@@ -354,6 +343,23 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 .withVariable("group", group.groupName)
                 .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
             sendRsp(context, msg)
+        }
+
+        private fun addEmotejisToMsg(
+            emotejisForMsg: List<String>,
+            msg: Message,
+            context: ICommandContext
+        ) {
+            for (emoteji in emotejisForMsg) {
+                val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
+                if (isEmoji) {
+                    msg.addReaction(emoteji).queue()
+                } else {
+                    val emote = context.guild.getEmoteById(emoteji)
+                        ?: context.shardManager.getEmoteById(emoteji)
+                    emote?.let { msg.addReaction(it).queue() }
+                }
+            }
         }
     }
 
