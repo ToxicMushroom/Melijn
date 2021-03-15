@@ -460,7 +460,7 @@ suspend fun getEmoteByArgsN(context: ICommandContext, index: Int, sameGuildAsCon
     }
 }
 
-val hexColorRegex = Regex("#?([a-f]|\\d){3}(([a-f]|\\d){3})?", RegexOption.IGNORE_CASE)
+val hexColorRegex = Regex("(?:0x)?#?([a-f]|\\d){6}", RegexOption.IGNORE_CASE)
 val rgbColorRegex = Regex("\\s*\\d+,\\s*\\d+,\\s*\\d+")
 
 suspend fun getColorFromArgNMessage(context: ICommandContext, index: Int): Color? {
@@ -469,6 +469,7 @@ suspend fun getColorFromArgNMessage(context: ICommandContext, index: Int): Color
     val color: Color? = when {
         hexColorRegex.matches(arg) -> {
             if (arg.startsWith("#")) Color.decode(arg)
+            else if(arg.startsWith("0x")) Color.decode("#" + arg.drop(2))
             else Color.decode("#$arg")
         }
         rgbColorRegex.matches(arg) -> {
