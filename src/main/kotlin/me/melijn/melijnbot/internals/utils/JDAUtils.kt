@@ -30,6 +30,14 @@ val Member.asTag: String
 val TextChannel.asTag: String
     get() = "#${this.name}"
 
+val GuildChannel.asTag: String
+    get() {
+        return when (this) {
+            is TextChannel -> this.asTag
+            else -> this.name
+        }
+    }
+
 suspend fun <T> Task<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
     onSuccess { success: T ->
         it.resume(success)
@@ -504,6 +512,104 @@ suspend fun getColorFromArgNMessage(context: ICommandContext, index: Int): Color
     }
     return color
 }
+
+
+fun getChannelByArgsN(
+    context: ICommandContext,
+    index: Int,
+    sameGuildAsContext: Boolean = true
+): GuildChannel? {
+    var channel: GuildChannel? = null
+    if (context.args.size <= index) return null
+
+    if (!context.isFromGuild && sameGuildAsContext) return channel
+    val arg = context.args[index]
+
+    channel = if (DISCORD_ID.matches(arg)) {
+        if (sameGuildAsContext) {
+            context.guild.getCategoryById(arg)
+        } else {
+            context.shardManager.getGuildChannelById(arg)
+        }
+    } else if (context.isFromGuild && context.guild.getTextChannelsByName(arg, true).size > 0) {
+        context.guild.getTextChannelsByName(arg, true)[0]
+
+    } else if (context.isFromGuild && context.guild.getVoiceChannelsByName(arg, true).size > 0) {
+        context.guild.getVoiceChannelsByName(arg, true)[0]
+
+    } else if (context.isFromGuild && context.guild.getStoreChannelsByName(arg, true).size > 0) {
+        context.guild.getStoreChannelsByName(arg, true)[0]
+
+    } else if (CHANNEL_MENTION.matches(arg)) {
+        val id = (CHANNEL_MENTION.find(arg) ?: return null).groupValues[1]
+        context.message.mentionedChannels.firstOrNull { it.id == id }
+            ?: context.shardManager.getGuildChannelById(id)
+
+    } else channel
+
+    if (sameGuildAsContext && !context.guild.textChannels.contains(channel)) return null
+    return channel
+}
+
+suspend fun getChannelByArgsNMessage(
+    context: ICommandContext,
+    index: Int,
+    sameGuildAsContext: Boolean = true
+): GuildChannel? {
+    if (argSizeCheckFailed(context, index)) return null
+    val textChannel = getChannelByArgsN(context, index, sameGuildAsContext)
+    if (textChannel == null) {
+        val msg = context.getTranslation(MESSAGE_UNKNOWN_CHANNEL)
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
+        sendRsp(context, msg)
+    }
+    return textChannel
+}
+
+
+fun getCategoryByArgsN(
+    context: ICommandContext,
+    index: Int,
+    sameGuildAsContext: Boolean = true
+): Category? {
+    var category: Category? = null
+    if (context.args.size <= index) return null
+
+    if (!context.isFromGuild && sameGuildAsContext) return category
+    val arg = context.args[index]
+
+    category = if (DISCORD_ID.matches(arg)) {
+        if (sameGuildAsContext) {
+            context.guild.getCategoryById(arg)
+        } else {
+            context.shardManager.getCategoryById(arg)
+        }
+    } else if (context.isFromGuild && context.guild.getCategoriesByName(arg, true).size > 0) {
+        context.guild.getCategoriesByName(arg, true)[0]
+
+    } else category
+
+    if (sameGuildAsContext && !context.guild.categories.contains(category)) return null
+    return category
+}
+
+suspend fun getCategoryByArgsNMessage(
+    context: ICommandContext,
+    index: Int,
+    sameGuildAsContext: Boolean = true
+): Category? {
+    if (argSizeCheckFailed(context, index)) return null
+    val category = getCategoryByArgsN(context, index, sameGuildAsContext)
+    if (category == null) {
+        val msg = context.getTranslation(MESSAGE_UNKNOWN_CATEGORY)
+            .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
+        sendRsp(context, msg)
+    }
+    return category
+}
+
+
+
 
 fun getTextChannelByArgsN(
     context: ICommandContext,

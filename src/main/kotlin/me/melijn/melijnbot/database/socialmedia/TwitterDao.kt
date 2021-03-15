@@ -91,7 +91,7 @@ class TwitterDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 data class TwitterWebhook(
     val guildId: Long,
     val webhookUrl: String,
-    val excludedTweetTypes: Set<TweetInfo.TweetType>,
+    var excludedTweetTypes: Set<TweetInfo.TweetType>,
     val handle: String,
     val twitterUserId: Long,
     var monthlyTweetCount: Long,

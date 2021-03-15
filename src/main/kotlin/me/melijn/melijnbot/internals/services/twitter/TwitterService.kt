@@ -62,6 +62,7 @@ class TwitterService(
         body["avatar_url"] = selfUser.effectiveAvatarUrl
 
         for (tweet in tweets.tweetList.sortedBy { it.createdAt.toEpochSecond(ZoneOffset.UTC) }) {
+            if (twitterWebhook.excludedTweetTypes.contains(tweet.type)) continue
             val embed = DataObject.empty()
             val url = "https://twitter.com/${twitterWebhook.handle}/status/${tweet.id}"
             embed["type"] = "rich"
@@ -135,6 +136,19 @@ class TwitterService(
                 "expansions",
                 "author_id,entities.mentions.username,attachments.media_keys,referenced_tweets.id"
             )
+            when {
+                twitterWebhook.excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) && twitterWebhook.excludedTweetTypes.contains(
+                    TweetInfo.TweetType.RETWEET
+                ) -> {
+                    parameter("exclude", "replies,retweets")
+                }
+                twitterWebhook.excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) -> {
+                    parameter("exclude", "replies")
+                }
+                twitterWebhook.excludedTweetTypes.contains(TweetInfo.TweetType.RETWEET) -> {
+                    parameter("exclude", "retweets")
+                }
+            }
             parameter("tweet.fields", "created_at")
             parameter("media.fields", "preview_image_url,type,url")
             parameter("user.fields", "profile_image_url,username")

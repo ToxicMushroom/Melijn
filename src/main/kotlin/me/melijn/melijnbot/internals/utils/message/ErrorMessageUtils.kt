@@ -11,8 +11,6 @@ import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
-import java.io.PrintWriter
-import java.io.StringWriter
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -74,18 +72,13 @@ suspend fun Throwable.sendInGuildSuspend(
     }
     sb.append("**Thread**: ").appendLine(thread.name)
 
-    val writer = StringWriter()
-    val printWriter = PrintWriter(writer)
-    this.printStackTrace(printWriter)
-    val stacktrace = MarkdownSanitizer.escape(writer.toString())
+    val stacktrace = MarkdownSanitizer.escape(this.stackTraceToString())
         .replace("at me.melijn.melijnbot", "**at me.melijn.melijnbot**")
     sb.append(stacktrace)
     extra?.let {
         sb.appendLine("**Extra**")
         sb.appendLine(it)
     }
-    if (!stacktrace.contains("at me.melijn.melijnbot"))
-    this.cause?.sendInGuild(guild, channel, author, thread, extra, shouldSend)
     if (Container.instance.logToDiscord) {
         sendMsg(textChannel, sb.toString())
     }

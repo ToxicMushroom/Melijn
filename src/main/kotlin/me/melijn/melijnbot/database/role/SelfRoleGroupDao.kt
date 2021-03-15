@@ -10,7 +10,8 @@ class SelfRoleGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager)
 
     override val table: String = "selfRoleGroups"
     override val tableStructure: String =
-        "guildId bigint, groupName varchar(64), messageIds varchar(1024), channelId bigint, isEnabled boolean, pattern varchar(256), isSelfRoleable boolean"
+        "guildId bigint, groupName varchar(64), messageIds varchar(1024), channelId bigint, isEnabled boolean" +
+            ", pattern varchar(256), isSelfRoleable boolean, limitToOneRole boolean"
     override val primaryKey: String = "guildId, groupName"
 
     override val cacheName: String = "selfrole:group"
@@ -31,7 +32,8 @@ class SelfRoleGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager)
                         rs.getLong("channelId"),
                         rs.getBoolean("isEnabled"),
                         if (pattern.isBlank()) null else pattern,
-                        rs.getBoolean("isSelfRoleable")
+                        rs.getBoolean("isSelfRoleable"),
+                        rs.getBoolean("limitToOneRole"),
                     )
                 )
             }
@@ -47,11 +49,13 @@ class SelfRoleGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager)
         channelId: Long,
         isEnabled: Boolean,
         pattern: String,
-        isSelfRoleable: Boolean
+        isSelfRoleable: Boolean,
+        limitToOneRole: Boolean
     ) {
         driverManager.executeUpdate(
-            "INSERT INTO $table (guildId, groupName, messageIds, channelId, isEnabled, pattern, isSelfRoleable) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO " +
-                "UPDATE SET messageIds = ?, channelId = ?, isEnabled = ?, pattern = ?, isSelfRoleable = ?",
+            "INSERT INTO $table (guildId, groupName, messageIds, channelId, isEnabled, pattern, isSelfRoleable, limitToOneRole) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO " +
+                "UPDATE SET messageIds = ?, channelId = ?, isEnabled = ?, pattern = ?, isSelfRoleable = ?, limitToOneRole = ?",
             guildId,
             groupName,
             messageIds,
@@ -59,11 +63,13 @@ class SelfRoleGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager)
             isEnabled,
             pattern,
             isSelfRoleable,
+            limitToOneRole,
             messageIds,
             channelId,
             isEnabled,
             pattern,
-            isSelfRoleable
+            isSelfRoleable,
+            limitToOneRole
         )
     }
 
@@ -81,5 +87,6 @@ data class SelfRoleGroup(
     var channelId: Long,
     var isEnabled: Boolean,
     var pattern: String?,
-    var isSelfRoleable: Boolean
+    var isSelfRoleable: Boolean,
+    var limitToOneRole: Boolean
 )

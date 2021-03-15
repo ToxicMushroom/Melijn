@@ -30,6 +30,10 @@ import me.melijn.melijnbot.database.filter.FilterGroupWrapper
 import me.melijn.melijnbot.database.filter.FilterWrapper
 import me.melijn.melijnbot.database.games.OsuDao
 import me.melijn.melijnbot.database.games.OsuWrapper
+import me.melijn.melijnbot.database.join.AutoRemoveInactiveJoinMessageDao
+import me.melijn.melijnbot.database.join.AutoRemoveInactiveJoinMessageWrapper
+import me.melijn.melijnbot.database.join.InactiveJMDao
+import me.melijn.melijnbot.database.join.InactiveJMWrapper
 import me.melijn.melijnbot.database.kick.KickDao
 import me.melijn.melijnbot.database.kick.KickWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
@@ -211,6 +215,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
     val newYearWrapper: NewYearWrapper
 
+    val autoRemoveInactiveJoinMessageWrapper: AutoRemoveInactiveJoinMessageWrapper
+    val inactiveJMWrapper: InactiveJMWrapper
+
     var driverManager: DriverManager
 
     init {
@@ -254,7 +261,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
         guildPrefixWrapper = GuildPrefixWrapper(GuildPrefixDao(driverManager))
         userPrefixWrapper = UserPrefixWrapper(UserPrefixDao(driverManager))
-        allowSpacedPrefixWrapper = AllowSpacedPrefixWrapper(AllowSpacedPrefixDao(driverManager), PrivateAllowSpacedPrefixDao(driverManager)
+        allowSpacedPrefixWrapper = AllowSpacedPrefixWrapper(
+            AllowSpacedPrefixDao(driverManager), PrivateAllowSpacedPrefixDao(driverManager)
         )
         aliasWrapper = AliasWrapper(AliasDao(driverManager))
 
@@ -307,7 +315,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         botLogStateWrapper = BotLogStateWrapper(BotLogStateDao(driverManager))
         removeResponseWrapper = RemoveResponseWrapper(RemoveResponsesDao(driverManager))
         removeInvokeWrapper = RemoveInvokeWrapper(RemoveInvokeDao(driverManager))
-        voteReminderStatesWrapper = VoteReminderStatesWrapper(me.melijn.melijnbot.database.settings.VoteReminderStatesDao(driverManager))
+        voteReminderStatesWrapper =
+            VoteReminderStatesWrapper(me.melijn.melijnbot.database.settings.VoteReminderStatesDao(driverManager))
         voteReminderWrapper = VoteReminderWrapper(VoteReminderDao(driverManager))
         reminderWrapper = ReminderWrapper(ReminderDao(driverManager))
 
@@ -325,6 +334,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         osuWrapper = OsuWrapper(OsuDao(driverManager))
 
         newYearWrapper = NewYearWrapper(NewYearDao(driverManager))
+
+        autoRemoveInactiveJoinMessageWrapper = AutoRemoveInactiveJoinMessageWrapper(AutoRemoveInactiveJoinMessageDao(driverManager))
+        inactiveJMWrapper = InactiveJMWrapper(InactiveJMDao(driverManager))
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {

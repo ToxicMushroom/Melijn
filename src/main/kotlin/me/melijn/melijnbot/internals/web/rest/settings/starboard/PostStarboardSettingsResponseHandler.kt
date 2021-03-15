@@ -54,7 +54,7 @@ object PostStarboardSettingsResponseHandler {
 
             val allChannels = guild.textChannels.map { it.idLong }
             val availableChannels = guild.textChannels.filter { it.canTalk() }.map { it.idLong }
-            val starboardChannelId = settings.getString("starboardchanel", null)?.toLongOrNull()
+            val starboardChannelId = settings.getString("starboardChannel", null)?.toLongOrNull()
             if (starboardChannelId != null && availableChannels.contains(starboardChannelId)) {
                 jobs.add(TaskManager.async {
                     daoManager.channelWrapper.setChannel(guild.idLong, ChannelType.STARBOARD, starboardChannelId)
@@ -63,14 +63,16 @@ object PostStarboardSettingsResponseHandler {
                 daoManager.channelWrapper.removeChannel(guild.idLong, ChannelType.STARBOARD)
             }
 
-            val minStars = max(1, min(10, settings.getInt("minStars", 3)))
-            val excludedChannelIds = settings.getString("excludedChannels", null)
-                ?.split(",")
-                ?.mapNotNull {
-                    it.toLongOrNull()
-                }?.filter {
-                    allChannels.contains(it)
-                } ?: emptyList()
+            val minStars = max(1, min(25, settings.getInt("minStarCount", 3)))
+            val excludedChannelIds = mutableListOf<Long>()
+            val channelIdArray = settings.getArray("excludedChannels")
+            for (i in 0 until channelIdArray.length()) {
+                val id = channelIdArray.getString(i).toLongOrNull() ?: continue
+                if (allChannels.contains(id))
+                    excludedChannelIds.add(id)
+            }
+
+
             jobs.add(TaskManager.async {
                 daoManager.starboardSettingsWrapper.setStarboardSettings(
                     guild.idLong,
@@ -85,6 +87,7 @@ object PostStarboardSettingsResponseHandler {
                     .put("success", true)
             )
         } catch (t: Throwable) {
+            t.printStackTrace()
             context.call.respondJson(
                 DataObject.empty()
                     .put("success", false)

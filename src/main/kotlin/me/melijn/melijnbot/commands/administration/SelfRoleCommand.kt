@@ -31,12 +31,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             RemoveArg(root),
             RemoveAtArg(root),
             SendGroupAutoArg(root),
+            ClearArg(root),
             ListArg(root),
             GroupArg(root),
             SetGetAllRolesArg(root),
             SetNameArg(root)
-            // SetMode(root),  Manual, Auto | Auto will ignore selfRoleMessageIds and selfRoleChannelIds and use the internal cached ones
-            // SendGroupArg(root) /Internal cached ones are messageIds created by the >sr sendGroup <channel> command
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
@@ -187,36 +186,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     break
                 }
             }
-        }
-    }
-
-    // Sends the group
-    class SendGroupArg(parent: String) : AbstractCommand("$parent.sendgroup") {
-
-        init {
-            name = "sendGroup"
-            //aliases = arrayOf("sg")
-        }
-
-        override suspend fun execute(context: ICommandContext) {
-            sendRsp(context, "WIP")
-//            if (context.args.isEmpty()) {
-//                sendSyntax(context)
-//                return
-//            }
-//
-//            val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
-//
-//            val channel = if (context.args.size < 2) {
-//                context.textChannel
-//
-//            } else {
-//                getTextChannelByArgsNMessage(context, 1)
-//            } ?: return
-//
-//            val messages: List<Message> = sendRsp(channel, "test ${group.groupName}")
-
-
         }
     }
 
@@ -388,31 +357,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
     }
 
-//    class SetMode(parent: String) : AbstractCommand("$parent.setmode") {
-//
-//        init {
-//            name = "setMode"
-//            aliases = arrayOf("sm")
-//        }
-//
-//        override suspend fun execute(context: ICommandContext) {
-//            val wrapper = context.daoManager.selfRoleModeWrapper
-//            if (context.args.isEmpty()) {
-//                val mode = wrapper.selfRoleModeCache.get(context.guildId).await().toUCC()
-//                val msg = context.getTranslation("$root.show")
-//                    .withVariable("mode", mode)
-//                sendRsp(context, msg)
-//                return
-//            }
-//
-//            val mode = getEnumFromArgNMessage<SelfRoleMode>(context, 0, UNKNOWN_SELFROLEMODE_PATH) ?: return
-//            wrapper.set(context.guildId, mode)
-//            val msg = context.getTranslation("$root.set")
-//                .withVariable("mode", mode.toUCC())
-//            sendRsp(context, msg)
-//        }
-//    }
-
     class GroupArg(parent: String) : AbstractCommand("$parent.group") {
 
         init {
@@ -423,12 +367,46 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 RemoveArg(root),  // Removes a group
                 ListArg(root),    // Lists all roles in group
                 MessageIdsArg(root),     // Message Ids
-                SetChannel(root), // pepega
+                SetChannel(root),
                 SetSelfRoleAbleArg(root),
                 SetEnabledArg(root),
+                SetLimitToOneRole(root),
                 SetPattern(root),
                 ChangeNameArg(root)
             )
+        }
+
+        class SetLimitToOneRole(parent: String) : AbstractCommand("$parent.setlimittoonerole") {
+
+            init {
+                name = "setLimitToOneRole"
+                aliases = arrayOf("sltor")
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val wrapper = context.daoManager.selfRoleGroupWrapper
+                val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+                if (context.args.size == 1) {
+                    val msg = context.getTranslation("$root.show." + group.limitToOneRole)
+                        .withVariable("group", group.groupName)
+                    sendRsp(context, msg)
+                    return
+                }
+
+                val bool = getBooleanFromArgNMessage(context, 1) ?: return
+                group.limitToOneRole = bool
+                wrapper.insertOrUpdate(context.guildId, group)
+
+                val msg = context.getTranslation("$root.set." + group.limitToOneRole)
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
+                return
+            }
         }
 
         class SetPattern(parent: String) : AbstractCommand("$parent.setpattern") {
@@ -800,8 +778,15 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     return
                 }
 
-                val newSr =
-                    SelfRoleGroup(name, emptyList(), -1, isEnabled = true, isSelfRoleable = true, pattern = null)
+                val newSr = SelfRoleGroup(
+                    name,
+                    emptyList(),
+                    channelId = -1,
+                    isEnabled = true,
+                    isSelfRoleable = true,
+                    pattern = null,
+                    limitToOneRole = false
+                )
                 wrapper.insertOrUpdate(context.guildId, newSr)
 
                 val msg = context.getTranslation("$root.added")
@@ -828,7 +813,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 wrapper.delete(context.guildId, selfRoleGroup.groupName)
 
                 val msg = context.getTranslation("$root.removed")
-                    .withVariable("name", name)
+                    .withVariable("name", selfRoleGroup.groupName)
                 sendRsp(context, msg)
             }
         }
@@ -890,7 +875,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 context.daoManager.selfRoleWrapper.changeName(context.guildId, selfRoleGroup1.groupName, name)
 
                 selfRoleGroup1.apply {
-                    val newSr = SelfRoleGroup(name, messageIds, channelId, isEnabled, pattern, isSelfRoleable)
+                    val newSr = SelfRoleGroup(
+                        name, messageIds, channelId, isEnabled, pattern, isSelfRoleable, limitToOneRole
+                    )
                     wrapper.delete(context.guildId, groupName)
                     wrapper.insertOrUpdate(context.guildId, newSr)
 
@@ -938,32 +925,45 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             require(name != null) { "what.." }
 
             val role = getRoleByArgsNMessage(context, 2) ?: return
-
+            var chance = 100
             val msg = if (context.args.size > 3) {
-                val chance = getIntegerFromArgNMessage(context, 3, 1) ?: return
-
-                context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, chance)
-
+                chance = getIntegerFromArgNMessage(context, 3, 1) ?: return
                 context.getTranslation("$root.success.chance")
-                    .withVariable("group", group.groupName)
-                    .withVariable("emoteji", name)
-                    .withVariable(PLACEHOLDER_ROLE, role.name)
                     .withVariable("chance", "$chance")
             } else {
-                context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, 100)
-
                 context.getTranslation("$root.success")
-                    .withVariable("group", group.groupName)
-                    .withVariable("emoteji", name)
-                    .withVariable(PLACEHOLDER_ROLE, role.name)
-            }
+            }.withVariable("group", group.groupName)
+                .withVariable("emoteji", name)
+                .withVariable(PLACEHOLDER_ROLE, role.name)
 
-
-
+            context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, chance)
             sendRsp(context, msg)
         }
     }
 
+
+    class ClearArg(val parent: String) : AbstractCommand("$parent.clear") {
+
+        init {
+            name = "clear"
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+            val selfRoleWrapper = context.daoManager.selfRoleWrapper
+            val rows = selfRoleWrapper.clear(context.guildId, group.groupName)
+
+            val msg = context.getTranslation("$root.cleared")
+                .withVariable("rows", rows)
+                .withSafeVariable("group", group.groupName)
+            sendRsp(context, msg)
+        }
+    }
 
     class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
 
@@ -983,7 +983,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val selfRoleWrapper = context.daoManager.selfRoleWrapper
             val guildSelfRoles = selfRoleWrapper.getMap(context.guildId)[group.groupName]
             if (guildSelfRoles == null) {
-                sendRsp(context, "There is not selfrole entry in the " + group.groupName + " for that emoteji")
+                sendRsp(context, "There is no selfrole entry in the " + group.groupName + " for that emoteji")
                 return
             }
 
@@ -1036,7 +1036,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
                 selfRoleWrapper.remove(context.guildId, group.groupName, emoteji, roleId)
             } else {
-                roles = roleIds.joinToString(", ", "<@&", ">")
+                roles = roleIds.joinToString(", ") { "<@&$it>" }
                 selfRoleWrapper.remove(context.guildId, group.groupName, emoteji)
             }
 
@@ -1082,7 +1082,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 dataEntry.add(roleDataArr.getArray(j).getLong(1))
             }
 
-            val roleString = rolesIds.joinToString(", ", "<@&", ">")
+            val roleString = rolesIds.joinToString(", ") { "<@&$it>" }
             selfRoleWrapper.remove(context.guildId, group.groupName, emoteji)
 
 

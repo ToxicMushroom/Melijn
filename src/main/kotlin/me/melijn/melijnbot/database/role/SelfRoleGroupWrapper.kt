@@ -36,7 +36,8 @@ class SelfRoleGroupWrapper(private val selfRoleGroupDao: SelfRoleGroupDao) {
             selfRoleGroup.isEnabled,
             selfRoleGroup.pattern
                 ?: "",
-            selfRoleGroup.isSelfRoleable
+            selfRoleGroup.isSelfRoleable,
+            selfRoleGroup.limitToOneRole
         )
         selfRoleGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }

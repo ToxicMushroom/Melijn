@@ -8,11 +8,10 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.internals.utils.isPositiveNumber
-import me.melijn.melijnbot.internals.utils.isPremiumUser
+import me.melijn.melijnbot.internals.services.twitter.TweetInfo
+import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_TWEETTYPE
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.*
-import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 class TwitterCommand : AbstractCommand("command.twitter") {
@@ -22,6 +21,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
         name = "twitter"
         children = arrayOf(
             SetupWebhookArg(root),
+            ExcludedTweetTypes(root),
             ListArg(root),
             RemoveAtArg(root)
         )
@@ -32,6 +32,102 @@ class TwitterCommand : AbstractCommand("command.twitter") {
         private const val TWITTER_LIMIT = 1
         private const val PREMIUM_TWITTER_LIMIT = 5
         private const val TWITTER_LIMIT_PATH = "premium.feature.twitter.limit"
+
+        suspend fun getTwitterWebhookByArgsNMessage(context: ICommandContext, index: Int): TwitterWebhook? {
+            val list = context.daoManager.twitterWrapper.getAll(context.guildId).sortedBy { it.handle }
+            if (list.isEmpty()) {
+                sendRsp(context, "You don't track any twitter users")
+                return null
+            }
+            val id = getIntegerFromArgNMessage(context, index, 1, list.size) ?: return null
+            return list[id - 1]
+        }
+    }
+
+    class ExcludedTweetTypes(parent: String) : AbstractCommand("$parent.excludedtweettypes") {
+
+        init {
+            name = "excludedTweetTypes"
+            aliases = arrayOf("ett")
+            children = arrayOf(
+                AddArg(root),
+                RemoveArg(root),
+                ListArg(root)
+            )
+        }
+
+        class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
+
+            init {
+                name = "remove"
+                aliases = arrayOf("rm")
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                val twitterWebhook = getTwitterWebhookByArgsNMessage(context, 0) ?: return
+                val toInclude =
+                    getEnumFromArgNMessage<TweetInfo.TweetType>(context, 1, MESSAGE_UNKNOWN_TWEETTYPE) ?: return
+
+                twitterWebhook.excludedTweetTypes = twitterWebhook.excludedTweetTypes - toInclude
+                context.daoManager.twitterWrapper.store(twitterWebhook)
+
+                sendRsp(
+                    context, "Removed `%tweetType%` from `%handle%`'s ignored tweetTypes"
+                        .withSafeVarInCodeblock("tweetType", toInclude.toUCC())
+                        .withSafeVarInCodeblock("handle", twitterWebhook.handle)
+                )
+            }
+        }
+
+        class AddArg(parent: String) : AbstractCommand("$parent.add") {
+
+            init {
+                name = "add"
+                aliases = arrayOf("a")
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                val twitterWebhook = getTwitterWebhookByArgsNMessage(context, 0) ?: return
+                val toExclude =
+                    getEnumFromArgNMessage<TweetInfo.TweetType>(context, 1, MESSAGE_UNKNOWN_TWEETTYPE) ?: return
+
+                twitterWebhook.excludedTweetTypes = twitterWebhook.excludedTweetTypes + toExclude
+                context.daoManager.twitterWrapper.store(twitterWebhook)
+
+                sendRsp(
+                    context, "Added `%tweetType%` to `%handle%`'s ignored tweetTypes"
+                        .withSafeVarInCodeblock("tweetType", toExclude.toUCC())
+                        .withSafeVarInCodeblock("handle", twitterWebhook.handle)
+                )
+            }
+
+        }
+
+        class ListArg(parent: String) : AbstractCommand("$parent.list") {
+
+            init {
+                name = "list"
+                aliases = arrayOf("ls")
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                val twitterWebhook = getTwitterWebhookByArgsNMessage(context, 0) ?: return
+
+                val title = "List of `%handle%`'s ignored tweetTypes:"
+                    .withSafeVarInCodeblock("handle", twitterWebhook.handle)
+                var body = "```INI"
+                for (type in twitterWebhook.excludedTweetTypes) {
+                    body += "\n - ${type.toUCC()}"
+                }
+                body += "```"
+                sendRsp(context, title + body)
+            }
+
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            sendSyntax(context)
+        }
     }
 
     class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
@@ -43,14 +139,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
 
         override suspend fun execute(context: ICommandContext) {
             val twitterWrapper = context.daoManager.twitterWrapper
-            val list = twitterWrapper.getAll(context.guildId)
-            if (list.isEmpty()) {
-                sendRsp(context, "You don't track any twitter users")
-                return
-            }
-
-            val index = (getIntegerFromArgNMessage(context, 0, 1, list.size) ?: return) - 1
-            val toRemove = list[index]
+            val toRemove = getTwitterWebhookByArgsNMessage(context, 0) ?: return
             twitterWrapper.delete(context.guildId, toRemove.handle)
 
             val msg = "Removed tracking `" + toRemove.handle + "`"
@@ -164,4 +253,5 @@ class TwitterCommand : AbstractCommand("command.twitter") {
     override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
+
 }

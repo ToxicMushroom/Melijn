@@ -213,10 +213,11 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                     if (split.size < 2) {
                         sendSyntax(context)
                     }
-                    val title = split[0]
-                    val value = context.rawArg.removeFirst("$title>")
+                    val title = split[0].trim()
+                    val value = context.rawArg.removeFirst("$title>").trim()
 
-                    val inline = context.commandParts[1].equals("addInline", true)
+                    val inline = context.commandParts.getOrNull(4)
+                        ?.equals("addInline", true) ?: false
                     MessageCommandUtil.addEmbedField(title, value, inline, context, type)
                 }
             }

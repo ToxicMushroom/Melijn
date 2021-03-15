@@ -718,10 +718,11 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                         if (split.size < 2) {
                             sendSyntax(context)
                         }
-                        val title = split[0]
-                        val value = context.rawArg.removeFirst("$title>")
+                        val title = split[0].trim()
+                        val value = context.rawArg.removeFirst("$title>").trim()
 
-                        val inline = context.commandParts[1].equals("addInline", true)
+                        val inline = context.commandParts.getOrNull(5)
+                            ?.equals("addInline", true) ?: false
                         val cc = getSelectedCCNMessage(context) ?: return
                         MessageCommandUtil.addEmbedFieldCC(title, value, inline, context, cc)
                     }

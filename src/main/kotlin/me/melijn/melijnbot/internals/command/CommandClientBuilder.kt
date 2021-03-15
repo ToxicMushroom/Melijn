@@ -272,7 +272,11 @@ class CommandClientBuilder(private val container: Container) {
         ChangeNameCommand(),
         ScriptsCommand(),
         TwitterCommand(),
-        LynxCommand()
+        LynxCommand(),
+        SyncChannelCommand(),
+        MoveChannelCommand(),
+        SetChannelCategory(),
+        SetAutoRemoveInactiveJoinMessagesDuration()
     )
 
     fun build(): CommandClient {

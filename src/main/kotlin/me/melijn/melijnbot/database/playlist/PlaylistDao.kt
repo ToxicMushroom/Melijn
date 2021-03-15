@@ -10,7 +10,8 @@ class PlaylistDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     override val table: String = "playlists"
     override val tableStructure: String = "userId bigint, playlist varchar(128), id int, track varchar(2048)"
     override val primaryKey: String = "userId, playlist, id, track"
-    override val cacheName: String = "userId, playlist, id"
+
+    override val cacheName: String = "playlists"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -18,18 +19,24 @@ class PlaylistDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
 
     fun set(userId: Long, playlist: String, id: Int, track: String) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, playlist, id, track) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET track = ?",
-            userId, playlist, id, track, track)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (userId, playlist, id, track) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET track = ?",
+            userId, playlist, id, track, track
+        )
     }
 
     fun removeById(userId: Long, playlist: String, id: Int) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND playlist = ? AND id = ?",
-            userId, playlist, id)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE userId = ? AND playlist = ? AND id = ?",
+            userId, playlist, id
+        )
     }
 
     fun removeByTrack(userId: Long, playlist: String, track: String) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND playlist = ? AND track = ?",
-            userId, playlist, track)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE userId = ? AND playlist = ? AND track = ?",
+            userId, playlist, track
+        )
     }
 
 
@@ -58,20 +65,32 @@ class PlaylistDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     fun removeByIds(userId: Long, playlist: String, positions: List<Int>) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("DELETE FROM $table WHERE userId = ? AND playlist = ? AND id = ?").use { preparedStatement ->
-                preparedStatement.setLong(1, userId)
-                preparedStatement.setString(2, playlist)
-                for (id in positions) {
-                    preparedStatement.setInt(3, id)
-                    preparedStatement.addBatch()
+            con.prepareStatement("DELETE FROM $table WHERE userId = ? AND playlist = ? AND id = ?")
+                .use { preparedStatement ->
+                    preparedStatement.setLong(1, userId)
+                    preparedStatement.setString(2, playlist)
+                    for (id in positions) {
+                        preparedStatement.setInt(3, id)
+                        preparedStatement.addBatch()
+                    }
+                    preparedStatement.executeBatch()
                 }
-                preparedStatement.executeBatch()
-            }
         }
     }
 
     fun clear(userId: Long, playlist: String) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND playlist = ?",
-            userId, playlist)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE userId = ? AND playlist = ?",
+            userId, playlist
+        )
+    }
+
+    fun rename(previousName: String, idOffset: Int, newName: String) {
+        driverManager.executeUpdate(
+            "UPDATE $table SET playlist = ?, id = id + ? WHERE playlist = ?",
+            newName,
+            idOffset,
+            previousName
+        )
     }
 }

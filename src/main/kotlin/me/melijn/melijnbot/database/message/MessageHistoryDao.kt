@@ -8,7 +8,8 @@ import kotlin.coroutines.suspendCoroutine
 class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "historyMessages"
-    override val tableStructure: String = "guildId bigint, textChannelId bigint, authorId bigint, messageId bigint, content varchar(2048), moment bigint"
+    override val tableStructure: String =
+        "guildId bigint, textChannelId bigint, authorId bigint, messageId bigint, content varchar(2048), moment bigint"
     override val primaryKey: String = "messageId"
 
     init {
@@ -17,15 +18,19 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun set(daoMessage: DaoMessage) {
         daoMessage.run {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET content = ?",
-                guildId, textChannelId, authorId, messageId, content, moment, content)
+            driverManager.executeUpdate(
+                "INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET content = ?",
+                guildId, textChannelId, authorId, messageId, content, moment, content
+            )
         }
     }
 
     fun add(daoMessage: DaoMessage) {
         daoMessage.run {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
-                guildId, textChannelId, authorId, messageId, content, moment)
+            driverManager.executeUpdate(
+                "INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
+                guildId, textChannelId, authorId, messageId, content, moment
+            )
         }
     }
 
@@ -48,7 +53,10 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     fun clearOldMessages() {
-        driverManager.executeUpdate("DELETE FROM $table WHERE moment < ?", (System.currentTimeMillis() - 86_400_000 * 7))
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE moment < ?",
+            (System.currentTimeMillis() - 86_400_000 * 7)
+        )
     }
 }
 
