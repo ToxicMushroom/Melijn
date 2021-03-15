@@ -17,6 +17,7 @@ class PlaylistWrapper(private val playlistDao: PlaylistDao) {
         if (result != null) return result
 
         val prefixes = playlistDao.getPlaylists(userId)
+
         playlistDao.setCacheEntry(userId, objectMapper.writeValueAsString(prefixes), NORMAL_CACHE)
         return prefixes
     }
@@ -74,7 +75,8 @@ class PlaylistWrapper(private val playlistDao: PlaylistDao) {
         playlistDao.clear(userId, playlist)
     }
 
-    fun rename(previousName: String, newName: String) {
+    fun rename(userId: Long, previousName: String, newName: String) {
         playlistDao.rename(previousName, newName)
+        playlistDao.removeCacheEntry(userId)
     }
 }

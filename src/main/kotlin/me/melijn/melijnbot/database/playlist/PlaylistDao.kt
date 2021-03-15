@@ -10,7 +10,8 @@ class PlaylistDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     override val table: String = "playlists"
     override val tableStructure: String = "userId bigint, playlist varchar(128), id int, track varchar(2048)"
     override val primaryKey: String = "userId, playlist, id, track"
-    override val cacheName: String = "userId, playlist, id"
+
+    override val cacheName: String = "playlists"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)

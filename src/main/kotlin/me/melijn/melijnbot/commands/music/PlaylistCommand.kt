@@ -59,7 +59,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                 return
             }
 
-            context.daoManager.playlistWrapper.rename(previousName, newName)
+            context.daoManager.playlistWrapper.rename(context.authorId, previousName, newName)
 
             val msg = context.getTranslation("$root.renamed")
                 .withVariable("oldName", previousName)
