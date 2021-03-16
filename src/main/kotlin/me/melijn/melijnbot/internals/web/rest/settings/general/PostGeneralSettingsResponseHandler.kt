@@ -4,6 +4,8 @@ import io.ktor.request.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.commands.administration.PREFIXES_LIMIT
+import me.melijn.melijnbot.commands.administration.PREMIUM_PREFIXES_LIMIT
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.web.RequestContext
 import me.melijn.melijnbot.internals.web.WebUtils.respondJson
@@ -11,6 +13,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
 import java.util.*
+import kotlin.math.min
 
 object PostGeneralSettingsResponseHandler {
     suspend fun handleGeneralSettingsPost(context: RequestContext) {
@@ -52,7 +55,11 @@ object PostGeneralSettingsResponseHandler {
 
             val prefixArray = settings.getArray("prefixes")
             val prefixes = mutableListOf<String>()
-            for (i in 0 until prefixArray.length()) {
+
+            val premium = daoManager.supporterWrapper.getUsers().contains(userId)
+
+            val prefixLimit = if (premium) PREMIUM_PREFIXES_LIMIT else PREFIXES_LIMIT
+            for (i in 0 until min(prefixArray.length(), prefixLimit)) {
                 prefixArray.getString(i)
                     .takeIf { it != "%SPLIT%" }
                     ?.let { prefixes.add(it) }
