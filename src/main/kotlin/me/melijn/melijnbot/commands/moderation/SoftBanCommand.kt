@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIA
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -129,8 +130,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         daoManager.softBanWrapper.addSoftBan(softBan)
 
         val msg = try {
-            guild
-                .ban(targetUser, clearDays)
+            guild.ban(targetUser, clearDays)
                 .reason("(softban) ${context.author.asTag}: ${softBan.reason}")
                 .await()
 
@@ -138,9 +138,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
                 softBannedMessageDm
             )?.override(true)?.queue()
 
-            val logChannelWrapper = daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.getChannelId(guild.idLong, LogChannelType.SOFT_BAN)
-            val logChannel = guild.getTextChannelById(logChannelId)
+            val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.SOFT_BAN)
             logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, softBannedMessageLc) }
 
             if (!hasActiveBan) {

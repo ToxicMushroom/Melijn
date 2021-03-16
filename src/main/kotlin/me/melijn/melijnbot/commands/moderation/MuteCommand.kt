@@ -13,6 +13,7 @@ import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIA
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -158,8 +159,7 @@ class MuteCommand : AbstractCommand("command.mute") {
         val targetMember = guild.retrieveMember(targetUser).awaitOrNull() ?: return
 
         val msg = try {
-            guild
-                .addRoleToMember(targetMember, muteRole)
+            guild.addRoleToMember(targetMember, muteRole)
                 .reason("(mute) ${context.author.asTag}: " + mute.reason)
                 .await()
 
@@ -167,9 +167,7 @@ class MuteCommand : AbstractCommand("command.mute") {
                 mutedMessageDm
             )?.override(true)?.async { context.daoManager.muteWrapper.setMute(mute) }
 
-            val logChannelWrapper = context.daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.getChannelId(guild.idLong, LogChannelType.PERMANENT_MUTE)
-            val logChannel = guild.getTextChannelById(logChannelId)
+            val logChannel = guild.getAndVerifyLogChannelByType(context.daoManager, LogChannelType.PERMANENT_MUTE)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
 
 

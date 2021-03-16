@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHY
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -134,15 +135,14 @@ class TempBanCommand : AbstractCommand("command.tempban") {
 
 
         try {
-            context.guild.ban(targetUser, deldays).reason("(tempBan) ${context.author.asTag}: " + ban.reason)
+            guild.ban(targetUser, deldays)
+                .reason("(tempBan) ${context.author.asTag}: " + ban.reason)
                 .async { daoManager.banWrapper.setBan(ban) }
             banningMessage?.editMessage(
                 bannedMessageDm
             )?.override(true)?.queue()
 
-            val logChannelWrapper = daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.getChannelId(guild.idLong, LogChannelType.TEMP_BAN)
-            val logChannel = guild.getTextChannelById(logChannelId)
+            val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.TEMP_BAN)
             logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
             val endTime = ban.endTime?.asEpochMillisToDateTime(zoneId)

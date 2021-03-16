@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIA
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -139,8 +140,7 @@ class BanCommand : AbstractCommand("command.ban") {
         )
 
         val msg = try {
-            context.guild
-                .ban(targetUser, deldays)
+            guild.ban(targetUser, deldays)
                 .reason("(ban) " + context.author.asTag + ": " + ban.reason)
                 .async { daoManager.banWrapper.setBan(ban) }
 
@@ -148,10 +148,10 @@ class BanCommand : AbstractCommand("command.ban") {
                 bannedMessageDm
             )?.override(true)?.queue()
 
-            val logChannelWrapper = daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.getChannelId(guild.idLong, LogChannelType.PERMANENT_BAN)
-            val logChannel = guild.getTextChannelById(logChannelId)
-            logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
+            val logChannel = guild.getAndVerifyLogChannelByType(context.daoManager, LogChannelType.PERMANENT_BAN)
+            logChannel?.let {
+                sendEmbed(daoManager.embedDisabledWrapper, it, bannedMessageLc)
+            }
 
             context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
