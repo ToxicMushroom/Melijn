@@ -51,6 +51,11 @@ object TaskManager {
             block.invoke(this)
         }.run()
     }
+    fun <T> evalTaskValueNAsync(block: suspend CoroutineScope.() -> T?): Deferred<T?> = coroutineScope.async {
+        EvalDeferredNTask {
+            block.invoke(this)
+        }.run()
+    }
 
     fun async(context: ICommandContext, block: suspend CoroutineScope.() -> Unit) = coroutineScope.launch {
         ContextTask(context) {

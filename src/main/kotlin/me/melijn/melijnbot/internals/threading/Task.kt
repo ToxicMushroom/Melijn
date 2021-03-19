@@ -31,6 +31,13 @@ class DeferredNTask<T>(private val func: suspend () -> T?) : DeferredNKTRunnable
 }
 
 
+class EvalDeferredNTask<T>(private val func: suspend () -> T?) : DeferredNKTRunnable<T> {
+
+    override suspend fun run(): T? {
+        return func()
+    }
+}
+
 class DeferredTask<T>(private val func: suspend () -> T) : DeferredKTRunnable<T> {
 
     override suspend fun run(): T {

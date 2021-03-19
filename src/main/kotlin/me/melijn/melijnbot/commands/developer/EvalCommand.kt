@@ -39,7 +39,7 @@ class EvalCommand : AbstractCommand("command.eval") {
 			import kotlinx.coroutines.*
 			${imports.joinToString("\n\t\t\t")}
 			fun exec(context: ICommandContext): Deferred<Any?> {
-                return TaskManager.taskValueNAsync {
+                return TaskManager.evalTaskValueNAsync {
 				    ${
             code.lines().dropWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
                 .joinToString("\n\t\t\t\t\t")

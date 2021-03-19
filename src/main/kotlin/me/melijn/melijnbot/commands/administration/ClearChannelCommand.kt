@@ -48,6 +48,9 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
                 context.initCooldown()
                 // permission check for bot
                 if (notEnoughPermissionsAndMessage(context, textChannel, Permission.MANAGE_CHANNEL)) return@waitFor
+                // Explicit check for the parent category if present
+                if (textChannel.parent?.let { notEnoughPermissionsAndMessage(context, it, Permission.MANAGE_CHANNEL) } == true) return@waitFor
+
                 if (textChannel.parent?.channels?.size ?: 0 == 50) { // category size check
                     sendRsp(context, "I cant create a new channel here, the limit under each category is 50 channels")
                     return@waitFor

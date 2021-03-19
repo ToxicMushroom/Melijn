@@ -8,6 +8,7 @@ import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
 import me.melijn.melijnbot.commands.games.TicTacToeCommand
 import me.melijn.melijnbot.commands.games.TicTacToeGame
 import me.melijn.melijnbot.commands.utility.HelpCommand
+import me.melijn.melijnbot.commandutil.game.TicTacToe
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType

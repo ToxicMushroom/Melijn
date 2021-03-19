@@ -44,10 +44,7 @@ import me.melijn.melijnbot.database.locking.LockExcludedDao
 import me.melijn.melijnbot.database.locking.LockExcludedWrapper
 import me.melijn.melijnbot.database.logchannel.LogChannelDao
 import me.melijn.melijnbot.database.logchannel.LogChannelWrapper
-import me.melijn.melijnbot.database.message.MessageDao
-import me.melijn.melijnbot.database.message.MessageHistoryDao
-import me.melijn.melijnbot.database.message.MessageHistoryWrapper
-import me.melijn.melijnbot.database.message.MessageWrapper
+import me.melijn.melijnbot.database.message.*
 import me.melijn.melijnbot.database.mute.MuteDao
 import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.database.newyear.NewYearDao
@@ -170,6 +167,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val softBanWrapper: SoftBanWrapper
 
     val messageHistoryWrapper: MessageHistoryWrapper
+    val linkedMessageWrapper: LinkedMessageWrapper
     val messageWrapper: MessageWrapper
     val forceRoleWrapper: ForceRoleWrapper
 
@@ -290,6 +288,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         softBanWrapper = SoftBanWrapper(SoftBanDao(driverManager))
 
         messageHistoryWrapper = MessageHistoryWrapper(MessageHistoryDao(driverManager))
+        linkedMessageWrapper = LinkedMessageWrapper(LinkedMessageDao(driverManager))
         messageWrapper = MessageWrapper(MessageDao(driverManager))
         forceRoleWrapper = ForceRoleWrapper(ForceRoleDao(driverManager))
 

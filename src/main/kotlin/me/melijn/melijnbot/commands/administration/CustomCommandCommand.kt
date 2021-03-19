@@ -1,9 +1,6 @@
 package me.melijn.melijnbot.commands.administration
 
-import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.command.CustomCommand
-import me.melijn.melijnbot.database.message.ModularMessage
-import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -34,7 +31,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             SetChanceArg(root),
             SetPrefixStateArg(root),
             SetDescriptionArg(root),
-            ResponseArg(root),
+            LinkMessageArg(root),
             RenameArg(root),
             CopyArg(root)
         )
@@ -74,7 +71,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
 
             cc2.chance = cc1.chance
-            cc2.content = cc1.content
+            cc2.msgName = cc1.msgName
             cc2.prefix = cc1.prefix
 
             context.daoManager.customCommandWrapper.update(context.guildId, cc2)
@@ -190,17 +187,19 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
             var content = context.fullArg.removeFirst(name).trim()
-            if (content.isBlank()) content = "empty"
+            if (content.isBlank()) content = "ccplaceholder"
 
-            val cc = CustomCommand(0, name, ModularMessage(content))
+            val cc = CustomCommand(0, name, content)
 
-            val ccId = context.daoManager.customCommandWrapper.add(context.guildId, cc)
+            val ccId = wrapper.add(context.guildId, cc)
             cc.id = ccId
+            cc.msgName = "cc.$ccId"
+            wrapper.update(context.guildId, cc)
 
             val msg = context.getTranslation("$root.success")
                 .withVariable("id", cc.id.toString())
                 .withVariable("ccName", cc.name)
-                .withVariable("content", cc.content.messageContent ?: "error")
+                .withVariable("content", cc.msgName)
             sendRsp(context, msg)
         }
     }
@@ -479,503 +478,15 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
     }
 
-    class ResponseArg(parent: String) : AbstractCommand("$parent.response") {
+    class LinkMessageArg(parent: String) : AbstractCommand("$parent.linkmessage") {
 
         init {
-            name = "response"
-            aliases = arrayOf("r")
-            children = arrayOf(
-                SetContentArg(root),
-                EmbedArg(root),
-                AttachmentsArg(root),
-                ViewArg(root),
-                SetPingableArg(root)
-            )
-        }
-
-        class SetPingableArg(parent: String) : AbstractCommand("$parent.setpingable") {
-
-            init {
-                name = "setPingable"
-            }
-
-            override suspend fun execute(context: ICommandContext) {
-                val cc = getSelectedCCNMessage(context) ?: return
-                if (context.rawArg.isBlank()) {
-                    MessageCommandUtil.showPingableCC(context, cc)
-                    return
-                }
-
-                val pingable = getBooleanFromArgNMessage(context, 0) ?: return
-                MessageCommandUtil.setPingableCC(context, cc, pingable)
-            }
+            name = "linkMessage"
+            aliases = arrayOf("lm")
         }
 
         override suspend fun execute(context: ICommandContext) {
-            sendSyntax(context)
-        }
-
-        class ViewArg(parent: String) : AbstractCommand("$parent.view") {
-            init {
-                name = "view"
-                aliases = arrayOf("preview", "show", "info")
-            }
-
-            override suspend fun execute(context: ICommandContext) {
-                val cc = getSelectedCCNMessage(context) ?: return
-                MessageCommandUtil.showMessagePreviewCC(context, cc)
-            }
-        }
-
-        class SetContentArg(parent: String) : AbstractCommand("$parent.setcontent") {
-
-            init {
-                name = "setContent"
-                aliases = arrayOf("sc")
-            }
-
-            override suspend fun execute(context: ICommandContext) {
-                val cc = getSelectedCCNMessage(context) ?: return
-                val property = ModularMessageProperty.CONTENT
-                if (context.args.isEmpty()) {
-                    MessageCommandUtil.showMessageCC(context, property, cc)
-                } else {
-                    MessageCommandUtil.setMessageCC(context, property, cc)
-                }
-            }
-        }
-
-        class EmbedArg(parent: String) : AbstractCommand("$parent.embed") {
-
-            init {
-                name = "embed"
-                aliases = arrayOf("e")
-                children = arrayOf(
-                    ClearArg(root),
-                    SetDescriptionArg(root),
-                    SetColorArg(root),
-                    SetTitleArg(root),
-                    SetTitleUrlArg(root),
-                    SetAuthorArg(root),
-                    SetAuthorIconArg(root),
-                    SetAuthorUrlArg(root),
-                    SetThumbnailArg(root),
-                    SetImageArg(root),
-                    FieldArg(root),
-                    SetFooterArg(root),
-                    SetFooterIconArg(root),
-                    SetTimeStampArg(root)
-                    //What even is optimization
-                )
-            }
-
-            override suspend fun execute(context: ICommandContext) {
-                sendSyntax(context)
-            }
-
-            class SetTitleArg(parent: String) : AbstractCommand("$parent.settitle") {
-
-                init {
-                    name = "setTitle"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_TITLE
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-            class SetTitleUrlArg(parent: String) : AbstractCommand("$parent.settitleurl") {
-
-                init {
-                    name = "setTitleUrl"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_URL
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-
-            class SetAuthorArg(parent: String) : AbstractCommand("$parent.setauthor") {
-
-                init {
-                    name = "setAuthor"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_AUTHOR
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-            class SetAuthorIconArg(parent: String) : AbstractCommand("$parent.setauthoricon") {
-
-                init {
-                    name = "setAuthorIcon"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_AUTHOR_ICON_URL
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-            class SetAuthorUrlArg(parent: String) : AbstractCommand("$parent.setauthorurl") {
-
-                init {
-                    name = "setAuthorUrl"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_AUTHOR_URL
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-
-            class SetThumbnailArg(parent: String) : AbstractCommand("$parent.setthumbnail") {
-
-                init {
-                    name = "setThumbnail"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_THUMBNAIL
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-            class SetImageArg(parent: String) : AbstractCommand("$parent.setimage") {
-
-                init {
-                    name = "setImage"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_IMAGE
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-
-            class FieldArg(parent: String) : AbstractCommand("$parent.field") {
-
-                init {
-                    name = "field"
-                    children = arrayOf(
-                        AddArg(root),
-                        RemoveArg(root),
-                        ListArg(root),
-                        SetTitleArg(root),
-                        SetValueArg(root),
-                        SetInlineArg(root)
-                    )
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    sendSyntax(context)
-                }
-
-                class AddArg(parent: String) : AbstractCommand("$parent.add") {
-
-                    init {
-                        name = "add"
-                        aliases = arrayOf("addInline")
-                    }
-
-                    override suspend fun execute(context: ICommandContext) {
-                        val split = context.rawArg.split(">")
-                        if (split.size < 2) {
-                            sendSyntax(context)
-                        }
-                        val title = split[0].trim()
-                        val value = context.rawArg.removeFirst("$title>").trim()
-
-                        val inline = context.commandParts.getOrNull(5)
-                            ?.equals("addInline", true) ?: false
-                        val cc = getSelectedCCNMessage(context) ?: return
-                        MessageCommandUtil.addEmbedFieldCC(title, value, inline, context, cc)
-                    }
-                }
-
-                class SetTitleArg(parent: String) : AbstractCommand("$parent.settitle") {
-
-                    init {
-                        name = "setTitle"
-                    }
-
-                    override suspend fun execute(context: ICommandContext) {
-                        if (context.args.size < 2) {
-                            sendSyntax(context)
-                            return
-                        }
-                        val index = getIntegerFromArgNMessage(context, 0) ?: return
-                        val title = context.rawArg
-                            .removeFirst("$index")
-                            .trim()
-                        val cc = getSelectedCCNMessage(context) ?: return
-                        MessageCommandUtil.setEmbedFieldTitleCC(index, title, context, cc)
-                    }
-                }
-
-                class SetValueArg(parent: String) : AbstractCommand("$parent.setvalue") {
-
-                    init {
-                        name = "setValue"
-                    }
-
-                    override suspend fun execute(context: ICommandContext) {
-                        if (context.args.size < 2) {
-                            sendSyntax(context)
-                            return
-                        }
-                        val index = getIntegerFromArgNMessage(context, 0) ?: return
-                        val value = context.rawArg
-                            .removeFirst("$index")
-                            .trim()
-                        val cc = getSelectedCCNMessage(context) ?: return
-                        MessageCommandUtil.setEmbedFieldValueCC(index, value, context, cc)
-                    }
-                }
-
-                class SetInlineArg(parent: String) : AbstractCommand("$parent.setinline") {
-
-                    init {
-                        name = "setInline"
-                    }
-
-                    override suspend fun execute(context: ICommandContext) {
-                        if (context.args.size < 2) {
-                            sendSyntax(context)
-                            return
-                        }
-                        val index = getIntegerFromArgNMessage(context, 0) ?: return
-                        val value = getBooleanFromArgNMessage(context, 1) ?: return
-                        val cc = getSelectedCCNMessage(context) ?: return
-                        MessageCommandUtil.setEmbedFieldInlineCC(index, value, context, cc)
-                    }
-                }
-
-                class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
-
-                    init {
-                        name = "remove"
-                        aliases = arrayOf("rm", "rem", "delete")
-                    }
-
-                    override suspend fun execute(context: ICommandContext) {
-                        if (context.args.isEmpty()) {
-                            sendSyntax(context)
-                            return
-                        }
-                        val index = getIntegerFromArgNMessage(context, 0) ?: return
-                        val cc = getSelectedCCNMessage(context) ?: return
-                        MessageCommandUtil.removeEmbedFieldCC(index, context, cc)
-                    }
-                }
-
-                class ListArg(parent: String) : AbstractCommand("$parent.list") {
-
-                    init {
-                        name = "list"
-                        aliases = arrayOf("ls")
-                    }
-
-                    override suspend fun execute(context: ICommandContext) {
-                        val cc = getSelectedCCNMessage(context) ?: return
-                        MessageCommandUtil.showEmbedFieldsCC(context, cc)
-                    }
-                }
-            }
-
-
-            class SetDescriptionArg(parent: String) : AbstractCommand("$parent.setdescription") {
-
-                init {
-                    name = "setDescription"
-                    aliases = arrayOf("setDesc")
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_DESCRIPTION
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-            class SetColorArg(parent: String) : AbstractCommand("$parent.setcolor") {
-
-                init {
-                    name = "setColor"
-                    aliases = arrayOf("setColour")
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_COLOR
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-            class SetFooterArg(parent: String) : AbstractCommand("$parent.setfooter") {
-
-                init {
-                    name = "setFooter"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_FOOTER
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-            class SetFooterIconArg(parent: String) : AbstractCommand("$parent.setfootericon") {
-
-                init {
-                    name = "setFooterIcon"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_FOOTER_ICON_URL
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-            class SetTimeStampArg(parent: String) : AbstractCommand("$parent.settimestamp") {
-
-                init {
-                    name = "setTimeStamp"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val property = ModularMessageProperty.EMBED_TIME_STAMP
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    when {
-                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
-                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
-                    }
-                }
-            }
-
-            class ClearArg(parent: String) : AbstractCommand("$parent.clear") {
-
-                init {
-                    name = "clear"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    MessageCommandUtil.clearEmbedCC(context, cc)
-                }
-            }
-        }
-
-        class AttachmentsArg(parent: String) : AbstractCommand("$parent.attachments") {
-
-            init {
-                name = "attachments"
-                aliases = arrayOf("a")
-                children = arrayOf(
-                    ListArg(root),
-                    AddArg(root),
-                    RemoveArg(root)
-                )
-            }
-
-            override suspend fun execute(context: ICommandContext) {
-                sendSyntax(context)
-            }
-
-            class ListArg(parent: String) : AbstractCommand("$parent.list") {
-
-                init {
-                    name = "list"
-                    arrayOf("ls")
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    MessageCommandUtil.listAttachmentsCC(context, cc)
-                }
-            }
-
-            class AddArg(parent: String) : AbstractCommand("$parent.add") {
-
-                init {
-                    name = "add"
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    if (context.args.size < 2) {
-                        sendSyntax(context)
-                        return
-                    }
-                    MessageCommandUtil.addAttachmentCC(context, cc)
-                }
-
-            }
-
-            class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
-
-                init {
-                    name = "remove"
-                    aliases = arrayOf("rm", "rem", "delete")
-                }
-
-                override suspend fun execute(context: ICommandContext) {
-                    if (context.args.isEmpty()) {
-                        sendSyntax(context)
-                        return
-                    }
-                    val cc = getSelectedCCNMessage(context) ?: return
-                    MessageCommandUtil.removeAttachmentCC(context, cc)
-                }
-            }
+            TODO("Not yet implemented")
         }
     }
 }

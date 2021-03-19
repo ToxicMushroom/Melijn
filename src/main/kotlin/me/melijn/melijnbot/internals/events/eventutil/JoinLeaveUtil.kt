@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
 import io.ktor.client.*
-import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
+import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.database.role.JoinRoleInfo
@@ -52,8 +52,10 @@ object JoinLeaveUtil {
         ) ?: return
 
         val messageWrapper = daoManager.messageWrapper
-        var modularMessage = messageWrapper.getMessage(guildId, messageType) ?: return
-        if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, messageWrapper)) return
+        val linkedMessageWrapper = daoManager.linkedMessageWrapper
+        val msgName = linkedMessageWrapper.getMessage(guildId, messageType) ?: return
+        var modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
+        if (MessageUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, linkedMessageWrapper)) return
 
         modularMessage = replaceVariablesInWelcomeMessage(guild, user, modularMessage)
 

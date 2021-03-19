@@ -1157,10 +1157,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
     }
 }
 
-suspend fun getSelfRoleGroupByGroupNameN(context: ICommandContext, group: String): SelfRoleGroup? {
+suspend fun getSelfRoleGroupByGroupNameN(context: ICommandContext, groupName: String): SelfRoleGroup? {
     val wrapper = context.daoManager.selfRoleGroupWrapper
-    return wrapper.getMap(context.guildId).firstOrNull { (groupName) ->
-        groupName == group
+    return wrapper.getMap(context.guildId).firstOrNull { group ->
+        group.groupName == groupName
     }
 }
 

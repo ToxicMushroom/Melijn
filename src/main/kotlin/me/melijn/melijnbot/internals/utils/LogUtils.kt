@@ -5,7 +5,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import io.ktor.client.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
-import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
+import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.settings.VoteReminderOption
 import me.melijn.melijnbot.enums.*
@@ -560,14 +560,16 @@ object LogUtils {
         val messageType = MessageType.BIRTHDAY
         val language = getLanguage(daoManager, guildId)
         val messageWrapper = daoManager.messageWrapper
-        var message = messageWrapper.getMessage(guildId, messageType)
+        val linkedMessageWrapper = daoManager.linkedMessageWrapper
+        val msgName = linkedMessageWrapper.getMessage(guildId, messageType) ?: return
+        var message = messageWrapper.getMessage(guildId, msgName)
         if (message == null) {
             val msg = i18n.getTranslation(language, "logging.birthday")
                 .withSafeVariable("user", member.asTag)
 
             sendRspOrMsg(textChannel, daoManager, msg)
         } else {
-            if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, message, messageWrapper)) return
+            if (MessageUtil.removeMessageIfEmpty(guildId, messageType, message, linkedMessageWrapper)) return
 
             message = BirthdayUtil.replaceVariablesInBirthdayMessage(daoManager, member, message, birthYear)
 

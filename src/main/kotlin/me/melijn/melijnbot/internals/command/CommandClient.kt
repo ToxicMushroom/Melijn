@@ -6,6 +6,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.administration.ScriptsCommand
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.command.CustomCommand
+import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.database.scripts.Script
 import me.melijn.melijnbot.enums.ChannelCommandState
@@ -459,25 +460,28 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val channel = message.textChannel
         if (!channel.canTalk()) return
 
+        val daoManager = container.daoManager
+        val executions = daoManager.commandChannelCoolDownWrapper.executions
+
         //registering execution
         val pair1 = Pair(channel.idLong, member.idLong)
-        val map1 = container.daoManager.commandChannelCoolDownWrapper.executions[pair1]?.toMutableMap()
+        val map1 = executions[pair1]?.toMutableMap()
             ?: mutableMapOf()
         map1["cc." + cc.id] = System.currentTimeMillis()
-        container.daoManager.commandChannelCoolDownWrapper.executions[pair1] = map1
+        executions[pair1] = map1
 
         val pair2 = Pair(member.guild.idLong, member.idLong)
-        val map2 = container.daoManager.commandChannelCoolDownWrapper.executions[pair2]?.toMutableMap()
+        val map2 = executions[pair2]?.toMutableMap()
             ?: mutableMapOf()
         map2["cc." + cc.id] = System.currentTimeMillis()
-        container.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
+        executions[pair2] = map2
 
         val rawArg = message.contentRaw
             .removeFirst(commandParts[0])
             .trim()
             .removeFirst(if (hasPrefix) commandParts[1] else "")
             .trim()
-        val modularMessage = replaceVariablesInCCMessage(member, rawArg, cc)
+        val modularMessage = replaceVariablesInCCMessage(member, rawArg, daoManager.messageWrapper, cc)
 
         val rsp: Message? = modularMessage.toMessage()
         when {
@@ -493,8 +497,14 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
     }
 
 
-    private suspend fun replaceVariablesInCCMessage(member: Member, rawArg: String, cc: CustomCommand): ModularMessage {
-        val modularMessage = cc.content
+    private suspend fun replaceVariablesInCCMessage(
+        member: Member,
+        rawArg: String,
+        messageWrapper: MessageWrapper,
+        cc: CustomCommand
+    ): ModularMessage {
+        val modularMessage = messageWrapper.getMessage(member.guild.idLong, cc.msgName) ?: ModularMessage("not set")
+
         val ccArgs = CCJagTagParserArgs(member, rawArg, cc)
 
         return modularMessage.mapAllStringFields {
