@@ -34,7 +34,7 @@ class MessageDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     suspend fun get(guildId: Long, msgName: String): String? = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guild_id = ? AND msg_name = ?", { rs ->
             if (rs.next()) {
-                it.resume(rs.getString("message"))
+                it.resume(rs.getString("content"))
             } else it.resume(null)
         }, guildId, msgName)
     }

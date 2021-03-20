@@ -5,7 +5,7 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import me.melijn.melijnbot.internals.utils.retrieveMemberByArgsNMessage
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
@@ -35,11 +35,11 @@ class ShipCommand : AbstractCommand("command.ship") {
             val user1: User
             val user2: User
             if (context.args.size > 1) {
-                user1 = retrieveUserByArgsNMessage(context, 0) ?: return
-                user2 = retrieveUserByArgsNMessage(context, 1) ?: return
+                user1 = (retrieveMemberByArgsNMessage(context, 0) ?: return).user
+                user2 = (retrieveMemberByArgsNMessage(context, 1) ?: return).user
             } else {
                 user1 = context.author
-                user2 = retrieveUserByArgsNMessage(context, 0) ?: return
+                user2 = (retrieveMemberByArgsNMessage(context, 0) ?: return).user
             }
 
             val name1 = user1.idLong

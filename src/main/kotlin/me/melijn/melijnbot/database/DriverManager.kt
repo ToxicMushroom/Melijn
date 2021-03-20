@@ -313,7 +313,7 @@ class DriverManager(
         val async = getOpenRedisConnection() ?: return
         if (ttl == null) async.set(key, value)
         else {
-            val ttlSeconds = ttlUnit.convert(ttl.toLong(), TimeUnit.SECONDS)
+            val ttlSeconds = TimeUnit.SECONDS.convert(ttl.toLong(), ttlUnit)
             async.set(key, value, SetArgs().ex(ttlSeconds))
         }
     }

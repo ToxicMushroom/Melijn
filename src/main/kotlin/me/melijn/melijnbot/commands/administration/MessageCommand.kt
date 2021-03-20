@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.commandutil.administration.MessageUtil
-import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import net.dv8tion.jda.api.entities.MessageEmbed
 
 class MessageCommand : AbstractCommand("command.message") {
 
@@ -37,7 +38,8 @@ class MessageCommand : AbstractCommand("command.message") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            TODO("Not yet implemented")
+            val selected = MessageUtil.getSelectedMessage(context) ?: return
+            MessageUtil.showMessagePreviewTyped(context, selected)
         }
     }
 
@@ -48,9 +50,29 @@ class MessageCommand : AbstractCommand("command.message") {
             children = arrayOf(
                 ContentArg(root),
                 EmbedArg(root),
-                AttachmentArg(root)
+                AttachmentsArg(root),
+                PingableArg(root)
             )
             aliases = arrayOf("e")
+        }
+
+        inner class PingableArg(parent: String) : AbstractCommand("$parent.pingable") {
+
+            init {
+                name = "pingable"
+                aliases = arrayOf("pings")
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                val msgName = MessageUtil.getSelectedMessage(context) ?: return
+                if (context.rawArg.isBlank()) {
+                    MessageUtil.showPingable(context, msgName)
+                    return
+                }
+
+                val pingable = getBooleanFromArgNMessage(context, 0) ?: return
+                MessageUtil.setPingable(context, msgName, pingable)
+            }
         }
 
 
@@ -66,14 +88,77 @@ class MessageCommand : AbstractCommand("command.message") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                TODO("Not yet implemented")
+                if (context.args.isEmpty()) {
+                    MessageUtil.showMessage(context, ModularMessageProperty.CONTENT)
+                } else {
+                    MessageUtil.setMessage(context, ModularMessageProperty.CONTENT)
+                }
             }
         }
 
-        inner class AttachmentArg(parent: String) : AbstractCommand("$parent.attachment") {
+        inner class AttachmentsArg(parent: String) : AbstractCommand("$parent.attachments") {
+
+            init {
+                name = "attachments"
+                aliases = arrayOf("attach")
+                children = arrayOf(
+                    AddArg(root),
+                    RemoveArg(root),
+                    RemoveAtArg(root),
+                    ListArg(root)
+                )
+            }
 
             override suspend fun execute(context: ICommandContext) {
-                TODO("Not yet implemented")
+                sendSyntax(context)
+            }
+
+            inner class AddArg(parent: String) : AbstractCommand("$parent.add") {
+
+                init {
+                    name = "add"
+                    aliases = arrayOf("a")
+                }
+
+                override suspend fun execute(context: ICommandContext) {
+                    MessageUtil.addAttachment(context)
+                }
+            }
+
+            inner class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
+
+                init {
+                    name = "remove"
+                    aliases = arrayOf("rm")
+                }
+
+                override suspend fun execute(context: ICommandContext) {
+                    MessageUtil.removeAttachment(context)
+                }
+            }
+
+            inner class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeAt") {
+
+                init {
+                    name = "removeAt"
+                    aliases = arrayOf("rma")
+                }
+
+                override suspend fun execute(context: ICommandContext) {
+                    MessageUtil.removeAttachmentAt(context)
+                }
+            }
+
+            inner class ListArg(parent: String) : AbstractCommand("$parent.list") {
+
+                init {
+                    name = "list"
+                    aliases = arrayOf("ls")
+                }
+
+                override suspend fun execute(context: ICommandContext) {
+                    MessageUtil.listAttachments(context)
+                }
             }
         }
 
@@ -83,19 +168,20 @@ class MessageCommand : AbstractCommand("command.message") {
                 name = "embed"
                 aliases = arrayOf("e")
                 children = arrayOf(
-                    SetTitleArg(parent),
-                    SetTitleUrlArg(parent),
-                    SetAuthorArg(parent),
-                    SetAuthorIconArg(parent),
-                    SetAuthorUrlArg(parent),
-                    SetThumbnailArg(parent),
-                    SetImageArg(parent),
-                    FieldArg(parent),
-                    SetDescriptionArg(parent),
-                    SetColorArg(parent),
-                    SetFooterArg(parent),
-                    SetFooterIconArg(parent),
-                    ClearArg(parent)
+                    TitleArg(root),
+                    TitleUrlArg(root),
+                    AuthorArg(root),
+                    AuthorIconArg(root),
+                    AuthorUrlArg(root),
+                    ThumbnailArg(root),
+                    ImageArg(root),
+                    FieldArg(root),
+                    DescriptionArg(root),
+                    ColorArg(root),
+                    FooterArg(root),
+                    FooterIconArg(root),
+                    ClearArg(root),
+                    TimeStampArg(root)
                 )
             }
 
@@ -103,10 +189,10 @@ class MessageCommand : AbstractCommand("command.message") {
                 sendSyntax(context)
             }
 
-            inner class SetTitleArg(parent: String) : AbstractCommand("$parent.settitle") {
+            inner class TitleArg(parent: String) : AbstractCommand("$parent.title") {
 
                 init {
-                    name = "setTitle"
+                    name = "title"
                 }
 
                 override suspend fun execute(context: ICommandContext) {
@@ -118,10 +204,10 @@ class MessageCommand : AbstractCommand("command.message") {
                 }
             }
 
-            inner class SetTitleUrlArg(parent: String) : AbstractCommand("$parent.settitleurl") {
+            inner class TitleUrlArg(parent: String) : AbstractCommand("$parent.titleurl") {
 
                 init {
-                    name = "setTitleUrl"
+                    name = "titleUrl"
                 }
 
                 override suspend fun execute(context: ICommandContext) {
@@ -134,10 +220,10 @@ class MessageCommand : AbstractCommand("command.message") {
             }
 
 
-            inner class SetAuthorArg(parent: String) : AbstractCommand("$parent.setauthor") {
+            inner class AuthorArg(parent: String) : AbstractCommand("$parent.author") {
 
                 init {
-                    name = "setAuthor"
+                    name = "author"
                 }
 
                 override suspend fun execute(context: ICommandContext) {
@@ -149,11 +235,10 @@ class MessageCommand : AbstractCommand("command.message") {
                 }
             }
 
-            inner class SetAuthorIconArg(parent: String) :
-                AbstractCommand("$parent.setauthoricon") {
+            inner class AuthorIconArg(parent: String) : AbstractCommand("$parent.authoricon") {
 
                 init {
-                    name = "setAuthorIcon"
+                    name = "authorIcon"
                 }
 
                 override suspend fun execute(context: ICommandContext) {
@@ -165,11 +250,10 @@ class MessageCommand : AbstractCommand("command.message") {
                 }
             }
 
-            inner class SetAuthorUrlArg(parent: String) :
-                AbstractCommand("$parent.setauthorurl") {
+            inner class AuthorUrlArg(parent: String) : AbstractCommand("$parent.authorurl") {
 
                 init {
-                    name = "setAuthorUrl"
+                    name = "authorUrl"
                 }
 
                 override suspend fun execute(context: ICommandContext) {
@@ -182,11 +266,11 @@ class MessageCommand : AbstractCommand("command.message") {
             }
 
 
-            inner class SetThumbnailArg(parent: String) :
-                AbstractCommand("$parent.setthumbnail") {
+            inner class ThumbnailArg(parent: String) : AbstractCommand("$parent.thumbnail") {
 
                 init {
-                    name = "setThumbnail"
+                    name = "thumbnail"
+                    aliases = arrayOf("thumb")
                 }
 
                 override suspend fun execute(context: ICommandContext) {
@@ -198,10 +282,11 @@ class MessageCommand : AbstractCommand("command.message") {
                 }
             }
 
-            inner class SetImageArg(parent: String) : AbstractCommand("$parent.setimage") {
+            inner class ImageArg(parent: String) : AbstractCommand("$parent.image") {
 
                 init {
-                    name = "setImage"
+                    name = "image"
+                    aliases = arrayOf("img")
                 }
 
                 override suspend fun execute(context: ICommandContext) {
@@ -218,13 +303,14 @@ class MessageCommand : AbstractCommand("command.message") {
 
                 init {
                     name = "field"
+                    aliases = arrayOf("f")
                     children = arrayOf(
                         AddArg(root),
-                        RemoveArg(root),
+                        RemoveAtArg(root),
                         ListArg(root),
-                        SetTitleArg(root),
-                        SetValueArg(root),
-                        SetInlineArg(root)
+                        TitleArg(root),
+                        ValueArg(root),
+                        InlineArg(root)
                     )
                 }
 
@@ -236,27 +322,32 @@ class MessageCommand : AbstractCommand("command.message") {
 
                     init {
                         name = "add"
-                        aliases = arrayOf("addInline")
+                        aliases = arrayOf("addInline", "a")
                     }
 
                     override suspend fun execute(context: ICommandContext) {
-                        val split = context.rawArg.split(">")
-                        if (split.size < 2) {
+                        if (context.args.size < 2) {
                             sendSyntax(context)
+                            return
                         }
-                        val title = split[0].trim()
-                        val value = context.rawArg.removeFirst("$title>").trim()
+                        val title = getStringFromArgsNMessage(context, 0, 1, MessageEmbed.TITLE_MAX_LENGTH) ?: return
+                        val value = getStringFromArgsNMessage(context, 1, 1, MessageEmbed.VALUE_MAX_LENGTH) ?: return
 
-                        val inline = context.commandParts.getOrNull(4)
-                            ?.equals("addInline", true) ?: false
+                        val inline = if (context.args.size == 2) {
+                            context.commandParts.getOrNull(4)
+                                ?.equals("addInline", true) ?: false
+                        } else {
+                            getBooleanFromArgNMessage(context, 2) ?: return
+                        }
                         MessageUtil.addEmbedField(title, value, inline, context)
                     }
                 }
 
-                inner class SetTitleArg(parent: String) : AbstractCommand("$parent.settitle") {
+                inner class TitleArg(parent: String) : AbstractCommand("$parent.title") {
 
                     init {
-                        name = "setTitle"
+                        name = "title"
+                        aliases = arrayOf("t")
                     }
 
                     override suspend fun execute(context: ICommandContext) {
@@ -265,17 +356,18 @@ class MessageCommand : AbstractCommand("command.message") {
                             return
                         }
                         val index = getIntegerFromArgNMessage(context, 0) ?: return
-                        val title = context.rawArg
+                        val title = context.fullArg
                             .removeFirst("$index")
                             .trim()
                         MessageUtil.setEmbedFieldTitle(index, title, context)
                     }
                 }
 
-                inner class SetValueArg(parent: String) : AbstractCommand("$parent.setvalue") {
+                inner class ValueArg(parent: String) : AbstractCommand("$parent.value") {
 
                     init {
-                        name = "setValue"
+                        name = "value"
+                        aliases = arrayOf("v")
                     }
 
                     override suspend fun execute(context: ICommandContext) {
@@ -284,17 +376,17 @@ class MessageCommand : AbstractCommand("command.message") {
                             return
                         }
                         val index = getIntegerFromArgNMessage(context, 0) ?: return
-                        val value = context.rawArg
+                        val value = context.fullArg
                             .removeFirst("$index")
                             .trim()
                         MessageUtil.setEmbedFieldValue(index, value, context)
                     }
                 }
 
-                inner class SetInlineArg(parent: String) : AbstractCommand("$parent.setinline") {
+                inner class InlineArg(parent: String) : AbstractCommand("$parent.inline") {
 
                     init {
-                        name = "setInline"
+                        name = "inline"
                     }
 
                     override suspend fun execute(context: ICommandContext) {
@@ -308,10 +400,11 @@ class MessageCommand : AbstractCommand("command.message") {
                     }
                 }
 
-                inner class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
+                inner class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
 
                     init {
-                        name = "remove"
+                        name = "removeAt"
+                        aliases = arrayOf("rma", "rm", "remove")
                     }
 
                     override suspend fun execute(context: ICommandContext) {
@@ -328,6 +421,7 @@ class MessageCommand : AbstractCommand("command.message") {
 
                     init {
                         name = "list"
+                        aliases = arrayOf("ls")
                     }
 
                     override suspend fun execute(context: ICommandContext) {
@@ -337,12 +431,12 @@ class MessageCommand : AbstractCommand("command.message") {
             }
 
 
-            inner class SetDescriptionArg(parent: String) :
-                AbstractCommand("$parent.setdescription") {
+            inner class DescriptionArg(parent: String) :
+                AbstractCommand("$parent.description") {
 
                 init {
-                    name = "setDescription"
-                    aliases = arrayOf("setDesc")
+                    name = "description"
+                    aliases = arrayOf("desc")
                 }
 
                 override suspend fun execute(context: ICommandContext) {
@@ -354,11 +448,11 @@ class MessageCommand : AbstractCommand("command.message") {
                 }
             }
 
-            inner class SetColorArg(parent: String) : AbstractCommand("$parent.setcolor") {
+            inner class ColorArg(parent: String) : AbstractCommand("$parent.color") {
 
                 init {
-                    name = "setColor"
-                    aliases = arrayOf("setColour")
+                    name = "color"
+                    aliases = arrayOf("colour")
                 }
 
                 override suspend fun execute(context: ICommandContext) {
@@ -370,10 +464,10 @@ class MessageCommand : AbstractCommand("command.message") {
                 }
             }
 
-            inner class SetFooterArg(parent: String) : AbstractCommand("$parent.setfooter") {
+            inner class FooterArg(parent: String) : AbstractCommand("$parent.footer") {
 
                 init {
-                    name = "setFooter"
+                    name = "footer"
                 }
 
                 override suspend fun execute(context: ICommandContext) {
@@ -385,10 +479,10 @@ class MessageCommand : AbstractCommand("command.message") {
                 }
             }
 
-            inner class SetFooterIconArg(root: String) : AbstractCommand("$root.setfootericon") {
+            inner class FooterIconArg(root: String) : AbstractCommand("$root.footericon") {
 
                 init {
-                    name = "setFooterIcon"
+                    name = "footerIcon"
                 }
 
                 override suspend fun execute(context: ICommandContext) {
@@ -404,11 +498,27 @@ class MessageCommand : AbstractCommand("command.message") {
 
                 init {
                     name = "clear"
-                    aliases = arrayOf("c")
                 }
 
                 override suspend fun execute(context: ICommandContext) {
                     MessageUtil.clearEmbed(context)
+                }
+            }
+
+
+            inner class TimeStampArg(parent: String) : AbstractCommand("$parent.timestamp") {
+
+                init {
+                    name = "timeStamp"
+                    aliases = arrayOf("time")
+                }
+
+                override suspend fun execute(context: ICommandContext) {
+                    val property = ModularMessageProperty.EMBED_TIME_STAMP
+                    when {
+                        context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
+                        else -> MessageUtil.setMessage(context, property)
+                    }
                 }
             }
         }
@@ -471,7 +581,7 @@ class MessageCommand : AbstractCommand("command.message") {
             val messages = context.daoManager.messageWrapper.getMessages(context.guildId)
             if (msgName.isInside(messages, true)) {
                 val guildId = context.guildId
-                context.daoManager.driverManager.setCacheEntry("selectedMessage:$guildId", msgName, NORMAL_CACHE)
+                context.daoManager.driverManager.setCacheEntry("selectedMessage:$guildId", msgName, HIGHER_CACHE)
                 val msg = context.getTranslation("$root.selected")
                     .withSafeVariable("msgName", msgName)
                 sendRsp(context, msg)

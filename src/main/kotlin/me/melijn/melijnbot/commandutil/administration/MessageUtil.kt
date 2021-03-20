@@ -7,9 +7,13 @@ import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.jagtag.DiscordMethods
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendAttachments
+import me.melijn.melijnbot.internals.utils.message.sendMsg
+import me.melijn.melijnbot.internals.utils.message.sendMsgWithAttachments
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -114,7 +118,7 @@ object MessageUtil {
                 message?.embed?.title
             }
             ModularMessageProperty.EMBED_URL -> {
-                path = "message.embed.url.show"
+                path = "message.embed.titleurl.show"
                 message?.embed?.url
             }
             ModularMessageProperty.EMBED_THUMBNAIL -> {
@@ -142,7 +146,7 @@ object MessageUtil {
                 message?.embed?.footer?.text
             }
             ModularMessageProperty.EMBED_FOOTER_ICON_URL -> {
-                path = "message.embed.footericonurl.show"
+                path = "message.embed.footericon.show"
                 message?.embed?.footer?.iconUrl
             }
             ModularMessageProperty.EMBED_COLOR -> {
@@ -177,7 +181,6 @@ object MessageUtil {
     }
 
 
-
     private suspend fun clearEmbedAndMessage(
         context: ICommandContext,
         msgName: String,
@@ -192,8 +195,9 @@ object MessageUtil {
     }
 
 
-    suspend fun listAttachments(context: ICommandContext, msgName: String) {
+    suspend fun listAttachments(context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
+        val msgName = getSelectedMessage(context) ?: return
         val modularMessage = messageWrapper.getMessage(context.guildId, msgName)
         listAttachmentsAndMessage(context, modularMessage, msgName)
     }
@@ -212,8 +216,8 @@ object MessageUtil {
             val title = context.getTranslation("message.attachments.list.title")
                 .withVariable(PLACEHOLDER_TYPE, msgName)
             var content = "\n```INI"
-            for ((index, attachment) in message.attachments.entries.withIndex()) {
-                content += "\n$index - [${attachment.key}] - ${attachment.value}"
+            for ((index, attachment) in message.attachments.entries.withIndex().sortedBy { it.index }) {
+                content += "\n${index + 1} - [${attachment.key}] - ${attachment.value}"
             }
             content += "```"
             (title + content)
@@ -221,8 +225,9 @@ object MessageUtil {
         sendRsp(context, msg)
     }
 
-    suspend fun addAttachment(context: ICommandContext, msgName: String) {
+    suspend fun addAttachment(context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
+        val msgName = getSelectedMessage(context) ?: return
         val modularMessage = messageWrapper.getMessage(context.guildId, msgName)
             ?: ModularMessage()
 
@@ -236,9 +241,11 @@ object MessageUtil {
         msgName: String,
         modularMessage: ModularMessage
     ) {
+        if (argSizeCheckFailed(context, 1)) return
         val newMap = modularMessage.attachments.toMutableMap()
         val url = context.args[0]
-        val msg = if (URL_PATTERN.matches(url)) {
+        val isVariable = DiscordMethods.imgUrlMethods.any { "{${it.name}}".equals(url, true) }
+        val msg = if (isVariable || URL_PATTERN.matches(url)) {
             val fileName = context.args[1]
             newMap[url] = fileName
 
@@ -249,15 +256,15 @@ object MessageUtil {
                 .withVariable("url", url)
         } else {
             context.getTranslation("message.embed.image.urlerror")
-                .withVariable(PLACEHOLDER_ARG, msgName)
-
+                .withVariable(PLACEHOLDER_ARG, url)
         }
 
         sendRsp(context, msg)
     }
 
-    suspend fun removeAttachment(context: ICommandContext, msgName: String) {
+    suspend fun removeAttachment(context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
+        val msgName = getSelectedMessage(context) ?: return
         val modularMessage = messageWrapper.getMessage(context.guildId, msgName)
             ?: ModularMessage()
 
@@ -270,6 +277,7 @@ object MessageUtil {
         msgName: String,
         modularMessage: ModularMessage
     ) {
+        if (argSizeCheckFailed(context, 1)) return
         val attachments = modularMessage.attachments.toMutableMap()
         val file = if (attachments.containsKey(context.args[0])) {
             attachments[context.args[0]]
@@ -289,6 +297,36 @@ object MessageUtil {
                     .withVariable("file", file)
             }.withVariable(PLACEHOLDER_ARG, context.args[0])
                 .withVariable(PLACEHOLDER_TYPE, msgName)
+
+        sendRsp(context, msg)
+    }
+
+    suspend fun removeAttachmentAt(context: ICommandContext) {
+        val messageWrapper = context.daoManager.messageWrapper
+        val msgName = getSelectedMessage(context) ?: return
+        val modularMessage = messageWrapper.getMessage(context.guildId, msgName)
+            ?: ModularMessage()
+
+        removeAttachmentAtAndMessage(context, msgName, modularMessage)
+        messageWrapper.setMessage(context.guildId, msgName, modularMessage)
+    }
+
+    private suspend fun removeAttachmentAtAndMessage(
+        context: ICommandContext,
+        msgName: String,
+        modularMessage: ModularMessage
+    ) {
+        val entries = modularMessage.attachments.entries.withIndex().sortedBy { it.index }
+        val index = getIntegerFromArgNMessage(context, 0, 1, entries.size) ?: return
+        val (url, name) = entries.first { it.index == index }.value
+        val attachments = modularMessage.attachments.toMutableMap()
+        attachments.remove(url)
+        modularMessage.attachments = attachments.toMap()
+
+        val msg = context.getTranslation("message.attachments.remove.success")
+            .withVariable("file", name)
+            .withVariable(PLACEHOLDER_ARG, url)
+            .withVariable(PLACEHOLDER_TYPE, msgName)
 
         sendRsp(context, msg)
     }
@@ -819,15 +857,26 @@ object MessageUtil {
     suspend fun showMessagePreviewTyped(context: ICommandContext, msgName: String) {
         val guildId = context.guildId
         val messageWrapper = context.daoManager.messageWrapper
-        val message = messageWrapper.getMessage(guildId, msgName)?.toMessage()
-        if (message == null) {
+        val modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
+        val message = modularMessage.toMessage()
+        if (message == null && modularMessage.attachments.isEmpty()) {
             val msg2 = context.getTranslation("message.view.isempty")
                 .withVariable("msgName", msgName)
             sendRsp(context, msg2)
             return
         }
-
-        context.textChannel.sendMessage(message).queue()
+        val httpClient = context.webManager.proxiedHttpClient
+        val channel = context.textChannel
+        when {
+            message == null -> sendAttachments(channel, httpClient, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(
+                channel,
+                httpClient,
+                message,
+                modularMessage.attachments
+            )
+            else -> sendMsg(channel, message)
+        }
     }
 
     suspend fun setPingable(context: ICommandContext, msgName: String, pingable: Boolean) {

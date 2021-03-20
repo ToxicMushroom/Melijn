@@ -11,7 +11,27 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 
 object DiscordMethods {
-    fun getMethods(): List<Method> = listOf(
+
+    val imgUrlMethods = listOf(
+        Method("serverIconUrl", { env ->
+            val guild: Guild = env.getReifiedX("guild")
+            guild.iconUrl ?: MISSING_IMAGE_URL
+        }),
+        Method("serverBannerUrl", { env ->
+            val guild: Guild = env.getReifiedX("guild")
+            guild.bannerUrl ?: MISSING_IMAGE_URL
+        }),
+        Method("serverSplashUrl", { env ->
+            val guild: Guild = env.getReifiedX("guild")
+            guild.splashUrl ?: MISSING_IMAGE_URL
+        }),
+        Method("effectiveAvatarUrl", { env ->
+            val user: User = env.getReifiedX("user")
+            user.effectiveAvatarUrl
+        })
+    )
+
+    private val otherMethods: List<Method> = listOf(
         Method("userMention", { env ->
             val user: User = env.getReifiedX("user")
             user.asMention
@@ -75,31 +95,15 @@ object DiscordMethods {
             val member: Member? = env.getReified("member")
             member?.effectiveName ?: "null"
         }),
-        Method("serverIconUrl", { env ->
-            val guild: Guild = env.getReifiedX("guild")
-            guild.iconUrl ?: MISSING_IMAGE_URL
-        }),
         Method("serverIconUrlPart", { env ->
             val guild: Guild = env.getReifiedX("guild")
             (guild.iconUrl ?: MISSING_IMAGE_URL)
                 .remove("https://cdn.discordapp.com/")
                 .remove("https://cdn.discord.com/")
         }),
-        Method("serverBannerUrl", { env ->
-            val guild: Guild = env.getReifiedX("guild")
-            guild.bannerUrl ?: MISSING_IMAGE_URL
-        }),
-        Method("serverSplashUrl", { env ->
-            val guild: Guild = env.getReifiedX("guild")
-            guild.splashUrl ?: MISSING_IMAGE_URL
-        }),
         Method("serverVanityUrl", { env ->
             val guild: Guild = env.getReifiedX("guild")
             guild.vanityUrl ?: "no vanity url"
-        }),
-        Method("effectiveAvatarUrl", { env ->
-            val user: User = env.getReifiedX("user")
-            user.effectiveAvatarUrl
         }),
         Method("effectiveAvatarUrlPart", { env ->
             val user: User = env.getReifiedX("user")
@@ -163,4 +167,10 @@ object DiscordMethods {
             System.currentTimeMillis().asEpochMillisToDateTime(Container.instance.daoManager, guild.idLong, user.idLong)
         })
     )
+
+    private val combinedList = imgUrlMethods + otherMethods
+
+    fun getMethods(): List<Method> {
+        return combinedList
+    }
 }
