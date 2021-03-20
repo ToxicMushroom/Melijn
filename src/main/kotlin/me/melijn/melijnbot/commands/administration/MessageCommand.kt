@@ -579,11 +579,12 @@ class MessageCommand : AbstractCommand("command.message") {
         override suspend fun execute(context: ICommandContext) {
             val msgName = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
             val messages = context.daoManager.messageWrapper.getMessages(context.guildId)
-            if (msgName.isInside(messages, true)) {
+            val match = messages.firstOrNull { it.equals(msgName, true) }
+            if (match != null) {
                 val guildId = context.guildId
                 context.daoManager.driverManager.setCacheEntry("selectedMessage:$guildId", msgName, HIGHER_CACHE)
                 val msg = context.getTranslation("$root.selected")
-                    .withSafeVariable("msgName", msgName)
+                    .withSafeVariable("msgName", match)
                 sendRsp(context, msg)
             } else {
                 val msg = context.getTranslation("${context.commandOrder.first().root}.msgnoexist")
