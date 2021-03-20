@@ -34,7 +34,15 @@ class CustomCommandDao(driverManager: DriverManager) : CacheDBDao(driverManager)
         cc.apply {
             driverManager.executeUpdate(
                 "UPDATE $table SET name = ?, description = ?, msg_name = ?, aliases = ?, chance = ?, prefix = ?, contains_triggers = ? WHERE guild_id = ? AND id = ?",
-                name, description, msgName, aliases?.joinToString("%SPLIT%"), chance, prefix, containsTriggers, guildId, id
+                name,
+                description,
+                msgName,
+                aliases?.joinToString("%SPLIT%"),
+                chance,
+                prefix,
+                containsTriggers,
+                guildId,
+                id
             )
         }
     }
@@ -68,7 +76,7 @@ class CustomCommandDao(driverManager: DriverManager) : CacheDBDao(driverManager)
 data class CustomCommand(
     var id: Long,
     var name: String,
-    var msgName: String,
+    var msgName: String?,
     var description: String? = null,
     var aliases: List<String>? = null,
     var chance: Int = 100,

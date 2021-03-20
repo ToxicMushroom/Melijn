@@ -9,7 +9,7 @@ class LinkedMessageWrapper(private val linkedMessageDao: LinkedMessageDao) {
 
     suspend fun getMessage(guildId: Long, msgType: MessageType): String? {
         val cached = linkedMessageDao.getCacheEntry("$msgType:$guildId", HIGHER_CACHE)
-        if (cached != null){
+        if (cached != null) {
             if (cached.isEmpty()) return null
             return cached
         }
@@ -24,23 +24,14 @@ class LinkedMessageWrapper(private val linkedMessageDao: LinkedMessageDao) {
         return result
     }
 
-    fun updateMessage(message: ModularMessage, guildId: Long, type: MessageType) {
-        if (shouldRemove(message)) {
-            removeMessage(guildId, type)
-        } else {
-            (setMessage(guildId, type, message))
-        }
-    }
-
-
     fun removeMessage(guildId: Long, type: MessageType) {
         linkedMessageDao.remove(guildId, type)
         linkedMessageDao.setCacheEntry("$type:$guildId", "", NORMAL_CACHE)
     }
 
-    fun setMessage(guildId: Long, type: MessageType, message: ModularMessage) {
-        linkedMessageDao.set(guildId, type, message.toJSON())
-        linkedMessageDao.setCacheEntry("$type:$guildId", message.toJSON(), NORMAL_CACHE)
+    fun setMessage(guildId: Long, type: MessageType, msgName: String) {
+        linkedMessageDao.set(guildId, type, msgName)
+        linkedMessageDao.setCacheEntry("$type:$guildId", msgName, NORMAL_CACHE)
     }
 
     fun shouldRemove(message: ModularMessage): Boolean {

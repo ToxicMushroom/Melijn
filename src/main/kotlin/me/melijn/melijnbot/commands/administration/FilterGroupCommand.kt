@@ -67,6 +67,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
         init {
             name = "channels"
+            aliases = arrayOf("c")
             children = arrayOf(
                 AddArg(root),
                 RemoveArg(root),
@@ -148,14 +149,10 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
             init {
                 name = "list"
-                aliases = arrayOf("l")
+                aliases = arrayOf("ls")
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
                 val group = getSelectedFilterGroup(context) ?: return
                 val channelIds = group.channels.toMutableList()
                 val channels = mutableListOf<TextChannel>()

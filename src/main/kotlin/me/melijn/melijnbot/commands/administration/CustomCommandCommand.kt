@@ -31,12 +31,14 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             SetChanceArg(root),
             SetPrefixStateArg(root),
             SetDescriptionArg(root),
+            SetContainsTriggersArg(root),
             LinkMessageArg(root),
             RenameArg(root),
             CopyArg(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
+
 
     class CopyArg(parent: String) : AbstractCommand("$parent.copy") {
 
@@ -147,11 +149,17 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val title = context.getTranslation("$root.title")
 
             val ccs = context.daoManager.customCommandWrapper.getList(context.guildId)
+            if (ccs.isEmpty()) {
+                val msg = context.getTranslation("$root.empty")
+                sendRsp(context, msg)
+                return
+            }
+
             var content = "```INI"
 
-            content += "\n[id] - [name] - [chance]"
+            content += "\n[id] - [name] - [chance] - [msgName]"
             for (cc in ccs) {
-                content += "\n[${cc.id}] - ${cc.name} - ${cc.chance}"
+                content += "\n[${cc.id}] - ${cc.name} - ${cc.chance} - [${cc.msgName}]"
             }
             content += "```"
 
@@ -186,20 +194,21 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
 
             val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
-            var content = context.fullArg.removeFirst(name).trim()
-            if (content.isBlank()) content = "ccplaceholder"
+            var msgName = context.fullArg.removeFirst(name).trim()
+            if (msgName.isBlank()) msgName = "nameplaceholder"
 
-            val cc = CustomCommand(0, name, content)
+            val cc = CustomCommand(0, name, msgName)
 
             val ccId = wrapper.add(context.guildId, cc)
             cc.id = ccId
-            cc.msgName = "cc.$ccId"
+            msgName = "cc.$ccId"
+            cc.msgName = msgName
             wrapper.update(context.guildId, cc)
 
             val msg = context.getTranslation("$root.success")
                 .withVariable("id", cc.id.toString())
                 .withVariable("ccName", cc.name)
-                .withVariable("content", cc.msgName)
+                .withVariable("msgName", msgName)
             sendRsp(context, msg)
         }
     }
@@ -369,12 +378,12 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 val ccSelected = getSelectedCCNMessage(context) ?: return
                 val aliases = ccSelected.aliases
 
-                val path = if (aliases == null) "$root.empty" else "$root.title"
+                val path = if (aliases?.isEmpty() == true) "$root.empty" else "$root.title"
                 val title = context.getTranslation(path)
                     .withVariable("id", ccSelected.id.toString())
                     .withVariable("ccName", ccSelected.name)
 
-                val content = if (aliases == null) {
+                val content = if (aliases == null || aliases.isEmpty()) {
                     ""
                 } else {
                     var build = "```INI"
@@ -415,6 +424,33 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 .withVariable("ccName", ccSelected.name)
                 .withVariable(PLACEHOLDER_ARG, context.rawArg)
 
+            sendRsp(context, msg)
+        }
+    }
+
+    class SetContainsTriggersArg(parent: String) : AbstractCommand("$parent.setcontainstriggers") {
+
+        init {
+            name = "setContainsTriggers"
+            aliases = arrayOf("sct")
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            val cc = getSelectedCCNMessage(context) ?: return
+            if (context.args.isEmpty()) {
+                val msg = context.getTranslation("$root.show.${cc.containsTriggers}")
+                    .withVariable("id", cc.id.toString())
+                    .withVariable("ccName", cc.name)
+                sendRsp(context, msg)
+                return
+            }
+
+            val state = getBooleanFromArgNMessage(context, 0) ?: return
+            cc.containsTriggers = state
+            context.daoManager.customCommandWrapper.update(context.guildId, cc)
+            val msg = context.getTranslation("$root.set.${state}")
+                .withVariable("id", cc.id.toString())
+                .withVariable("ccName", cc.name)
             sendRsp(context, msg)
         }
     }
@@ -486,7 +522,55 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            TODO("Not yet implemented")
+            val id = getLongFromArgNMessage(context, 0) ?: return
+            val cc = context.daoManager.customCommandWrapper.getCCById(context.guildId, id)
+            if (cc == null) {
+                val msg = context.getTranslation("message.unknown.ccid")
+                    .withVariable(PLACEHOLDER_ARG, id.toString())
+                sendRsp(context, msg)
+                return
+            }
+
+            if (context.args.size == 1) {
+                val msgName = cc.msgName
+                if (msgName == null || msgName.isBlank()) {
+                    val msg = context.getTranslation("$root.showempty")
+                        .withVariable("ccName", cc.name)
+                        .withVariable("id", cc.id)
+                    sendRsp(context, msg)
+                } else {
+                    val msg = context.getTranslation("$root.show")
+                        .withVariable("ccName", cc.name)
+                        .withVariable("id", cc.id)
+                        .withVariable("msgName", msgName)
+                    sendRsp(context, msg)
+                }
+            } else {
+                val msgName = getStringFromArgsNMessage(context, 1, 1, 64) ?: return
+                val daoManager = context.daoManager
+                if (msgName == "null") {
+                    cc.msgName = null
+                    val msg = context.getTranslation("$root.unlinked")
+                        .withVariable("ccName", cc.name)
+                        .withVariable("id", cc.id)
+                    sendRsp(context, msg)
+                } else {
+                    val messages = daoManager.messageWrapper.getMessages(context.guildId)
+                    if (msgName.isInside(messages, true)) {
+
+                        val msg = context.getTranslation("$root.linked")
+                            .withVariable("ccName", cc.name)
+                            .withVariable("id", cc.id)
+                            .withVariable("msgName", msgName)
+                        sendRsp(context, msg)
+                    } else {
+                        val msg = context.getTranslation("${context.commandOrder.first().root}.msgnoexist")
+                            .withSafeVariable("msg", msgName)
+                            .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                        sendRsp(context, msg)
+                    }
+                }
+            }
         }
     }
 }

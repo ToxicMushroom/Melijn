@@ -3,13 +3,13 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE
+import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_RELATIVEPOSITION
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
-class MoveChannelCommand : AbstractCommand("command.moveChannel") {
+class MoveChannelCommand : AbstractCommand("command.movechannel") {
 
     init {
         name = "moveChannel"
@@ -21,7 +21,7 @@ class MoveChannelCommand : AbstractCommand("command.moveChannel") {
     override suspend fun execute(context: ICommandContext) {
         val toMove = getChannelByArgsNMessage(context, 0, true) ?: return
         val position =
-            getEnumFromArgNMessage<RelativePosition>(context, 1, MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE) ?: return
+            getEnumFromArgNMessage<RelativePosition>(context, 1, MESSAGE_UNKNOWN_RELATIVEPOSITION) ?: return
         val target = getChannelByArgsNMessage(context, 2, true) ?: return
         val offset = when (position) {
             RelativePosition.ABOVE -> 0

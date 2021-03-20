@@ -503,7 +503,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         messageWrapper: MessageWrapper,
         cc: CustomCommand
     ): ModularMessage {
-        val modularMessage = messageWrapper.getMessage(member.guild.idLong, cc.msgName) ?: ModularMessage("not set")
+        val modularMessage = cc.msgName?.let { messageWrapper.getMessage(member.guild.idLong, it) }
+            ?: ModularMessage("not set")
 
         val ccArgs = CCJagTagParserArgs(member, rawArg, cc)
 
