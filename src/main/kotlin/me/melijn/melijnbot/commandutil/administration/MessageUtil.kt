@@ -2,12 +2,15 @@ package me.melijn.melijnbot.commandutil.administration
 
 import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.database.message.LinkedMessageWrapper
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.jagtag.DiscordMethods
+import me.melijn.melijnbot.internals.jagtag.UrlJagTagParser
+import me.melijn.melijnbot.internals.jagtag.UrlParserArgs
+import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.internals.utils.*
@@ -16,6 +19,7 @@ import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendMsgWithAttachments
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.time.Instant
@@ -587,7 +591,7 @@ object MessageUtil {
 
     private suspend fun setEmbedImageAndMessage(context: ICommandContext, message: ModularMessage, msgName: String) {
         val arg = context.rawArg
-        val eb = EmbedBuilder(message.embed)
+        val eb = EmbedEditor(message.embed)
         val attachments = context.message.attachments
         val user = retrieveUserByArgsN(context, 0)
 
@@ -621,6 +625,7 @@ object MessageUtil {
         try { // Fixes the cannot build empty embed error
             message.embed = eb.build()
         } catch (t: IllegalStateException) {
+            t.printStackTrace()
             message.embed = null
         }
         sendRsp(context, msg)
@@ -858,13 +863,15 @@ object MessageUtil {
         val guildId = context.guildId
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
-        val message = modularMessage.toMessage()
+        val message = replaceUrlVariables(context.member, modularMessage).toMessage()
         if (message == null && modularMessage.attachments.isEmpty()) {
             val msg2 = context.getTranslation("message.view.isempty")
                 .withVariable("msgName", msgName)
             sendRsp(context, msg2)
             return
         }
+
+
         val httpClient = context.webManager.proxiedHttpClient
         val channel = context.textChannel
         when {
@@ -876,6 +883,20 @@ object MessageUtil {
                 modularMessage.attachments
             )
             else -> sendMsg(channel, message)
+        }
+    }
+
+    suspend fun replaceUrlVariables(
+        member: Member,
+        modularMessage: ModularMessage
+    ): ModularMessage {
+        val args = UrlParserArgs(member.guild, member.user)
+        return modularMessage.mapAllStringFields {
+            if (it != null) {
+                UrlJagTagParser.parseJagTag(args, it)
+            } else {
+                null
+            }
         }
     }
 
