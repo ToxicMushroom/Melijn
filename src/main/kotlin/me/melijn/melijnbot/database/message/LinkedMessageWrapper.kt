@@ -51,4 +51,16 @@ class LinkedMessageWrapper(private val linkedMessageDao: LinkedMessageDao) {
         } else {
             embed
         }
+
+    fun setMessages(guildId: Long, messageTypes: List<MessageType>, msgName: String) {
+        for (type in messageTypes) {
+            setMessage(guildId, type, msgName)
+        }
+    }
+
+    fun removeMessages(guildId: Long, messageTypes: List<MessageType>) {
+        for (type in messageTypes) {
+            removeMessage(guildId, type)
+        }
+    }
 }
