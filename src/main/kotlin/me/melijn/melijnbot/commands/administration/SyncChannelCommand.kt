@@ -10,7 +10,7 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
-class SyncChannelCommand : AbstractCommand("command.moveandsyncchannel") {
+class SyncChannelCommand : AbstractCommand("command.syncchannel") {
 
     init {
         name = "syncChannel"
