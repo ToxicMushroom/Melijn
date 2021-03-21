@@ -1,9 +1,9 @@
 package me.melijn.melijnbot.internals.utils
 
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.internals.jagtag.BirthdayJagTagParser
 import me.melijn.melijnbot.internals.jagtag.BirthdayParserArgs
+import me.melijn.melijnbot.internals.models.ModularMessage
 import net.dv8tion.jda.api.entities.Member
 
 object BirthdayUtil {

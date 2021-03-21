@@ -3,8 +3,8 @@ package me.melijn.melijnbot.internals.utils.message
 import io.ktor.client.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.utils.ModularPaginationInfo
 import me.melijn.melijnbot.internals.utils.PaginationInfo
 import net.dv8tion.jda.api.Permission

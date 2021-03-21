@@ -3,6 +3,7 @@ package me.melijn.melijnbot.database.message
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.enums.MessageType
+import me.melijn.melijnbot.internals.models.ModularMessage
 import net.dv8tion.jda.api.entities.MessageEmbed
 
 class LinkedMessageWrapper(private val linkedMessageDao: LinkedMessageDao) {

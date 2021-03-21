@@ -2,11 +2,11 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commandutil.administration.MessageUtil
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.jagtag.WelcomeJagTagParser
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType

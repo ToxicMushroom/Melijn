@@ -7,12 +7,12 @@ import me.melijn.melijnbot.commands.administration.ScriptsCommand
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.command.CustomCommand
 import me.melijn.melijnbot.database.message.MessageWrapper
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.database.scripts.Script
 import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.internals.events.SuspendListener
 import me.melijn.melijnbot.internals.jagtag.CCJagTagParser
 import me.melijn.melijnbot.internals.jagtag.CCJagTagParserArgs
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.models.TriState
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n

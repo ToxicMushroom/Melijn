@@ -4,10 +4,10 @@ import io.ktor.client.*
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*

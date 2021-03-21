@@ -3,13 +3,13 @@ package me.melijn.melijnbot.internals.events.eventutil
 import io.ktor.client.*
 import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.database.role.JoinRoleInfo
 import me.melijn.melijnbot.database.role.UserType
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.jagtag.WelcomeJagTagParser
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.services.messagedeletion.MessageDeletionService
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.utils.awaitBool

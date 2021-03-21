@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.message
 
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.internals.models.ModularMessage
 
 class MessageWrapper(private val messageDao: MessageDao) {
 

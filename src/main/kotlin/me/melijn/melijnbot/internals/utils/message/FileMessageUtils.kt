@@ -366,7 +366,7 @@ suspend fun sendMsgWithAttachments(
     message: Message,
     attachments: Map<String, String>
 ) {
-    msgWithAttachmentsAction(channel, httpClient, message, attachments)?.queue()
+    msgWithAttachmentsAction(channel, httpClient, message, attachments).queue()
 }
 
 suspend fun sendAttachmentsAwaitN(
@@ -383,7 +383,7 @@ suspend fun sendMsgWithAttachmentsAwaitN(
     message: Message,
     attachments: Map<String, String>
 ): Message? {
-    return msgWithAttachmentsAction(channel, httpClient, message, attachments)?.awaitOrNull()
+    return msgWithAttachmentsAction(channel, httpClient, message, attachments).awaitOrNull()
 }
 
 suspend fun sendMsgAwaitEL(

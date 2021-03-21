@@ -2,9 +2,9 @@ package me.melijn.melijnbot.commands.music
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.llklient.utils.LavalinkUtil
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.internals.command.*
 import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.music.TrackUserData
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.*

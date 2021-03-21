@@ -18,7 +18,7 @@ object FullCommandsResponseHandler {
     suspend fun handleFullCommandsResponse(context: RequestContext) {
         if (cmds.isEmpty()) {
             val dataObject = DataObject.empty()
-            for ((_, root) in context.container.commandMap) {
+            for (root in context.container.commandSet) {
                 if (root.commandCategory == CommandCategory.DEVELOPER) continue
                 val dataArray = if (dataObject.hasKey(root.commandCategory.toString())) {
                     dataObject.getArray(root.commandCategory.toString())
