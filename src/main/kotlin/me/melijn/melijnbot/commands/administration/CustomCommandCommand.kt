@@ -518,7 +518,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         init {
             name = "linkMessage"
-            aliases = arrayOf("lm")
+            aliases = arrayOf("lm", "linkMsg")
         }
 
         override suspend fun execute(context: ICommandContext) {
@@ -550,6 +550,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 val daoManager = context.daoManager
                 if (msgName == "null") {
                     cc.msgName = null
+                    daoManager.customCommandWrapper.update(context.guildId, cc)
+
                     val msg = context.getTranslation("$root.unlinked")
                         .withVariable("ccName", cc.name)
                         .withVariable("id", cc.id)
@@ -557,6 +559,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 } else {
                     val messages = daoManager.messageWrapper.getMessages(context.guildId)
                     if (msgName.isInside(messages, true)) {
+                        cc.msgName = msgName
+                        daoManager.customCommandWrapper.update(context.guildId, cc)
 
                         val msg = context.getTranslation("$root.linked")
                             .withVariable("ccName", cc.name)
