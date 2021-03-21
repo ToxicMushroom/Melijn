@@ -153,6 +153,19 @@ object DiscordMethods {
             val arg = args[0].toIntOrNull() ?: 1
             " \u200B".repeat(arg)
         }),
+        Method("accountCreated", { env ->
+            val guild: Guild = env.getReifiedX("guild")
+            val user: User = env.getReifiedX("user")
+            user.timeCreated.asEpochMillisToDateTime(Container.instance.daoManager, guild.idLong, user.idLong)
+        }, { env, args ->
+            val guild: Guild = env.getReifiedX("guild")
+            val arg = args[0]
+            val user: User = getUserByArgsN(
+                guild.jda.shardManager ?: return@Method "null", guild, arg
+            ) ?: return@Method "null"
+
+            user.timeCreated.asEpochMillisToDateTime(Container.instance.daoManager, guild.idLong, user.idLong)
+        }),
         Method("currentDateTime", { env ->
             val guild: Guild = env.getReifiedX("guild")
             val user: User = env.getReifiedX("user")
