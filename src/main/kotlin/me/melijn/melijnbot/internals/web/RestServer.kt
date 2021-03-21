@@ -2,6 +2,7 @@ package me.melijn.melijnbot.internals.web
 
 import io.ktor.application.*
 import io.ktor.http.*
+import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
@@ -29,6 +30,7 @@ import me.melijn.melijnbot.internals.web.rest.stats.StatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.voted.VotedResponseHandler
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
+import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -38,9 +40,15 @@ class RestServer(container: Container) {
 
     private val jsonType = ContentType.parse("Application/JSON")
 
+    val logger = LoggerFactory.getLogger(RestServer::class.java)
 
     private val server: NettyApplicationEngine = embeddedServer(Netty, container.settings.restServer.port) {
         routing {
+            post("/dblvote") {
+                call.respondText { "pogu" }
+                logger.info("Go dblvote vote:\n" + call.receiveText())
+            }
+
             get("/guildCount") {
                 call.respondText {
                     "${MelijnBot.shardManager.guildCache.size()}"

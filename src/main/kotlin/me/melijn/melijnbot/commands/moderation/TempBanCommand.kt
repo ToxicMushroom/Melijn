@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHY
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -58,10 +59,21 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             }
         }
 
-        val durationArgs = context.args[1].split(SPACE_PATTERN)
+        // ban user <-t1> reason
+        var deldays = 7
+        var offset = 0
+        if (context.args.size > 2){
+            val firstArg = context.args[1]
+            if (firstArg.matches(BanCommand.optionalDeldaysPattern)){
+                offset = 1
+                deldays = BanCommand.optionalDeldaysPattern.find(firstArg)?.groupValues?.get(1)?.toInt() ?: 0
+            }
+        }
+
+        val durationArgs = context.args[offset+1].split(SPACE_PATTERN)
         val banDuration = (getDurationByArgsNMessage(context, 0, durationArgs.size, durationArgs) ?: return) * 1000
 
-        var reason = context.getRawArgPart(2)
+        var reason = context.getRawArgPart(offset+2)
         if (reason.isBlank()) reason = "/"
 
         val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
@@ -89,7 +101,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             sendMsgAwaitEL(it, banning)
         }?.firstOrNull()
 
-        continueBanning(context, targetUser, ban, activeBan, message)
+        continueBanning(context, targetUser, ban, activeBan, message, deldays)
     }
 
     private suspend fun continueBanning(
@@ -97,7 +109,8 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         targetUser: User,
         ban: Ban,
         activeBan: Ban?,
-        banningMessage: Message?
+        banningMessage: Message?,
+        deldays: Int
     ) {
         val guild = context.guild
         val author = context.author
@@ -122,15 +135,14 @@ class TempBanCommand : AbstractCommand("command.tempban") {
 
 
         try {
-            context.guild.ban(targetUser, 7).reason("(tempBan) ${context.author.asTag}: " + ban.reason)
+            guild.ban(targetUser, deldays)
+                .reason("(tempBan) ${context.author.asTag}: " + ban.reason)
                 .async { daoManager.banWrapper.setBan(ban) }
             banningMessage?.editMessage(
                 bannedMessageDm
             )?.override(true)?.queue()
 
-            val logChannelWrapper = daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.getChannelId(guild.idLong, LogChannelType.TEMP_BAN)
-            val logChannel = guild.getTextChannelById(logChannelId)
+            val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.TEMP_BAN)
             logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
             val endTime = ban.endTime?.asEpochMillisToDateTime(zoneId)
@@ -138,7 +150,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             val msg = context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 .withVariable("endTime", endTime ?: "none")
-                .withSafeVariable("reason", ban.reason)
+                .withSafeVarInCodeblock("reason", ban.reason)
             sendRsp(context, msg)
         } catch (t: Throwable) {
 
@@ -147,7 +159,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
 
             val msg = context.getTranslation("$root.failure")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("cause", t.message ?: "/")
+                .withSafeVarInCodeblock("cause", t.message ?: "/")
             sendRsp(context, msg)
         }
     }

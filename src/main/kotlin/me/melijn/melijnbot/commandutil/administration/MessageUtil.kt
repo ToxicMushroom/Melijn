@@ -1,29 +1,36 @@
 package me.melijn.melijnbot.commandutil.administration
 
-import me.melijn.melijnbot.database.command.CustomCommand
-import me.melijn.melijnbot.database.message.MessageWrapper
-import me.melijn.melijnbot.database.message.ModularMessage
+import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.database.message.LinkedMessageWrapper
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.jagtag.DiscordMethods
+import me.melijn.melijnbot.internals.jagtag.UrlJagTagParser
+import me.melijn.melijnbot.internals.jagtag.UrlParserArgs
+import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendAttachments
+import me.melijn.melijnbot.internals.utils.message.sendMsg
+import me.melijn.melijnbot.internals.utils.message.sendMsgWithAttachments
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.time.Instant
 
-object MessageCommandUtil {
-
-    // I dont like this file
+object MessageUtil {
 
     fun removeMessageIfEmpty(
         guildId: Long,
         type: MessageType,
         message: ModularMessage,
-        messageWrapper: MessageWrapper
+        messageWrapper: LinkedMessageWrapper
     ): Boolean {
         return if (messageWrapper.shouldRemove(message)) {
             messageWrapper.removeMessage(guildId, type)
@@ -33,68 +40,71 @@ object MessageCommandUtil {
         }
     }
 
-    suspend fun setMessage(context: ICommandContext, property: ModularMessageProperty, type: MessageType) {
+    suspend fun setMessage(context: ICommandContext, property: ModularMessageProperty) {
+        val guildId = context.guildId
+        val selectedMessage = getSelectedMessage(context) ?: return
+
         val messageWrapper = context.daoManager.messageWrapper
-        val guildId = context.guildId
-        val message = messageWrapper.getMessage(guildId, type) ?: ModularMessage()
+        val message = messageWrapper.getMessage(guildId, selectedMessage) ?: ModularMessage()
 
-        runCorrectSetThing(property, context, message, type)
-        messageWrapper.updateMessage(message, guildId, type)
+        runCorrectSetThing(property, context, message, selectedMessage)
+        messageWrapper.updateMessage(message, guildId, selectedMessage)
     }
 
-    suspend fun setMessageCC(context: ICommandContext, property: ModularMessageProperty, cc: CustomCommand) {
-        val ccWrapper = context.daoManager.customCommandWrapper
+    suspend fun showMessage(context: ICommandContext, property: ModularMessageProperty) {
         val guildId = context.guildId
-        val message = cc.content
-        val type = MessageType.CUSTOM_COMMAND
+        val selectedMessage = getSelectedMessage(context) ?: return
 
-        runCorrectSetThing(property, context, message, type)
-        cc.content = message
+        val messageWrapper = context.daoManager.messageWrapper
+        val message = messageWrapper.getMessage(guildId, selectedMessage)
 
-        ccWrapper.update(guildId, cc)
+        showMessage(context, property, message, selectedMessage)
     }
+
+    suspend fun getSelectedMessage(context: ICommandContext): String? {
+        val guildId = context.guildId
+        val msgName = context.daoManager.driverManager.getCacheEntry("selectedMessage:$guildId", NORMAL_CACHE)
+        if (msgName == null) {
+            sendRsp(
+                context, "You dont have any message selected, use `%prefix%msg select <msgName*>`"
+                    .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+            )
+            return null
+        }
+
+        return msgName
+    }
+
 
     private suspend fun runCorrectSetThing(
         property: ModularMessageProperty,
         context: ICommandContext,
         message: ModularMessage,
-        type: MessageType
+        msgName: String
     ) {
         when (property) {
-            ModularMessageProperty.CONTENT -> setMessageContentAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_DESCRIPTION -> setEmbedDescriptionAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_TITLE -> setEmbedTitleAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_URL -> setEmbedUrlAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_THUMBNAIL -> setEmbedThumbnailAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_IMAGE -> setEmbedImageAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_AUTHOR -> setEmbedAuthorAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_AUTHOR_URL -> setEmbedAuthorUrlAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_AUTHOR_ICON_URL -> setEmbedAuthorIconUrlAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_FOOTER -> setEmbedFooterAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_FOOTER_ICON_URL -> setEmbedFooterIconUrlAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_COLOR -> setEmbedColorAndMessage(context, message, type)
-            ModularMessageProperty.EMBED_TIME_STAMP -> setEmbedTimeStampMessage(context, message, type)
+            ModularMessageProperty.CONTENT -> setMessageContentAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_DESCRIPTION -> setEmbedDescriptionAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_TITLE -> setEmbedTitleAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_URL -> setEmbedUrlAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_THUMBNAIL -> setEmbedThumbnailAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_IMAGE -> setEmbedImageAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_AUTHOR -> setEmbedAuthorAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_AUTHOR_URL -> setEmbedAuthorUrlAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_AUTHOR_ICON_URL -> setEmbedAuthorIconUrlAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_FOOTER -> setEmbedFooterAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_FOOTER_ICON_URL -> setEmbedFooterIconUrlAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_COLOR -> setEmbedColorAndMessage(context, message, msgName)
+            ModularMessageProperty.EMBED_TIME_STAMP -> setEmbedTimeStampMessage(context, message, msgName)
         }
     }
 
-
-    suspend fun showMessage(context: ICommandContext, property: ModularMessageProperty, type: MessageType) {
-        val messageWrapper = context.daoManager.messageWrapper
-        val guildId = context.guildId
-        val message = messageWrapper.getMessage(guildId, type)
-
-        showMessage(context, property, message, type)
-    }
-
-    suspend fun showMessageCC(context: ICommandContext, property: ModularMessageProperty, cc: CustomCommand) {
-        showMessage(context, property, cc.content, MessageType.CUSTOM_COMMAND)
-    }
 
     private suspend fun showMessage(
         context: ICommandContext,
         property: ModularMessageProperty,
         message: ModularMessage?,
-        type: MessageType
+        msgName: String
     ) {
         var path = ""
         var pathSuffix = ""
@@ -112,7 +122,7 @@ object MessageCommandUtil {
                 message?.embed?.title
             }
             ModularMessageProperty.EMBED_URL -> {
-                path = "message.embed.url.show"
+                path = "message.embed.titleurl.show"
                 message?.embed?.url
             }
             ModularMessageProperty.EMBED_THUMBNAIL -> {
@@ -140,7 +150,7 @@ object MessageCommandUtil {
                 message?.embed?.footer?.text
             }
             ModularMessageProperty.EMBED_FOOTER_ICON_URL -> {
-                path = "message.embed.footericonurl.show"
+                path = "message.embed.footericon.show"
                 message?.embed?.footer?.iconUrl
             }
             ModularMessageProperty.EMBED_COLOR -> {
@@ -159,68 +169,59 @@ object MessageCommandUtil {
         } else {
             context.getTranslation("$path.set$pathSuffix")
                 .replace("%${property.variableName}%", string)
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         sendRsp(context, msg)
     }
 
 
-    suspend fun clearEmbed(context: ICommandContext, type: MessageType) {
+    suspend fun clearEmbed(context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.getMessage(context.guildId, type)
+        val selectedMessage = getSelectedMessage(context) ?: return
+        val modularMessage = messageWrapper.getMessage(context.guildId, selectedMessage)
             ?: ModularMessage()
-        clearEmbedAndMessage(context, type, modularMessage)
-        messageWrapper.updateMessage(modularMessage, context.guildId, type)
+        clearEmbedAndMessage(context, selectedMessage, modularMessage)
+        messageWrapper.updateMessage(modularMessage, context.guildId, selectedMessage)
     }
 
-    suspend fun clearEmbedCC(context: ICommandContext, cc: CustomCommand) {
-        val ccWrapper = context.daoManager.customCommandWrapper
-        val modularMessage = cc.content
-        clearEmbedAndMessage(context, MessageType.CUSTOM_COMMAND, modularMessage)
-        cc.content = modularMessage
-        ccWrapper.update(context.guildId, cc)
-    }
 
     private suspend fun clearEmbedAndMessage(
         context: ICommandContext,
-        type: MessageType,
+        msgName: String,
         modularMessage: ModularMessage
     ) {
         modularMessage.embed = null
 
         val msg = context.getTranslation("message.embed.clear")
-            .withVariable(PLACEHOLDER_TYPE, type.text)
+            .withVariable(PLACEHOLDER_TYPE, msgName)
 
         sendRsp(context, msg)
     }
 
 
-    suspend fun listAttachments(context: ICommandContext, type: MessageType) {
+    suspend fun listAttachments(context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.getMessage(context.guildId, type)
-        listAttachmentsAndMessage(context, modularMessage, type)
+        val msgName = getSelectedMessage(context) ?: return
+        val modularMessage = messageWrapper.getMessage(context.guildId, msgName)
+        listAttachmentsAndMessage(context, modularMessage, msgName)
     }
 
-    suspend fun listAttachmentsCC(context: ICommandContext, cc: CustomCommand) {
-        val modularMessage = cc.content
-        listAttachmentsAndMessage(context, modularMessage, MessageType.CUSTOM_COMMAND)
-    }
 
     private suspend fun listAttachmentsAndMessage(
         context: ICommandContext,
         message: ModularMessage?,
-        type: MessageType
+        msgName: String
     ) {
         val msg = if (message == null || message.attachments.isEmpty()) {
             context.getTranslation("message.attachments.list.empty")
-                .withVariable(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_TYPE, msgName)
 
         } else {
             val title = context.getTranslation("message.attachments.list.title")
-                .withVariable(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_TYPE, msgName)
             var content = "\n```INI"
-            for ((index, attachment) in message.attachments.entries.withIndex()) {
-                content += "\n$index - [${attachment.key}] - ${attachment.value}"
+            for ((index, attachment) in message.attachments.entries.withIndex().sortedBy { it.index }) {
+                content += "\n${index + 1} - [${attachment.key}] - ${attachment.value}"
             }
             content += "```"
             (title + content)
@@ -228,71 +229,59 @@ object MessageCommandUtil {
         sendRsp(context, msg)
     }
 
-    suspend fun addAttachment(context: ICommandContext, type: MessageType) {
+    suspend fun addAttachment(context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.getMessage(context.guildId, type)
+        val msgName = getSelectedMessage(context) ?: return
+        val modularMessage = messageWrapper.getMessage(context.guildId, msgName)
             ?: ModularMessage()
 
-        addAttachmentAndMessage(context, type, modularMessage)
-        messageWrapper.setMessage(context.guildId, type, modularMessage)
-    }
-
-    suspend fun addAttachmentCC(context: ICommandContext, cc: CustomCommand) {
-        val ccWrapper = context.daoManager.customCommandWrapper
-        val modularMessage = cc.content
-        addAttachmentAndMessage(context, MessageType.CUSTOM_COMMAND, modularMessage)
-        cc.content = modularMessage
-        ccWrapper.update(context.guildId, cc)
+        addAttachmentAndMessage(context, msgName, modularMessage)
+        messageWrapper.setMessage(context.guildId, msgName, modularMessage)
     }
 
 
     private suspend fun addAttachmentAndMessage(
         context: ICommandContext,
-        type: MessageType,
+        msgName: String,
         modularMessage: ModularMessage
     ) {
+        if (argSizeCheckFailed(context, 1)) return
         val newMap = modularMessage.attachments.toMutableMap()
         val url = context.args[0]
-        val msg = if (URL_PATTERN.matches(url)) {
+        val isVariable = DiscordMethods.imgUrlMethods.any { "{${it.name}}".equals(url, true) }
+        val msg = if (isVariable || URL_PATTERN.matches(url)) {
             val fileName = context.args[1]
             newMap[url] = fileName
 
             modularMessage.attachments = newMap.toMap()
             context.getTranslation("message.attachments.add")
-                .withVariable(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_TYPE, msgName)
                 .withVariable("name", fileName)
                 .withVariable("url", url)
         } else {
             context.getTranslation("message.embed.image.urlerror")
-                .withVariable(PLACEHOLDER_ARG, type.text)
-
+                .withVariable(PLACEHOLDER_ARG, url)
         }
 
         sendRsp(context, msg)
     }
 
-    suspend fun removeAttachment(context: ICommandContext, type: MessageType) {
+    suspend fun removeAttachment(context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.getMessage(context.guildId, type)
+        val msgName = getSelectedMessage(context) ?: return
+        val modularMessage = messageWrapper.getMessage(context.guildId, msgName)
             ?: ModularMessage()
 
-        removeAttachmentAndMessage(context, type, modularMessage)
-        messageWrapper.setMessage(context.guildId, type, modularMessage)
-    }
-
-    suspend fun removeAttachmentCC(context: ICommandContext, cc: CustomCommand) {
-        val ccWrapper = context.daoManager.customCommandWrapper
-        val modularMessage = cc.content
-        removeAttachmentAndMessage(context, MessageType.CUSTOM_COMMAND, modularMessage)
-        cc.content = modularMessage
-        ccWrapper.update(context.guildId, cc)
+        removeAttachmentAndMessage(context, msgName, modularMessage)
+        messageWrapper.setMessage(context.guildId, msgName, modularMessage)
     }
 
     private suspend fun removeAttachmentAndMessage(
         context: ICommandContext,
-        type: MessageType,
+        msgName: String,
         modularMessage: ModularMessage
     ) {
+        if (argSizeCheckFailed(context, 1)) return
         val attachments = modularMessage.attachments.toMutableMap()
         val file = if (attachments.containsKey(context.args[0])) {
             attachments[context.args[0]]
@@ -311,7 +300,37 @@ object MessageCommandUtil {
                 context.getTranslation("message.attachments.remove.success")
                     .withVariable("file", file)
             }.withVariable(PLACEHOLDER_ARG, context.args[0])
-                .withVariable(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_TYPE, msgName)
+
+        sendRsp(context, msg)
+    }
+
+    suspend fun removeAttachmentAt(context: ICommandContext) {
+        val messageWrapper = context.daoManager.messageWrapper
+        val msgName = getSelectedMessage(context) ?: return
+        val modularMessage = messageWrapper.getMessage(context.guildId, msgName)
+            ?: ModularMessage()
+
+        removeAttachmentAtAndMessage(context, msgName, modularMessage)
+        messageWrapper.setMessage(context.guildId, msgName, modularMessage)
+    }
+
+    private suspend fun removeAttachmentAtAndMessage(
+        context: ICommandContext,
+        msgName: String,
+        modularMessage: ModularMessage
+    ) {
+        val entries = modularMessage.attachments.entries.withIndex().sortedBy { it.index }
+        val index = getIntegerFromArgNMessage(context, 0, 1, entries.size) ?: return
+        val (url, name) = entries.first { it.index == index }.value
+        val attachments = modularMessage.attachments.toMutableMap()
+        attachments.remove(url)
+        modularMessage.attachments = attachments.toMap()
+
+        val msg = context.getTranslation("message.attachments.remove.success")
+            .withVariable("file", name)
+            .withVariable(PLACEHOLDER_ARG, url)
+            .withVariable(PLACEHOLDER_TYPE, msgName)
 
         sendRsp(context, msg)
     }
@@ -319,7 +338,7 @@ object MessageCommandUtil {
     private suspend fun setMessageContentAndMessage(
         context: ICommandContext,
         message: ModularMessage,
-        type: MessageType
+        msgName: String
     ) {
         val arg = context.rawArg
 
@@ -330,7 +349,7 @@ object MessageCommandUtil {
             message.messageContent = arg
             context.getTranslation("message.content.set")
                 .withVariable(PLACEHOLDER_ARG, "```${arg.replace("`", "´")}```")
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         sendRsp(context, msg)
     }
@@ -338,7 +357,7 @@ object MessageCommandUtil {
     private suspend fun setEmbedDescriptionAndMessage(
         context: ICommandContext,
         message: ModularMessage,
-        type: MessageType
+        msgName: String
     ) {
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
@@ -350,13 +369,13 @@ object MessageCommandUtil {
             eb.setDescription(arg)
             context.getTranslation("message.embed.description.set")
                 .withVariable(PLACEHOLDER_ARG, arg)
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         message.embed = eb.build()
         sendRsp(context, msg)
     }
 
-    private suspend fun setEmbedColorAndMessage(context: ICommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedColorAndMessage(context: ICommandContext, message: ModularMessage, msgName: String) {
         val color = getColorFromArgNMessage(context, 0) ?: return
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
@@ -368,13 +387,13 @@ object MessageCommandUtil {
             eb.setColor(color)
             context.getTranslation("message.embed.color.set")
                 .withVariable(PLACEHOLDER_ARG, arg)
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         message.embed = eb.build()
         sendRsp(context, msg)
     }
 
-    private suspend fun setEmbedTimeStampMessage(context: ICommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedTimeStampMessage(context: ICommandContext, message: ModularMessage, msgName: String) {
 
         val timeArg = context.args[0]
         val eb = EmbedBuilder(message.embed)
@@ -399,7 +418,7 @@ object MessageCommandUtil {
                 context.getTranslation("message.embed.timestamp.set")
                     .withVariable(PLACEHOLDER_ARG, timeArg)
             }
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
 
         message.extra = mmap
@@ -407,7 +426,7 @@ object MessageCommandUtil {
         sendRsp(context, msg)
     }
 
-    private suspend fun setEmbedTitleAndMessage(context: ICommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedTitleAndMessage(context: ICommandContext, message: ModularMessage, msgName: String) {
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
 
@@ -427,7 +446,7 @@ object MessageCommandUtil {
             eb.setTitle(arg)
             context.getTranslation("message.embed.title.set")
                 .withVariable(PLACEHOLDER_ARG, arg)
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         message.embed = try {
             eb.build()
@@ -437,7 +456,7 @@ object MessageCommandUtil {
         sendRsp(context, msg)
     }
 
-    private suspend fun setEmbedUrlAndMessage(context: ICommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedUrlAndMessage(context: ICommandContext, message: ModularMessage, msgName: String) {
         val arg = context.rawArg
         val title = message.embed?.title
         val eb = EmbedBuilder(message.embed)
@@ -454,13 +473,13 @@ object MessageCommandUtil {
                 context.getTranslation("message.embed.titleurl.invalid")
                     .withVariable(PLACEHOLDER_ARG, arg)
             }
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         message.embed = eb.build()
         sendRsp(context, msg)
     }
 
-    private suspend fun setEmbedAuthorAndMessage(context: ICommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedAuthorAndMessage(context: ICommandContext, message: ModularMessage, msgName: String) {
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
 
@@ -468,10 +487,10 @@ object MessageCommandUtil {
             eb.setAuthor(null)
             context.getTranslation("message.embed.authorname.unset")
         } else {
-            eb.setTitle(arg)
+            eb.setAuthor(arg)
             context.getTranslation("message.embed.authorname.set")
                 .withVariable(PLACEHOLDER_ARG, arg)
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         message.embed = eb.build()
         sendRsp(context, msg)
@@ -480,12 +499,12 @@ object MessageCommandUtil {
     private suspend fun setEmbedAuthorIconUrlAndMessage(
         context: ICommandContext,
         message: ModularMessage,
-        type: MessageType
+        msgName: String
     ) {
         val arg = context.rawArg
         val authorName = message.embed?.author?.name
         val authorUrl = message.embed?.author?.url
-        val eb = EmbedBuilder(message.embed)
+        val eb = EmbedEditor(message.embed)
         val attachments = context.message.attachments
         val user = retrieveUserByArgsN(context, 0)
 
@@ -509,13 +528,13 @@ object MessageCommandUtil {
                 context.getTranslation("message.embed.authoriconurl.set")
                     .withVariable(PLACEHOLDER_ARG, arg)
             }
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         message.embed = eb.build()
         sendRsp(context, msg)
     }
 
-    suspend fun setEmbedAuthorUrlAndMessage(context: ICommandContext, message: ModularMessage, type: MessageType) {
+    suspend fun setEmbedAuthorUrlAndMessage(context: ICommandContext, message: ModularMessage, msgName: String) {
         val arg = context.rawArg
         val authorName = message.embed?.author?.name
         val iconUrl = message.embed?.author?.iconUrl
@@ -528,7 +547,7 @@ object MessageCommandUtil {
             eb.setAuthor(authorName, arg, iconUrl)
             context.getTranslation("message.embed.authorurl.set")
                 .withVariable(PLACEHOLDER_ARG, arg)
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         message.embed = eb.build()
         sendRsp(context, msg)
@@ -537,10 +556,10 @@ object MessageCommandUtil {
     private suspend fun setEmbedThumbnailAndMessage(
         context: ICommandContext,
         message: ModularMessage,
-        type: MessageType
+        msgName: String
     ) {
         val arg = context.rawArg
-        val eb = EmbedBuilder(message.embed)
+        val eb = EmbedEditor(message.embed)
         val attachments = context.message.attachments
         val user = retrieveUserByArgsN(context, 0)
 
@@ -564,15 +583,15 @@ object MessageCommandUtil {
                 context.getTranslation("message.embed.thumbnail.set")
                     .withVariable(PLACEHOLDER_ARG, arg)
             }
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         message.embed = eb.build()
         sendRsp(context, msg)
     }
 
-    private suspend fun setEmbedImageAndMessage(context: ICommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedImageAndMessage(context: ICommandContext, message: ModularMessage, msgName: String) {
         val arg = context.rawArg
-        val eb = EmbedBuilder(message.embed)
+        val eb = EmbedEditor(message.embed)
         val attachments = context.message.attachments
         val user = retrieveUserByArgsN(context, 0)
 
@@ -601,20 +620,21 @@ object MessageCommandUtil {
                         .withVariable(PLACEHOLDER_ARG, arg)
                 }
             }
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         try { // Fixes the cannot build empty embed error
             message.embed = eb.build()
         } catch (t: IllegalStateException) {
+            t.printStackTrace()
             message.embed = null
         }
         sendRsp(context, msg)
     }
 
-    private suspend fun setEmbedFooterAndMessage(context: ICommandContext, message: ModularMessage, type: MessageType) {
+    private suspend fun setEmbedFooterAndMessage(context: ICommandContext, message: ModularMessage, msgName: String) {
         val arg = context.rawArg
         val footerIconUrl = message.embed?.footer?.iconUrl
-        val eb = EmbedBuilder(message.embed)
+        val eb = EmbedEditor(message.embed)
 
         val msg = if (arg.equals("null", true)) {
             eb.setFooter(null, footerIconUrl)
@@ -623,7 +643,7 @@ object MessageCommandUtil {
             eb.setFooter(arg, footerIconUrl)
             context.getTranslation("message.embed.image.set")
                 .withVariable(PLACEHOLDER_ARG, arg)
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         message.embed = eb.build()
         sendRsp(context, msg)
@@ -633,11 +653,11 @@ object MessageCommandUtil {
     private suspend fun setEmbedFooterIconUrlAndMessage(
         context: ICommandContext,
         message: ModularMessage,
-        type: MessageType
+        msgName: String
     ) {
         val arg = context.rawArg
         val footer = message.embed?.footer?.text
-        val eb = EmbedBuilder(message.embed)
+        val eb = EmbedEditor(message.embed)
         val attachments = context.message.attachments
         val user = retrieveUserByArgsN(context, 0)
 
@@ -661,7 +681,7 @@ object MessageCommandUtil {
                 context.getTranslation("message.embed.footericon.set")
                     .withVariable(PLACEHOLDER_ARG, arg)
             }
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         message.embed = eb.build()
         sendRsp(context, msg)
@@ -672,29 +692,15 @@ object MessageCommandUtil {
         title: String,
         value: String,
         inline: Boolean,
-        context: ICommandContext,
-        type: MessageType
+        context: ICommandContext
     ) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.getMessage(context.guildId, type)
+        val selectedMessage = getSelectedMessage(context) ?: return
+        val modularMessage = messageWrapper.getMessage(context.guildId, selectedMessage)
             ?: ModularMessage()
 
-        addEmbedFieldAndMessage(title, value, inline, context, modularMessage, type)
-        messageWrapper.setMessage(context.guildId, type, modularMessage)
-    }
-
-    suspend fun addEmbedFieldCC(
-        title: String,
-        value: String,
-        inline: Boolean,
-        context: ICommandContext,
-        customCommand: CustomCommand
-    ) {
-        val ccWrapper = context.daoManager.customCommandWrapper
-        val modularMessage = customCommand.content
-
-        addEmbedFieldAndMessage(title, value, inline, context, modularMessage, MessageType.CUSTOM_COMMAND)
-        ccWrapper.update(context.guildId, customCommand)
+        addEmbedFieldAndMessage(title, value, inline, context, modularMessage)
+        messageWrapper.setMessage(context.guildId, selectedMessage, modularMessage)
     }
 
     private suspend fun addEmbedFieldAndMessage(
@@ -703,8 +709,8 @@ object MessageCommandUtil {
         inline: Boolean,
         context: ICommandContext,
         message: ModularMessage,
-        type: MessageType
     ) {
+        val selectedMessage = getSelectedMessage(context) ?: return
         val embedBuilder = EmbedBuilder(message.embed)
         embedBuilder.addField(title, value, inline)
         message.embed = embedBuilder.build()
@@ -714,49 +720,24 @@ object MessageCommandUtil {
             .withVariable("title", title)
             .withVariable("value", value)
             .withVariable("inline", inlineString)
-            .withVariable(PLACEHOLDER_TYPE, type.text)
+            .withVariable(PLACEHOLDER_TYPE, selectedMessage)
 
         sendRsp(context, msg)
     }
 
-    suspend fun setEmbedFieldTitleCC(index: Int, title: String, context: ICommandContext, cc: CustomCommand) {
-        setEmbedFieldPartCC(index, "title", title, context, cc)
+    suspend fun setEmbedFieldTitle(index: Int, title: String, context: ICommandContext) {
+        val selectedMessage = getSelectedMessage(context) ?: return
+        setEmbedFieldPartJoinLeave(index, "title", title, context, selectedMessage)
     }
 
-    suspend fun setEmbedFieldValueCC(index: Int, value: String, context: ICommandContext, cc: CustomCommand) {
-        setEmbedFieldPartCC(index, "value", value, context, cc)
+    suspend fun setEmbedFieldValue(index: Int, value: String, context: ICommandContext) {
+        val selectedMessage = getSelectedMessage(context) ?: return
+        setEmbedFieldPartJoinLeave(index, "value", value, context, selectedMessage)
     }
 
-    suspend fun setEmbedFieldInlineCC(index: Int, inline: Boolean, context: ICommandContext, cc: CustomCommand) {
-        setEmbedFieldPartCC(index, "inline", inline, context, cc)
-    }
-
-    private suspend fun setEmbedFieldPartCC(
-        index: Int,
-        partName: String,
-        value: Any,
-        context: ICommandContext,
-        cc: CustomCommand
-    ) {
-        val messageWrapper = context.daoManager.customCommandWrapper
-        val modularMessage = cc.content
-
-        setEmbedFieldPartAndMessage(index, partName, value, context, modularMessage, MessageType.CUSTOM_COMMAND)
-        cc.content = modularMessage
-
-        messageWrapper.update(context.guildId, cc)
-    }
-
-    suspend fun setEmbedFieldTitle(index: Int, title: String, context: ICommandContext, type: MessageType) {
-        setEmbedFieldPartJoinLeave(index, "title", title, context, type)
-    }
-
-    suspend fun setEmbedFieldValue(index: Int, value: String, context: ICommandContext, type: MessageType) {
-        setEmbedFieldPartJoinLeave(index, "value", value, context, type)
-    }
-
-    suspend fun setEmbedFieldInline(index: Int, inline: Boolean, context: ICommandContext, type: MessageType) {
-        setEmbedFieldPartJoinLeave(index, "inline", inline, context, type)
+    suspend fun setEmbedFieldInline(index: Int, inline: Boolean, context: ICommandContext) {
+        val selectedMessage = getSelectedMessage(context) ?: return
+        setEmbedFieldPartJoinLeave(index, "inline", inline, context, selectedMessage)
     }
 
     private suspend fun setEmbedFieldPartJoinLeave(
@@ -764,14 +745,14 @@ object MessageCommandUtil {
         partName: String,
         value: Any,
         context: ICommandContext,
-        type: MessageType
+        msgName: String
     ) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.getMessage(context.guildId, type)
+        val modularMessage = messageWrapper.getMessage(context.guildId, msgName)
             ?: ModularMessage()
 
-        setEmbedFieldPartAndMessage(index, partName, value, context, modularMessage, type)
-        messageWrapper.setMessage(context.guildId, type, modularMessage)
+        setEmbedFieldPartAndMessage(index, partName, value, context, modularMessage, msgName)
+        messageWrapper.setMessage(context.guildId, msgName, modularMessage)
     }
 
     private suspend fun setEmbedFieldPartAndMessage(
@@ -780,13 +761,14 @@ object MessageCommandUtil {
         value: Any,
         context: ICommandContext,
         modularMessage: ModularMessage,
-        type: MessageType
+        msgName: String
     ) {
         val json = DataObject.fromJson(modularMessage.toJSON())
         val embedJSON = json.getObject("embed")
         val fieldsJSON = embedJSON.getArray("fields")
         val field = fieldsJSON.getObject(index)
         field.put(partName, value)
+        fieldsJSON.remove(index)
         fieldsJSON.insert(index, field)
         embedJSON.put("fields", fieldsJSON)
         json.put("embed", embedJSON)
@@ -802,35 +784,26 @@ object MessageCommandUtil {
         val msg = context.getTranslation("message.embed.field$partName.set")
             .withVariable("index", index.toString())
             .replace("%$partName%", partValue)
-            .withVariable(PLACEHOLDER_TYPE, type.text)
+            .withVariable(PLACEHOLDER_TYPE, msgName)
 
         sendRsp(context, msg)
     }
 
-    suspend fun removeEmbedField(index: Int, context: ICommandContext, type: MessageType) {
+    suspend fun removeEmbedField(index: Int, context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.getMessage(context.guildId, type)
+        val selectedMessage = getSelectedMessage(context) ?: return
+        val modularMessage = messageWrapper.getMessage(context.guildId, selectedMessage)
             ?: ModularMessage()
 
-        removeEmbedFieldAndMessage(index, context, type, modularMessage)
+        removeEmbedFieldAndMessage(index, context, selectedMessage, modularMessage)
 
-        messageWrapper.setMessage(context.guildId, type, modularMessage)
-    }
-
-    suspend fun removeEmbedFieldCC(index: Int, context: ICommandContext, cc: CustomCommand) {
-        val ccWrapper = context.daoManager.customCommandWrapper
-
-        val message = cc.content
-        removeEmbedFieldAndMessage(index, context, MessageType.CUSTOM_COMMAND, message)
-        cc.content = message
-
-        ccWrapper.update(context.guildId, cc)
+        messageWrapper.setMessage(context.guildId, selectedMessage, modularMessage)
     }
 
     private suspend fun removeEmbedFieldAndMessage(
         index: Int,
         context: ICommandContext,
-        type: MessageType,
+        msgName: String,
         modularMessage: ModularMessage
     ) {
         var modularMessage1 = modularMessage
@@ -848,29 +821,25 @@ object MessageCommandUtil {
 
         val msg = context.getTranslation("message.embed.field.removed")
             .withVariable("index", index.toString())
-            .withVariable(PLACEHOLDER_TYPE, type.text)
+            .withVariable(PLACEHOLDER_TYPE, msgName)
 
         sendRsp(context, msg)
     }
 
 
-    suspend fun showEmbedFields(context: ICommandContext, type: MessageType) {
+    suspend fun showEmbedFields(context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.getMessage(context.guildId, type)
+        val selectedMessage = getSelectedMessage(context) ?: return
+        val modularMessage = messageWrapper.getMessage(context.guildId, selectedMessage)
             ?: ModularMessage()
 
-        showEmbedFieldsAndMessage(context, type, modularMessage)
-    }
-
-    suspend fun showEmbedFieldsCC(context: ICommandContext, cc: CustomCommand) {
-        val message = cc.content
-        showEmbedFieldsAndMessage(context, MessageType.CUSTOM_COMMAND, message)
+        showEmbedFieldsAndMessage(context, selectedMessage, modularMessage)
     }
 
 
     private suspend fun showEmbedFieldsAndMessage(
         context: ICommandContext,
-        type: MessageType,
+        msgName: String,
         modularMessage: ModularMessage
     ) {
         val fields = modularMessage.embed?.fields
@@ -885,60 +854,65 @@ object MessageCommandUtil {
             }
             desc += "```"
             (title + desc)
-        }.withVariable(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, msgName)
 
         sendRsp(context, msg)
     }
 
-    suspend fun showMessagePreviewTyped(context: ICommandContext, type: MessageType) {
-        val messageWrapper = context.daoManager.messageWrapper
+    suspend fun showMessagePreviewTyped(context: ICommandContext, msgName: String) {
         val guildId = context.guildId
-        val message = messageWrapper.getMessage(guildId, type)?.toMessage()
-        if (message == null) {
+        val messageWrapper = context.daoManager.messageWrapper
+        val modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
+        val message = replaceUrlVariables(context.member, modularMessage).toMessage()
+        if (message == null && modularMessage.attachments.isEmpty()) {
             val msg2 = context.getTranslation("message.view.isempty")
-                .withVariable("type", type.toUCC())
+                .withVariable("msgName", msgName)
             sendRsp(context, msg2)
             return
         }
 
-        context.textChannel.sendMessage(message).queue()
-    }
 
-
-    suspend fun showMessagePreviewCC(context: ICommandContext, cc: CustomCommand) {
-        val msg = cc.content.toMessage()
-        if (msg == null) {
-            val msg2 = context.getTranslation("message.view.cc.isempty")
-                .withVariable("ccId", cc.id.toString())
-                .withVariable("ccName", cc.name)
-
-            context.textChannel.sendMessage(msg2).queue()
-        } else {
-            context.textChannel.sendMessage(msg).queue()
+        val httpClient = context.webManager.proxiedHttpClient
+        val channel = context.textChannel
+        when {
+            message == null -> sendAttachments(channel, httpClient, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(
+                channel,
+                httpClient,
+                message,
+                modularMessage.attachments
+            )
+            else -> sendMsg(channel, message)
         }
     }
 
-    suspend fun setPingable(context: ICommandContext, type: MessageType, pingable: Boolean) {
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.getMessage(context.guildId, type)
-            ?: ModularMessage()
-
-        setPingableAndMessage(context, modularMessage, type, pingable)
-        messageWrapper.setMessage(context.guildId, type, modularMessage)
+    suspend fun replaceUrlVariables(
+        member: Member,
+        modularMessage: ModularMessage
+    ): ModularMessage {
+        val args = UrlParserArgs(member.guild, member.user)
+        return modularMessage.mapAllStringFields {
+            if (it != null) {
+                UrlJagTagParser.parseJagTag(args, it)
+            } else {
+                null
+            }
+        }
     }
 
-    suspend fun setPingableCC(context: ICommandContext, customCommand: CustomCommand, pingable: Boolean) {
-        val ccWrapper = context.daoManager.customCommandWrapper
-        val modularMessage = customCommand.content
+    suspend fun setPingable(context: ICommandContext, msgName: String, pingable: Boolean) {
+        val messageWrapper = context.daoManager.messageWrapper
+        val modularMessage = messageWrapper.getMessage(context.guildId, msgName)
+            ?: ModularMessage()
 
-        setPingableAndMessage(context, modularMessage, MessageType.CUSTOM_COMMAND, pingable)
-        ccWrapper.update(context.guildId, customCommand)
+        setPingableAndMessage(context, modularMessage, msgName, pingable)
+        messageWrapper.setMessage(context.guildId, msgName, modularMessage)
     }
 
     private suspend fun setPingableAndMessage(
         context: ICommandContext,
         message: ModularMessage,
-        type: MessageType,
+        msgName: String,
         pingable: Boolean
     ) {
         val muteableMap = message.extra.toMutableMap()
@@ -951,31 +925,19 @@ object MessageCommandUtil {
         message.extra = muteableMap
 
         val msg = context.getTranslation("message.pingable.set.$pingable")
-            .withVariable("type", type.text)
+            .withVariable("msgName", msgName)
         sendRsp(context, msg)
     }
 
-    suspend fun showPingable(context: ICommandContext, type: MessageType) {
-        val messageWrapper = context.daoManager.messageWrapper
+    suspend fun showPingable(context: ICommandContext, msgName: String) {
         val guildId = context.guildId
-        val message = messageWrapper.getMessage(guildId, type)
+        val messageWrapper = context.daoManager.messageWrapper
+        val message = messageWrapper.getMessage(guildId, msgName)
             ?: ModularMessage()
         val isPingable = message.extra.containsKey("isPingable")
 
         val msg = context.getTranslation("message.pingable.show.$isPingable")
-            .withVariable("type", type.text)
-        sendRsp(context, msg)
-    }
-
-    suspend fun showPingableCC(context: ICommandContext, cc: CustomCommand) {
-        val messageWrapper = context.daoManager.customCommandWrapper
-        val message = cc.content
-        val isPingable = message.extra.containsKey("isPingable")
-        cc.content = message
-
-        messageWrapper.update(context.guildId, cc)
-
-        val msg = context.getTranslation("message.pingable.show.$isPingable")
+            .withVariable("msgName", msgName)
         sendRsp(context, msg)
     }
 }

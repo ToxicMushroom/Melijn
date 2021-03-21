@@ -4,8 +4,11 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
+import io.lettuce.core.SetArgs
 import io.lettuce.core.api.StatefulRedisConnection
+import io.lettuce.core.api.async.RedisAsyncCommands
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
@@ -14,6 +17,7 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
+import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -50,16 +54,22 @@ class DriverManager(
 
         if (redisSettings.enabled) {
             logger.info("Connecting to redis..")
-            connectRedis(redisSettings.host, redisSettings.port)
+            connectRedis(redisSettings.host, redisSettings.port, redisSettings.password)
 
         }
     }
 
-    private fun connectRedis(host: String, port: Int) {
-        val uri = RedisURI.builder()
+    private fun connectRedis(host: String, port: Int, password: String) {
+        val uriBuilder = RedisURI.builder()
             .withHost(host)
             .withPort(port)
-            .build()
+
+        val uri = if (password.isNotBlank()){
+            uriBuilder.withPassword(password)
+        } else {
+            uriBuilder
+        }.build()
+
 
         val redisClient = RedisClient
             .create(uri)
@@ -205,8 +215,10 @@ class DriverManager(
                 }
             }
         } catch (e: SQLException) {
-            logger.error("Something went wrong when executing the query: $query\n" +
-                "Objects: ${objects.joinToString { o -> o.toString() }}")
+            logger.error(
+                "Something went wrong when executing the query: $query\n" +
+                    "Objects: ${objects.joinToString { o -> o.toString() }}"
+            )
             e.sendInGuild()
             e.printStackTrace()
         }
@@ -276,8 +288,10 @@ class DriverManager(
                 }
             }
         } catch (e: SQLException) {
-            logger.error("Something went wrong when executing the query: $query\n" +
-                "Objects: ${objects.joinToString { o -> o.toString() }}")
+            logger.error(
+                "Something went wrong when executing the query: $query\n" +
+                    "Objects: ${objects.joinToString { o -> o.toString() }}"
+            )
             e.sendInGuild()
             e.printStackTrace()
         }
@@ -287,5 +301,44 @@ class DriverManager(
         afterConnectToBeExecutedQueries.add(0, "DROP TABLE $table")
     }
 
+    fun getOpenRedisConnection(): RedisAsyncCommands<String, String?>? {
+        if (redisConnection?.async()?.isOpen == true) {
+            return redisConnection?.async()
+        }
+        return null
+    }
+
+    // ttl: minutes
+    fun setCacheEntry(key: String, value: String, ttl: Int? = null, ttlUnit: TimeUnit = TimeUnit.MINUTES) {
+        val async = getOpenRedisConnection() ?: return
+        if (ttl == null) async.set(key, value)
+        else {
+            val ttlSeconds = TimeUnit.SECONDS.convert(ttl.toLong(), ttlUnit)
+            async.set(key, value, SetArgs().ex(ttlSeconds))
+        }
+    }
+
+    fun setCacheEntryWithArgs(key: String, value: String, args: SetArgs? = null) {
+        val async = getOpenRedisConnection() ?: return
+        if (args == null) async.set(key, value)
+        else async.set(key, value, args)
+    }
+
+    // ttl: minutes
+    suspend fun getCacheEntry(key: String, ttlMinutes: Int? = null): String? {
+        val commands = getOpenRedisConnection() ?: return null
+        val result = commands
+            .get(key)
+            .await()
+        if (result != null && ttlMinutes != null) {
+            commands.expire(key, ttlMinutes * 60L)
+        }
+        return result
+    }
+
+    fun removeCacheEntry(key: String) {
+        val con = getOpenRedisConnection() ?: return
+        con.del(key)
+    }
 
 }

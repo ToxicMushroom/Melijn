@@ -104,7 +104,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
             } else {
                 val msg = context.getTranslation("$root.failure")
                     .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                    .withSafeVariable("cause", exception.message ?: "/")
+                    .withSafeVarInCodeblock("cause", exception.message ?: "/")
                 sendRsp(context, msg)
             }
 
@@ -172,7 +172,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
 
         val successMsg = context.getTranslation("$root.success")
             .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-            .withSafeVariable("reason", unmuteReason)
+            .withSafeVarInCodeblock("reason", unmuteReason)
 
         sendRsp(context, successMsg)
     }
@@ -199,19 +199,19 @@ fun getUnmuteMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withVariable("serverName", guild.name)
+            .withSafeVarInCodeblock("serverName", guild.name)
             .withVariable("serverId", guild.id)
     }
 
     val deletedAccount = i18n.getTranslation(language, "message.deleted.user")
     description += i18n.getTranslation(language, "message.punishment.unmute.description")
-        .withSafeVariable("muteAuthor", muteAuthor?.asTag ?: deletedAccount)
+        .withSafeVarInCodeblock("muteAuthor", muteAuthor?.asTag ?: deletedAccount)
         .withVariable("muteAuthorId", mute.muteAuthorId.toString())
         .withVariable("unMuteAuthorId", mute.unmuteAuthorId.toString())
-        .withSafeVariable("unMuted", mutedUser?.asTag ?: deletedAccount)
+        .withSafeVarInCodeblock("unMuted", mutedUser?.asTag ?: deletedAccount)
         .withVariable("unMutedId", mute.mutedId.toString())
-        .withSafeVariable("muteReason", mute.reason)
-        .withSafeVariable("unmuteReason", mute.unmuteReason ?: "/")
+        .withSafeVarInCodeblock("muteReason", mute.reason)
+        .withSafeVarInCodeblock("unmuteReason", mute.unmuteReason ?: "/")
         .withVariable("duration", muteDuration)
         .withVariable("startTime", (mute.startTime.asEpochMillisToDateTime(zoneId)))
         .withVariable("endTime", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
@@ -233,7 +233,7 @@ fun getUnmuteMessage(
         extraDesc += i18n.getTranslation(
             language,
             "message.punishment.extra.failed"
-        ).withSafeVariable("cause", failedCause)
+        ).withSafeVarInCodeblock("cause", failedCause)
     }
 
     description += extraDesc

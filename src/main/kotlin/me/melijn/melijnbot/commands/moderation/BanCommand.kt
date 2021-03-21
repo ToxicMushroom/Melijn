@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIA
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -35,12 +36,17 @@ class BanCommand : AbstractCommand("command.ban") {
         discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
+    companion object {
+        val optionalDeldaysPattern = "-t([0-7])".toRegex()
+    }
+
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
         }
 
+        // ban <user> -t1 reason
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
         val member = context.guild.retrieveMember(targetUser).awaitOrNull()
         if (member != null) {
@@ -63,8 +69,19 @@ class BanCommand : AbstractCommand("command.ban") {
             }
         }
 
+        // ban user <-t1> reason
+        var deldays = 7
+        var offset = 0
+        if (context.args.size > 1) {
+            val firstArg = context.args[1]
+            if (firstArg.matches(optionalDeldaysPattern)) {
+                offset = 1
+                deldays = optionalDeldaysPattern.find(firstArg)?.groupValues?.get(1)?.toInt() ?: 0
+            }
+        }
 
-        var reason = context.getRawArgPart(1)
+        // ban user -t1 <reason>
+        var reason = context.getRawArgPart(1 + offset)
 
         if (reason.isBlank()) reason = "/"
         reason = reason.trim()
@@ -92,7 +109,7 @@ class BanCommand : AbstractCommand("command.ban") {
             sendMsgAwaitEL(it, banning)
         }?.firstOrNull()
 
-        continueBanning(context, targetUser, ban, activeBan, message)
+        continueBanning(context, targetUser, ban, activeBan, deldays, message)
     }
 
     private suspend fun continueBanning(
@@ -100,6 +117,7 @@ class BanCommand : AbstractCommand("command.ban") {
         targetUser: User,
         ban: Ban,
         activeBan: Ban?,
+        deldays: Int,
         banningMessage: Message? = null
     ) {
         val guild = context.guild
@@ -122,8 +140,7 @@ class BanCommand : AbstractCommand("command.ban") {
         )
 
         val msg = try {
-            context.guild
-                .ban(targetUser, 7)
+            guild.ban(targetUser, deldays)
                 .reason("(ban) " + context.author.asTag + ": " + ban.reason)
                 .async { daoManager.banWrapper.setBan(ban) }
 
@@ -131,14 +148,14 @@ class BanCommand : AbstractCommand("command.ban") {
                 bannedMessageDm
             )?.override(true)?.queue()
 
-            val logChannelWrapper = daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.getChannelId(guild.idLong, LogChannelType.PERMANENT_BAN)
-            val logChannel = guild.getTextChannelById(logChannelId)
-            logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
+            val logChannel = guild.getAndVerifyLogChannelByType(context.daoManager, LogChannelType.PERMANENT_BAN)
+            logChannel?.let {
+                sendEmbed(daoManager.embedDisabledWrapper, it, bannedMessageLc)
+            }
 
             context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("reason", ban.reason)
+                .withSafeVarInCodeblock("reason", ban.reason)
 
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.banning.failed")
@@ -146,7 +163,7 @@ class BanCommand : AbstractCommand("command.ban") {
 
             context.getTranslation("$root.failure")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("cause", t.message ?: "/")
+                .withSafeVarInCodeblock("cause", t.message ?: "/")
         }
 
         sendRsp(context, msg)
@@ -171,16 +188,16 @@ fun getBanMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withVariable("serverName", guild.name)
+            .withSafeVarInCodeblock("serverName", guild.name)
             .withVariable("serverId", guild.id)
     }
 
     description += i18n.getTranslation(language, "message.punishment.ban.description")
-        .withSafeVariable("banAuthor", banAuthor.asTag)
+        .withSafeVarInCodeblock("banAuthor", banAuthor.asTag)
         .withVariable("banAuthorId", banAuthor.id)
-        .withSafeVariable("banned", bannedUser.asTag)
+        .withSafeVarInCodeblock("banned", bannedUser.asTag)
         .withVariable("bannedId", bannedUser.id)
-        .withSafeVariable("reason", ban.reason)
+        .withSafeVarInCodeblock("reason", ban.reason)
         .withVariable("duration", banDuration)
         .withVariable("startTime", (ban.startTime.asEpochMillisToDateTime(zoneId)))
         .withVariable("endTime", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
@@ -202,7 +219,7 @@ fun getBanMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.ban.author")
-        .withSafeVariable(PLACEHOLDER_USER, banAuthor.asTag)
+        .withVariable(PLACEHOLDER_USER, banAuthor.asTag)
         .withVariable("spaces", " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B")
 
     return EmbedBuilder()

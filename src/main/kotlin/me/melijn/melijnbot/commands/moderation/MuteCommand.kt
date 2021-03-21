@@ -13,6 +13,7 @@ import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIA
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -86,7 +87,7 @@ class MuteCommand : AbstractCommand("command.mute") {
                 muteRoleAquired(context, targetUser, reason, role)
             } catch (t: Throwable) {
                 val msgFailed = context.getTranslation("message.creatingmuterole.failed")
-                    .withSafeVariable("cause", t.message ?: "/")
+                    .withSafeVarInCodeblock("cause", t.message ?: "/")
                 sendRsp(context, msgFailed)
             }
 
@@ -158,8 +159,7 @@ class MuteCommand : AbstractCommand("command.mute") {
         val targetMember = guild.retrieveMember(targetUser).awaitOrNull() ?: return
 
         val msg = try {
-            guild
-                .addRoleToMember(targetMember, muteRole)
+            guild.addRoleToMember(targetMember, muteRole)
                 .reason("(mute) ${context.author.asTag}: " + mute.reason)
                 .await()
 
@@ -167,15 +167,13 @@ class MuteCommand : AbstractCommand("command.mute") {
                 mutedMessageDm
             )?.override(true)?.async { context.daoManager.muteWrapper.setMute(mute) }
 
-            val logChannelWrapper = context.daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.getChannelId(guild.idLong, LogChannelType.PERMANENT_MUTE)
-            val logChannel = guild.getTextChannelById(logChannelId)
+            val logChannel = guild.getAndVerifyLogChannelByType(context.daoManager, LogChannelType.PERMANENT_MUTE)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
 
 
             context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("reason", mute.reason)
+                .withSafeVarInCodeblock("reason", mute.reason)
         } catch (t: Throwable) {
 
             val failedMsg = context.getTranslation("message.muting.failed")
@@ -183,7 +181,7 @@ class MuteCommand : AbstractCommand("command.mute") {
 
             context.getTranslation("$root.failure")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("cause", t.message ?: "/")
+                .withSafeVarInCodeblock("cause", t.message ?: "/")
         }
         sendRsp(context, msg)
     }
@@ -207,16 +205,16 @@ fun getMuteMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withVariable("serverName", guild.name)
+            .withSafeVarInCodeblock("serverName", guild.name)
             .withVariable("serverId", guild.id)
     }
 
     description += i18n.getTranslation(language, "message.punishment.mute.description")
-        .withSafeVariable("muteAuthor", muteAuthor.asTag)
+        .withSafeVarInCodeblock("muteAuthor", muteAuthor.asTag)
         .withVariable("muteAuthorId", muteAuthor.id)
-        .withSafeVariable("muted", mutedUser.asTag)
+        .withSafeVarInCodeblock("muted", mutedUser.asTag)
         .withVariable("mutedId", mutedUser.id)
-        .withSafeVariable("reason", mute.reason)
+        .withSafeVarInCodeblock("reason", mute.reason)
         .withVariable("duration", muteDuration)
         .withVariable("startTime", (mute.startTime.asEpochMillisToDateTime(zoneId)))
         .withVariable("endTime", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))

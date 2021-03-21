@@ -4,10 +4,13 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.getColorFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.toHex
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
 
 class ColorCommand : AbstractCommand("command.color") {
 
@@ -33,6 +36,15 @@ class ColorCommand : AbstractCommand("command.color") {
             .addField(hexTitle, color.toHex(), true)
             .addField(rgbTitle, "(${color.red}, ${color.green}, ${color.blue})", true)
             .addField(decTitle, color.rgb.toString(), true)
-        sendEmbedRsp(context, eb.build())
+            .setThumbnail("attachment://file.png")
+
+
+        val bais = ByteArrayOutputStream()
+        bais.use {
+            ImageIO.write(ImageUtils.createPlane(64,color.rgb), "png", it)
+        }
+
+        context.channel.sendMessage(eb.build()).addFile(bais.toByteArray(), "file.png").queue()
+
     }
 }

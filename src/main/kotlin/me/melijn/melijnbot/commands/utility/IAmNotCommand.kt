@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.utility
 
+import me.melijn.melijnbot.database.role.SelfRoleGroup
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -12,6 +13,7 @@ import me.melijn.melijnbot.internals.utils.getRoleByArgsNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
+import net.dv8tion.jda.api.entities.Role
 
 class IAmNotCommand : AbstractCommand("command.iamnot") {
 
@@ -38,8 +40,10 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
             val selfRoleGroups = context.daoManager.selfRoleGroupWrapper.getMap(context.guildId)
             var noMatchReason = ""
             var foundMatch = false
+            var group: SelfRoleGroup? = null
             for ((groupName, selfRoles) in selfRolesGrouped) {
-                if (selfRoleGroups.firstOrNull { it.groupName == groupName }?.isSelfRoleable != true) {
+                val selfRoleGroup = selfRoleGroups.firstOrNull { it.groupName == groupName }
+                if (selfRoleGroup?.isSelfRoleable != true) {
                     noMatchReason = "notselfroleable"
                     continue
                 }
@@ -56,6 +60,7 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
                         val roleId = chanceRole.getLong(1)
                         if (roleId == role.idLong) {
                             foundMatch = true
+                            group = selfRoleGroup
                             break
                         }
                     }
@@ -67,7 +72,31 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
                 noMatchReason = "notfound"
             }
 
-            if (foundMatch) {
+            if (foundMatch && group != null) {
+                if (add && group.limitToOneRole) {
+                    val data = selfRolesGrouped[group.groupName] ?: return
+                    for (entryIndex in 0 until data.length()) {
+                        val roleData = data.getArray(entryIndex).getArray(2)
+                        var differentRole: Role? = null
+                        for (i in 0 until roleData.length()) {
+                            val roleId = roleData.getArray(i).getLong(1)
+                            val hasRole = context.member.roles.any { it.idLong == roleId }
+                            if (hasRole && roleId != role.idLong) {
+                                differentRole = context.guild.getRoleById(roleId)
+                                break
+                            }
+                        }
+                        if (differentRole != null) {
+                            val msg = context.getTranslation("$root.alreadyhasrolefromgroup")
+                                .withVariable("group", group.groupName)
+                                .withVariable("role", role.asMention)
+                                .withVariable("differentRole", differentRole.asMention)
+                            sendRsp(context, msg)
+                            return
+                        }
+                    }
+                }
+
                 if (!context.selfMember.canInteract(context.member)) {
                     val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
                         .withVariable(PLACEHOLDER_USER, context.member.asTag)

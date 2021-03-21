@@ -1,7 +1,9 @@
 package me.melijn.melijnbot.database
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.lettuce.core.SetArgs
-import kotlinx.coroutines.future.await
+import me.melijn.melijnbot.objectMapper
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -26,65 +28,70 @@ abstract class Dao(val driverManager: DriverManager) {
 }
 
 abstract class CacheDao(val driverManager: DriverManager) {
-
     abstract val cacheName: String
 
-    fun setCacheEntry(key: Any, value: Any, ttlM: Int? = null) {
-        val async = driverManager.redisConnection?.async() ?: return
-        if (ttlM == null) async.set("$cacheName:$key", value.toString())
-        else async.set("$cacheName:$key", value.toString(), SetArgs().ex(ttlM * 60L))
-    }
 
-    fun setCacheEntryWithArgs(key: Any, value: Any, args: SetArgs? = null) {
-        val async = driverManager.redisConnection?.async() ?: return
-        if (args == null) async.set("$cacheName:$key", value.toString())
-        else async.set("$cacheName:$key", value.toString(), args)
-    }
-
-    // ttl: minutes
-    suspend fun getCacheEntry(key: Any, newTTL: Int? = null): String? {
-        val commands = (driverManager.redisConnection?.async() ?: return null)
-        val result = commands
-            .get("$cacheName:$key")
-            .await()
-        if (result != null && newTTL != null) {
-            commands.expire("$cacheName:$key", newTTL * 60L)
+    fun setCacheEntry(key: Any, value: Any, ttl: Int? = null, timeUnit: TimeUnit = TimeUnit.MINUTES) {
+        if (value is String || value is Int || value is Long || value is Double || value is Byte || value is Short ||
+            value is Short || value is Enum<*>
+        ) {
+            driverManager.setCacheEntry("$cacheName:$key", value.toString(), ttl, timeUnit)
+        } else {
+            driverManager.setCacheEntry("$cacheName:$key", objectMapper.writeValueAsString(value), ttl, timeUnit)
         }
-        return result
     }
+
+    fun setCacheEntryWithArgs(key: Any, value: Any, args: SetArgs? = null) =
+        driverManager.setCacheEntryWithArgs("$cacheName:$key", value.toString(), args)
+
+    suspend fun getCacheEntry(key: Any, ttlM: Int? = null): String? =
+        driverManager.getCacheEntry("$cacheName:$key", ttlM)
+
+    suspend fun getIntFromCache(key: Any, ttlM: Int? = null): Int? = getCacheEntry(key, ttlM)?.toIntOrNull()
+    suspend fun getLongFromCache(key: Any, ttlM: Int? = null): Long? = getCacheEntry(key, ttlM)?.toLongOrNull()
+    suspend fun getDoubleFromCache(key: Any, ttlM: Int? = null): Double? = getCacheEntry(key, ttlM)?.toDoubleOrNull()
+    suspend fun getFloatFromCache(key: Any, ttlM: Int? = null): Float? = getCacheEntry(key, ttlM)?.toFloatOrNull()
+
+
+    suspend inline fun <reified K> getValueFromCache(key: Any, ttlM: Int? = null): K? {
+        return getCacheEntry(key, ttlM)?.let { objectMapper.readValue<K>(it) }
+    }
+
+    fun removeCacheEntry(key: Any) =
+        driverManager.removeCacheEntry("$cacheName:$key")
 }
 
 abstract class CacheDBDao(driverManager: DriverManager) : Dao(driverManager) {
-
     abstract val cacheName: String
 
-    // ttl: minutes
-    fun setCacheEntry(key: Any, value: Any, ttlM: Int? = null) {
-        val async = (driverManager.redisConnection?.async() ?: return)
-        if (ttlM == null) async.set("$cacheName:$key", value.toString())
-        else async.set("$cacheName:$key", value.toString(), SetArgs().ex(ttlM * 60L))
-    }
 
-    fun setCacheEntryWithArgs(key: Any, value: Any, args: SetArgs? = null) {
-        val async = (driverManager.redisConnection?.async() ?: return)
-        if (args == null) async.set("$cacheName:$key", value.toString())
-        else async.set("$cacheName:$key", value.toString(), args)
-    }
-
-    // ttl: minutes
-    suspend fun getCacheEntry(key: Any, newTTL: Int? = null): String? {
-        val commands = (driverManager.redisConnection?.async() ?: return null)
-        val result = commands
-            .get("$cacheName:$key")
-            .await()
-        if (result != null && newTTL != null) {
-            commands.expire("$cacheName:$key", newTTL * 60L)
+    fun setCacheEntry(key: Any, value: Any, ttl: Int? = null, timeUnit: TimeUnit = TimeUnit.MINUTES) {
+        if (value is String || value is Int || value is Long || value is Double || value is Byte || value is Short ||
+            value is Short || value is Enum<*>
+        ) {
+            driverManager.setCacheEntry("$cacheName:$key", value.toString(), ttl, timeUnit)
+        } else {
+            driverManager.setCacheEntry("$cacheName:$key", objectMapper.writeValueAsString(value), ttl, timeUnit)
         }
-        return result
     }
 
-    fun removeCacheEntry(key: Any) {
-        driverManager.redisConnection?.async()
-            ?.del("$cacheName:${key}")
+    fun setCacheEntryWithArgs(key: Any, value: Any, args: SetArgs? = null) =
+        driverManager.setCacheEntryWithArgs("$cacheName:$key", value.toString(), args)
+
+    suspend fun getCacheEntry(key: Any, ttlM: Int? = null): String? =
+        driverManager.getCacheEntry("$cacheName:$key", ttlM)
+
+    suspend fun getIntFromCache(key: Any, ttlM: Int? = null): Int? = getCacheEntry(key, ttlM)?.toIntOrNull()
+    suspend fun getLongFromCache(key: Any, ttlM: Int? = null): Long? = getCacheEntry(key, ttlM)?.toLongOrNull()
+    suspend fun getDoubleFromCache(key: Any, ttlM: Int? = null): Double? = getCacheEntry(key, ttlM)?.toDoubleOrNull()
+    suspend fun getFloatFromCache(key: Any, ttlM: Int? = null): Float? = getCacheEntry(key, ttlM)?.toFloatOrNull()
+
+
+    suspend inline fun <reified K> getValueFromCache(key: Any, ttlM: Int? = null): K? {
+        return getCacheEntry(key, ttlM)?.let { objectMapper.readValue<K>(it) }
     }
+
+    fun removeCacheEntry(key: Any) =
+        driverManager.removeCacheEntry("$cacheName:$key")
 }
+

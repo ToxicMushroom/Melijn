@@ -5,6 +5,7 @@ USER root
 RUN chmod +x ./gradlew
 RUN ./gradlew shadowJar
 
+# Full jdk required for font rendering on ship ect
 FROM openjdk:15-jdk
 WORKDIR /opt/melijn
 COPY --from=builder ./etc/melijn/build/libs/ .

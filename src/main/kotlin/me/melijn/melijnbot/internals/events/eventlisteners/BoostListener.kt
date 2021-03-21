@@ -1,12 +1,12 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
-import me.melijn.melijnbot.database.message.ModularMessage
+import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.jagtag.WelcomeJagTagParser
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
@@ -40,8 +40,10 @@ class BoostListener(container: Container) : AbstractListener(container) {
                 ?: return
 
         val messageWrapper = daoManager.messageWrapper
-        var modularMessage = messageWrapper.getMessage(guildId, messageType) ?: return
-        if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, messageWrapper)) return
+        val linkedMessageWrapper = daoManager.linkedMessageWrapper
+        val msgName = linkedMessageWrapper.getMessage(guildId, messageType) ?: return
+        var modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
+        if (MessageUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, linkedMessageWrapper)) return
 
         val boosted = event.guild
             .findMembers { it.timeBoosted != null }

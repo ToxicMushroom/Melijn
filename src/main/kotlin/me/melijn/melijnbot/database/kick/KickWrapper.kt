@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.kick
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
-import me.melijn.melijnbot.internals.utils.withSafeVariable
+import me.melijn.melijnbot.internals.utils.withSafeVarInCodeblock
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
@@ -52,9 +52,9 @@ class KickWrapper(private val kickDao: KickDao) {
         val deletedUser = context.getTranslation("message.deleted.user")
         val zoneId = context.getTimeZoneId()
         return context.getTranslation("message.punishmenthistory.kick")
-            .withSafeVariable("kickAuthor", kickAuthor?.asTag ?: deletedUser)
+            .withSafeVarInCodeblock("kickAuthor", kickAuthor?.asTag ?: deletedUser)
             .withVariable("kickAuthorId", "${kick.kickAuthorId}")
-            .withSafeVariable("reason", kick.reason.substring(0, min(kick.reason.length, 830)))
+            .withSafeVarInCodeblock("reason", kick.reason.substring(0, min(kick.reason.length, 830)))
             .withVariable("moment", kick.moment.asEpochMillisToDateTime(zoneId))
             .withVariable("kickId", kick.kickId)
     }

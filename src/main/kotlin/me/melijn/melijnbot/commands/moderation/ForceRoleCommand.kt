@@ -106,6 +106,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
         init {
             name = "add"
+            aliases = arrayOf("a")
         }
 
         override suspend fun execute(context: ICommandContext) {
@@ -117,6 +118,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             val role = getRoleByArgsNMessage(context, 1, sameGuildAsContext = true, canInteract = true) ?: return
             val member = context.guild.retrieveMember(user).awaitOrNull()
             if (member != null) {
+
                 if (!context.guild.selfMember.canInteract(member)) {
                     val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
                         .withSafeVariable(PLACEHOLDER_USER, member.asTag)
@@ -156,6 +158,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
         init {
             name = "remove"
+            aliases = arrayOf("rm")
         }
 
         override suspend fun execute(context: ICommandContext) {
@@ -165,14 +168,16 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             }
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
             val role = getRoleByArgsNMessage(context, 1) ?: return
-            val member = context.guild.retrieveMember(user).awaitOrNull()
+            val guild = context.guild
+            val member = guild.retrieveMember(user).awaitOrNull()
 
             context.daoManager.forceRoleWrapper.remove(context.guildId, user.idLong, role.idLong)
             if (member != null && member.roles.contains(role)) {
-                if (context.guild.removeRoleFromMember(member, role)
+                if (!guild.selfMember.canInteract(role) || !guild.removeRoleFromMember(member, role)
                         .reason("(forceRole remove) ${context.author.asTag}").awaitBool()
                 ) {
                     LogUtils.sendMessageFailedToRemoveRoleFromMember(context.daoManager, member, role)
+                    return
                 }
             }
 
@@ -187,6 +192,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
         init {
             name = "list"
+            aliases = arrayOf("ls")
         }
 
         override suspend fun execute(context: ICommandContext) {

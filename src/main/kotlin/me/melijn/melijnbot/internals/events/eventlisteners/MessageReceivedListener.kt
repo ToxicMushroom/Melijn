@@ -8,6 +8,7 @@ import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
 import me.melijn.melijnbot.commands.games.TicTacToeCommand
 import me.melijn.melijnbot.commands.games.TicTacToeGame
 import me.melijn.melijnbot.commands.utility.HelpCommand
+import me.melijn.melijnbot.commandutil.game.TicTacToe
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
@@ -41,6 +42,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                 handleAttachmentLog(event)
                 handleVerification(event)
                 FilterUtil.handleFilter(container, event.message)
+                handleRemoveInactive(container, event)
                 // SpammingUtil.handleSpam(container, event.message)
             }
         } else if (event is PrivateMessageReceivedEvent) {
@@ -53,6 +55,13 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             TaskManager.async(event.author, event.channel) {
                 handleSimpleMelijnPing(event)
             }
+        }
+    }
+
+    private suspend fun handleRemoveInactive(container: Container, event: GuildMessageReceivedEvent) {
+        val guildId = event.guild.idLong
+        if (isPremiumGuild(container.daoManager, guildId)) {
+            container.daoManager.inactiveJMWrapper.delete(guildId, event.author.idLong)
         }
     }
 

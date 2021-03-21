@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.internals.web.rest.settings
 
 import io.ktor.request.*
+import me.melijn.melijnbot.commands.utility.PREMIUM_PRIVATE_PREFIXES_LIMIT
 import me.melijn.melijnbot.internals.models.TriState
 import me.melijn.melijnbot.internals.utils.getBirthdayByArgsN
 import me.melijn.melijnbot.internals.web.RequestContext
@@ -8,6 +9,7 @@ import me.melijn.melijnbot.internals.web.WebUtils.respondJson
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
 import java.util.*
+import kotlin.math.min
 
 object PostUserSettingsResponseHandler {
 
@@ -27,7 +29,7 @@ object PostUserSettingsResponseHandler {
             if (premium) {
                 val prefixArray = settings.getArray("prefixes")
                 val prefixes = mutableListOf<String>()
-                for (i in 0 until prefixArray.length()) {
+                for (i in 0 until min(prefixArray.length(), PREMIUM_PRIVATE_PREFIXES_LIMIT)) {
                     prefixArray.getString(i)
                         .takeIf { it != "%SPLIT%" }
                         ?.let { prefixes.add(it) }

@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.administration
 
+import me.melijn.melijnbot.commands.administration.LockCommand.Companion.channelFilter
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -15,6 +16,7 @@ import net.dv8tion.jda.api.entities.GuildChannel
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction
 
 class UnlockCommand : AbstractCommand("command.unlock") {
 
@@ -51,16 +53,20 @@ class UnlockCommand : AbstractCommand("command.unlock") {
                 break
             }
 
-            if (arg == "all") {
-                text.addAllIfNotPresent(context.guild.textChannels)
-                voice.addAllIfNotPresent(context.guild.voiceChannels)
-                break
-            } else if (arg == "all-text") {
-                text.addAllIfNotPresent(context.guild.textChannels)
-                break
-            } else if (arg == "all-voice") {
-                voice.addAllIfNotPresent(context.guild.voiceChannels)
-                break
+            when (arg.toLowerCase()) {
+                "all" -> {
+                    text.addAllIfNotPresent(context.guild.textChannels.filter { channelFilter(context, it) })
+                    voice.addAllIfNotPresent(context.guild.voiceChannels.filter { channelFilter(context, it) })
+                    break
+                }
+                "all-text" -> {
+                    text.addAllIfNotPresent(context.guild.textChannels.filter { channelFilter(context, it) })
+                    break
+                }
+                "all-vc", "all-voice" -> {
+                    voice.addAllIfNotPresent(context.guild.voiceChannels.filter { channelFilter(context, it) })
+                    break
+                }
             }
 
             unknown.addIfNotPresent(arg)
@@ -154,7 +160,7 @@ class UnlockCommand : AbstractCommand("command.unlock") {
         val status = internalUnlock(context, channel)
         val msg = when (status.third) {
             LockStatus.SUCCESS, LockStatus.NO_OVERRIDE -> {
-                context.daoManager.discordChannelOverridesWrapper.remove(context.guildId, context.channelId)
+                context.daoManager.discordChannelOverridesWrapper.remove(context.guildId, channel.idLong)
                 context.getTranslation("$root.unlocked")
                     .withVariable(PLACEHOLDER_CHANNEL, channel.name)
                     .withVariable("overrides", status.first)
@@ -187,41 +193,38 @@ class UnlockCommand : AbstractCommand("command.unlock") {
             return Triple(0, 0, LockStatus.NOT_LOCKED)
         }
 
+        // Remove denied perms (unlock)
         var overrideCounter = 0
         var permsChangedCounter = 0
         for ((id, flags) in overrideMap) {
             val role = context.guild.getRoleById(id) ?: continue
 
             val manager = channel.upsertPermissionOverride(role)
-
-            var permsChangedHere = 0
-            for (perm in denyList) {
-                when {
-                    (flags.first and perm.rawValue) != 0L -> { // if the role's first state had this permission allowed
-                        if (((manager.allow shr perm.offset) and 0x1) == 0L) { // if the channel doesnt already have this permission set to allowed
-                            manager.grant(perm)
-                            permsChangedHere++
-                        }
-                    }
-                    (flags.second and perm.rawValue) != 0L -> { // if the role's first state had this permission denied
-                        if (((manager.deny shr perm.offset) and 0x1) == 0L) { // if the channel doesnt already have this permission set to denied
-                            manager.deny(perm)
-                            permsChangedHere++
-                        }
-                    }
-                    else -> { // if the role's first state was to interhit this permission
-                        if (!(((manager.deny shr perm.offset) and 0x1) == 0L && ((manager.allow shr perm.offset) and 0x1) == 0L)) { // Check if a clear is needed
-                            manager.clear(perm)
-                            permsChangedHere++
-                        }
-                    }
-                }
-            }
+            val permsChangedHere = revertPermsToOriginal(denyList, flags, manager)
 
             permsChangedCounter += permsChangedHere
             if (permsChangedHere > 0) {
                 overrideCounter++
                 manager.reason("(unlock) " + context.author.asTag).queue()
+            }
+        }
+
+        // Remove Melijn grants
+        val melFlags = overrideMap[context.selfUserId]
+        if (melFlags != null) {
+            val melManager = channel.upsertPermissionOverride(context.selfMember)
+            val permsChangedHere = revertPermsToOriginal(denyList, melFlags, melManager)
+
+            permsChangedCounter += permsChangedHere
+            if (permsChangedHere > 0) {
+                overrideCounter++
+
+                // Execute the restaction to completely remove the override or execute the overrideAction
+                if (melFlags.first == 0L && melFlags.second == 0L) {
+                    channel.getPermissionOverride(context.selfMember)?.delete()
+                } else {
+                    melManager
+                }?.reason("(unlock) " + context.author.asTag)?.queue()
             }
         }
 
@@ -231,6 +234,37 @@ class UnlockCommand : AbstractCommand("command.unlock") {
             LockStatus.NO_OVERRIDE
         }
         return Triple(overrideCounter, permsChangedCounter, status)
+    }
+
+    private fun revertPermsToOriginal(
+        denyList: List<Permission>,
+        flags: Pair<Long, Long>,
+        manager: PermissionOverrideAction
+    ): Int {
+        var permsChangedHere = 0
+        for (perm in denyList) {
+            when {
+                (flags.first and perm.rawValue) != 0L -> { // if the role's first state had this permission allowed
+                    if (((manager.allow shr perm.offset) and 0x1) == 0L) { // if the channel doesnt already have this permission set to allowed
+                        manager.grant(perm)
+                        permsChangedHere++
+                    }
+                }
+                (flags.second and perm.rawValue) != 0L -> { // if the role's first state had this permission denied
+                    if (((manager.deny shr perm.offset) and 0x1) == 0L) { // if the channel doesnt already have this permission set to denied
+                        manager.deny(perm)
+                        permsChangedHere++
+                    }
+                }
+                else -> { // if the role's first state was to interhit this permission
+                    if (!(((manager.deny shr perm.offset) and 0x1) == 0L && ((manager.allow shr perm.offset) and 0x1) == 0L)) { // Check if a clear is needed
+                        manager.clear(perm)
+                        permsChangedHere++
+                    }
+                }
+            }
+        }
+        return permsChangedHere
     }
 
     enum class LockStatus {

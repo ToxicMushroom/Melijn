@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.moderation
 
+import kotlinx.coroutines.delay
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -33,7 +34,11 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
             if (context.args[1] == "null") {
                 for (voiceChannel in context.guild.voiceChannels) {
                     voiceChannel.members.forEach {
-                        voiceChannel.guild.moveVoiceMember(it, null).queue()
+                        if (it.idLong == context.selfUserId) {
+                            val guildMusicPlayer = context.musicPlayerManager.getGuildMusicPlayer(context.guild)
+                            guildMusicPlayer.guildTrackManager.clear()
+                            guildMusicPlayer.guildTrackManager.stopAndDestroy()
+                        } else voiceChannel.guild.moveVoiceMember(it, null).queue()
                         total++
                     }
                 }
@@ -53,10 +58,27 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
                 )
             ) return
 
+            var failed = 0
             for (voiceChannel in context.guild.voiceChannels) {
+                if (!voiceChannel.guild.selfMember.hasPermission(voiceChannel, Permission.VOICE_MOVE_OTHERS)) {
+                    failed += voiceChannel.members.size
+                    continue
+                }
                 voiceChannel.members.forEach {
                     if (voiceChannel.idLong != voiceChannelTarget.idLong) {
-                        voiceChannel.guild.moveVoiceMember(it, voiceChannelTarget).queue()
+                        if (it.idLong == context.selfUserId) {
+                            val groupId = context.getGuildMusicPlayer().groupId
+                            context.lavaManager.openConnection(voiceChannelTarget, groupId)
+                            val manager = context.getGuildMusicPlayer().guildTrackManager
+                            if (!manager.iPlayer.paused) {
+                                delay(2000)
+                                manager.iPlayer.setPaused(true)
+                                delay(1000)
+                                manager.iPlayer.setPaused(false)
+                            }
+                        } else {
+                            voiceChannel.guild.moveVoiceMember(it, voiceChannelTarget).queue()
+                        }
                         total++
                     }
                 }
@@ -64,6 +86,7 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
 
             val msg = context.getTranslation("$root.moved.all")
                 .withVariable("amount", "$total")
+                .withVariable("failed", "$failed")
                 .withSafeVariable(PLACEHOLDER_CHANNEL, voiceChannelTarget.name)
             sendRsp(context, msg)
             return
@@ -89,6 +112,12 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
                 context,
                 voiceChannelTarget,
                 Permission.VOICE_CONNECT,
+                Permission.VOICE_MOVE_OTHERS
+            )
+        ) return
+        if (notEnoughPermissionsAndMessage(
+                context,
+                voiceChannel,
                 Permission.VOICE_MOVE_OTHERS
             )
         ) return

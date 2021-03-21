@@ -4,8 +4,8 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.utils.asAsLongTimeAndInvisOffset
 import me.melijn.melijnbot.internals.utils.asLongLongGMTString
+import me.melijn.melijnbot.internals.utils.escapeCodeblockMarkdown
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
 import java.time.Instant
@@ -48,13 +48,13 @@ class TimeCommand : AbstractCommand("command.time") {
             .setTitle("Time information")
 
         eb.addField(
-            "`" + user.asTag + "`" + (userTimezone?.let { " ($it)" } ?: ""),
+            "`" + user.asTag.escapeCodeblockMarkdown(true) + "`" + (userTimezone?.let { " ($it)" } ?: ""),
             userTimezone?.let { now.atZone(it).asLongLongGMTString() } ?: "not set",
             true)
 
         if (context.isFromGuild) {
             eb.addField(
-                "`" + context.guild.name + "`" + (guildTimezone?.let { " ($it)" } ?: ""),
+                "`" + context.guild.name.escapeCodeblockMarkdown() + "`" + (guildTimezone?.let { " ($it)" } ?: ""),
                 guildTimezone?.let { now.atZone(it).asLongLongGMTString() } ?: "not set",
                 true)
         }

@@ -30,18 +30,21 @@ import me.melijn.melijnbot.database.filter.FilterGroupWrapper
 import me.melijn.melijnbot.database.filter.FilterWrapper
 import me.melijn.melijnbot.database.games.OsuDao
 import me.melijn.melijnbot.database.games.OsuWrapper
+import me.melijn.melijnbot.database.join.AutoRemoveInactiveJoinMessageDao
+import me.melijn.melijnbot.database.join.AutoRemoveInactiveJoinMessageWrapper
+import me.melijn.melijnbot.database.join.InactiveJMDao
+import me.melijn.melijnbot.database.join.InactiveJMWrapper
 import me.melijn.melijnbot.database.kick.KickDao
 import me.melijn.melijnbot.database.kick.KickWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
 import me.melijn.melijnbot.database.language.GuildLanguageWrapper
 import me.melijn.melijnbot.database.language.UserLanguageDao
 import me.melijn.melijnbot.database.language.UserLanguageWrapper
+import me.melijn.melijnbot.database.locking.LockExcludedDao
+import me.melijn.melijnbot.database.locking.LockExcludedWrapper
 import me.melijn.melijnbot.database.logchannel.LogChannelDao
 import me.melijn.melijnbot.database.logchannel.LogChannelWrapper
-import me.melijn.melijnbot.database.message.MessageDao
-import me.melijn.melijnbot.database.message.MessageHistoryDao
-import me.melijn.melijnbot.database.message.MessageHistoryWrapper
-import me.melijn.melijnbot.database.message.MessageWrapper
+import me.melijn.melijnbot.database.message.*
 import me.melijn.melijnbot.database.mute.MuteDao
 import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.database.newyear.NewYearDao
@@ -58,7 +61,13 @@ import me.melijn.melijnbot.database.reminder.ReminderWrapper
 import me.melijn.melijnbot.database.rep.RepDao
 import me.melijn.melijnbot.database.rep.RepWrapper
 import me.melijn.melijnbot.database.role.*
+import me.melijn.melijnbot.database.scripts.ScriptCooldownDao
+import me.melijn.melijnbot.database.scripts.ScriptCooldownWrapper
+import me.melijn.melijnbot.database.scripts.ScriptDao
+import me.melijn.melijnbot.database.scripts.ScriptWrapper
 import me.melijn.melijnbot.database.settings.*
+import me.melijn.melijnbot.database.socialmedia.TwitterDao
+import me.melijn.melijnbot.database.socialmedia.TwitterWrapper
 import me.melijn.melijnbot.database.starboard.StarboardMessageDao
 import me.melijn.melijnbot.database.starboard.StarboardMessageWrapper
 import me.melijn.melijnbot.database.starboard.StarboardSettingsDao
@@ -107,6 +116,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val commandWrapper: CommandWrapper
     val commandUsageWrapper: CommandUsageWrapper
     val customCommandWrapper: CustomCommandWrapper
+    val scriptWrapper: ScriptWrapper
+    val scriptCooldownWrapper: ScriptCooldownWrapper
 
     val guildLanguageWrapper: GuildLanguageWrapper
     val userLanguageWrapper: UserLanguageWrapper
@@ -116,6 +127,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val channelRolePermissionWrapper: ChannelRolePermissionWrapper
     val channelUserPermissionWrapper: ChannelUserPermissionWrapper
     val discordChannelOverridesWrapper: DiscordChannelOverridesWrapper
+    val lockExcludedWrapper: LockExcludedWrapper
 
     val disabledCommandWrapper: DisabledCommandWrapper
     val channelCommandStateWrapper: ChannelCommandStateWrapper
@@ -155,6 +167,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val softBanWrapper: SoftBanWrapper
 
     val messageHistoryWrapper: MessageHistoryWrapper
+    val linkedMessageWrapper: LinkedMessageWrapper
     val messageWrapper: MessageWrapper
     val forceRoleWrapper: ForceRoleWrapper
 
@@ -194,9 +207,14 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val starboardSettingsWrapper: StarboardSettingsWrapper
     val starboardMessageWrapper: StarboardMessageWrapper
 
+    val twitterWrapper: TwitterWrapper
+
     val osuWrapper: OsuWrapper
 
     val newYearWrapper: NewYearWrapper
+
+    val autoRemoveInactiveJoinMessageWrapper: AutoRemoveInactiveJoinMessageWrapper
+    val inactiveJMWrapper: InactiveJMWrapper
 
     var driverManager: DriverManager
 
@@ -218,7 +236,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
         commandWrapper = CommandWrapper(CommandDao(driverManager))
         commandUsageWrapper = CommandUsageWrapper(CommandUsageDao(driverManager))
-        customCommandWrapper = CustomCommandWrapper(CustomCommandDao((driverManager)))
+        customCommandWrapper = CustomCommandWrapper(CustomCommandDao(driverManager))
+        scriptWrapper = ScriptWrapper(ScriptDao(driverManager))
+        scriptCooldownWrapper = ScriptCooldownWrapper(ScriptCooldownDao(driverManager))
 
         guildLanguageWrapper = GuildLanguageWrapper(GuildLanguageDao(driverManager))
         userLanguageWrapper = UserLanguageWrapper(UserLanguageDao(driverManager))
@@ -228,6 +248,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         channelRolePermissionWrapper = ChannelRolePermissionWrapper(ChannelRolePermissionDao(driverManager))
         channelUserPermissionWrapper = ChannelUserPermissionWrapper(ChannelUserPermissionDao(driverManager))
         discordChannelOverridesWrapper = DiscordChannelOverridesWrapper(DiscordChannelOverridesDao(driverManager))
+        lockExcludedWrapper = LockExcludedWrapper(LockExcludedDao(driverManager))
 
         disabledCommandWrapper = DisabledCommandWrapper(DisabledCommandDao(driverManager))
 
@@ -238,7 +259,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
         guildPrefixWrapper = GuildPrefixWrapper(GuildPrefixDao(driverManager))
         userPrefixWrapper = UserPrefixWrapper(UserPrefixDao(driverManager))
-        allowSpacedPrefixWrapper = AllowSpacedPrefixWrapper(AllowSpacedPrefixDao(driverManager), PrivateAllowSpacedPrefixDao(driverManager)
+        allowSpacedPrefixWrapper = AllowSpacedPrefixWrapper(
+            AllowSpacedPrefixDao(driverManager), PrivateAllowSpacedPrefixDao(driverManager)
         )
         aliasWrapper = AliasWrapper(AliasDao(driverManager))
 
@@ -266,6 +288,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         softBanWrapper = SoftBanWrapper(SoftBanDao(driverManager))
 
         messageHistoryWrapper = MessageHistoryWrapper(MessageHistoryDao(driverManager))
+        linkedMessageWrapper = LinkedMessageWrapper(LinkedMessageDao(driverManager))
         messageWrapper = MessageWrapper(MessageDao(driverManager))
         forceRoleWrapper = ForceRoleWrapper(ForceRoleDao(driverManager))
 
@@ -291,7 +314,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         botLogStateWrapper = BotLogStateWrapper(BotLogStateDao(driverManager))
         removeResponseWrapper = RemoveResponseWrapper(RemoveResponsesDao(driverManager))
         removeInvokeWrapper = RemoveInvokeWrapper(RemoveInvokeDao(driverManager))
-        voteReminderStatesWrapper = VoteReminderStatesWrapper(me.melijn.melijnbot.database.settings.VoteReminderStatesDao(driverManager))
+        voteReminderStatesWrapper =
+            VoteReminderStatesWrapper(me.melijn.melijnbot.database.settings.VoteReminderStatesDao(driverManager))
         voteReminderWrapper = VoteReminderWrapper(VoteReminderDao(driverManager))
         reminderWrapper = ReminderWrapper(ReminderDao(driverManager))
 
@@ -304,9 +328,14 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         starboardSettingsWrapper = StarboardSettingsWrapper(StarboardSettingsDao(driverManager))
         starboardMessageWrapper = StarboardMessageWrapper(StarboardMessageDao(driverManager))
 
+        twitterWrapper = TwitterWrapper(TwitterDao(driverManager))
+
         osuWrapper = OsuWrapper(OsuDao(driverManager))
 
         newYearWrapper = NewYearWrapper(NewYearDao(driverManager))
+
+        autoRemoveInactiveJoinMessageWrapper = AutoRemoveInactiveJoinMessageWrapper(AutoRemoveInactiveJoinMessageDao(driverManager))
+        inactiveJMWrapper = InactiveJMWrapper(InactiveJMDao(driverManager))
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {

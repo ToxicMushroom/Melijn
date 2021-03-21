@@ -89,7 +89,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
                 roleWrapper.setRole(context.guildId, RoleType.MUTE, muteRole.idLong)
             } catch (t: Throwable) {
                 val msgFailed = context.getTranslation("message.creatingmuterole.failed")
-                    .withVariable("cause", t.message ?: "/")
+                    .withSafeVarInCodeblock("cause", t.message ?: "/")
                 sendRsp(context, msgFailed)
             }
 
@@ -183,7 +183,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
 
             val msg = context.getTranslation("$root.failure")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVariable("cause", t.message ?: "/")
+                .withSafeVarInCodeblock("cause", t.message ?: "/")
             sendRsp(context, msg)
         }
     }
@@ -207,7 +207,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val msg = context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
             .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
             .withVariable("endTime", mute.endTime?.asEpochMillisToDateTime(context.getTimeZoneId()) ?: "none")
-            .withSafeVariable("reason", mute.reason)
+            .withSafeVarInCodeblock("reason", mute.reason)
         sendRsp(context, msg)
     }
 }

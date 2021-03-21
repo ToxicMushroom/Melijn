@@ -52,7 +52,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             var content = "```INI"
             if (prefixes.isEmpty()) content += "\n$defPrefixMsg"
             for ((index, prefix) in prefixes.withIndex()) {
-                content += "\n$index - [$prefix]"
+                content += "\n${index + 1} - [$prefix]"
             }
             content += "```"
 

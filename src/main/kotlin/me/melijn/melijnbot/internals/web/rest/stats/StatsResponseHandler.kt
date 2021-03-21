@@ -5,7 +5,6 @@ import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.events.EventManager
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.threading.TaskManager.scheduledExecutorService
 import me.melijn.melijnbot.internals.utils.OSValidator
 import me.melijn.melijnbot.internals.utils.getSystemUptime
 import me.melijn.melijnbot.internals.utils.getTotalMBUnixRam
@@ -16,6 +15,7 @@ import me.melijn.melijnbot.objectMapper
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.lang.management.ManagementFactory
+import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.ThreadPoolExecutor
 
 object StatsResponseHandler {
@@ -36,8 +36,8 @@ object StatsResponseHandler {
 
         val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
         val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
-        val threadPoolExecutor = TaskManager.executorService as ThreadPoolExecutor
-        scheduledExecutorService as ThreadPoolExecutor
+        val threadPoolExecutor = TaskManager.executorService as ForkJoinPool
+        val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
 
         val dataObject = DataObject.empty()
         dataObject.put(
@@ -45,7 +45,7 @@ object StatsResponseHandler {
                 .put("uptime", ManagementFactory.getRuntimeMXBean().uptime)
                 .put(
                     "melijnThreads",
-                    threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size
+                    threadPoolExecutor.activeThreadCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size
                 )
                 .put("ramUsage", usedJVMMem)
                 .put("ramTotal", totalJVMMem)
@@ -101,7 +101,7 @@ object StatsResponseHandler {
                     .put("musicPlayers", musicPlayers)
                     .put("responses", shard.responseTotal)
                     .put("id", shard.shardInfo.shardId)
-                    .put("unavailable", shard.unavailableGuilds.size)
+                    .put("unavailable", shard.guilds.count { it.jda.isUnavailable(it.idLong) })
             )
         }
 

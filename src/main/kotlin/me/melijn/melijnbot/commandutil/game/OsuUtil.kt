@@ -5,25 +5,10 @@ import me.melijn.melijnbot.internals.utils.DISCORD_ID
 import me.melijn.melijnbot.internals.utils.USER_MENTION
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.sharding.ShardManager
 
 object OsuUtil {
-    private fun getDiscordUserForOsuByArgsN(shardManager: ShardManager, arg: String): User? {
-        return when {
-            DISCORD_ID.matches(arg) -> {
-                shardManager.getUserById(arg)
-            }
-            USER_MENTION.matches(arg) -> {
-                shardManager.getUserById((USER_MENTION.find(arg) ?: return null).groupValues[1])
-            }
-            else -> null
-        }
-    }
-
     suspend fun retrieveDiscordUserForOsuByArgsN(context: ICommandContext, index: Int): User? {
-        val user1: User? = getDiscordUserForOsuByArgsN(context.shardManager, context.args[index])
         return when {
-            user1 != null -> user1
             context.args.size > index -> {
                 val arg = context.args[index]
 
@@ -33,6 +18,7 @@ object OsuUtil {
                     }
                     USER_MENTION.matches(arg) -> {
                         val id = (USER_MENTION.find(arg) ?: return null).groupValues[1]
+                        context.message.mentionedUsers.firstOrNull { it.id == id } ?:
                         context.shardManager.retrieveUserById(id).awaitOrNull()
                     }
                     else -> null
@@ -40,7 +26,5 @@ object OsuUtil {
             }
             else -> null
         }
-
     }
-
 }

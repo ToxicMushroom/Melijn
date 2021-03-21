@@ -3,10 +3,11 @@ package me.melijn.melijnbot.internals.utils.message
 import io.ktor.client.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.utils.ModularPaginationInfo
 import me.melijn.melijnbot.internals.utils.PaginationInfo
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
@@ -39,7 +40,8 @@ suspend fun sendPaginationModularRsp(
 
     val message = sendRspAwaitN(textChannel, httpClient, daoManager, msg)
         ?: throw IllegalArgumentException("Couldn't send the message")
-    registerPaginationModularMessage(textChannel, authorId, message, modularMessages, index)
+    if (modularMessages.size > 1)
+        registerPaginationModularMessage(textChannel, authorId, message, modularMessages, index)
 }
 
 suspend fun sendPaginationMsg(context: ICommandContext, msgList: List<String>, index: Int) {
@@ -48,10 +50,12 @@ suspend fun sendPaginationMsg(context: ICommandContext, msgList: List<String>, i
 
     if (context.isFromGuild) {
         val message = sendMsgAwaitEL(context.textChannel, msg).first()
-        registerPaginationMessage(context.textChannel, context.authorId, message, msgList, index)
+        if (msgList.size > 1)
+            registerPaginationMessage(context.textChannel, context.authorId, message, msgList, index)
     } else {
         val message = sendMsgAwaitEL(context.privateChannel, msg).first()
-        registerPaginationMessage(context.privateChannel, context.authorId, message, msgList, index)
+        if (msgList.size > 1)
+            registerPaginationMessage(context.privateChannel, context.authorId, message, msgList, index)
     }
 }
 
@@ -61,16 +65,18 @@ suspend fun sendPaginationModularMsg(context: ICommandContext, msgList: List<Mod
     if (context.isFromGuild) {
         val message = sendMsgAwaitN(context.textChannel, context.webManager.proxiedHttpClient, msg)
             ?: throw IllegalArgumentException("Couldn't send the message")
-        registerPaginationModularMessage(context.textChannel, context.authorId, message, msgList, index)
+        if (msgList.size > 1)
+            registerPaginationModularMessage(context.textChannel, context.authorId, message, msgList, index)
     } else {
         val message = sendMsgAwaitN(context.privateChannel, context.webManager.proxiedHttpClient, msg)
             ?: throw IllegalArgumentException("Couldn't send the message")
-        registerPaginationModularMessage(context.privateChannel, context.authorId, message, msgList, index)
+        if (msgList.size > 1)
+            registerPaginationModularMessage(context.privateChannel, context.authorId, message, msgList, index)
     }
 }
 
 
-fun registerPaginationModularMessage(
+suspend fun registerPaginationModularMessage(
     textChannel: TextChannel,
     authorId: Long,
     message: Message,
@@ -89,7 +95,7 @@ fun registerPaginationModularMessage(
     addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun registerPaginationModularMessage(
+suspend fun registerPaginationModularMessage(
     privateChannel: PrivateChannel,
     authorId: Long,
     message: Message,
@@ -108,7 +114,7 @@ fun registerPaginationModularMessage(
     addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun registerPaginationMessage(
+suspend fun registerPaginationMessage(
     textChannel: TextChannel,
     authorId: Long,
     message: Message,
@@ -127,7 +133,7 @@ fun registerPaginationMessage(
     addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun registerPaginationMessage(
+suspend fun registerPaginationMessage(
     privateChannel: PrivateChannel,
     authorId: Long,
     message: Message,
@@ -146,7 +152,20 @@ fun registerPaginationMessage(
     addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun addPaginationEmotes(message: Message, morePages: Boolean) {
+suspend fun addPaginationEmotes(message: Message, morePages: Boolean) {
+    if (message.isFromGuild) {
+        if (!message.guild.selfMember.hasPermission(message.textChannel, Permission.MESSAGE_HISTORY)) {
+            sendMelijnMissingChannelPermissionMessage(
+                message.textChannel,
+                message.textChannel,
+                "en",
+                Container.instance.daoManager,
+                listOf(Permission.MESSAGE_HISTORY)
+            )
+            return
+        }
+    }
+
     if (morePages) message.addReaction("⏪").queue()
     message.addReaction("◀️").queue()
     message.addReaction("▶️").queue()

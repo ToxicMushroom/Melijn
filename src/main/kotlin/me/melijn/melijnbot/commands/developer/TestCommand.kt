@@ -6,7 +6,6 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-
 class TestCommand : AbstractCommand("command.test") {
 
     init {
@@ -18,6 +17,6 @@ class TestCommand : AbstractCommand("command.test") {
     val logger: Logger = LoggerFactory.getLogger(TestCommand::class.java)
 
     override suspend fun execute(context: ICommandContext) {
-
+        context.reply("pog")
     }
 }

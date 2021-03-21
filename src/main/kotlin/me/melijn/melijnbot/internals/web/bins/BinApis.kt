@@ -8,12 +8,20 @@ import net.dv8tion.jda.api.utils.data.DataObject
 
 class BinApis(val httpClient: HttpClient) {
 
+    private val host = "ghostbin.co/paste"
+
     suspend fun postToHastebin(lang: String, content: String): String? {
-        val result = httpClient.post<String>("https://hasteb.in/documents") {
-            body = TextContent(content, ContentType.Text.Html)
+        return try {
+            val result = httpClient.post<String>("https://$host/new") {
+                body = TextContent(content, ContentType.Text.Html)
+            }
+
+            val json = DataObject.fromJson(result)
+            "https://$host/" + json.getString("key") + ".$lang"
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            null
         }
 
-        val json = DataObject.fromJson(result)
-        return "https://hasteb.in/" + json.getString("key") + ".$lang"
     }
 }

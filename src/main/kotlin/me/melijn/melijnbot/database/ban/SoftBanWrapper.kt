@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.ban
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
-import me.melijn.melijnbot.internals.utils.withSafeVariable
+import me.melijn.melijnbot.internals.utils.withSafeVarInCodeblock
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
@@ -37,9 +37,9 @@ class SoftBanWrapper(private val softBanDao: SoftBanDao) {
         val deletedUser = context.getTranslation("message.deleted.user")
         val zoneId = context.getTimeZoneId()
         return context.getTranslation("message.punishmenthistory.softban")
-            .withSafeVariable("softBanAuthor", softBanAuthor?.asTag ?: deletedUser)
+            .withSafeVarInCodeblock("softBanAuthor", softBanAuthor?.asTag ?: deletedUser)
             .withVariable("softBanAuthorId", "${softBan.softBanAuthorId}")
-            .withSafeVariable("reason", softBan.reason.substring(0, min(softBan.reason.length, 830)))
+            .withSafeVarInCodeblock("reason", softBan.reason.substring(0, min(softBan.reason.length, 830)))
             .withVariable("moment", softBan.moment.asEpochMillisToDateTime(zoneId))
             .withVariable("softBanId", softBan.softBanId)
 

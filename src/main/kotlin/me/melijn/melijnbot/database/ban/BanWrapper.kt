@@ -75,7 +75,12 @@ class BanWrapper(private val banDao: BanDao) {
         return getBanMessage(context, banAuthor, unbanAuthor, ban)
     }
 
-    private suspend fun getBanMessage(context: ICommandContext, banAuthor: User?, unbanAuthor: User?, ban: Ban): String {
+    private suspend fun getBanMessage(
+        context: ICommandContext,
+        banAuthor: User?,
+        unbanAuthor: User?,
+        ban: Ban
+    ): String {
         val deletedUser = context.getTranslation("message.deleted.user")
         val unbanReason = ban.unbanReason
         val zoneId = context.getTimeZoneId()
@@ -85,12 +90,15 @@ class BanWrapper(private val banDao: BanDao) {
         } ?: context.getTranslation("infinite")
 
         return context.getTranslation("message.punishmenthistory.ban")
-            .withSafeVariable("banAuthor", banAuthor?.asTag ?: deletedUser)
+            .withSafeVarInCodeblock("banAuthor", banAuthor?.asTag ?: deletedUser)
             .withVariable("banAuthorId", "${ban.banAuthorId}")
-            .withSafeVariable("unbanAuthor", if (ban.unbanAuthorId == null) "/" else unbanAuthor?.asTag ?: deletedUser)
+            .withSafeVarInCodeblock(
+                "unbanAuthor",
+                if (ban.unbanAuthorId == null) "/" else unbanAuthor?.asTag ?: deletedUser
+            )
             .withVariable("unbanAuthorId", ban.unbanAuthorId?.toString() ?: "/")
-            .withSafeVariable("banReason", ban.reason.substring(0, min(ban.reason.length, 830)))
-            .withSafeVariable("unbanReason", unbanReason?.substring(0, min(unbanReason.length, 830)) ?: "/")
+            .withSafeVarInCodeblock("banReason", ban.reason.substring(0, min(ban.reason.length, 830)))
+            .withSafeVarInCodeblock("unbanReason", unbanReason?.substring(0, min(unbanReason.length, 830)) ?: "/")
             .withVariable("startTime", ban.startTime.asEpochMillisToDateTime(zoneId))
             .withVariable("endTime", ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "/")
             .withVariable("duration", banDuration)

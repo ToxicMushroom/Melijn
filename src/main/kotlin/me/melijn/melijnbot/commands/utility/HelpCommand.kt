@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.utility
 
+import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -15,7 +16,6 @@ import me.melijn.melijnbot.internals.utils.message.getSyntax
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.regex.Pattern
@@ -231,24 +231,23 @@ class HelpCommand : AbstractCommand("command.help") {
                 cmdTitle,
                 "https://melijn.com/commands?q=${parent.name}&c=${parent.commandCategory.toString().toLowerCase()}"
             )
+            .setDescription(
+                context.getTranslation(command.description)
+                    .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+            )
             .addField(
                 cmdSyntax,
-                MarkdownSanitizer.escape(
+                "**" +
                     getSyntax(context, command.syntax)
-                        .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
-                ),
+                        .escapeMarkdown()
+                        .withSafeVarInCodeblock(PLACEHOLDER_PREFIX, context.usedPrefix, true)
+                    + "**",
                 false
             )
 
         if (command.aliases.isNotEmpty()) {
             embedder.addField(cmdAliases, command.aliases.joinToString(), false)
         }
-
-        embedder.addField(
-            cmdDesc,
-            context.getTranslation(command.description)
-                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix), false
-        )
 
         cmdArgumentsValue?.let {
             var help = it.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
@@ -259,13 +258,14 @@ class HelpCommand : AbstractCommand("command.help") {
                 val path = matcher.group(1)
                 help = help.replace(
                     og,
-                    "*" + context.getTranslation(path).withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                    " ⁎ " + context.getTranslation(path).withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
                 )
             }
             for (argumentsPart in StringUtils.splitMessage(help, splitAtLeast = 750, maxLength = 1024)) {
                 embedder.addField(cmdArguments, argumentsPart, false)
             }
         }
+
 
         cmdExamplesValue?.let {
             for (examplesPart in StringUtils.splitMessage(it, splitAtLeast = 750, maxLength = 1024)) {
@@ -279,8 +279,21 @@ class HelpCommand : AbstractCommand("command.help") {
             }
         }
 
-        embedder.addField(cmdCategory, parent.commandCategory.toLCC(), false)
+        if (command.children.isNotEmpty()) {
 
+            val parts = StringUtils.splitMessage(command.children.joinToString("\n") {
+                val subDesc = runBlocking { context.getTranslation(it.description) }
+                " 🔹 **$name ${it.name}** - $subDesc"
+            }, splitAtLeast = 750, maxLength = 1024)
+            for ((index, part) in parts.withIndex()) {
+                embedder.addField(
+                    (if (index > 0) "More " else "") + "SubCommands",
+                    part,
+                    false
+                )
+            }
+        }
+        embedder.setFooter("$cmdCategory: " + parent.commandCategory.toUCC())
         sendEmbedRsp(context, embedder.build())
     }
 

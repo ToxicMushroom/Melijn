@@ -82,7 +82,7 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
             .count()
 
         return string
-            .withVariable("serverName", guild.name)
+            .withSafeVariable("serverName", guild.name)
             .withVariable("serverId", guild.id)
             .withVariable("iconUrl", (if (guild.iconUrl != null) "${guild.iconUrl}?size=2048" else "").toString())
             .withVariable("bannerUrl", (if (guild.bannerUrl != null) "${guild.bannerUrl}?size=2048" else "").toString())
@@ -99,7 +99,7 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
             .withVariable("textChannelCount", guild.textChannelCache.size().toString())
             .withVariable("voiceChannelCount", guild.voiceChannelCache.size().toString())
             .withVariable("categoryCount", guild.categoryCache.size().toString())
-            .withVariable("owner", guild.retrieveOwner().awaitOrNull()?.asTag ?: "NONE")
+            .withSafeVariable("owner", guild.retrieveOwner().awaitOrNull()?.asTag ?: "NONE")
             .withVariable("verificationLevel", guild.verificationLevel.toUCC())
             .withVariable("botCount", botCount.toString())
             .withVariable("userCount", (guild.memberCount - botCount).toString())

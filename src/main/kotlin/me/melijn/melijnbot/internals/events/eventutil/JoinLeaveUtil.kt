@@ -1,21 +1,22 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
 import io.ktor.client.*
-import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
+import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.database.role.JoinRoleInfo
+import me.melijn.melijnbot.database.role.UserType
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.jagtag.WelcomeJagTagParser
+import me.melijn.melijnbot.internals.models.ModularMessage
+import me.melijn.melijnbot.internals.services.messagedeletion.MessageDeletionService
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.utils.awaitBool
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyRoleByType
-import me.melijn.melijnbot.internals.utils.message.sendAttachments
-import me.melijn.melijnbot.internals.utils.message.sendMsg
-import me.melijn.melijnbot.internals.utils.message.sendMsgWithAttachments
+import me.melijn.melijnbot.internals.utils.isPremiumGuild
+import me.melijn.melijnbot.internals.utils.message.*
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
@@ -46,17 +47,59 @@ object JoinLeaveUtil {
     ) {
         val guildId = guild.idLong
 
-        val channel =
-            guild.getAndVerifyChannelByType(daoManager, channelType, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ)
-                ?: return
+        var channel = guild.getAndVerifyChannelByType(
+            daoManager, channelType, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ
+        ) ?: return
 
         val messageWrapper = daoManager.messageWrapper
-        var modularMessage = messageWrapper.getMessage(guildId, messageType) ?: return
-        if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, messageWrapper)) return
+        val linkedMessageWrapper = daoManager.linkedMessageWrapper
+        val msgName = linkedMessageWrapper.getMessage(guildId, messageType) ?: return
+        var modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
+        if (MessageUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, linkedMessageWrapper)) return
 
         modularMessage = replaceVariablesInWelcomeMessage(guild, user, modularMessage)
 
         val message: Message? = modularMessage.toMessage()
+        if (message?.embeds?.isNotEmpty() == true) {
+            channel = guild.getAndVerifyChannelByType(daoManager, channelType, Permission.MESSAGE_EMBED_LINKS) ?: return
+        }
+        val wrapper = daoManager.autoRemoveInactiveJoinMessageWrapper
+        val premiumGuild = isPremiumGuild(daoManager, guildId)
+        if (premiumGuild &&
+            listOf(MessageType.JOIN, MessageType.PRE_VERIFICATION_JOIN).contains(messageType)
+        ) {
+            val duration = wrapper.get(guildId)
+            if (duration > 0) {
+                val msg = when {
+                    message == null -> sendAttachmentsAwaitN(channel, httpClient, modularMessage.attachments)
+                    modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(
+                        channel,
+                        httpClient,
+                        message,
+                        modularMessage.attachments
+                    )
+                    else -> sendMsgAwaitN(channel, message)
+                }
+                msg?.let {
+                    val channelMsgPair = it.channel.idLong to it.idLong
+                    daoManager.inactiveJMWrapper.new(
+                        guildId, user.idLong, channelMsgPair, duration
+                    )
+                }
+                return
+            }
+
+        } else if (premiumGuild) {
+            val channelMsgPair = daoManager.inactiveJMWrapper.getMsg(guildId, user.idLong)
+            if (channelMsgPair != null) {
+                val text = guild.getTextChannelById(channelMsgPair.first)
+                if (text != null) {
+                    MessageDeletionService.queueMessageDeletes(text, channelMsgPair.second)
+                    return
+                }
+            }
+        }
+
         when {
             message == null -> sendAttachments(channel, httpClient, modularMessage.attachments)
             modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(
@@ -85,7 +128,7 @@ object JoinLeaveUtil {
 
     suspend fun joinRole(daoManager: DaoManager, member: Member) {
         val guild = member.guild
-        if (!guild.selfMember.canInteract(member) || !guild.selfMember.hasPermission(Permission.MANAGE_ROLES)) return
+        if (!guild.selfMember.hasPermission(Permission.MANAGE_ROLES)) return
 
         val groups = daoManager.joinRoleGroupWrapper.getList(guild.idLong)
         val joinRoleInfo = daoManager.joinRoleWrapper.getJRI(guild.idLong)
@@ -93,7 +136,13 @@ object JoinLeaveUtil {
         for ((groupName, list) in map) {
             val group = groups.firstOrNull { it.groupName == groupName } ?: continue
             if (!group.isEnabled) continue
+            val acceptedTypes = UserType.setFromInt(group.forUserTypes)
+            val isBot = member.user.isBot
+            if (isBot && !acceptedTypes.contains(UserType.BOT)) continue
+            else if (!isBot && !acceptedTypes.contains(UserType.USER)) continue
             if (group.getAllRoles) {
+
+
                 for ((roleId) in list) {
                     val role = roleId?.let { guild.getRoleById(it) } ?: continue
                     if (guild.selfMember.canInteract(role)) {

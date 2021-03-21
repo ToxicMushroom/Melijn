@@ -55,7 +55,7 @@ class SnipeCommand : AbstractCommand("command.snipe") {
             return
         }
 
-        val log = snipeLog.entries.sortedBy { it.value }.take(amount)
+        val log = snipeLog.entries.sortedBy { it.value }.reversed().take(amount)
         val newLog = snipeLog.toMutableMap()
         log.forEach { newLog.remove(it.key) }
         MessageDeletedListener.recentDeletions[locId] = newLog

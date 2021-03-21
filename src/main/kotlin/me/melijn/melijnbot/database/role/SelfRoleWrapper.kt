@@ -196,4 +196,8 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
         )
 
     }
+
+    suspend fun clear(guildId: Long, groupName: String): Int {
+        return selfRoleDao.clear(guildId, groupName)
+    }
 }

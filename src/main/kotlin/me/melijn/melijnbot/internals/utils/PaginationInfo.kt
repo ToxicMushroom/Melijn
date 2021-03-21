@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.internals.utils
 
-import me.melijn.melijnbot.database.message.ModularMessage
+import me.melijn.melijnbot.internals.models.ModularMessage
 
 data class PaginationInfo(
     val guildId: Long,

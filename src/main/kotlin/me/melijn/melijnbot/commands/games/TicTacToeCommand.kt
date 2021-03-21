@@ -5,6 +5,7 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.threading.SafeList
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
@@ -22,7 +23,7 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
     }
 
     companion object {
-        val activeGames: MutableList<TicTacToeGame> = mutableListOf()
+        val activeGames: SafeList<TicTacToeGame> = SafeList()
 
         private const val fieldTemplate = "```" +
             "    ╭───┬───┬───╮\n" +

@@ -23,7 +23,7 @@ class GainProfileWrapper(private val gainProfileDao: GainProfileDao) {
         val map = getGainProfile(id).toMutableMap()
         map[name] = GainProfile.fromString(bands.joinToString(","))
 
-        gainProfileDao.insert(id, name, bands.joinToString(","))
+        gainProfileDao.insert(id, name, bands)
         gainProfileDao.setCacheEntry(id, objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
 

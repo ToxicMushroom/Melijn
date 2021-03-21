@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.internals.utils
+package me.melijn.melijnbot.commandutil.game
 
 import me.melijn.melijnbot.commands.games.TicTacToeCommand
 import me.melijn.melijnbot.commands.games.TicTacToeGame
@@ -6,6 +6,8 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.awaitOrNull
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.sharding.ShardManager
 

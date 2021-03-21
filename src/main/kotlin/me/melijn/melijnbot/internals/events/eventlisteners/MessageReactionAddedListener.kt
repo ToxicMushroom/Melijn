@@ -249,7 +249,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             container.daoManager, event.guild.idLong, author?.idLong
                 ?: -1
         )
-            .setAuthor(author?.asTag ?: "deleted_user#0000", null, author?.effectiveAvatarUrl)
+            .setAuthor(author?.asTag ?: "deleted_user#0000", ogMessage.jumpUrl, author?.effectiveAvatarUrl)
         if (ogMessage.embeds.size > 0) {
             val embed = ogMessage.embeds[0]
             eb.setTitle(embed.title, embed.url)
@@ -281,7 +281,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
     }
 
     private fun pokerHandler(event: GuildMessageReactionAddEvent) {
-        if (event.reactionEmote.isEmote) return
+        if (event.reactionEmote.isEmote || event.user.isBot) return
 
         val game = PokerCommand.ongoingPoker.firstOrNull { game ->
             game.userId == event.userIdLong && game.msgId == event.messageIdLong
@@ -390,8 +390,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
     }
 
     private suspend fun searchMenuHandler(event: GuildMessageReactionAddEvent) {
+        if (event.reactionEmote.isEmote || event.user.isBot) return
         val guild = event.guild
-        if (event.reactionEmote.isEmote && event.user.isBot) return
         val guildPlayer = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(guild)
         val menus = guildPlayer.searchMenus
         val menu = menus.getOrElse(event.messageIdLong, {
@@ -548,20 +548,20 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
     }
 
     private suspend fun selfRoleHandler(event: GuildMessageReactionAddEvent) {
+        if (event.user.isBot) return
+
         val guild = event.guild
         val member = event.member
         val roles = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
 
         for (role in roles) {
-            if (!member.roles.contains(role)) {
-                val added = try {
-                    guild.addRoleToMember(member, role).reason("SelfRole").awaitBool()
-                } catch (t: Throwable) {
-                    false
-                }
-                if (!added) {
-                    LogUtils.sendMessageFailedToAddRoleToMember(container.daoManager, member, role)
-                }
+            val added = try {
+                guild.addRoleToMember(member, role).reason("SelfRole").awaitBool()
+            } catch (t: Throwable) {
+                false
+            }
+            if (!added) {
+                LogUtils.sendMessageFailedToAddRoleToMember(container.daoManager, member, role)
             }
         }
     }

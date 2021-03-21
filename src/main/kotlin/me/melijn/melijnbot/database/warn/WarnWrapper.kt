@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.warn
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
-import me.melijn.melijnbot.internals.utils.withSafeVariable
+import me.melijn.melijnbot.internals.utils.withSafeVarInCodeblock
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
@@ -39,9 +39,9 @@ class WarnWrapper(private val warnDao: WarnDao) {
         val zoneId = context.getTimeZoneId()
 
         return context.getTranslation("message.punishmenthistory.warn")
-            .withSafeVariable("warnAuthor", warnAuthor?.asTag ?: deletedUser)
+            .withSafeVarInCodeblock("warnAuthor", warnAuthor?.asTag ?: deletedUser)
             .withVariable("warnAuthorId", "${warn.warnAuthorId}")
-            .withSafeVariable("reason", warn.reason.substring(0, min(warn.reason.length, 830)))
+            .withSafeVarInCodeblock("reason", warn.reason.substring(0, min(warn.reason.length, 830)))
             .withVariable("moment", warn.moment.asEpochMillisToDateTime(zoneId))
             .withVariable("warnId", warn.warnId)
     }

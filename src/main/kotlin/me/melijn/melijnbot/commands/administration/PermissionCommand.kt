@@ -61,25 +61,31 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     return
                 }
 
-                val permissionNode = context.args[1]
-
-                val state: PermState = getEnumFromArgNMessage(context, 2, MESSAGE_UNKNOWN_PERMSTATE) ?: return
-
                 val user = retrieveUserByArgsNMessage(context, 0) ?: return
-                val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
-                val dao = context.daoManager.userPermissionWrapper
-                if (permissions.size > 1) {
-                    dao.setPermissions(context.guildId, user.idLong, permissions, state)
-                } else {
-                    dao.setPermission(context.guildId, user.idLong, permissions[0], state)
+                val states = mutableMapOf<PermState, Pair<List<String>, Int>>()
+                for (i in 1 until context.args.size step 2) {
+                    val permissionNode = context.args[i]
+                    val state: PermState = getEnumFromArgNMessage(context, i + 1, MESSAGE_UNKNOWN_PERMSTATE) ?: return
+                    val (nodes, permCount) = states[state] ?: Pair(emptyList(), 0)
+                    val permissions = getPermissionsFromArgsNMessage(context, listOf(permissionNode)) ?: return
+                    states[state] = Pair(nodes + permissionNode, permCount + permissions.first)
                 }
 
-                val msg = context.getTranslation("$root.response1")
+                val dao = context.daoManager.userPermissionWrapper
+                for ((state, perms) in states) {
+                    if (perms.first.size > 1) {
+                        dao.setPermissions(context.guildId, user.idLong, perms.first, state)
+                    } else {
+                        dao.setPermission(context.guildId, user.idLong, perms.first[0], state)
+                    }
+                }
+
+                var msg = context.getTranslation("$root.set")
                     .withVariable(PLACEHOLDER_USER, user.asTag)
-                    .withVariable("permissionNode", permissionNode)
-                    .withVariable("permissionCount", permissions.size.toString())
-                    .withVariable("state", state.toString())
+                for ((state, pair) in states) {
+                    msg += "\n ◦ ${state.past} **${pair.first.size}** permission nodes (good for `${pair.second} permissions)`"
+                }
 
                 sendRsp(context, msg)
             }
@@ -98,25 +104,35 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     return
                 }
 
-                val permissionNode = if (context.args.size > 1) context.args[1] else "*"
                 val user = retrieveUserByArgsNMessage(context, 0) ?: return
-                val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
-
+                val permissionNode = if (context.args.size > 1) context.args[1] else "*"
                 val title = context.getTranslation("$root.response1.title")
                     .withVariable(PLACEHOLDER_USER, user.asTag)
                     .withVariable("permissionNode", permissionNode)
 
-                var content = "\n```INI"
-                val dao = context.daoManager.userPermissionWrapper.getPermMap(context.guildId, user.idLong)
-                var index = 1
-                for (perm in permissions) {
-                    val state = dao.getOrDefault(perm, PermState.DEFAULT)
-                    if (state != PermState.DEFAULT)
-                        content += "\n${index++} - [$perm] - $state"
-                }
-                content += "```"
+                val content = StringBuilder("\n```INI")
+                val map = context.daoManager.userPermissionWrapper.getPermMap(context.guildId, user.idLong)
 
-                sendRspCodeBlock(context, title + content, "INI", true)
+                var index = 1
+                for ((perm, state) in map) {
+                    if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
+                        content.append("\n${index++} - [$perm] - $state")
+                    }
+                }
+                if (index == 1) {
+                    sendRsp(
+                        context,
+                        "**${
+                            user.asTag.escapeMarkdown().escapeDiscordInvites()
+                        }** doesn't have any permissions set that match `${
+                            permissionNode.escapeCodeblockMarkdown(true)
+                        }`"
+                    )
+                    return
+                }
+                content.append("```")
+
+                sendRspCodeBlock(context, title + content.toString(), "INI", true)
             }
         }
 
@@ -174,27 +190,30 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     return
                 }
 
-                val permissionNode = context.args[1]
-
-
-                val state: PermState = getEnumFromArgNMessage(context, 2, MESSAGE_UNKNOWN_PERMSTATE) ?: return
-
                 val role = getRoleByArgsNMessage(context, 0) ?: return
-
-                val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
-
-                val dao = context.daoManager.rolePermissionWrapper
-                if (permissions.size > 1) {
-                    dao.setPermissions(context.guildId, role.idLong, permissions, state)
-                } else {
-                    dao.setPermission(context.guildId, role.idLong, permissions[0], state)
+                val states = mutableMapOf<PermState, Pair<List<String>, Int>>()
+                for (i in 1 until context.args.size step 2) {
+                    val permissionNode = context.args[i]
+                    val state: PermState = getEnumFromArgNMessage(context, i + 1, MESSAGE_UNKNOWN_PERMSTATE) ?: return
+                    val (nodes, permCount) = states[state] ?: Pair(emptyList(), 0)
+                    val permissions = getPermissionsFromArgsNMessage(context, listOf(permissionNode)) ?: return
+                    states[state] = Pair(nodes + permissionNode, permCount + permissions.first)
                 }
 
-                val msg = context.getTranslation("$root.response1")
+                val dao = context.daoManager.rolePermissionWrapper
+                for ((state, perms) in states) {
+                    if (perms.first.size > 1) {
+                        dao.setPermissions(context.guildId, role.idLong, perms.first, state)
+                    } else {
+                        dao.setPermission(context.guildId, role.idLong, perms.first[0], state)
+                    }
+                }
+
+                var msg = context.getTranslation("$root.set")
                     .withVariable(PLACEHOLDER_ROLE, role.name)
-                    .withVariable("permissionNode", permissionNode)
-                    .withVariable("permissionCount", permissions.size.toString())
-                    .withVariable("state", state.toString())
+                for ((state, pair) in states) {
+                    msg += "\n ◦ ${state.past} **${pair.first.size}** permission nodes (good for `${pair.second} permissions)`"
+                }
 
                 sendRsp(context, msg)
             }
@@ -216,19 +235,28 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val permissionNode = if (context.args.size > 1) context.args[1] else "*"
                 val role = getRoleByArgsNMessage(context, 0) ?: return
-                val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
                 val title = context.getTranslation("$root.response1.title")
                     .withVariable(PLACEHOLDER_ROLE, role.name)
                     .withVariable("permissionNode", permissionNode)
 
                 var content = "\n```INI"
-                val dao = context.daoManager.rolePermissionWrapper.getPermMap(role.idLong)
+                val map = context.daoManager.rolePermissionWrapper.getPermMap(role.idLong)
+
                 var index = 1
-                for (perm in permissions) {
-                    val state = dao.getOrDefault(perm, PermState.DEFAULT)
-                    if (state != PermState.DEFAULT)
+                for ((perm, state) in map) {
+                    if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
                         content += "\n${index++} - [$perm] - $state"
+                    }
+                }
+                if (index == 1) {
+                    sendRsp(
+                        context,
+                        "**${role.name.escapeMarkdown()}** doesn't have any permissions set that match `${
+                            permissionNode.escapeCodeblockMarkdown(true)
+                        }`"
+                    )
+                    return
                 }
                 content += "```"
 
@@ -274,7 +302,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            sendRsp(context, "Channel Permissions")
+            sendSyntax(context)
         }
 
         class RoleChannelArg(parent: String) : AbstractCommand("$parent.role") {
@@ -307,27 +335,33 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         return
                     }
 
-                    val permissionNode = context.args[2]
-
-                    val state: PermState = getEnumFromArgNMessage(context, 3, MESSAGE_UNKNOWN_PERMSTATE) ?: return
-
                     val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                     val role = getRoleByArgsNMessage(context, 1) ?: return
-                    val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
-
-                    val dao = context.daoManager.channelRolePermissionWrapper
-                    if (permissions.size > 1) {
-                        dao.setPermissions(context.guildId, channel.idLong, role.idLong, permissions, state)
-                    } else {
-                        dao.setPermission(context.guildId, channel.idLong, role.idLong, permissions[0], state)
+                    val states = mutableMapOf<PermState, Pair<List<String>, Int>>()
+                    for (i in 2 until context.args.size step 2) {
+                        val permissionNode = context.args[i]
+                        val state = getEnumFromArgNMessage<PermState>(context, i + 1, MESSAGE_UNKNOWN_PERMSTATE)
+                            ?: return
+                        val (nodes, permCount) = states[state] ?: Pair(emptyList(), 0)
+                        val permissions = getPermissionsFromArgsNMessage(context, listOf(permissionNode)) ?: return
+                        states[state] = Pair(nodes + permissionNode, permCount + permissions.first)
                     }
 
-                    val msg = context.getTranslation("$root.response1")
-                        .withVariable("textChannel", channel.asTag)
+                    val dao = context.daoManager.channelRolePermissionWrapper
+                    for ((state, perms) in states) {
+                        if (perms.first.size > 1) {
+                            dao.setPermissions(context.guildId, channel.idLong, role.idLong, perms.first, state)
+                        } else {
+                            dao.setPermission(context.guildId, channel.idLong, role.idLong, perms.first[0], state)
+                        }
+                    }
+
+                    var msg = context.getTranslation("$root.set")
+                        .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
                         .withVariable(PLACEHOLDER_ROLE, role.name)
-                        .withVariable("permissionNode", permissionNode)
-                        .withVariable("permissionCount", permissions.size.toString())
-                        .withVariable("state", state.toString())
+                    for ((state, pair) in states) {
+                        msg += "\n ◦ ${state.past} **${pair.first.size}** permission nodes (good for `${pair.second} permissions)`"
+                    }
 
                     sendRsp(context, msg)
                 }
@@ -351,8 +385,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                     val role = getRoleByArgsNMessage(context, 1) ?: return
-                    val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
-
 
                     val title = context.getTranslation("$root.response1.title")
                         .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
@@ -360,15 +392,24 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable("permissionNode", permissionNode)
 
 
-                    val channelRole =
-                        context.daoManager.channelRolePermissionWrapper.getPermMap(channel.idLong, role.idLong)
+                    val wrapper = context.daoManager.channelRolePermissionWrapper
+                    val map = wrapper.getPermMap(channel.idLong, role.idLong)
 
-                    var content = "```INI"
-                    for ((index, perm) in permissions.withIndex()) {
-                        val state = channelRole.getOrDefault(perm, PermState.DEFAULT)
-                        if (state != PermState.DEFAULT) {
-                            content += "\n${index + 1} - [$perm] - $state"
+                    var content = "\n```INI"
+                    var index = 1
+                    for ((perm, state) in map) {
+                        if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
+                            content += "\n${index++} - [$perm] - $state"
                         }
+                    }
+                    if (index == 1) {
+                        sendRsp(
+                            context,
+                            "**${role.name.escapeMarkdown()}** doesn't have any permissions set in **${channel.asTag}** that match `${
+                                permissionNode.escapeCodeblockMarkdown(true)
+                            }`"
+                        )
+                        return
                     }
                     content += "```"
 
@@ -434,28 +475,33 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         return
                     }
 
-                    val permissionNode = context.args[2]
-
-                    val state: PermState = getEnumFromArgNMessage(context, 3, MESSAGE_UNKNOWN_PERMSTATE) ?: return
-
                     val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                     val user = retrieveUserByArgsNMessage(context, 1) ?: return
-                    val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
-
-                    val dao = context.daoManager.channelUserPermissionWrapper
-                    if (permissions.size > 1) {
-                        dao.setPermissions(context.guildId, channel.idLong, user.idLong, permissions, state)
-                    } else {
-                        dao.setPermission(context.guildId, channel.idLong, user.idLong, permissions[0], state)
+                    val states = mutableMapOf<PermState, Pair<List<String>, Int>>()
+                    for (i in 2 until context.args.size step 2) {
+                        val permissionNode = context.args[i]
+                        val state = getEnumFromArgNMessage<PermState>(context, i + 1, MESSAGE_UNKNOWN_PERMSTATE)
+                            ?: return
+                        val (nodes, permCount) = states[state] ?: Pair(emptyList(), 0)
+                        val permissions = getPermissionsFromArgsNMessage(context, listOf(permissionNode)) ?: return
+                        states[state] = Pair(nodes + permissionNode, permCount + permissions.first)
                     }
 
+                    val dao = context.daoManager.channelUserPermissionWrapper
+                    for ((state, perms) in states) {
+                        if (perms.first.size > 1) {
+                            dao.setPermissions(context.guildId, channel.idLong, user.idLong, perms.first, state)
+                        } else {
+                            dao.setPermission(context.guildId, channel.idLong, user.idLong, perms.first[0], state)
+                        }
+                    }
 
-                    val msg = context.getTranslation("$root.response1")
-                        .withVariable("textChannel", channel.asTag)
+                    var msg = context.getTranslation("$root.set")
+                        .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
                         .withVariable(PLACEHOLDER_USER, user.asTag)
-                        .withVariable("permissionNode", permissionNode)
-                        .withVariable("permissionCount", permissions.size.toString())
-                        .withVariable("state", state.toString())
+                    for ((state, pair) in states) {
+                        msg += "\n ◦ ${state.past} **${pair.first.size}** permission nodes (good for `${pair.second} permissions)`"
+                    }
 
                     sendRsp(context, msg)
                 }
@@ -479,22 +525,32 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                     val user = retrieveUserByArgsNMessage(context, 1) ?: return
-                    val permissions = getPermissionsFromArg(context, permissionNode) ?: return
-
 
                     val title = context.getTranslation("$root.response1.title")
                         .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
                         .withVariable(PLACEHOLDER_USER, user.asTag)
                         .withVariable("permissionNode", permissionNode)
                     val wrapper = context.daoManager.channelUserPermissionWrapper
-                    val channelUser = wrapper.getPermMap(channel.idLong, user.idLong)
+                    val map = wrapper.getPermMap(channel.idLong, user.idLong)
 
-                    var content = "```INI"
-                    for ((index, perm) in permissions.withIndex()) {
-                        val state = channelUser.getOrDefault(perm, PermState.DEFAULT)
-                        if (state != PermState.DEFAULT) {
-                            content += "\n${index + 1} - [$perm] - $state"
+                    var content = "\n```INI"
+
+                    var index = 1
+                    for ((perm, state) in map) {
+                        if (state != PermState.DEFAULT && nodeGrantsPerm(permissionNode, perm, context.commandList)) {
+                            content += "\n${index++} - [$perm] - $state"
                         }
+                    }
+                    if (index == 1) {
+                        sendRsp(
+                            context,
+                            "**${
+                                user.asTag.escapeMarkdown().escapeDiscordInvites()
+                            }** doesn't have any permissions set in **${channel.asTag}** that match `${
+                                permissionNode.escapeCodeblockMarkdown(true)
+                            }`"
+                        )
+                        return
                     }
                     content += "```"
 
@@ -564,18 +620,10 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     return
                 }
                 when (copyParent) {
-                    is PermissionCommand.ChannelArg.RoleChannelArg -> {
-                        copyChannelRoleToUser(context)
-                    }
-                    is PermissionCommand.ChannelArg.UserChannelArg -> {
-                        copyChannelUserToUser(context)
-                    }
-                    is PermissionCommand.RoleArg -> {
-                        copyRoleToUser(context)
-                    }
-                    is PermissionCommand.UserArg -> {
-                        copyUserToUser(context)
-                    }
+                    is PermissionCommand.ChannelArg.RoleChannelArg -> copyChannelRoleToUser(context)
+                    is PermissionCommand.ChannelArg.UserChannelArg -> copyChannelUserToUser(context)
+                    is PermissionCommand.RoleArg -> copyRoleToUser(context)
+                    is PermissionCommand.UserArg -> copyUserToUser(context)
                 }
             }
 
@@ -699,18 +747,10 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     return
                 }
                 when (copyParent) {
-                    is PermissionCommand.ChannelArg.RoleChannelArg -> {
-                        copyChannelRoleToRole(context)
-                    }
-                    is PermissionCommand.ChannelArg.UserChannelArg -> {
-                        copyChannelUserToRole(context)
-                    }
-                    is PermissionCommand.RoleArg -> {
-                        copyRoleToRole(context)
-                    }
-                    is PermissionCommand.UserArg -> {
-                        copyUserToRole(context)
-                    }
+                    is PermissionCommand.ChannelArg.RoleChannelArg -> copyChannelRoleToRole(context)
+                    is PermissionCommand.ChannelArg.UserChannelArg -> copyChannelUserToRole(context)
+                    is PermissionCommand.RoleArg -> copyRoleToRole(context)
+                    is PermissionCommand.UserArg -> copyUserToRole(context)
                 }
             }
 
@@ -844,18 +884,10 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         return
                     }
                     when (copyParent) {
-                        is PermissionCommand.ChannelArg.RoleChannelArg -> {
-                            copyChannelRoleToChannelRole(context)
-                        }
-                        is PermissionCommand.ChannelArg.UserChannelArg -> {
-                            copyChannelUserToChannelRole(context)
-                        }
-                        is PermissionCommand.RoleArg -> {
-                            copyRoleToChannelRole(context)
-                        }
-                        is PermissionCommand.UserArg -> {
-                            copyUserToChannelRole(context)
-                        }
+                        is PermissionCommand.ChannelArg.RoleChannelArg -> copyChannelRoleToChannelRole(context)
+                        is PermissionCommand.ChannelArg.UserChannelArg -> copyChannelUserToChannelRole(context)
+                        is PermissionCommand.RoleArg -> copyRoleToChannelRole(context)
+                        is PermissionCommand.UserArg -> copyUserToChannelRole(context)
                     }
                 }
 
@@ -985,18 +1017,10 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         return
                     }
                     when (copyParent) {
-                        is PermissionCommand.ChannelArg.RoleChannelArg -> {
-                            copyChannelRoleToChannelUser(context)
-                        }
-                        is PermissionCommand.ChannelArg.UserChannelArg -> {
-                            copyChannelUserToChannelUser(context)
-                        }
-                        is PermissionCommand.RoleArg -> {
-                            copyRoleToChannelUser(context)
-                        }
-                        is PermissionCommand.UserArg -> {
-                            copyUserToChannelUser(context)
-                        }
+                        is PermissionCommand.ChannelArg.RoleChannelArg -> copyChannelRoleToChannelUser(context)
+                        is PermissionCommand.ChannelArg.UserChannelArg -> copyChannelUserToChannelUser(context)
+                        is PermissionCommand.RoleArg -> copyRoleToChannelUser(context)
+                        is PermissionCommand.UserArg -> copyUserToChannelUser(context)
                     }
                 }
 
@@ -1111,25 +1135,75 @@ class PermissionCommand : AbstractCommand("command.permission") {
     }
 }
 
-suspend fun getPermissionsFromArgNMessage(context: ICommandContext, arg: String): List<String>? {
-    val permissions = getPermissionsFromArg(context, arg)
-    if (permissions == null) {
+/**
+ * permMap: map with permission nodes mapped to states (can be for user, userchannel, role, rolechannel)
+ * lPermission: lowercase permission node to check
+ * cPermState: current permission state
+ * returns: new permission state or the cPermState depending on if arguments supplied
+ */
+fun nodeGrantsPerm(
+    granted: String,
+    toCheck: String,
+    commands: Set<AbstractCommand>
+): Boolean {
+    if (granted.last() == '*' && (toCheck.length > granted.length || toCheck.length == granted.length - 2)) { // rolePerm.* and rolePerm.something > 9
+        return if (granted == "*") {
+            true
+        } else {
+            val begin = granted.dropLast(2)
+            toCheck.startsWith(begin, true)
+        }
+    } else {
+        if (toCheck == granted) {
+            return true
+        } else {
+            val category = try {
+                CommandCategory.valueOf(granted.toUpperCase())
+            } catch (t: Throwable) {
+                null
+            }
 
-        val msg = context.getTranslation(MESSAGE_UNKNOWN_PERMISSIONNODE)
-            .withVariable(PLACEHOLDER_ARG, arg)
-        sendRsp(context, msg)
+            return if (category != null) {
+                val foundCommand = commands.firstOrNull { cmd ->
+                    toCheck.takeWhile { it != '.' }.equals(cmd.name, true)
+                }
+                foundCommand?.commandCategory == category
+            } else {
+                false
+            }
+        }
     }
-    return permissions
 }
 
-fun getPermissionsFromArg(context: ICommandContext, arg: String): List<String>? {
+
+// <count, compactPermissionNodes>
+suspend fun getPermissionsFromArgsNMessage(context: ICommandContext, args: List<String>): Pair<Int, List<String>>? {
+    var i = 0
+    val list = mutableListOf<String>()
+    for (arg in args) {
+        val permissions = getPermissionsNodesFromArg(context, arg)
+        if (permissions == null) {
+            val msg = context.getTranslation(MESSAGE_UNKNOWN_PERMISSIONNODE)
+                .withVariable(PLACEHOLDER_ARG, arg)
+            sendRsp(context, msg)
+            return null
+        }
+        i += permissions.first
+        list.add(permissions.second)
+    }
+    return i to list
+}
+
+fun getPermissionsNodesFromArg(context: ICommandContext, arg: String): Pair<Int, String>? {
     val category: CommandCategory? = enumValueOrNull(arg)
     val permParts = arg.split(".")
 
     val commands = if (category == null) {
         if (arg == "*") {
             context.commandList
-        } else context.commandList.filter { command -> command.isCommandFor(permParts[0]) }
+        } else {
+            context.commandList.filter { command -> command.isCommandFor(permParts[0]) }
+        }
     } else {
         context.commandList.filter { command -> command.commandCategory == category }
     }
@@ -1161,7 +1235,7 @@ fun getPermissionsFromArg(context: ICommandContext, arg: String): List<String>? 
         perms.add(arg.toLowerCase())
     }
 
-    return if (perms.isEmpty()) null else perms
+    return if (perms.isEmpty()) null else perms.size to arg
 }
 
 fun getPermissions(commands: Collection<AbstractCommand>, prefix: String = ""): List<String> {

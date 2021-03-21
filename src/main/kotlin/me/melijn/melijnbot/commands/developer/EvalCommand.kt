@@ -23,7 +23,7 @@ class EvalCommand : AbstractCommand("command.eval") {
 
     override suspend fun execute(context: ICommandContext) {
         requireNotNull(engine)
-        var code = context.rawArg.removePrefix("```kt").removePrefix("```").removeSuffix("```")
+        var code = context.rawArg.removePrefix("```kt\n").removePrefix("```").removeSuffix("```").trim()
         val imports = code.lines().takeWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
         code = """
 			import me.melijn.melijnbot.internals.utils.*
@@ -39,7 +39,7 @@ class EvalCommand : AbstractCommand("command.eval") {
 			import kotlinx.coroutines.*
 			${imports.joinToString("\n\t\t\t")}
 			fun exec(context: ICommandContext): Deferred<Any?> {
-                return TaskManager.taskValueNAsync {
+                return TaskManager.evalTaskValueNAsync {
 				    ${
             code.lines().dropWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
                 .joinToString("\n\t\t\t\t\t")

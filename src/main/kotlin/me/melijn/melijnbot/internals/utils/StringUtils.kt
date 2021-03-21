@@ -167,9 +167,9 @@ object StringUtils {
                     }
                 }
                 messages.addAll(splitMessage(msg.substring(0, index + 1)))
-                msg = msg.substring(index + 1, msg.length + 1)
+                msg = msg.substring(index + 1, msg.length)
             }
-            messages.addAll(splitMessage(msg.substring(0, msg.length + 1)))
+            messages.addAll(splitMessage(msg.substring(0, msg.length)))
         } else if (maxLength > msg.length) {
             messages.addAll(splitMessage(msg))
         } else {
@@ -233,6 +233,13 @@ fun String.withVariable(toReplace: String, obj: Any): String {
     return this.replace("%$toReplace%", obj.toString())
 }
 
+fun String.escapeCodeblockMarkdown(andDiscordInvite: Boolean = false): String {
+    val replaced = this
+        .replace("`", "'")
+    return if (andDiscordInvite) replaced.escapeDiscordInvites()
+    else replaced
+}
+
 fun String.escapeMarkdown(): String {
     return this.replace("*", "\\*")
         .replace("||", "\\|\\|")
@@ -247,6 +254,19 @@ fun String.escapeDiscordInvites(): String {
         .replace("discord.com/invite", " yourFailedInviteLink ", ignoreCase = true)
         .replace("discordapp.com/invite", " yourFailedInviteLink ", ignoreCase = true)
         .replace("discord.media/invite", " yourFailedInviteLink ", ignoreCase = true)
+}
+
+// IC == In CodeBlock
+fun String.withSafeVarInCodeblock(toReplace: String, obj: Any, escapeInvites: Boolean = false): String {
+    val replacedResult = this.replace(
+        "%$toReplace%",
+        obj.toString().escapeCodeblockMarkdown()
+    )
+    return if (escapeInvites) {
+        replacedResult.escapeDiscordInvites()
+    } else {
+        replacedResult
+    }
 }
 
 fun String.withSafeVariable(toReplace: String, obj: Any): String {
@@ -279,5 +299,8 @@ fun Int.toHexString(size: Int = 6): String {
 }
 
 fun String.isInside(vararg stringList: String, ignoreCase: Boolean): Boolean {
+    return stringList.any { it.equals(this, ignoreCase) }
+}
+fun String.isInside(stringList: Collection<String>, ignoreCase: Boolean): Boolean {
     return stringList.any { it.equals(this, ignoreCase) }
 }

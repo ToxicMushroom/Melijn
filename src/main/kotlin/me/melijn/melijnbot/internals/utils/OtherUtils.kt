@@ -1,9 +1,5 @@
 package me.melijn.melijnbot.internals.utils
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.DateFormat
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -13,6 +9,8 @@ import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.utils.data.DataArray
+import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -21,7 +19,6 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.Year
 import java.util.*
-import java.util.concurrent.Executor
 import java.util.regex.Pattern
 
 
@@ -451,12 +448,6 @@ fun getIntegerFromArgN(context: ICommandContext, index: Int, min: Int = Int.MIN_
     return number
 }
 
-fun Executor.launch(block: suspend CoroutineScope.() -> Unit): Job {
-    return CoroutineScope(this.asCoroutineDispatcher()).launch {
-        block.invoke(this)
-    }
-}
-
 //UpperCamelCase
 fun Enum<*>.toUCC(): String {
     return this
@@ -530,4 +521,12 @@ fun String.replace(oldValue: String, newValue: Int): String {
 
 fun String.replace(oldValue: String, newValue: Long): String {
     return this.replace(oldValue, "$newValue")
+}
+
+operator fun DataObject.set(key: String, value: Any) = this.put(key, value)
+fun DataObject.getObjectN(key: String): DataObject? {
+    return if (this.hasKey(key)) getObject(key) else null
+}
+fun DataObject.getArrayN(key: String): DataArray? {
+    return if (this.hasKey(key)) getArray(key) else null
 }

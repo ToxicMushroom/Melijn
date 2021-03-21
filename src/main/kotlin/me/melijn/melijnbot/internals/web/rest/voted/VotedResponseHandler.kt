@@ -26,7 +26,6 @@ object VotedResponseHandler {
         }
 
         val body = DataObject.fromJson(context.call.receiveText())
-        logger.info(body.toString())
 
         val botId = body.getString("bot").toLong()
         if (botId != context.container.settings.botInfo.id) {
@@ -41,6 +40,7 @@ object VotedResponseHandler {
             return
         }
 
+        logger.info(body.toString())
         val isWeekend = body.getBoolean("isWeekend", false)
         val botlist = body.getString("src", "")
         val daoManager = context.daoManager
@@ -79,7 +79,7 @@ object VotedResponseHandler {
         TaskManager.async {
             if (voteType == "test") {
                 LogUtils.sendReceivedVoteTest(context.container, userId, botlist)
-            } else if (voteType == "vote") {
+            } else {
 
                 val multiplier = (if (daoManager.supporterWrapper.getUsers().contains(userId)) {
                     premiumMultiplier

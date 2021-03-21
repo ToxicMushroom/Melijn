@@ -27,7 +27,6 @@ class CommandClientBuilder(private val container: Container) {
 
     init {
         logger.info("Loading commands...")
-        container.daoManager.commandWrapper.clearCommands()
     }
 
     private val commands = hashSetOf<AbstractCommand>(
@@ -78,9 +77,7 @@ class CommandClientBuilder(private val container: Container) {
         PlayCommand(),
         SetMusicChannelCommand(),
         FilterGroupCommand(),
-        JoinMessageCommand(),
         BlushCommand(),
-        LeaveMessageCommand(),
         StareCommand(),
         TempMuteCommand(),
         SummonCommand(),
@@ -169,14 +166,11 @@ class CommandClientBuilder(private val container: Container) {
         SetBirthdayCommand(),
         SetPrivateTimeZoneCommand(),
         SetTimeZoneCommand(),
-        BirthdayMessageCommand(),
         SpamCommand(),
         GainProfileCommand(),
         DuckCommand(),
         AIWaifuCommand(),
         SetMusic247Command(),
-        PreVerificationJoinMessageCommand(),
-        PreVerificationLeaveMessageCommand(),
         SupportCommand(),
         VoteSkipCommand(),
         RerenderGifCommand(),
@@ -187,8 +181,6 @@ class CommandClientBuilder(private val container: Container) {
         JoinRoleCommand(),
         MassMoveCommand(),
         LimitRoleToChannelCommand(),
-        BannedMessageCommand(),
-        KickedMessageCommand(),
         SetBannedOrKickedTriggersLeaveCommand(),
         MyAnimeListCommand(container.settings.api.jikan),
         SetBotLogStateCommand(),
@@ -207,7 +199,6 @@ class CommandClientBuilder(private val container: Container) {
         SetPrivateAllowSpacedPrefixState(),
         AliasesCommand(),
         PrivateAliasesCommand(),
-        BoostMessageCommand(),
         ManageHistoryCommand(),
         ShutdownCommand(),
         PenguinCommand(),
@@ -269,7 +260,17 @@ class CommandClientBuilder(private val container: Container) {
         TimeCommand(),
         NomCommand(),
         ConfusedCommand(),
-        FrogCommand()
+        FrogCommand(),
+        ChangeNameCommand(),
+        ScriptsCommand(),
+        TwitterCommand(),
+        LynxCommand(),
+        SyncChannelCommand(),
+        MoveChannelCommand(),
+        SetChannelCategory(),
+        SetAutoRemoveInactiveJoinMessagesDuration(),
+        MessageCommand(),
+        LinkMessageCommand()
     )
 
     fun build(): CommandClient {

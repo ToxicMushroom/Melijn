@@ -68,7 +68,6 @@ class LeaderBoardCommand : AbstractCommand("command.leaderboard") {
                 Cell(bigNumberFormatter.valueToString(pair.second), Alignment.RIGHT),
                 Cell(user.asTag)
             )
-
         }
         if (pos != null && (pos.second > 1 + (10 * page) || last)) {
             tableBuilder.addSplit()

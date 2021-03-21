@@ -44,7 +44,7 @@ class BirthdayHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
         }, year, guildId, userId)
     }
 
-    suspend fun deactivate(year: Int, guildId: Long, userId: Long) {
+    fun deactivate(year: Int, guildId: Long, userId: Long) {
         driverManager.executeUpdate("UPDATE $table SET active = ? WHERE year = ? AND guildId = ? AND userId = ?",
             false, year, guildId, userId)
     }

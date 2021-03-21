@@ -78,6 +78,29 @@ suspend fun Long.asEpochMillisToDateTime(daoManager: DaoManager?, guildId: Long?
     return offsetDateTime.asLongLongGMTString()
 }
 
+suspend fun OffsetDateTime.asEpochMillisToDateTime(
+    daoManager: DaoManager?,
+    guildId: Long? = null,
+    userId: Long? = null
+): String {
+    val guildTimezone = guildId?.let {
+        val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
+        if (zoneId?.isBlank() == true) null
+        else ZoneId.of(zoneId)
+    }
+
+    val userTimezone = userId?.let {
+        val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
+        if (zoneId?.isBlank() == true) null
+        else ZoneId.of(zoneId)
+    }
+
+    val timeZone = userTimezone ?: guildTimezone ?: ZoneId.of("GMT")
+    val offsetDateTime = this.atZoneSameInstant(timeZone)
+    return offsetDateTime.asLongLongGMTString()
+}
+
+
 fun Long.asEpochMillisToDateTime(zoneId: ZoneId): String {
     val offsetDateTime = Instant.ofEpochMilli(this).atZone(zoneId)
     return offsetDateTime.asLongLongGMTString()

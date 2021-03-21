@@ -2,13 +2,12 @@ package me.melijn.melijnbot.database.message
 
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
-import me.melijn.melijnbot.enums.MessageType
-import net.dv8tion.jda.api.entities.MessageEmbed
+import me.melijn.melijnbot.internals.models.ModularMessage
 
 class MessageWrapper(private val messageDao: MessageDao) {
 
-    suspend fun getMessage(guildId: Long, msgType: MessageType): ModularMessage? {
-        val result = messageDao.getCacheEntry("$msgType:$guildId", HIGHER_CACHE)?.let {
+    suspend fun getMessage(guildId: Long, msgName: String): ModularMessage? {
+        val result = messageDao.getCacheEntry("$msgName:$guildId", HIGHER_CACHE)?.let {
             try {
                 if (it.isBlank()) return null
                 ModularMessage.fromJSON(it)
@@ -20,9 +19,9 @@ class MessageWrapper(private val messageDao: MessageDao) {
 
         if (result != null) return result
 
-        val json = messageDao.get(guildId, msgType)
+        val json = messageDao.get(guildId, msgName)
         if (json == null) {
-            messageDao.setCacheEntry("$msgType:$guildId", "", NORMAL_CACHE)
+            messageDao.setCacheEntry("$msgName:$guildId", "", NORMAL_CACHE)
             return null
         }
 
@@ -33,28 +32,28 @@ class MessageWrapper(private val messageDao: MessageDao) {
             null
         }
 
-        messageDao.setCacheEntry("$msgType:$guildId", modular?.toJSON() ?: "", NORMAL_CACHE)
+        messageDao.setCacheEntry("$msgName:$guildId", modular?.toJSON() ?: "", NORMAL_CACHE)
 
         return modular
     }
 
-    fun updateMessage(message: ModularMessage, guildId: Long, type: MessageType) {
+    fun updateMessage(message: ModularMessage, guildId: Long, msgName: String) {
         if (shouldRemove(message)) {
-            removeMessage(guildId, type)
+            removeMessage(guildId, msgName)
         } else {
-            (setMessage(guildId, type, message))
+            (setMessage(guildId, msgName, message))
         }
     }
 
 
-    fun removeMessage(guildId: Long, type: MessageType) {
-        messageDao.remove(guildId, type)
-        messageDao.setCacheEntry("$type:$guildId", "", NORMAL_CACHE)
+    fun removeMessage(guildId: Long, msgName: String) {
+        messageDao.remove(guildId, msgName)
+        messageDao.setCacheEntry("$msgName:$guildId", "", NORMAL_CACHE)
     }
 
-    fun setMessage(guildId: Long, type: MessageType, message: ModularMessage) {
-        messageDao.set(guildId, type, message.toJSON())
-        messageDao.setCacheEntry("$type:$guildId", message.toJSON(), NORMAL_CACHE)
+    fun setMessage(guildId: Long, msgName: String, message: ModularMessage) {
+        messageDao.set(guildId, msgName, message.toJSON())
+        messageDao.setCacheEntry("$msgName:$guildId", message.toJSON(), NORMAL_CACHE)
     }
 
     fun shouldRemove(message: ModularMessage): Boolean {
@@ -67,10 +66,7 @@ class MessageWrapper(private val messageDao: MessageDao) {
             (embed == null || embed.isEmpty || !embed.isSendable)
     }
 
-    private fun validateEmbedOrNull(embed: MessageEmbed): MessageEmbed? =
-        if (embed.isEmpty || !embed.isSendable) {
-            null
-        } else {
-            embed
-        }
+    suspend fun getMessages(guildId: Long): List<String> {
+        return messageDao.getMessages(guildId)
+    }
 }

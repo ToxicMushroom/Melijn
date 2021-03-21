@@ -13,6 +13,7 @@ import me.melijn.melijnbot.internals.web.WebUtils.respondJson
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.lang.management.ManagementFactory
+import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.ThreadPoolExecutor
 
 object PublicStatsResponseHandler {
@@ -31,8 +32,8 @@ object PublicStatsResponseHandler {
 
         val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
         val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
-        val threadPoolExecutor = TaskManager.executorService as ThreadPoolExecutor
-        TaskManager.scheduledExecutorService as ThreadPoolExecutor
+        val threadPoolExecutor = TaskManager.executorService as ForkJoinPool
+        val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
 
         val dataObject = DataObject.empty()
         dataObject.put(
@@ -40,7 +41,7 @@ object PublicStatsResponseHandler {
                 .put("uptime", ManagementFactory.getRuntimeMXBean().uptime)
                 .put(
                     "melijnThreads",
-                    threadPoolExecutor.activeCount + TaskManager.scheduledExecutorService.activeCount + TaskManager.scheduledExecutorService.queue.size
+                    threadPoolExecutor.activeThreadCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size
                 )
                 .put("ramUsage", usedJVMMem)
                 .put("ramTotal", totalJVMMem)

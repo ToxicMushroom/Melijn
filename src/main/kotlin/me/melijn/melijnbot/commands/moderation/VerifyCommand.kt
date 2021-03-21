@@ -28,8 +28,7 @@ class VerifyCommand : AbstractCommand("command.verify") {
             context.textChannel,
             context.daoManager,
             context.usedPrefix
-        )
-            ?: return
+        ) ?: return
 
         val msg = if (context.args[0] == "*") {
             val members = context.guild.members.filter { member -> member.roles.contains(role) }

@@ -1,11 +1,11 @@
 package me.melijn.melijnbot.commands.music
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.message.sendInGuild

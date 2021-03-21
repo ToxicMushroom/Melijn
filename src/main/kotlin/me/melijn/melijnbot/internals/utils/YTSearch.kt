@@ -3,6 +3,9 @@ package me.melijn.melijnbot.internals.utils
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 import me.melijn.llklient.io.LavalinkRestClient
 import me.melijn.llklient.utils.LavalinkUtil
 import me.melijn.melijnbot.Container
@@ -42,6 +45,7 @@ class YTSearch {
 
     private val youtubeService: ExecutorService =
         Executors.newCachedThreadPool { r: Runnable -> Thread(r, "Youtube-Search-Thread") }
+    private val youtubeScope = CoroutineScope(youtubeService.asCoroutineDispatcher())
 
 
     fun search(
@@ -49,7 +53,7 @@ class YTSearch {
         audioTrackCallBack: suspend (audioTrack: List<AudioTrack>) -> Unit,
         llDisabledAndNotYT: suspend () -> Unit,
         lpCallback: SuspendingAudioLoadResultHandler
-    ) = youtubeService.launch {
+    ) = youtubeScope.launch {
         try {
             val lManager = Container.instance.lavaManager
             if (lManager.lavalinkEnabled) {

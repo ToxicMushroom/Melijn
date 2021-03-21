@@ -18,7 +18,7 @@ class BirthdayHistoryWrapper(private val birthdayHistoryDao: BirthdayHistoryDao)
         return birthdayHistoryDao.getBirthdaysToRemove(System.currentTimeMillis() - 86_400_000)
     }
 
-    suspend fun deactivate(year: Int, guildId: Long, userId: Long) {
+    fun deactivate(year: Int, guildId: Long, userId: Long) {
         birthdayHistoryDao.deactivate(year, guildId, userId)
     }
 }
