@@ -55,7 +55,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             var indexer = 1
             for ((cmdPath, aliases) in aliasMap.toSortedMap()) {
                 val cmdId = cmdPath.split(".")[0].toInt()
-                val rootCmd = context.commandList.first { it.id == cmdId }
+                val rootCmd = context.commandList.firstOrNull { it.id == cmdId } ?: continue
                 val idLessCmd = cmdPath.removePrefix("$cmdId")
 
                 sb.append(indexer++).append(". [").append(rootCmd.name).append("]").append(idLessCmd.replace(".", " "))
@@ -96,12 +96,12 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             context.daoManager.aliasWrapper.clear(context.guildId, cmdPath)
 
             val cmdId = cmdPath.split(".")[0].toInt()
-            val rootCmd = context.commandList.first { it.id == cmdId }
+            val rootCmd = context.commandList.firstOrNull { it.id == cmdId }
             val idLessCmd = cmdPath.removePrefix("$cmdId")
 
             val msg = context.getTranslation("$root.cleared")
                 .withVariable("amount", amount)
-                .withVariable("cmd", rootCmd.name + idLessCmd.replace(".", " "))
+                .withVariable("cmd", (rootCmd?.name ?: "(deleted command)") + idLessCmd.replace(".", " "))
             sendRsp(context, msg)
         }
     }

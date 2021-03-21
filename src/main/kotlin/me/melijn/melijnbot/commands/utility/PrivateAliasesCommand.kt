@@ -1,13 +1,22 @@
 package me.melijn.melijnbot.commands.utility
 
+import me.melijn.melijnbot.commands.administration.ALIASES_CMD_LIMIT_PATH
+import me.melijn.melijnbot.commands.administration.ALIASES_TOTAL_LIMIT_PATH
 import me.melijn.melijnbot.commands.administration.AliasesCommand.Companion.getCommandPathInfo
-import me.melijn.melijnbot.internals.command.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresGuildPremiumMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
-const val TOTAL_ALIASES_LIMIT = 25
+const val PREMIUM_TOTAL_ALIASES_LIMIT = 2 // 75
+const val PREMIUM_CMD_ALIASES_LIMIT = 5
+
+const val TOTAL_ALIASES_LIMIT = 1 // 20
 const val CMD_ALIASES_LIMIT = 3
 
 class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
@@ -23,7 +32,6 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             ClearAtArg(root),
             ListArg(root)
         )
-        runConditions = arrayOf(RunCondition.USER_SUPPORTER)
         aliases = arrayOf("privateAlias", "pa")
         commandCategory = CommandCategory.UTILITY
     }
@@ -47,13 +55,14 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             var indexer = 1
             for ((cmdPath, aliases) in aliasMap.toSortedMap()) {
                 val cmdId = cmdPath.split(".")[0].toInt()
-                val rootCmd = context.commandList.first { it.id == cmdId }
+                val rootCmd = context.commandList.firstOrNull { it.id == cmdId } ?: continue
                 val idLessCmd = cmdPath.removePrefix("$cmdId")
 
                 sb.append(indexer++).append(". [").append(rootCmd.name).append("]").append(idLessCmd.replace(".", " "))
                     .append("\n")
                 for ((index, alias) in aliases.sorted().withIndex()) {
-                    sb.append("    ").append(index + 1).append(": ").append(alias.escapeCodeblockMarkdown().escapeDiscordInvites())
+                    sb.append("    ").append(index + 1).append(": ")
+                        .append(alias.escapeCodeblockMarkdown().escapeDiscordInvites())
                         .append("\n")
                 }
             }
@@ -90,12 +99,12 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliasWrapper.clear(context.authorId, cmdPath)
 
             val cmdId = cmdPath.split(".")[0].toInt()
-            val rootCmd = context.commandList.first { it.id == cmdId }
+            val rootCmd = context.commandList.firstOrNull { it.id == cmdId }
             val idLessCmd = cmdPath.removePrefix("$cmdId")
 
             val msg = context.getTranslation("$root.cleared")
                 .withVariable("amount", amount)
-                .withVariable("cmd", rootCmd.name + idLessCmd.replace(".", " "))
+                .withVariable("cmd", (rootCmd?.name ?: "(deleted command)") + idLessCmd.replace(".", " "))
             sendRsp(context, msg)
         }
     }
@@ -174,7 +183,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 2)  {
+            if (context.args.size < 2) {
                 sendSyntax(context)
                 return
             }
@@ -220,6 +229,20 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
                 sendRsp(context, msg)
                 return
             }
+            if (total >= TOTAL_ALIASES_LIMIT && !isPremiumGuild(context)) {
+                val replaceMap = mapOf(
+                    Pair("limit", "$TOTAL_ALIASES_LIMIT"),
+                    Pair("premiumLimit", "$PREMIUM_TOTAL_ALIASES_LIMIT")
+                )
+
+                sendFeatureRequiresGuildPremiumMessage(context, ALIASES_TOTAL_LIMIT_PATH, replaceMap)
+                return
+            } else if (total >= PREMIUM_TOTAL_ALIASES_LIMIT) {
+                val msg = context.getTranslation("$root.limit.total")
+                    .withVariable("limit", "$PREMIUM_TOTAL_ALIASES_LIMIT")
+                sendRsp(context, msg)
+                return
+            }
 
             val pathInfo = getCommandPathInfo(context, 0) ?: return
             val alias = getStringFromArgsNMessage(
@@ -228,10 +251,17 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             ) ?: return
 
             val cmdTotal = (aliases[pathInfo.fullPath] ?: emptyList()).size
-            if (cmdTotal >= CMD_ALIASES_LIMIT) {
-                val msg = context.getTranslation("$root.limit.cmd")
-                    .withVariable("limit", "$CMD_ALIASES_LIMIT")
+            if (cmdTotal >= CMD_ALIASES_LIMIT && !isPremiumGuild(context)) {
+                val replaceMap = mapOf(
+                    Pair("limit", "$CMD_ALIASES_LIMIT"),
+                    Pair("premiumLimit", "$PREMIUM_CMD_ALIASES_LIMIT")
+                )
 
+                sendFeatureRequiresGuildPremiumMessage(context, ALIASES_CMD_LIMIT_PATH, replaceMap)
+                return
+            } else if (cmdTotal >= PREMIUM_CMD_ALIASES_LIMIT) {
+                val msg = context.getTranslation("$root.limit.cmd")
+                    .withVariable("limit", "$PREMIUM_CMD_ALIASES_LIMIT")
                 sendRsp(context, msg)
                 return
             }
