@@ -90,7 +90,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
                 .sorted()
 
             val index = getIntegerFromArgNMessage(context, 0, 1, commandKeys.size) ?: return
-            val cmdPath = commandKeys[index]
+            val cmdPath = commandKeys[index - 1]
             val amount = aliasMap[cmdPath]?.size ?: 0
 
             context.daoManager.aliasWrapper.clear(context.guildId, cmdPath)
@@ -158,7 +158,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             }
 
             val index = getIntegerFromArgNMessage(context, 1, 1, aliases.size) ?: return
-            val alias = aliases[index]
+            val alias = aliases[index - 1]
 
             context.daoManager.aliasWrapper.remove(context.guildId, pathInfo.fullPath, alias)
 

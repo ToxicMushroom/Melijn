@@ -13,10 +13,10 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
-const val PREMIUM_TOTAL_ALIASES_LIMIT = 2 // 75
+const val PREMIUM_TOTAL_ALIASES_LIMIT = 75
 const val PREMIUM_CMD_ALIASES_LIMIT = 5
 
-const val TOTAL_ALIASES_LIMIT = 1 // 20
+const val TOTAL_ALIASES_LIMIT = 20
 const val CMD_ALIASES_LIMIT = 3
 
 class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
