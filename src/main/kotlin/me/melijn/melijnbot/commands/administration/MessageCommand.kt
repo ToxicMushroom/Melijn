@@ -2,12 +2,12 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.database.HIGHER_CACHE
-import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
@@ -137,7 +137,7 @@ class MessageCommand : AbstractCommand("command.message") {
                 }
             }
 
-            inner class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeAt") {
+            inner class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
 
                 init {
                     name = "removeAt"
@@ -532,7 +532,7 @@ class MessageCommand : AbstractCommand("command.message") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            val messages = context.daoManager.messageWrapper.getMessages(context.guildId)
+            val messages = context.daoManager.messageWrapper.getMessages(context.guildId).sorted()
             val index = getIntegerFromArgNMessage(context, 0, 1, messages.size) ?: return
             val msgName = messages[index - 1]
             context.daoManager.messageWrapper.removeMessage(context.guildId, msgName)
@@ -579,10 +579,15 @@ class MessageCommand : AbstractCommand("command.message") {
         override suspend fun execute(context: ICommandContext) {
             val msgName = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
             val messages = context.daoManager.messageWrapper.getMessages(context.guildId)
-            val match = messages.firstOrNull { it.equals(msgName, true) }
+            var match = messages.firstOrNull { it.equals(msgName, true) }
+            val index = msgName.toIntOrNull()
+            if (index != null && index > 0 && index <= messages.size) {
+                match = messages.sorted()[index - 1]
+            }
+
             if (match != null) {
                 val guildId = context.guildId
-                context.daoManager.driverManager.setCacheEntry("selectedMessage:$guildId", msgName, HIGHER_CACHE)
+                context.daoManager.driverManager.setCacheEntry("selectedMessage:$guildId", match, HIGHER_CACHE)
                 val msg = context.getTranslation("$root.selected")
                     .withSafeVariable("msgName", match)
                 sendRsp(context, msg)
@@ -628,7 +633,7 @@ class MessageCommand : AbstractCommand("command.message") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            val messages = context.daoManager.messageWrapper.getMessages(context.guildId)
+            val messages = context.daoManager.messageWrapper.getMessages(context.guildId).sorted()
             if (messages.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
                     .withSafeVarInCodeblock(PLACEHOLDER_PREFIX, context.usedPrefix)
