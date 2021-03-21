@@ -504,7 +504,7 @@ object MessageUtil {
         val arg = context.rawArg
         val authorName = message.embed?.author?.name
         val authorUrl = message.embed?.author?.url
-        val eb = EmbedBuilder(message.embed)
+        val eb = EmbedEditor(message.embed)
         val attachments = context.message.attachments
         val user = retrieveUserByArgsN(context, 0)
 
@@ -559,7 +559,7 @@ object MessageUtil {
         msgName: String
     ) {
         val arg = context.rawArg
-        val eb = EmbedBuilder(message.embed)
+        val eb = EmbedEditor(message.embed)
         val attachments = context.message.attachments
         val user = retrieveUserByArgsN(context, 0)
 
@@ -634,7 +634,7 @@ object MessageUtil {
     private suspend fun setEmbedFooterAndMessage(context: ICommandContext, message: ModularMessage, msgName: String) {
         val arg = context.rawArg
         val footerIconUrl = message.embed?.footer?.iconUrl
-        val eb = EmbedBuilder(message.embed)
+        val eb = EmbedEditor(message.embed)
 
         val msg = if (arg.equals("null", true)) {
             eb.setFooter(null, footerIconUrl)
@@ -657,7 +657,7 @@ object MessageUtil {
     ) {
         val arg = context.rawArg
         val footer = message.embed?.footer?.text
-        val eb = EmbedBuilder(message.embed)
+        val eb = EmbedEditor(message.embed)
         val attachments = context.message.attachments
         val user = retrieveUserByArgsN(context, 0)
 
