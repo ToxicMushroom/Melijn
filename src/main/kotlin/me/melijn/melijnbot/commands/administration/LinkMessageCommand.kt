@@ -109,7 +109,7 @@ class LinkMessageCommand : AbstractCommand("command.linkmessage") {
     private suspend fun displayLinks(context: ICommandContext, logChannelTypes: List<MessageType>) {
         val daoManager = context.daoManager
         val title = context.getTranslation("$root.show.multiple")
-            .withVariable("msgCount", logChannelTypes.size.toString())
+            .withVariable("messageCount", logChannelTypes.size.toString())
             .withSafeVariable("messageType", context.args[0])
 
         val lines = emptyList<String>().toMutableList()
