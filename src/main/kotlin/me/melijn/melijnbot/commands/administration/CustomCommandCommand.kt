@@ -195,7 +195,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
             var msgName = context.fullArg.removeFirst(name).trim()
-            if (msgName.isBlank()) msgName = "nameplaceholder"
+            msgName = if (msgName.isBlank()) "nameplaceholder"
+            else getStringFromArgsNMessage(context, 1, 1, 64) ?: return
 
             val cc = CustomCommand(0, name, msgName)
 
