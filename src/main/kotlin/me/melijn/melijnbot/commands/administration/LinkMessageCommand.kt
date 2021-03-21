@@ -116,7 +116,7 @@ class LinkMessageCommand : AbstractCommand("command.linkmessage") {
 
         for (type in logChannelTypes) {
             val msgName = context.guild.getAndVerifyMsgName(daoManager, type)
-            lines += "${type.text}: " + (msgName ?: "/")
+            lines += "${type.text}: " + (msgName?.let { "**${it}**" } ?: "/")
         }
 
         val content = lines.joinToString(separator = "\n", prefix = "\n")
@@ -140,7 +140,6 @@ class LinkMessageCommand : AbstractCommand("command.linkmessage") {
         } else {
             val msgName = getMsgNameFromArgsNMessage(context, 1) ?: return
             daoWrapper.setMessages(context.guildId, messageTypes, msgName)
-
 
             context.getTranslation("$root.set.multiple")
                 .withVariable("messageCount", messageTypes.size)
