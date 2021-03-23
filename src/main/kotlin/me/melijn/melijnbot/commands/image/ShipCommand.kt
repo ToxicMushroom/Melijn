@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.image
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveMemberByArgsNMessage
@@ -23,6 +24,7 @@ class ShipCommand : AbstractCommand("command.ship") {
         id = 229
         name = "ship"
         aliases = arrayOf("loveCalc", "calcLove")
+        runConditions = arrayOf(RunCondition.GUILD)
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
