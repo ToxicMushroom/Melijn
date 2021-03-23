@@ -25,6 +25,7 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
         arrayOf("deleted-messages", "deleted-message", "sdm", "self-deleted-messages", "sdmlc")
     ),
     PURGED_MESSAGE("Purged-Message", arrayOf("deleted-messages", "deleted-message", "pm", "purged-messages", "pmlc")),
+    BULK_DELETED_MESSAGE("Bulk-Deleted-Message", arrayOf("deleted-messages", "deleted-message", "bdm", "bulk-deleted-messages", "bdmlc")),
     FILTERED_MESSAGE(
         "Filtered-Message",
         arrayOf("deleted-messages", "deleted-message", "fm", "filtered-messages", "fmlc")

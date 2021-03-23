@@ -58,6 +58,28 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
             (System.currentTimeMillis() - 86_400_000 * 7)
         )
     }
+
+    suspend fun getMany(map: List<Long>): List<DaoMessage> = suspendCoroutine {
+        if (map.isEmpty()) {
+            it.resume(emptyList())
+            return@suspendCoroutine
+        }
+        val clause = map.joinToString(", ") { "?" }
+        val list = mutableListOf<DaoMessage>()
+        driverManager.executeQueryList("SELECT * FROM $table WHERE messageId IN ($clause)", { rs ->
+            while (rs.next()) {
+                list.add(DaoMessage(
+                    rs.getLong("guildId"),
+                    rs.getLong("textChannelId"),
+                    rs.getLong("authorId"),
+                    rs.getLong("messageId"),
+                    rs.getString(   "content"),
+                    rs.getLong("moment")
+                ))
+            }
+            it.resume(list)
+        }, map)
+    }
 }
 
 data class DaoMessage(

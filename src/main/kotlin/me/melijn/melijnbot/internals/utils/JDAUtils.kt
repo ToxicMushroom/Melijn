@@ -716,6 +716,7 @@ suspend fun retrieveMemberByArgsNMessage(
     interactable: Boolean = false,
     botAllowed: Boolean = true
 ): Member? {
+    if (!context.isFromGuild) throw IllegalStateException("Trying to get members in dms")
     if (argSizeCheckFailed(context, index)) return null
     val user = retrieveUserByArgsN(context, index)
     val member =

@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.awaitAll
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.games.RockPaperScissorsCommand
 import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
@@ -201,24 +201,29 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         }
     }
 
-    suspend fun shouldLogBots(guildId: Long): Boolean {
-        return container.daoManager.supporterWrapper.getGuilds().contains(guildId) &&
-            container.daoManager.botLogStateWrapper.shouldLog(guildId)
+    private suspend fun shouldLogBots(guildId: Long): Boolean {
+        val daoManager = container.daoManager
+        return isPremiumGuild(daoManager, guildId) &&
+            daoManager.botLogStateWrapper.shouldLog(guildId)
     }
 
     private suspend fun handleMessageReceivedStoring(event: GuildMessageReceivedEvent) {
-        if (event.author.isBot && event.author.idLong != container.settings.botInfo.id && shouldLogBots(event.guild.idLong)) return
+        if (event.author.isBot && event.author.idLong != container.settings.botInfo.id && !shouldLogBots(event.guild.idLong)) return
         val guildId = event.guild.idLong
         val daoManager = container.daoManager
-        val logChannelWrapper = daoManager.logChannelWrapper
-
-        val odmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.OTHER_DELETED_MESSAGE) }
-        val sdmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.SELF_DELETED_MESSAGE) }
-        val pmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.PURGED_MESSAGE) }
-        val fmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.FILTERED_MESSAGE) }
-        val emId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.EDITED_MESSAGE) }
-        if (odmId.await() == -1L && sdmId.await() == -1L && pmId.await() == -1L && fmId.await() == -1L && emId.await() == -1L) return
-
+        if (awaitAll(
+                channelIdByTypeAsync(guildId, LogChannelType.OTHER_DELETED_MESSAGE),
+                channelIdByTypeAsync(guildId, LogChannelType.SELF_DELETED_MESSAGE),
+                channelIdByTypeAsync(guildId, LogChannelType.PURGED_MESSAGE),
+                channelIdByTypeAsync(guildId, LogChannelType.FILTERED_MESSAGE),
+                channelIdByTypeAsync(guildId, LogChannelType.EDITED_MESSAGE),
+                channelIdByTypeAsync(guildId, LogChannelType.BULK_DELETED_MESSAGE)
+            ).all {
+                it == -1L
+            }
+        ) {
+            return
+        }
 
         val messageWrapper = daoManager.messageHistoryWrapper
         var content = event.message.contentRaw
@@ -237,6 +242,12 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                     event.message.timeCreated.toInstant().toEpochMilli()
                 )
             )
+        }
+    }
+
+    private suspend fun channelIdByTypeAsync(guildId: Long, channelType: LogChannelType): Deferred<Long> {
+        return TaskManager.taskValueAsync {
+            container.daoManager.logChannelWrapper.getChannelId(guildId, channelType)
         }
     }
 

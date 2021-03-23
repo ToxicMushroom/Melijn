@@ -202,6 +202,19 @@ class DriverManager(
      *   resultset: Consumer object to handle the resultset
      * **/
     fun executeQuery(query: String, resultset: (ResultSet) -> Unit, vararg objects: Any?) {
+        executeQueryList(query, resultset, objects.toList())
+    }
+
+    /**
+     * [query] the sql query that needs execution
+     * [resultset] The consumer that will contain the resultset after executing the query
+     * [objects] the arguments of the query
+     * example:
+     *   query: "SELECT * FROM apples WHERE id = ?"
+     *   objects: 5
+     *   resultset: Consumer object to handle the resultset
+     * **/
+    fun executeQueryList(query: String, resultset: (ResultSet) -> Unit, objects: List<Any?>) {
         try {
             getUsableConnection { connection ->
                 if (connection.isClosed) {

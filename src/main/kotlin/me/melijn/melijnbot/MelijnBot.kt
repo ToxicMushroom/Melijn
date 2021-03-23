@@ -77,6 +77,7 @@ class MelijnBot {
             .setStatus(OnlineStatus.IDLE)
             .setAutoReconnect(true)
             .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY)
+            .setBulkDeleteSplittingEnabled(false)
             .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }
             .setGatewayEncoding(GatewayEncoding.ETF)

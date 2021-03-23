@@ -17,4 +17,8 @@ class MessageHistoryWrapper(private val messageHistoryDao: MessageHistoryDao) {
     fun clearOldMessages() {
         messageHistoryDao.clearOldMessages()
     }
+
+    suspend fun getMessagesByIds(map: List<Long>): List<DaoMessage> {
+        return messageHistoryDao.getMany(map)
+    }
 }

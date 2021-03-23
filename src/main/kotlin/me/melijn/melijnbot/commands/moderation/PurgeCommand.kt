@@ -98,8 +98,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
                             silentPruneName,
                             true
                         )
-                    )
-                        sendMsgAwaitEL(context, msg).firstOrNull()?.delete()?.queueAfter(5, TimeUnit.SECONDS)
+                    ) sendMsgAwaitEL(context, msg).firstOrNull()?.delete()?.queueAfter(5, TimeUnit.SECONDS)
 
                     if (messages.isNotEmpty()) {
                         LogUtils.sendPurgeLog(context, messages)
