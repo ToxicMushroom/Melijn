@@ -59,7 +59,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation("net.dv8tion:JDA:4.2.0_244") {
+    implementation("net.dv8tion:JDA:4.2.0_247") {
         exclude("opus-java")
     }
 
@@ -139,7 +139,7 @@ dependencies {
     implementation("com.apollographql.apollo:apollo-coroutines-support:2.5.2")
 
     // implementation("com.github.husnjak:IGDB-API-JVM:0.7")
-    implementation("io.lettuce:lettuce-core:5.3.6.RELEASE")
+    implementation("io.lettuce:lettuce-core:6.0.3.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
