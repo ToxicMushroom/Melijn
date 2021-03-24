@@ -4,6 +4,7 @@ package me.melijn.melijnbot.internals.web
 import com.apollographql.apollo.ApolloClient
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
+import io.ktor.client.features.*
 import io.ktor.client.features.json.*
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.web.bins.BinApis
@@ -26,6 +27,9 @@ class WebManager(val settings: Settings) {
         install(JsonFeature) {
             serializer = JacksonSerializer()
         }
+        install(UserAgent) {
+            agent = "Melijn / 2.0.8 Discord bot"
+        }
     }
     val proxiedHttpClient = HttpClient(OkHttp) {
         expectSuccess = false
@@ -34,6 +38,9 @@ class WebManager(val settings: Settings) {
             val client = cb.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress(settings.proxy.host, settings.proxy.port)))
                 .build()
             this.preconfigured = client
+        }
+        install(UserAgent) {
+            agent = "Melijn / 2.0.8 Discord bot"
         }
     }
     val aniListApolloClient: ApolloClient = ApolloClient.builder()
