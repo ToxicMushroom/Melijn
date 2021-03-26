@@ -3,7 +3,6 @@ package me.melijn.melijnbot
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.enums.RoleUpdateCause
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.embed.Embedder
@@ -26,10 +25,6 @@ class Container {
 
     var voteReq: Boolean = true
     var logToDiscord: Boolean = true
-
-    // userId, roleId, cause
-    val roleAddedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
-    val roleRemovedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
 
     //millis, info
     val paginationMap = mutableMapOf<Long, PaginationInfo>()
