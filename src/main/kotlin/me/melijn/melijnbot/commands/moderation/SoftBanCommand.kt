@@ -209,7 +209,7 @@ fun getSoftBanMessage(
 
     val author = i18n.getTranslation(language, "message.punishment.softban.author")
         .withSafeVariable(PLACEHOLDER_USER, softBanAuthor.asTag)
-        .withVariable("spaces", " ".repeat(45).substring(0, 45 - softBanAuthor.name.length) + "\u200B")
+        .withVariable("spaces", getAtLeastNCodePointsAfterName(softBanAuthor) + "\u200B")
 
     return EmbedBuilder()
         .setAuthor(author, null, softBanAuthor.effectiveAvatarUrl)

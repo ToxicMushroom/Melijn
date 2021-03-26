@@ -181,7 +181,7 @@ fun getKickMessage(
 
     val author = i18n.getTranslation(language, "message.punishment.kick.author")
         .withSafeVariable(PLACEHOLDER_USER, kickAuthor.asTag)
-        .withVariable("spaces", " ".repeat(45).substring(0, 45 - kickAuthor.name.length) + "\u200B")
+        .withVariable("spaces", getAtLeastNCodePointsAfterName(kickAuthor) + "\u200B")
 
     return EmbedBuilder()
         .setAuthor(author, null, kickAuthor.effectiveAvatarUrl)

@@ -237,7 +237,7 @@ fun getMuteMessage(
 
     val author = i18n.getTranslation(language, "message.punishment.mute.author")
         .withSafeVariable(PLACEHOLDER_USER, muteAuthor.asTag)
-        .withVariable("spaces", " ".repeat(45).substring(0, 45 - muteAuthor.name.length) + "\u200B")
+        .withVariable("spaces", getAtLeastNCodePointsAfterName(muteAuthor) + "\u200B")
 
     return EmbedBuilder()
         .setAuthor(author, null, muteAuthor.effectiveAvatarUrl)
