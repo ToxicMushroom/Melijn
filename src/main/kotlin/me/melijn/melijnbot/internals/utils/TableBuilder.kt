@@ -73,8 +73,8 @@ class TableBuilder {
 
     private fun findWidest(vararg rowElements: Cell) {
         for ((temp, s) in rowElements.withIndex()) {
-            if (columnWidth.getOrDefault(temp, 0) < s.value.length) {
-                columnWidth[temp] = s.value.length
+            if (columnWidth.getOrDefault(temp, 0) < s.value.codePoints().count()) {
+                columnWidth[temp] = s.value.codePoints().count().toInt()
             }
         }
     }
