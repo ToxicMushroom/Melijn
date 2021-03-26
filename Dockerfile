@@ -10,7 +10,7 @@ FROM openjdk:15-jdk
 WORKDIR /opt/melijn
 COPY --from=builder ./etc/melijn/build/libs/ .
 ENTRYPOINT java \
-    -Xmx3000M \
+    -Xmx${RAM_LIMIT} \
     -Dkotlin.script.classpath="/opt/melijn/melijn.jar" \
     -jar \
     ./melijn.jar
