@@ -292,15 +292,14 @@ object MessageUtil {
 
         modularMessage.attachments = attachments.toMap()
 
-        val msg =
-            if (file == null) {
-                context.getTranslation("message.attachments.remove.notanattachment")
-                    .withVariable("prefix", context.usedPrefix)
-            } else {
-                context.getTranslation("message.attachments.remove.success")
-                    .withVariable("file", file)
-            }.withVariable(PLACEHOLDER_ARG, context.args[0])
-                .withVariable(PLACEHOLDER_TYPE, msgName)
+        val msg = if (file == null) {
+            context.getTranslation("message.attachments.remove.notanattachment")
+                .withVariable("prefix", context.usedPrefix)
+        } else {
+            context.getTranslation("message.attachments.remove.success")
+                .withVariable("file", file)
+        }.withVariable(PLACEHOLDER_ARG, context.args[0])
+            .withVariable(PLACEHOLDER_TYPE, msgName)
 
         sendRsp(context, msg)
     }
@@ -322,7 +321,7 @@ object MessageUtil {
     ) {
         val entries = modularMessage.attachments.entries.withIndex().sortedBy { it.index }
         val index = getIntegerFromArgNMessage(context, 0, 1, entries.size) ?: return
-        val (url, name) = entries.first { it.index == index }.value
+        val (url, name) = entries.first { it.index == (index-1) }.value
         val attachments = modularMessage.attachments.toMutableMap()
         attachments.remove(url)
         modularMessage.attachments = attachments.toMap()
