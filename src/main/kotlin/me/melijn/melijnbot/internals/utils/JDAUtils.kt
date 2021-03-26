@@ -154,7 +154,7 @@ fun getUserByTag(shardManager: ShardManager, arg: String): User? {
     val discriminator = arg.takeLast(4)
     val name = arg.dropLast(5)
     return shardManager.userCache.firstOrNull { user ->
-        user.discriminator == discriminator ||
+        user.discriminator == discriminator &&
             user.name == name
     }
 }
