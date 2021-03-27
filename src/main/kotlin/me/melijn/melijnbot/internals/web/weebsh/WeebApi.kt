@@ -5,6 +5,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.future.await
 import me.duncte123.weebJava.WeebApiBuilder
+import me.duncte123.weebJava.configs.ImageConfig
 import me.duncte123.weebJava.models.WeebApi
 import me.duncte123.weebJava.types.NSFWMode
 import me.duncte123.weebJava.types.TokenType
@@ -57,7 +58,11 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
             false -> NSFWMode.DISALLOW_NSFW
         }
         return try {
-            weebshApi.getRandomImage(type, nsfwMode).submit().await()?.url
+            val imgConfig = ImageConfig.Builder()
+                .setType(type)
+                .setNsfwMode(nsfwMode)
+                .build()
+            weebshApi.getRandomImage(imgConfig).submit().await()?.url
         } catch (t: Throwable) {
             null
         }

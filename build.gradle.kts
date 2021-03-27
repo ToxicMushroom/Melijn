@@ -49,17 +49,22 @@ configure<ApolloExtension> {
 
 
 repositories {
-    jcenter()
-    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
-    maven { url = uri("https://jitpack.io") }
+    maven {
+        url = uri("https://m2.dv8tion.net/releases")
+        name = "m2-dv8tion"
+    }
+    maven("https://duncte123.jfrog.io/artifactory/maven/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://jitpack.io")
     mavenCentral()
     mavenLocal()
+    jcenter()
 }
 
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation("net.dv8tion:JDA:4.2.0_247") {
+    implementation("net.dv8tion:JDA:4.2.0_250") {
         exclude("opus-java")
     }
 
@@ -96,7 +101,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.3")
 
     // https://bintray.com/duncte123/weeb.java/weeb.java
-    implementation("me.duncte123:weebJava:2.2.0_29")
+    implementation("me.duncte123:weebJava:3.0.1_3")
+    implementation("me.duncte123:reliqua:2.5.1")
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
     implementation("se.michaelthelin.spotify:spotify-web-api-java:6.5.2")
