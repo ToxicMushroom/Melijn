@@ -126,7 +126,14 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             // CC Finder
             findCustomCommands(ccsWithPrefix, commandParts, true, spaceMap, ccsWithPrefixMatches)
 
-            var command = commandMap[commandParts[1].toLowerCase()]
+            // If the command is disabled we will act like it doesn't exist.
+            // This way aliases can take over on disabled commands
+            var command = commandMap[commandParts[1].toLowerCase()]?.let {
+                if (event.isFromGuild && commandIsDisabled(container.daoManager, it.id.toString(), message)) null
+                else it
+            }
+
+
             val aliasesMap = mutableMapOf<String, List<String>>()
             var searchedAliases = false
             if (command == null) {
@@ -393,7 +400,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 spaceMap,
                 aliasesMap,
                 searchedAliases,
-                contentRaw = ">" + invoke + filledArgs.joinToString(" ", " ")
+                contentRaw = ">" + invoke + filledArgs.joinToString("\" \"", " ")
+
             )
             finalCommand.run(scriptCmd)
             delay(1000)
