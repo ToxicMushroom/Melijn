@@ -250,46 +250,54 @@ fun getStateFromMap(
     cPermState: PermState
 ): PermState {
     var nPermState = cPermState
+    var level = 0
     for ((rolePerm, state) in permMap) {
-        val getSuitableResult = when (state) {
-            PermState.ALLOW -> PermState.ALLOW
-            PermState.DENY -> if (nPermState == PermState.DEFAULT) PermState.DENY else nPermState
-            else -> nPermState
+        if (state == PermState.DEFAULT) continue
+
+        val pair = getStateFromEntry(rolePerm, lPermission, state, commands) ?: continue
+        if (pair.second > level) {
+            nPermState = pair.first
+            level = pair.second
         }
-        if (rolePerm.last() == '*' && (lPermission.length > rolePerm.length || lPermission.length == rolePerm.length - 2)) { // rolePerm.* and rolePerm.something > 9
-            if (rolePerm == "*") {
-                nPermState = getSuitableResult
-                break
-            } else {
-                val begin = rolePerm.dropLast(2)
-                if (lPermission.startsWith(begin, true)) {
-                    nPermState = getSuitableResult
-                    break
-                }
-            }
+    }
+    return nPermState
+}
+
+private fun getStateFromEntry(
+    rolePerm: String,
+    lPermission: String,
+    state: PermState,
+    commands: Set<AbstractCommand>
+): Pair<PermState, Int>? {
+    if (rolePerm.last() == '*' && (lPermission.length > rolePerm.length || lPermission.length == rolePerm.length - 2)) { // rolePerm.* and rolePerm.something > 9
+        if (rolePerm == "*") {
+            return state to 1
         } else {
-            if (lPermission == rolePerm) {
-                nPermState = getSuitableResult
-                break
-            } else {
-                val category = try {
-                    CommandCategory.valueOf(rolePerm.toUpperCase())
-                } catch (t: Throwable) {
-                    null
-                }
-                if (category != null) {
-                    if (commands.firstOrNull { cmd ->
-                            val permPart = lPermission.takeWhile { it != '.' }
-                            permPart.equals(cmd.name, true)
-                        }?.commandCategory == category) {
-                        nPermState = getSuitableResult
-                        break
-                    }
+            val begin = rolePerm.dropLast(2)
+            if (lPermission.startsWith(begin, true)) {
+                return state to 3
+            }
+        }
+    } else {
+        if (lPermission == rolePerm) {
+            return state to 4
+        } else {
+            val category = try {
+                CommandCategory.valueOf(rolePerm.toUpperCase())
+            } catch (t: Throwable) {
+                null
+            }
+            if (category != null) {
+                if (commands.firstOrNull { cmd ->
+                        val permPart = lPermission.takeWhile { it != '.' }
+                        permPart.equals(cmd.name, true)
+                    }?.commandCategory == category) {
+                    return state to 2
                 }
             }
         }
     }
-    return nPermState
+    return null
 }
 
 
