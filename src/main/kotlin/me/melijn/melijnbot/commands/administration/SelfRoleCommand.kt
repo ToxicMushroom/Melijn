@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
@@ -1152,7 +1153,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             } else {
                 context.getTranslation("$root.empty")
             }
-            sendRsp(context, msg)
+            sendRspCodeBlock(context, msg, "INI")
         }
     }
 }
