@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.administration
 
+import me.melijn.melijnbot.enums.PatternPermission
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -105,7 +106,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val user = retrieveUserByArgsNMessage(context, 0) ?: return
-                val permissionNode = if (context.args.size > 1) context.args[1] else "*"
+                val permissionNode = if (context.args.size > 1) context.args[1].toLowerCase() else "*"
                 val title = context.getTranslation("$root.response1.title")
                     .withVariable(PLACEHOLDER_USER, user.asTag)
                     .withVariable("permissionNode", permissionNode)
@@ -233,7 +234,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     return
                 }
 
-                val permissionNode = if (context.args.size > 1) context.args[1] else "*"
+                val permissionNode = if (context.args.size > 1) context.args[1].toLowerCase() else "*"
                 val role = getRoleByArgsNMessage(context, 0) ?: return
 
                 val title = context.getTranslation("$root.response1.title")
@@ -381,7 +382,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         return
                     }
 
-                    val permissionNode = if (context.args.size > 2) context.args[2] else "*"
+                    val permissionNode = if (context.args.size > 2) context.args[2].toLowerCase() else "*"
 
                     val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                     val role = getRoleByArgsNMessage(context, 1) ?: return
@@ -521,7 +522,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         return
                     }
 
-                    val permissionNode = if (context.args.size > 2) context.args[2] else "*"
+                    val permissionNode = if (context.args.size > 2) context.args[2].toLowerCase() else "*"
 
                     val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                     val user = retrieveUserByArgsNMessage(context, 1) ?: return
@@ -1136,10 +1137,10 @@ class PermissionCommand : AbstractCommand("command.permission") {
 }
 
 /**
- * permMap: map with permission nodes mapped to states (can be for user, userchannel, role, rolechannel)
- * lPermission: lowercase permission node to check
- * cPermState: current permission state
- * returns: new permission state or the cPermState depending on if arguments supplied
+ * @param granted lowercase granted permission
+ * @param toCheck lowercase permission node to check
+ * @param commands Set<AbstractCommand> set of commands, used to check when a category is [granted] that [toCheck] falls within that category
+ * @return wether or not the toCheck permission falls within the granted spec
  */
 fun nodeGrantsPerm(
     granted: String,
@@ -1176,25 +1177,38 @@ fun nodeGrantsPerm(
 }
 
 
-// <count, compactPermissionNodes>
+/**
+ * @param context ICommandContext
+ * @param args List<String> a list of user-input strings (each possibly a valid permission node)
+ * @return Pair? {
+ *   first = total permission matches for all of the arguments in [args]
+ *   second = List of [args] but lowercased
+ * } (null when one of the strings in [args] is not a valid permission node)
+ *
+ */
 suspend fun getPermissionsFromArgsNMessage(context: ICommandContext, args: List<String>): Pair<Int, List<String>>? {
-    var i = 0
-    val list = mutableListOf<String>()
-    for (arg in args) {
-        val permissions = getPermissionsNodesFromArg(context, arg)
-        if (permissions == null) {
+    var counter = 0
+    val lowerCasedArgs = args.map { it.toLowerCase() }
+    for (arg in lowerCasedArgs) {
+        val matches = getPermissionMatchesCount(context, arg)
+        if (matches == null) {
             val msg = context.getTranslation(MESSAGE_UNKNOWN_PERMISSIONNODE)
                 .withVariable(PLACEHOLDER_ARG, arg)
             sendRsp(context, msg)
             return null
         }
-        i += permissions.first
-        list.add(permissions.second)
+        counter += matches
     }
-    return i to list
+    return counter to lowerCasedArgs
 }
 
-fun getPermissionsNodesFromArg(context: ICommandContext, arg: String): Pair<Int, String>? {
+/**
+ * @param context ICommandContext
+ * @param arg expects a lowercase string (preferably a valid permission node)
+ * @return the amount of permission nodes + permission patterns [arg] matches
+ *  (null when the argument matches 0 permission nodes or patterns)
+ */
+fun getPermissionMatchesCount(context: ICommandContext, arg: String): Int? {
     val category: CommandCategory? = enumValueOrNull(arg)
     val permParts = arg.split(".")
 
@@ -1220,22 +1234,23 @@ fun getPermissionsNodesFromArg(context: ICommandContext, arg: String): Pair<Int,
         else -> Pattern.quote(arg).toRegex(RegexOption.IGNORE_CASE)
     }
 
-    val perms = getPermissions(commands)
+    var perms = getPermissions(commands)
         .filter { perm ->
             perm.matches(regex)
-        }.toMutableList()
+        }.size
 
     val extraNodes = SpecialPermission.values()
         .filter { perm -> regex.matches(perm.node) }
-        .map { perm -> perm.node.toLowerCase() }
-    perms.addAll(extraNodes)
+        .map { perm -> perm.node }
+    perms += extraNodes.size
 
-    val matcher = ccTagPattern.matcher(arg)
-    if (perms.isEmpty() && matcher.matches()) {
-        perms.add(arg.toLowerCase())
+    for (pattern in PatternPermission.values()) {
+        if (pattern.pattern.matches(arg)) {
+            perms += 1
+        }
     }
 
-    return if (perms.isEmpty()) null else perms.size to arg
+    return if (perms == 0) null else perms
 }
 
 fun getPermissions(commands: Collection<AbstractCommand>, prefix: String = ""): List<String> {

@@ -1,18 +1,16 @@
 package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.database.role.SelfRoleGroup
-import me.melijn.melijnbot.internals.command.AbstractCommand
-import me.melijn.melijnbot.internals.command.CommandCategory
-import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.command.RunCondition
-import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.internals.utils.asTag
+import me.melijn.melijnbot.internals.command.*
+import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.getRoleByArgsNMessage
+import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Role
 
 class IAmNotCommand : AbstractCommand("command.iamnot") {
@@ -20,6 +18,7 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
     init {
         id = 210
         name = "iamNot"
+        discordPermissions = arrayOf(Permission.MANAGE_ROLES)
         runConditions = arrayOf(RunCondition.GUILD)
         commandCategory = CommandCategory.UTILITY
     }
@@ -40,6 +39,7 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
             val selfRoleGroups = context.daoManager.selfRoleGroupWrapper.getMap(context.guildId)
             var noMatchReason = ""
             var foundMatch = false
+            var emoteji: String? = null
             var group: SelfRoleGroup? = null
             for ((groupName, selfRoles) in selfRolesGrouped) {
                 val selfRoleGroup = selfRoleGroups.firstOrNull { it.groupName == groupName }
@@ -50,6 +50,7 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
 
                 for (selfRoleIndex in 0 until selfRoles.length()) {
                     val selfRole = selfRoles.getArray(selfRoleIndex)
+                    val selfRoleEmoteji = selfRole.getString(1)
                     val rolesArray = selfRole.getArray(2)
                     if (rolesArray.length() > 1) {
                         noMatchReason = "nocomplexroles"
@@ -60,6 +61,7 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
                         val roleId = chanceRole.getLong(1)
                         if (roleId == role.idLong) {
                             foundMatch = true
+                            emoteji = selfRoleEmoteji
                             group = selfRoleGroup
                             break
                         }
@@ -72,7 +74,7 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
                 noMatchReason = "notfound"
             }
 
-            if (foundMatch && group != null) {
+            if (foundMatch && group != null && emoteji != null) {
                 if (add && group.limitToOneRole) {
                     val data = selfRolesGrouped[group.groupName] ?: return
                     for (entryIndex in 0 until data.length()) {
@@ -97,10 +99,24 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
                     }
                 }
 
-                if (!context.selfMember.canInteract(context.member)) {
-                    val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                        .withVariable(PLACEHOLDER_USER, context.member.asTag)
+                if (!context.selfMember.canInteract(role)) {
+                    val msg = context.getTranslation(MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
+                        .withVariable(PLACEHOLDER_ROLE, role.name)
                     sendRsp(context, msg)
+                    return
+                }
+
+                val permission = "rr.${group.groupName}.$emoteji"
+                val hasPermission = hasPermission(
+                    context.container,
+                    context.member,
+                    context.textChannel,
+                    permission,
+                    null,
+                    group.requiresPermission
+                )
+                if (!hasPermission) {
+                    sendMissingPermissionMessage(context, permission)
                     return
                 }
                 val msg = try {
@@ -121,7 +137,7 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
             } else {
                 val msg = context.getTranslation("$root.$noMatchReason")
                     .withVariable("prefix", context.usedPrefix)
-                    .withVariable("role", "@" + role.name)
+                    .withVariable("role", role.name)
                 sendRsp(context, msg)
             }
         }

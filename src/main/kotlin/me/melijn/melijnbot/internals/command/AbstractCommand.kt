@@ -11,6 +11,8 @@ import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.GuildChannel
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import org.slf4j.LoggerFactory
 import java.time.Instant
@@ -314,14 +316,16 @@ suspend fun hasPermission(context: ICommandContext, permission: String, required
     )
 }
 
+
+
 suspend fun hasPermission(
     container: Container,
-    message: Message,
+    member: Member,
+    channel: GuildChannel,
     permission: String,
     category: CommandCategory? = null,
     required: Boolean = false
 ): Boolean {
-    val member = message.member ?: return true
     if (member.isOwner || member.hasPermission(Permission.ADMINISTRATOR)) return true
     val guild = member.guild
     val guildId = guild.idLong
@@ -331,7 +335,7 @@ suspend fun hasPermission(
     if (container.settings.botInfo.developerIds.contains(authorId)) return true
     val commands = container.commandSet
     val daoManager = container.daoManager
-    val channelId = message.channel.idLong
+    val channelId = channel.idLong
 
     val userMap = daoManager.userPermissionWrapper.getPermMap(guildId, authorId).toSortedMap(comparator)
     val channelUserMap = daoManager.channelUserPermissionWrapper.getPermMap(channelId, authorId).toSortedMap(comparator)
@@ -381,4 +385,15 @@ suspend fun hasPermission(
     } else {
         roleResult != PermState.DENY
     }
+}
+
+suspend fun hasPermission(
+    container: Container,
+    message: Message,
+    permission: String,
+    category: CommandCategory? = null,
+    required: Boolean = false
+): Boolean {
+    val member = message.member ?: return true
+    return hasPermission(container, member, message.textChannel, permission, category, required)
 }

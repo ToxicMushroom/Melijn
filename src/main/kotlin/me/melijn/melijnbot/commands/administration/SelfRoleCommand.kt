@@ -34,10 +34,55 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             ClearArg(root),
             ListArg(root),
             GroupArg(root),
+            AddReactionsToMessage(root),
             SetGetAllRolesArg(root),
             SetNameArg(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
+    }
+
+    class AddReactionsToMessage(parent: String) : AbstractCommand("$parent.addreactionstomessage") {
+
+        init {
+            name = "addReactionsToMessage"
+            aliases = arrayOf("artm")
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            if (context.args.size < 3) {
+                sendSyntax(context)
+                return
+            }
+
+            val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+            val channel = getTextChannelByArgsNMessage(context, 1) ?: return
+            val messageId = getLongFromArgNMessage(context, 2) ?: return
+
+            val message = channel.retrieveMessageById(messageId).awaitOrNull()
+            if (message == null) {
+                sendRsp(context, "**$messageId** doesn't exist")
+                return
+            }
+
+            val selfRoles = context.daoManager.selfRoleWrapper.getMap(context.guildId)[group.groupName]
+
+            if (selfRoles == null || selfRoles.isEmpty) {
+                val msg = context.getTranslation("$root.noselfroles.forgroup")
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
+                return
+            }
+            val emotejiList = mutableListOf<String>()
+            val size = selfRoles.length()
+            for (i in 0 until size) {
+                val dataEntry = selfRoles.getArray(i)
+                val emoteji = dataEntry.getString(0)
+                emotejiList.add(emoteji)
+            }
+
+            SendGroupAutoArg.addEmotejisToMsg(emotejiList, message, context)
+            sendRsp(context, "Added **${emotejiList.size}** emotejis to the message in ${channel.asTag}")
+        }
     }
 
 
@@ -197,6 +242,25 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             aliases = arrayOf("sg", "sga")
         }
 
+        companion object {
+            fun addEmotejisToMsg(
+                emotejisForMsg: List<String>,
+                msg: Message,
+                context: ICommandContext
+            ) {
+                for (emoteji in emotejisForMsg) {
+                    val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
+                    if (isEmoji) {
+                        msg.addReaction(emoteji).queue()
+                    } else {
+                        val emote = context.guild.getEmoteById(emoteji)
+                            ?: context.shardManager.getEmoteById(emoteji)
+                        emote?.let { msg.addReaction(it).queue() }
+                    }
+                }
+            }
+        }
+
         override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
@@ -294,7 +358,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                                 .withVariable("part", part++)
                         )
                         embedder.setDescription(body)
-                        val msg = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build()).firstOrNull()
+                        val msg = sendEmbedAwaitEL(
+                            context.daoManager.embedDisabledWrapper,
+                            channel,
+                            embedder.build()
+                        ).firstOrNull()
                         if (msg != null) {
                             messages.add(msg.idLong)
                             val emotejisForMsg = emotejiList.subList(alreadyUsedEmotesAmount, index)
@@ -313,7 +381,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                             .withVariable("part", part)
                     )
                     embedder.setDescription(body)
-                    val msg = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build()).firstOrNull()
+                    val msg = sendEmbedAwaitEL(
+                        context.daoManager.embedDisabledWrapper,
+                        channel,
+                        embedder.build()
+                    ).firstOrNull()
                     if (msg != null) {
                         messages.add(msg.idLong)
                         val emotejisForMsg = emotejiList.drop(alreadyUsedEmotesAmount)
@@ -326,7 +398,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 for (entry in entries) {
                     embedder.appendDescription(entry)
                 }
-                val msg = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build()).firstOrNull()
+                val msg =
+                    sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build()).firstOrNull()
                 if (msg != null) {
                     messages.add(msg.idLong)
                     addEmotejisToMsg(emotejiList, msg, context)
@@ -345,23 +418,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
             sendRsp(context, msg)
         }
-
-        private fun addEmotejisToMsg(
-            emotejisForMsg: List<String>,
-            msg: Message,
-            context: ICommandContext
-        ) {
-            for (emoteji in emotejisForMsg) {
-                val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
-                if (isEmoji) {
-                    msg.addReaction(emoteji).queue()
-                } else {
-                    val emote = context.guild.getEmoteById(emoteji)
-                        ?: context.shardManager.getEmoteById(emoteji)
-                    emote?.let { msg.addReaction(it).queue() }
-                }
-            }
-        }
     }
 
     class GroupArg(parent: String) : AbstractCommand("$parent.group") {
@@ -376,11 +432,46 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 MessageIdsArg(root),     // Message Ids
                 SetChannel(root),
                 SetSelfRoleAbleArg(root),
+                SetRequirePermission(root),
                 SetEnabledArg(root),
                 SetLimitToOneRole(root),
                 SetPattern(root),
                 ChangeNameArg(root)
             )
+        }
+
+        class SetRequirePermission(parent: String) : AbstractCommand("$parent.setrequirepermission") {
+
+            init {
+                name = "setRequirePermission"
+                aliases = arrayOf("srp")
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val wrapper = context.daoManager.selfRoleGroupWrapper
+                val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+                if (context.args.size == 1) {
+                    val msg = context.getTranslation("$root.show." + group.limitToOneRole)
+                        .withVariable("group", group.groupName)
+                    sendRsp(context, msg)
+                    return
+                }
+
+                val bool = getBooleanFromArgNMessage(context, 1) ?: return
+                group.limitToOneRole = bool
+                wrapper.insertOrUpdate(context.guildId, group)
+
+                val msg = context.getTranslation("$root.set." + group.limitToOneRole)
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
+                return
+            }
+
         }
 
         class SetLimitToOneRole(parent: String) : AbstractCommand("$parent.setlimittoonerole") {
@@ -792,7 +883,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     isEnabled = true,
                     isSelfRoleable = true,
                     pattern = null,
-                    limitToOneRole = false
+                    limitToOneRole = false,
+                    requiresPermission = false
                 )
                 wrapper.insertOrUpdate(context.guildId, newSr)
 
@@ -883,7 +975,14 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                 selfRoleGroup1.apply {
                     val newSr = SelfRoleGroup(
-                        name, messageIds, channelId, isEnabled, pattern, isSelfRoleable, limitToOneRole
+                        name,
+                        messageIds,
+                        channelId,
+                        isEnabled,
+                        pattern,
+                        isSelfRoleable,
+                        limitToOneRole,
+                        requiresPermission
                     )
                     wrapper.delete(context.guildId, groupName)
                     wrapper.insertOrUpdate(context.guildId, newSr)
@@ -916,35 +1015,70 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 return
             }
 
+
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
 
-            val pair = getEmotejiByArgsNMessage(context, 1) ?: return
-            var rname: String? = null
-            val id = if (pair.first == null) {
-                pair.second?.let { rname = it }
-                pair.second
+            if (context.args.size == 3 || context.args.size == 4) {
+                val pair = getEmotejiByArgsNMessage(context, 1) ?: return
+                var rname: String? = null
+                val id = if (pair.first == null) {
+                    pair.second?.let { rname = it }
+                    pair.second
+                } else {
+                    pair.first?.name?.let { rname = it }
+                    pair.first?.id
+                } ?: return
+
+                val name = rname
+                require(name != null) { "what.." }
+
+                val role = getRoleByArgsNMessage(context, 2) ?: return
+                var chance = 100
+                val msg = if (context.args.size > 3) {
+                    chance = getIntegerFromArgNMessage(context, 3, 1) ?: return
+                    context.getTranslation("$root.success.chance")
+                        .withVariable("chance", "$chance")
+                } else {
+                    context.getTranslation("$root.success")
+                }.withVariable("group", group.groupName)
+                    .withVariable("emoteji", name)
+                    .withVariable(PLACEHOLDER_ROLE, role.name)
+
+                context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, chance)
+                sendRsp(context, msg)
             } else {
-                pair.first?.name?.let { rname = it }
-                pair.first?.id
-            } ?: return
+                val manyMap = context.fullArg.splitIETEL("\n").map { it.split(SPACE_PATTERN) }
+                var count = 1
+                for (entry in manyMap) {
+                    val entrySize = entry.size
+                    if (entrySize < 2) {
+                        sendSyntax(context)
+                        return
+                    }
 
-            val name = rname
-            require(name != null) { "what.." }
+                    val pair = getEmotejiByArgsNMessage(context, count++) ?: return
+                    var rname: String? = null
+                    val id = if (pair.first == null) {
+                        pair.second?.let { rname = it }
+                        pair.second
+                    } else {
+                        pair.first?.name?.let { rname = it }
+                        pair.first?.id
+                    } ?: return
 
-            val role = getRoleByArgsNMessage(context, 2) ?: return
-            var chance = 100
-            val msg = if (context.args.size > 3) {
-                chance = getIntegerFromArgNMessage(context, 3, 1) ?: return
-                context.getTranslation("$root.success.chance")
-                    .withVariable("chance", "$chance")
-            } else {
-                context.getTranslation("$root.success")
-            }.withVariable("group", group.groupName)
-                .withVariable("emoteji", name)
-                .withVariable(PLACEHOLDER_ROLE, role.name)
+                    val name = rname
+                    require(name != null) { "what.." }
 
-            context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, chance)
-            sendRsp(context, msg)
+                    val role = getRoleByArgsNMessage(context, count++) ?: return
+                    var chance = 100
+                    if (entry.size > 2 || (count == 3 && entry.size > 3)) {
+                        chance = getIntegerFromArgNMessage(context, 3, count++) ?: return
+                    }
+
+                    context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, chance)
+                }
+                sendRsp(context, "Added selfroles in bulk")
+            }
         }
     }
 
