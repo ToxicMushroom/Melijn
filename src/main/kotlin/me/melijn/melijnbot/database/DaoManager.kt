@@ -170,6 +170,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val linkedMessageWrapper: LinkedMessageWrapper
     val messageWrapper: MessageWrapper
     val forceRoleWrapper: ForceRoleWrapper
+    val channelRoleWrapper: ChannelRoleWrapper
 
     val verificationPasswordWrapper: VerificationPasswordWrapper
     val verificationEmotejiWrapper: VerificationEmotejiWrapper
@@ -291,6 +292,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         linkedMessageWrapper = LinkedMessageWrapper(LinkedMessageDao(driverManager))
         messageWrapper = MessageWrapper(MessageDao(driverManager))
         forceRoleWrapper = ForceRoleWrapper(ForceRoleDao(driverManager))
+        channelRoleWrapper = ChannelRoleWrapper(ChannelRoleDao(driverManager))
 
         verificationPasswordWrapper = VerificationPasswordWrapper(VerificationPasswordDao(driverManager))
         verificationEmotejiWrapper = VerificationEmotejiWrapper(VerificationEmotejiDao(driverManager))
