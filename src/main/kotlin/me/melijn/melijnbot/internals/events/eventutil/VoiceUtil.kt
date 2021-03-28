@@ -126,4 +126,54 @@ object VoiceUtil {
     suspend fun destroyLink(container: Container, member: Member) {
         container.lavaManager.closeConnection(member.guild.idLong)
     }
+
+    suspend fun handleChannelRoleJoin(daoManager: DaoManager, member: Member, channelJoined: VoiceChannel) {
+        val guild = channelJoined.guild
+        val selfMember = guild.selfMember
+        if (!selfMember.hasPermission(Permission.MANAGE_ROLES)) return
+
+        handleChannelRoleJoined(daoManager, member, channelJoined)
+    }
+
+    suspend fun handleChannelRoleLeave(daoManager: DaoManager, member: Member, channelLeft: VoiceChannel) {
+        val guild = channelLeft.guild
+        val selfMember = guild.selfMember
+        if (!selfMember.hasPermission(Permission.MANAGE_ROLES)) return
+
+        handleChannelRoleLeft(daoManager, member, channelLeft)
+    }
+
+    private suspend fun handleChannelRoleJoined(
+        daoManager: DaoManager,
+        member: Member,
+        channelJoined: VoiceChannel
+    ) {
+        val guild = member.guild
+        val wrapper = daoManager.channelRoleWrapper
+        val shouldAdd = wrapper.getRoleIds(guild.idLong, channelJoined.idLong)
+
+        for (roleId in shouldAdd) {
+            val role = guild.getRoleById(roleId) ?: continue
+            if (guild.selfMember.canInteract(role)) {
+                guild.addRoleToMember(member, role).reason("channelRole").queue()
+            }
+        }
+    }
+
+    private suspend fun handleChannelRoleLeft(
+        daoManager: DaoManager,
+        member: Member,
+        channelLeft: VoiceChannel
+    ) {
+        val guild = member.guild
+        val wrapper = daoManager.channelRoleWrapper
+        val shouldAdd = wrapper.getRoleIds(guild.idLong, channelLeft.idLong)
+
+        for (roleId in shouldAdd) {
+            val role = guild.getRoleById(roleId) ?: continue
+            if (guild.selfMember.canInteract(role)) {
+                guild.removeRoleFromMember(member, role).reason("channelRole").queue()
+            }
+        }
+    }
 }
