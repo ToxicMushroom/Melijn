@@ -24,7 +24,6 @@ object TaskManager {
     val coroutineScope = CoroutineScope(dispatcher)
 
     fun async(block: suspend CoroutineScope.() -> Unit): Job {
-
         return coroutineScope.launch {
             Task {
                 block.invoke(this)

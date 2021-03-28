@@ -13,6 +13,9 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.internals.utils.withSafeVariable
 import net.dv8tion.jda.api.Permission
+import org.w3c.dom.NamedNodeMap
+import org.w3c.dom.Node
+import java.awt.image.BufferedImage
 import java.awt.image.RenderedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -22,7 +25,9 @@ import javax.imageio.ImageIO
 import javax.imageio.ImageTypeSpecifier
 import javax.imageio.metadata.IIOMetadata
 import javax.imageio.metadata.IIOMetadataNode
+import javax.imageio.stream.ImageInputStream
 import javax.imageio.stream.ImageOutputStream
+
 
 class BonkCommand : AbstractCommand("command.bonk") {
 
@@ -72,24 +77,74 @@ class BonkCommand : AbstractCommand("command.bonk") {
 
         ByteArrayOutputStream().use { baos ->
             ImageIO.createImageOutputStream(baos).use { ios ->
-                GifSequenceWriter(ios, image1.type, delay.toInt(), loops)
-                    .writeToSequence(image1)
-                    .writeToSequence(image2)
+                GifSequenceWriter(ios, image1.type, loops)
+                    .writeToSequence(image1, delay.toInt())
+                    .writeToSequence(image2, delay.toInt())
                     .close()
             }
             val text = "**bonk** %user% \uD83D\uDD28".withSafeVariable("user", user.asTag)
             sendFileRsp(context, text, baos.toByteArray(), "gif")
         }
 
-        val baos = ByteArrayOutputStream()
-        ImageIO.write(inputImg, "png", baos);
+        ByteArrayOutputStream().use { baos ->
+            ImageIO.write(inputImg, "png", baos)
 
-        rediCon?.async()
-            ?.set("avatar:${user.id}", Base64.encode(baos.toByteArray()), SetArgs().ex(600))
+            rediCon?.async()
+                ?.set("avatar:${user.id}", Base64.encode(baos.toByteArray()), SetArgs().ex(600))
+        }
     }
 }
 
-class GifSequenceWriter(outputStream: ImageOutputStream, imageType: Int, delay: Int, loop: Boolean) {
+class GifSequenceReader(inputStream: ImageInputStream) {
+
+
+    private val reader = ImageIO.getImageReadersBySuffix("gif").next()
+    var currentDelay = 0 // centiSeconds
+    var currentLoop: Boolean = false
+    var currentTransparancyIndex = 0
+
+    init {
+        reader.input = inputStream
+
+    }
+
+    fun readAll(func: (BufferedImage) -> Unit) {
+        for (i in 0 until reader.getNumImages(true)) {
+            val metaData = reader.getImageMetadata(i)
+            val tree = metaData.getAsTree("javax_imageio_gif_image_1.0")
+            val children = tree.childNodes
+            for (j in 0 until children.length) {
+                val nodeItem: Node = children.item(j)
+                if (nodeItem.nodeName.equals("GraphicControlExtension")) {
+                    val attr: NamedNodeMap = nodeItem.attributes
+                    val delayTimeNode: Node = attr.getNamedItem("delayTime")
+                    currentDelay = Integer.valueOf(delayTimeNode.nodeValue)
+
+                    val transparentColorNode: Node = attr.getNamedItem("transparentColorIndex")
+                    currentTransparancyIndex = Integer.valueOf(transparentColorNode.nodeValue)
+                } else if (nodeItem.nodeName.equals("ApplicationExtensions")) {
+                    val extensions = nodeItem.childNodes
+                    for (k in 0 until extensions.length) {
+                        val node: IIOMetadataNode = extensions.item(k) as IIOMetadataNode
+                        if (node.nodeName.equals("ApplicationExtension")) {
+                            val loop = node.userObject as ByteArray // 3 part byte array
+                            if (loop.size != 3) break
+                            // Last 2 bytes are a little endian loopcount
+                            val loopCount = loop[1] + (loop[2].toInt() shl 8)
+                            // 0 == infinity loop
+
+                            currentLoop = loopCount == 0
+                            println(loop.joinToString())
+                        }
+                    }
+                }
+            }
+            func(reader.read(i))
+        }
+    }
+}
+
+class GifSequenceWriter(outputStream: ImageOutputStream, imageType: Int, loop: Boolean) {
 
     private val writer = ImageIO.getImageWritersBySuffix("gif").next()
     private val params = writer.defaultWriteParam
@@ -99,13 +154,13 @@ class GifSequenceWriter(outputStream: ImageOutputStream, imageType: Int, delay: 
         val imageTypeSpecifier: ImageTypeSpecifier = ImageTypeSpecifier.createFromBufferedImageType(imageType)
         metadata = writer.getDefaultImageMetadata(imageTypeSpecifier, params)
 
-        configureRootMetadata(delay, loop)
+        configureRootMetadata(loop)
 
         writer.output = outputStream
         writer.prepareWriteSequence(null)
     }
 
-    private fun configureRootMetadata(delay: Int, loop: Boolean) {
+    private fun configureRootMetadata(loop: Boolean) {
         val metaFormatName: String = metadata.nativeMetadataFormatName
         val root: IIOMetadataNode = metadata.getAsTree(metaFormatName) as IIOMetadataNode
 
@@ -113,7 +168,6 @@ class GifSequenceWriter(outputStream: ImageOutputStream, imageType: Int, delay: 
         graphicsControlExtensionNode.setAttribute("disposalMethod", "restoreToBackgroundColor")
         graphicsControlExtensionNode.setAttribute("userInputFlag", "FALSE")
         graphicsControlExtensionNode.setAttribute("transparentColorFlag", "FALSE")
-        graphicsControlExtensionNode.setAttribute("delayTime", "${delay / 10}")
         graphicsControlExtensionNode.setAttribute("transparentColorIndex", "0")
 
         val appExtensionNode: IIOMetadataNode = getNode(root, "ApplicationExtensions")
@@ -122,13 +176,23 @@ class GifSequenceWriter(outputStream: ImageOutputStream, imageType: Int, delay: 
         child.setAttribute("authenticationCode", "2.0")
 
         val loopContinuously: Int = if (loop) 0 else 1
-        child.userObject =
-            byteArrayOf(0x1, (loopContinuously and 0xFF).toByte(), ((loopContinuously shr 8) and 0xFF).toByte())
+        child.userObject = byteArrayOf(0b1, loopContinuously.toByte(), 0b0)
         appExtensionNode.appendChild(child)
         metadata.setFromTree(metaFormatName, root)
     }
 
-    fun writeToSequence(img: RenderedImage): GifSequenceWriter {
+    /**
+     * [delay] in milliseconds
+     */
+    fun writeToSequence(img: RenderedImage, delay: Int): GifSequenceWriter {
+        val metaFormatName: String = metadata.nativeMetadataFormatName
+        val root: IIOMetadataNode = metadata.getAsTree(metaFormatName) as IIOMetadataNode
+
+        val graphicsControlExtensionNode: IIOMetadataNode = getNode(root, "GraphicControlExtension")
+
+        graphicsControlExtensionNode.setAttribute("delayTime", "${delay / 10}")
+        metadata.setFromTree(metaFormatName, root)
+
         writer.writeToSequence(IIOImage(img, null, metadata), params)
         return this
     }
@@ -150,5 +214,4 @@ class GifSequenceWriter(outputStream: ImageOutputStream, imageType: Int, delay: 
             return node
         }
     }
-
 }
