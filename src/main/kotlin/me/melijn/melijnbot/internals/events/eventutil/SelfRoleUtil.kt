@@ -72,7 +72,7 @@ object SelfRoleUtil {
                     container,
                     member,
                     event.channel,
-                    "rr.${group.groupName}.$emoteji",
+                    "rr.${groupName.toLowerCase()}.$emoteji",
                     null,
                     group.requiresPermission
                 )
