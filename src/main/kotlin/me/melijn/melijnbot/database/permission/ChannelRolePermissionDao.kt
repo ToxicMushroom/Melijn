@@ -55,10 +55,10 @@ class ChannelRolePermissionDao(driverManager: DriverManager) : CacheDBDao(driver
     }
 
     suspend fun getMap(channelId: Long, roleId: Long): Map<String, PermState> = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND channelId = ?", { resultset ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND channelId = ?", { rs ->
             val map = HashMap<String, PermState>()
-            while (resultset.next()) {
-                map[resultset.getString("permission")] = PermState.valueOf(resultset.getString("state"))
+            while (rs.next()) {
+                map[rs.getString("permission").toLowerCase()] = PermState.valueOf(rs.getString("state"))
             }
             it.resume(map)
         }, roleId, channelId)
