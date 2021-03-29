@@ -477,33 +477,36 @@ suspend fun getEmoteByArgsN(context: ICommandContext, index: Int, sameGuildAsCon
     }
 }
 
-val hexColorRegex = Regex("(?:0x)?#?([a-f]|\\d){6}", RegexOption.IGNORE_CASE)
-val rgbColorRegex = Regex("\\s*\\d+,\\s*\\d+,\\s*\\d+")
+val hexColorRegex = Regex("(?:0x)?#?((?:[a-f]|\\d){6});?", RegexOption.IGNORE_CASE)
+val rgbColorRegex = Regex("(?:rgb\\()?\\s*(\\d+),\\s*(\\d+),\\s*(\\d+)\\)?;?", RegexOption.IGNORE_CASE)
+val hsbColorRegex = Regex("(?:hsb\\()?(\\d+),\\s*(\\d+)%?,\\s*(\\d+)%?\\)?;?", RegexOption.IGNORE_CASE)
 
 suspend fun getColorFromArgNMessage(context: ICommandContext, index: Int): Color? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val color: Color? = when {
         hexColorRegex.matches(arg) -> {
-            if (arg.startsWith("#")) Color.decode(arg)
-            else if(arg.startsWith("0x")) Color.decode("#" + arg.drop(2))
-            else Color.decode("#$arg")
+            hexColorRegex.find(arg)?.groupValues?.get(1)?.let {
+                Color.decode("#$it")
+            }
         }
-        rgbColorRegex.matches(arg) -> {
-            val parts = arg.split(",")
-            val r = parts[0]
-                .trim()
-                .toIntOrNull()
-            val g = parts[1]
-                .trim()
-                .toIntOrNull()
-            val b = parts[2]
-                .trim()
-                .toIntOrNull()
 
-            if (r == null || g == null || b == null) null
-            else {
-                Color(r, g, b)
+        rgbColorRegex.matches(arg) -> {
+            rgbColorRegex.find(arg)?.groupValues?.let {
+                val r = it[1].toIntOrNull()
+                val g = it[2].toIntOrNull()
+                val b = it[3].toIntOrNull()
+                if (r == null || g == null || b == null) null
+                else Color(r, g, b)
+            }
+        }
+        hsbColorRegex.matches(arg) -> {
+            hsbColorRegex.find(arg)?.groupValues?.let {
+                val h = it[1].toIntOrNull()?.div(360.0f)
+                val s = it[2].toIntOrNull()?.div(100.0f)
+                val l = it[3].toIntOrNull()?.div(100.0f)
+                if (h == null || s == null || l == null) null
+                else Color.getHSBColor(h, s, l)
             }
         }
         arg.isNumber() -> {
@@ -616,8 +619,6 @@ suspend fun getCategoryByArgsNMessage(
     }
     return category
 }
-
-
 
 
 fun getTextChannelByArgsN(
