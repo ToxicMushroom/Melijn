@@ -65,7 +65,7 @@ class DriverManager(
             .withPort(port)
 
         val uri = if (password.isNotBlank()){
-            uriBuilder.withPassword(password)
+            uriBuilder.withPassword(password.toCharArray())
         } else {
             uriBuilder
         }.build()
