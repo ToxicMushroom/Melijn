@@ -400,7 +400,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 spaceMap,
                 aliasesMap,
                 searchedAliases,
-                contentRaw = ">" + invoke + filledArgs.joinToString("\" \"", " ")
+                contentRaw = ">" + invoke + filledArgs.joinToString("\" \"", " \"", "\"")
 
             )
             finalCommand.run(scriptCmd)

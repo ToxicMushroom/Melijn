@@ -128,6 +128,7 @@ fun getUserByArgsN(context: ICommandContext, index: Int): User? {//With null
 }
 
 fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String, message: Message? = null): User? {
+    if (arg.isBlank()) return null
     return if (DISCORD_ID.matches(arg)) {
         shardManager.getUserById(arg)
     } else if (USER_MENTION.matches(arg)) {
@@ -165,8 +166,8 @@ suspend fun retrieveUserByArgsN(context: ICommandContext, index: Int): User? {
         user1 != null -> user1
         context.args.size > index -> {
             val arg = context.args[index]
-
-            when {
+            if (arg.isBlank()) null
+            else when {
                 DISCORD_ID.matches(arg) -> {
                     context.shardManager.retrieveUserById(arg).awaitOrNull()
                 }
@@ -183,6 +184,7 @@ suspend fun retrieveUserByArgsN(context: ICommandContext, index: Int): User? {
 }
 
 suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? {
+    if (arg.isBlank()) return null
     val shardManager = guild.jda.shardManager ?: return null
     val user1: User? = getUserByArgsN(shardManager, guild, arg)
     if (user1 != null) {
