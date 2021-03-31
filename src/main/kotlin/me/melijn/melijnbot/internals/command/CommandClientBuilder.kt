@@ -271,7 +271,8 @@ class CommandClientBuilder(private val container: Container) {
         SetAutoRemoveInactiveJoinMessagesDuration(),
         MessageCommand(),
         LinkMessageCommand(),
-        ChannelRoleCommand()
+        ChannelRoleCommand(),
+        GiveRoleCommand()
     )
 
     fun build(): CommandClient {
