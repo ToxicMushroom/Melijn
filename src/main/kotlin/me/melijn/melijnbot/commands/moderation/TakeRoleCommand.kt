@@ -5,10 +5,6 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
-
-import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION
-import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE
-
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
@@ -27,22 +23,14 @@ class TakeRoleCommand : AbstractCommand("command.takerole") {
 
 
     override suspend fun execute(context: ICommandContext) {
-
         if (context.args.size < 2) {
             sendSyntax(context)
             return
         }
 
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
-        val role = (getRoleByArgsNMessage(context, 1)) ?: return
+        val role = (getRoleByArgsNMessage(context, 1, true, canInteract = true)) ?: return
         val member = context.guild.retrieveMember(targetUser).awaitOrNull() ?: return
-
-        if (!context.selfMember.canInteract(role)) {
-            val msg = context.getTranslation(MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
-                .withVariable(PLACEHOLDER_ROLE, role.name)
-            sendRsp(context, msg)
-            return
-        }
 
         if(!member.canInteract(role) && !hasPermission(context, SpecialPermission.TAKEROLE_BYPASS_HIGHER.node)) {
             val msg = context.getTranslation("$root.higher.and.nopermission")
