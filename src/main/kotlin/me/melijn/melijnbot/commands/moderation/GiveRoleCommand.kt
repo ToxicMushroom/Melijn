@@ -1,13 +1,13 @@
 package me.melijn.melijnbot.commands.moderation
 
 
+import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE
-import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
@@ -41,6 +41,15 @@ class GiveRoleCommand : AbstractCommand("command.giverole") {
             sendRsp(context, msg)
             return
         }
+
+        if(!member.canInteract(role) && !hasPermission(context, SpecialPermission.GIVEROLE_BYPASS_HIGHER.node)) {
+            val msg = context.getTranslation("$root.higher.and.nopermission")
+                .withVariable("permission", SpecialPermission.GIVEROLE_BYPASS_HIGHER.node)
+                .withVariable("role", role.asMention)
+            sendRsp(context, msg)
+            return
+        }
+
 
         if (member.roles.any { memberRole: Role ->
                 memberRole.idLong == role.idLong

@@ -1,8 +1,10 @@
 package me.melijn.melijnbot.commands.moderation
 
+import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.command.hasPermission
 
 import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE
@@ -38,6 +40,14 @@ class TakeRoleCommand : AbstractCommand("command.takerole") {
         if (!context.selfMember.canInteract(role)) {
             val msg = context.getTranslation(MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
                 .withVariable(PLACEHOLDER_ROLE, role.name)
+            sendRsp(context, msg)
+            return
+        }
+
+        if(!member.canInteract(role) && !hasPermission(context, SpecialPermission.TAKEROLE_BYPASS_HIGHER.node)) {
+            val msg = context.getTranslation("$root.higher.and.nopermission")
+                .withVariable("permission", SpecialPermission.TAKEROLE_BYPASS_HIGHER.node)
+                .withVariable("role", role.asMention)
             sendRsp(context, msg)
             return
         }
