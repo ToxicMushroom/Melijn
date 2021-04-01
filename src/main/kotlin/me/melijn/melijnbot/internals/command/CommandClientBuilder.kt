@@ -273,7 +273,8 @@ class CommandClientBuilder(private val container: Container) {
         LinkMessageCommand(),
         ChannelRoleCommand(),
         GiveRoleCommand(),
-        TakeRoleCommand()
+        TakeRoleCommand(),
+        ToggleRoleCommand()
     )
 
     fun build(): CommandClient {

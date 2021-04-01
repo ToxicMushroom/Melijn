@@ -9,5 +9,6 @@ enum class SpecialPermission(val node: String) {
     PUNISH_BYPASS_HIGHER("punish.bypass.higher"),
     CHANGENAME_OTHER("changename.other"),
     GIVEROLE_BYPASS_HIGHER("give.role.bypass.higher"),
-    TAKEROLE_BYPASS_HIGHER("take.role.bypass.higher")
+    TAKEROLE_BYPASS_HIGHER("take.role.bypass.higher"),
+    TOGGLEROLE_BYPASS_HIGHER("toggle.role.bypass.higher")
 }
