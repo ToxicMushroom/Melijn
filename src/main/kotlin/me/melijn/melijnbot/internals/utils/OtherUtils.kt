@@ -12,8 +12,6 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Month
@@ -45,33 +43,26 @@ fun getSystemUptime(): Long {
 }
 
 fun Calendar.isLeapYear(): Boolean {
-    val cal = this
-    return cal.getActualMaximum(Calendar.DAY_OF_YEAR) > 365
+    return this.getActualMaximum(Calendar.DAY_OF_YEAR) > 365
 }
-
-
-// EPIC CODE, DO NOT TOUCH
-//fun <K, V> loadingCacheFrom(function: (K) -> CompletableFuture<V>): CacheLoader<K, CompletableFuture<V>> {
-//    return CacheLoader.from { k ->
-//        if (k == null) throw IllegalArgumentException("BRO CRINGE")
-//        function.invoke(k)
-//    }
-//}
 
 fun getUnixUptime(): Long {
     val uptimeProc = Runtime.getRuntime().exec("cat /proc/uptime") // Parse time to groups if possible
-    val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
-    val line = `in`.readLine() ?: return -1
-    val matcher = linuxUptimePattern.matcher(line)
+    uptimeProc.inputStream.use { ins ->
+        ins.bufferedReader().use { br ->
+            val line = br.readLine() ?: return -1
+            val matcher = linuxUptimePattern.matcher(line)
 
-    if (!matcher.find()) return -1 // Extract ints out of groups
-    return matcher.group(1).toLong()
+            if (!matcher.find()) return -1 // Extract ints out of groups
+            return matcher.group(1).toLong()
+        }
+    }
 }
 
 fun getTotalMBUnixRam(): Long {
     val uptimeProc = Runtime.getRuntime().exec("cat /proc/meminfo")
-    uptimeProc.inputStream.use { `is` ->
-        `is`.bufferedReader().use { br ->
+    uptimeProc.inputStream.use { ins ->
+        ins.bufferedReader().use { br ->
             val total = br.readLine() ?: return -1
             val matcher = linuxRamPattern.matcher(total)
 
@@ -84,8 +75,8 @@ fun getTotalMBUnixRam(): Long {
 
 fun getUsedMBUnixRam(): Long {
     val uptimeProc = Runtime.getRuntime().exec("cat /proc/meminfo")
-    uptimeProc.inputStream.use { `is` ->
-        `is`.bufferedReader().use { br ->
+    uptimeProc.inputStream.use { ins ->
+        ins.bufferedReader().use { br ->
             val total = br.readLine() ?: return -1
             br.readLine() ?: return -1
             val available = br.readLine() ?: return -1
@@ -103,8 +94,8 @@ fun getUsedMBUnixRam(): Long {
 
 fun getWindowsUptime(): Long {
     val uptimeProc = Runtime.getRuntime().exec("net stats workstation")
-    uptimeProc.inputStream.use { `is` ->
-        `is`.bufferedReader().use { br ->
+    uptimeProc.inputStream.use { ins ->
+        ins.bufferedReader().use { br ->
             for (line in br.readLines()) {
                 if (line.startsWith("Statistieken vanaf")) {
                     val format = SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss") //Dutch windows version
