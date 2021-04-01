@@ -18,7 +18,7 @@ class TakeRoleCommand : AbstractCommand("command.takerole") {
         name = "takeRole"
         aliases = arrayOf("tr")
         commandCategory = CommandCategory.MODERATION
-        discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
+        discordPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
 
@@ -29,10 +29,10 @@ class TakeRoleCommand : AbstractCommand("command.takerole") {
         }
 
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
-        val role = (getRoleByArgsNMessage(context, 1)) ?: return
+        val role = (getRoleByArgsNMessage(context, 1, true, canInteract = true)) ?: return
         val member = context.guild.retrieveMember(targetUser).awaitOrNull() ?: return
 
-        if(!member.canInteract(role) && !hasPermission(context, SpecialPermission.TAKEROLE_BYPASS_HIGHER.node)) {
+        if(!context.member.canInteract(role) && !hasPermission(context, SpecialPermission.TAKEROLE_BYPASS_HIGHER.node)) {
             val msg = context.getTranslation("$root.higher.and.nopermission")
                 .withVariable("permission", SpecialPermission.TAKEROLE_BYPASS_HIGHER.node)
                 .withVariable("role", role.asMention)

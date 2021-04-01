@@ -17,7 +17,7 @@ class ToggleRoleCommand : AbstractCommand("command.togglerole") {
         name = "toggleRole"
         aliases = arrayOf("tr")
         commandCategory = CommandCategory.MODERATION
-        discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
+        discordPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
     override suspend fun execute(context: ICommandContext) {
@@ -26,10 +26,10 @@ class ToggleRoleCommand : AbstractCommand("command.togglerole") {
             return
         }
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
-        val role = (getRoleByArgsNMessage(context, 1)) ?: return
+        val role = (getRoleByArgsNMessage(context, 1, true, canInteract = true)) ?: return
         val member = context.guild.retrieveMember(targetUser).awaitOrNull() ?: return
 
-        val cantIntereact = !member.canInteract(role)
+        val cantIntereact = !context.member.canInteract(role)
         val isMissingPerms = !hasPermission(context, SpecialPermission.TOGGLEROLE_BYPASS_HIGHER.node)
         if (cantIntereact && isMissingPerms) {
             val msg = context.getTranslation("$root.higher.and.nopermission")

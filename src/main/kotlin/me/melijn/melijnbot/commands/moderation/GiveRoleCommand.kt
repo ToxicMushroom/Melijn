@@ -18,7 +18,7 @@ class GiveRoleCommand : AbstractCommand("command.giverole") {
         name = "giveRole"
         aliases = arrayOf("gr")
         commandCategory = CommandCategory.MODERATION
-        discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
+        discordPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
 
@@ -29,10 +29,10 @@ class GiveRoleCommand : AbstractCommand("command.giverole") {
         }
 
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
-        val role = (getRoleByArgsNMessage(context, 1)) ?: return
+        val role = (getRoleByArgsNMessage(context, 1, true, canInteract = true)) ?: return
         val member = context.guild.retrieveMember(targetUser).awaitOrNull() ?: return
 
-        val cantIntereact = !member.canInteract(role)
+        val cantIntereact = !context.member.canInteract(role)
         val isMissingPerms = !hasPermission(context, SpecialPermission.GIVEROLE_BYPASS_HIGHER.node)
         if (cantIntereact && isMissingPerms) {
             val msg = context.getTranslation("$root.higher.and.nopermission")
