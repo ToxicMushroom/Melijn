@@ -26,7 +26,7 @@ class ToggleRoleCommand : AbstractCommand("command.togglerole") {
             return
         }
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
-        val role = (getRoleByArgsNMessage(context, 1, true, true)) ?: return
+        val role = (getRoleByArgsNMessage(context, 1)) ?: return
         val member = context.guild.retrieveMember(targetUser).awaitOrNull() ?: return
 
         val cantIntereact = !member.canInteract(role)
