@@ -41,7 +41,7 @@ class EvalCommand : AbstractCommand("command.eval") {
 			fun exec(context: ICommandContext): Deferred<Any?> {
                 return TaskManager.evalTaskValueNAsync {
 				    ${
-            code.lines().dropWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
+            code.lines().dropWhile { imports.contains(it) }
                 .joinToString("\n\t\t\t\t\t")
         }
                 }
