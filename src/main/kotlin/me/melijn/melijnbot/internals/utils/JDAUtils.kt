@@ -464,10 +464,10 @@ suspend fun getEmoteByArgsN(context: ICommandContext, index: Int, sameGuildAsCon
         emotes = context.guildN?.getEmotesByName(arg, true)
         if (emotes != null && emotes.isNotEmpty() && emote == null) emote = emotes[0]
 
-        emotes = context.shardManager.getEmotesByName(arg, false)
+        emotes = context.guildN?.getEmotesByName(arg, false) ?: emptyList()
         if (emotes.isNotEmpty() && emote == null) emote = emotes[0]
 
-        emotes = context.shardManager.getEmotesByName(arg, true)
+        emotes = context.guildN?.getEmotesByName(arg, true) ?: emptyList()
         if (emotes.isNotEmpty() && emote == null) emote = emotes[0]
 
     }
