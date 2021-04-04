@@ -6,15 +6,15 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath("com.apollographql.apollo:apollo-gradle-plugin:2.5.2")
+        classpath("com.apollographql.apollo:apollo-gradle-plugin:2.5.5")
     }
 }
 
 plugins {
     id("application")
     id("com.github.johnrengelman.shadow") version "6.1.0"
-    id("org.jetbrains.kotlin.jvm") version "1.4.31"
-    id("com.apollographql.apollo") version "2.5.2"
+    id("org.jetbrains.kotlin.jvm") version "1.4.32"
+    id("com.apollographql.apollo") version "2.5.5"
 }
 
 application {
@@ -64,7 +64,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation("net.dv8tion:JDA:4.2.0_252") {
+    implementation("net.dv8tion:JDA:4.2.1_253") {
         exclude("opus-java")
     }
 
@@ -73,7 +73,7 @@ dependencies {
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
-    implementation("com.sedmelluq:lavaplayer:1.3.73")
+    implementation("com.sedmelluq:lavaplayer:1.3.75")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
     implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.4")
@@ -83,7 +83,7 @@ dependencies {
     api(kotlin("scripting-compiler"))
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.31")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.32")
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
     implementation("com.github.ToxicMushroom:JagTag-Kotlin:0.6.4")
@@ -140,11 +140,11 @@ dependencies {
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:4.4.2")
 
     // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
-    implementation("com.apollographql.apollo:apollo-runtime:2.5.2")
-    implementation("com.apollographql.apollo:apollo-coroutines-support:2.5.2")
+    implementation("com.apollographql.apollo:apollo-runtime:2.5.5")
+    implementation("com.apollographql.apollo:apollo-coroutines-support:2.5.5")
 
-    // implementation("com.github.husnjak:IGDB-API-JVM:0.7")
-    implementation("io.lettuce:lettuce-core:6.0.3.RELEASE")
+    // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
+    implementation("io.lettuce:lettuce-core:6.1.0.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
