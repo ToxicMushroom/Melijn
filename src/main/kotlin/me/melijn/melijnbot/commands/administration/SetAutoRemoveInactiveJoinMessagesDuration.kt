@@ -19,7 +19,7 @@ class SetAutoRemoveInactiveJoinMessagesDuration : AbstractCommand("command.setau
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.autoRemoveInactiveJoinMessageWrapper
         if (context.args.isEmpty()) {
             val current = wrapper.get(context.guildId)

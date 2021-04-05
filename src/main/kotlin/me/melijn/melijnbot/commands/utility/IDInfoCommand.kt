@@ -16,7 +16,7 @@ class IDInfoCommand : AbstractCommand("command.idinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val id = getLongFromArgNMessage(context, 0, 0) ?: return
         val sentTime = snowflakeToEpochMillis(id)
 

@@ -13,7 +13,7 @@ class ShrugCommand : AbstractCommand("command.shrug") {
         commandCategory = CommandCategory.ANIME
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         AnimeCommandUtil.execute(context, "shrug")
     }
 }

@@ -17,7 +17,7 @@ class SetMaxUserVerificationFlowRateCommand : AbstractCommand("command.setmaxuse
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.verificationUserFlowRateWrapper
         if (context.args.isEmpty()) {
             val flowRate = wrapper.getFlowRate(context.guildId)

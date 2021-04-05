@@ -18,7 +18,7 @@ class MirrorCommand : AbstractCommand("command.mirror") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("mirrorGif", true)) {
             executeGif(context)
         } else {

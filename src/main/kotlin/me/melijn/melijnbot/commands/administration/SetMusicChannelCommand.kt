@@ -18,7 +18,7 @@ class SetMusicChannelCommand : AbstractCommand("command.setmusicchannel") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.musicChannelWrapper
 
         if (context.args.isEmpty()) {

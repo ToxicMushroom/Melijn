@@ -18,7 +18,7 @@ class MoveChannelCommand : AbstractCommand("command.movechannel") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val toMove = getChannelByArgsNMessage(context, 0, true) ?: return
         val position =
             getEnumFromArgNMessage<RelativePosition>(context, 1, MESSAGE_UNKNOWN_RELATIVEPOSITION) ?: return

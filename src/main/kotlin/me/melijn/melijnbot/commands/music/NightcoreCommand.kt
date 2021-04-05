@@ -23,7 +23,7 @@ class NightcoreCommand : AbstractCommand("command.nightcore") {
     }
 
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
             val ts = player.filters.timescale ?: Timescale()

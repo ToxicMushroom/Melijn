@@ -32,7 +32,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
         discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val guild = context.guild
         val daoManager = context.daoManager
         if (context.args.isEmpty()) {

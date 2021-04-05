@@ -24,7 +24,7 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendCurrentLang(context)
         } else {

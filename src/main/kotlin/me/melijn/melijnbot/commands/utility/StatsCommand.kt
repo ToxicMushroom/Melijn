@@ -24,8 +24,7 @@ class StatsCommand : AbstractCommand("command.stats") {
         commandCategory = CommandCategory.UTILITY
     }
 
-
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val bean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
         val totalMem: Long
         val usedMem: Long

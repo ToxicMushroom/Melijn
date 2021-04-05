@@ -43,7 +43,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("sdoh")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -75,7 +75,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             )
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -86,7 +86,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("a")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -122,7 +122,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("rm")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -152,7 +152,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val group = getSelectedFilterGroup(context) ?: return
                 val channelIds = group.channels.toMutableList()
                 val channels = mutableListOf<TextChannel>()
@@ -208,7 +208,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -219,7 +219,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("put", "a")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -251,7 +251,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("r", "rm")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -274,7 +274,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.filterGroupWrapper
             val groups = wrapper.getGroups(context.guildId)
 
@@ -324,7 +324,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -358,7 +358,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("rma")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -387,7 +387,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("rm")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -415,7 +415,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 aliases = arrayOf("a")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -436,7 +436,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             }
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -449,7 +449,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("s")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -471,7 +471,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("stp")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -496,7 +496,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("ss")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -521,7 +521,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             aliases = arrayOf("sm")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return

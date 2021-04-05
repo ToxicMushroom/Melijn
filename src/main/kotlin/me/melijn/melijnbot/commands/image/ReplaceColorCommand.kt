@@ -24,7 +24,7 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("replaceColorGif", true) || context.commandParts[1].equals("rcGif", true)) {
             executeGif(context)
         } else {

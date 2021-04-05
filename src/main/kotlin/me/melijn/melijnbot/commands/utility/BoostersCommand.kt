@@ -18,7 +18,7 @@ class BoostersCommand : AbstractCommand("command.boosters") {
         aliases = arrayOf("listBoosters", "boosterList", "boostersList")
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         context.initCooldown()
         val boosters = context.guild.findMembers { it.timeBoosted != null }.await()
         val msg = if (boosters.isEmpty()) {

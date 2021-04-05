@@ -13,7 +13,7 @@ class ThumbsupCommand : AbstractCommand("command.thumbsup") {
         commandCategory = CommandCategory.ANIME
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         AnimeCommandUtil.execute(context, "thumbsup")
     }
 }

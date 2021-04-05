@@ -24,7 +24,7 @@ class BassBoostCommand : AbstractCommand("command.bassboost") {
     }
 
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
             val (band1, band2) = player.filters.bands

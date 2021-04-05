@@ -47,7 +47,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("cp")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -93,7 +93,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             name = "rename"
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -134,7 +134,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -145,7 +145,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val title = context.getTranslation("$root.title")
 
             val ccs = context.daoManager.customCommandWrapper.getList(context.guildId)
@@ -174,7 +174,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             name = "add"
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -221,7 +221,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("delete", "rm")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -257,7 +257,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("s")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -296,7 +296,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             )
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -306,7 +306,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 name = "add"
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -335,7 +335,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 aliases = arrayOf("rm", "rem", "delete")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -375,7 +375,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val ccSelected = getSelectedCCNMessage(context) ?: return
                 val aliases = ccSelected.aliases
 
@@ -408,7 +408,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("setDesc", "sd")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -436,7 +436,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("sct")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val cc = getSelectedCCNMessage(context) ?: return
             if (context.args.isEmpty()) {
                 val msg = context.getTranslation("$root.show.${cc.containsTriggers}")
@@ -463,7 +463,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("sc")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -492,7 +492,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("sps")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -522,7 +522,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             aliases = arrayOf("lm", "linkMsg")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val id = getLongFromArgNMessage(context, 0) ?: return
             val cc = context.daoManager.customCommandWrapper.getCCById(context.guildId, id)
             if (cc == null) {

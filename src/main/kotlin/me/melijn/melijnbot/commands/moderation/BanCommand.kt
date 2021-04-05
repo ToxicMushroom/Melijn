@@ -40,7 +40,7 @@ class BanCommand : AbstractCommand("command.ban") {
         val optionalDeldaysPattern = "-t([0-7])".toRegex()
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return

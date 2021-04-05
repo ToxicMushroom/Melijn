@@ -15,7 +15,7 @@ class ShuffleCommand : AbstractCommand("command.shuffle") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         context.getGuildMusicPlayer().guildTrackManager.shuffle()
         val msg = context.getTranslation("$root.success")
         sendRsp(context, msg)

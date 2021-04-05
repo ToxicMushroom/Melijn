@@ -20,7 +20,7 @@ class ChannelInfoCommand : AbstractCommand("command.channelinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return

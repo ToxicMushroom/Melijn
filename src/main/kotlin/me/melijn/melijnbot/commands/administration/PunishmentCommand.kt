@@ -29,7 +29,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -55,7 +55,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 aliases = arrayOf("d")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.size < 2) {
                     sendSyntax(context)
                     return
@@ -86,7 +86,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 aliases = arrayOf("r")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.size < 2) {
                     sendSyntax(context)
                     return
@@ -120,7 +120,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 )
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
         }
@@ -133,7 +133,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 DurationArg(root, PunishmentType.REMOVEROLE)
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
         }
@@ -148,7 +148,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 )
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -158,7 +158,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                     name = "delDays"
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 2) {
                         sendSyntax(context)
                         return
@@ -190,7 +190,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 )
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
         }
@@ -204,7 +204,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 )
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -214,7 +214,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                     name = "delDays"
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 2) {
                         sendSyntax(context)
                         return
@@ -236,7 +236,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             }
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }
@@ -247,7 +247,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             name = "setReason"
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -286,7 +286,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             aliases = arrayOf("put", "insert")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 3) {
                 sendSyntax(context)
                 return
@@ -317,7 +317,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.punishmentWrapper
             var list = wrapper.getList(context.guildId)
             val msg: String
@@ -352,7 +352,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             aliases = arrayOf("rm")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return

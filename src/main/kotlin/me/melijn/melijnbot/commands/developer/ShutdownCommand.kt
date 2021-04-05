@@ -14,7 +14,7 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
         commandCategory = CommandCategory.DEVELOPER
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val players = context.lavaManager.musicPlayerManager.getPlayers()
         val wrapper = context.daoManager.tracksWrapper
         wrapper.clear()

@@ -18,7 +18,7 @@ class SpeedCommand : AbstractCommand("command.speed") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
         if (context.args.isEmpty()) {
             val currentSpeedPercent = (iPlayer.filters.timescale?.speed ?: 1.0f) * 100

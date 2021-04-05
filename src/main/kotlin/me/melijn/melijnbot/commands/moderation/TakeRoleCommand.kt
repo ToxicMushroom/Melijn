@@ -22,7 +22,7 @@ class TakeRoleCommand : AbstractCommand("command.takerole") {
     }
 
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return

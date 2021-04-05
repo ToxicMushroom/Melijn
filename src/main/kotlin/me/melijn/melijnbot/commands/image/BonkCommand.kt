@@ -38,7 +38,7 @@ class BonkCommand : AbstractCommand("command.bonk") {
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return

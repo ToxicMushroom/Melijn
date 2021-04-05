@@ -52,7 +52,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 aliases = arrayOf("sut")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -105,7 +105,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 aliases = arrayOf("sgar")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -136,7 +136,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 aliases = arrayOf("se")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -167,7 +167,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 aliases = arrayOf("a")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
                 val wrapper = context.daoManager.joinRoleGroupWrapper
 
@@ -198,7 +198,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 aliases = arrayOf("rm", "r")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val joinRoleGroupInfo = getJoinRoleGroupByArgNMessage(context, 0) ?: return
                 val wrapper = context.daoManager.joinRoleGroupWrapper
                 val list = wrapper.getList(context.guildId).sortedBy { (groupName) ->
@@ -228,7 +228,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 aliases = arrayOf("rma", "ra")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -259,7 +259,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val wrapper = context.daoManager.joinRoleGroupWrapper
                 val list = wrapper.getList(context.guildId).sortedBy { (groupName) ->
                     groupName
@@ -285,7 +285,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
         }
 
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }
@@ -298,7 +298,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -335,7 +335,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             aliases = arrayOf("rm", "r")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -365,7 +365,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             aliases = arrayOf("rma", "ra")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
 
@@ -412,7 +412,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.joinRoleWrapper
             val map = wrapper.getJRI(context.guildId).dataMap
 
@@ -440,7 +440,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }

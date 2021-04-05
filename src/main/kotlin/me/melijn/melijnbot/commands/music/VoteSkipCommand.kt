@@ -22,7 +22,7 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val guildMusicPlayer = context.getGuildMusicPlayer().guildTrackManager
         val vc = context.lavaManager.getConnectedChannel(context.guild)
         if (vc == null) {

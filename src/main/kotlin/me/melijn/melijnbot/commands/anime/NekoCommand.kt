@@ -13,7 +13,7 @@ class NekoCommand : AbstractCommand("command.neko") {
         commandCategory = CommandCategory.ANIME
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         AnimeCommandUtil.executeShow(context, "neko")
     }
 }

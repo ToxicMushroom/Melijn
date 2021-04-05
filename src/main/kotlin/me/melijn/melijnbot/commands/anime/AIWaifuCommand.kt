@@ -15,7 +15,7 @@ class AIWaifuCommand : AbstractCommand("command.aiwaifu") {
         commandCategory = CommandCategory.ANIME
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val title = context.getTranslation("$root.title")
 
         val eb = Embedder(context)

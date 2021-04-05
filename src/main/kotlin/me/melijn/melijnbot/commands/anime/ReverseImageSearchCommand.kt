@@ -21,7 +21,7 @@ class ReverseImageSearchCommand : AbstractCommand("command.reverseimagesearch") 
         commandCategory = CommandCategory.ANIME
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val attachment = (getImageUrlFromArgsNMessage(context, 0) ?: return).second
         val query = "https://saucenao.com/search.php" +
             "?db=999" +

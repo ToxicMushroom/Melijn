@@ -16,7 +16,7 @@ class StopCommand : AbstractCommand("command.stop") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val guildMusicPlayer = context.musicPlayerManager.getGuildMusicPlayer(context.guild)
         guildMusicPlayer.guildTrackManager.clear()
         guildMusicPlayer.guildTrackManager.stopAndDestroy()

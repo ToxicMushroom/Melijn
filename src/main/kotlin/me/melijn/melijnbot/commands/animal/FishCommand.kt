@@ -18,7 +18,7 @@ class FishCommand : AbstractCommand("command.fish") {
         commandCategory = CommandCategory.ANIMAL
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val title = context.getTranslation("$root.title")
         val web = context.webManager
 

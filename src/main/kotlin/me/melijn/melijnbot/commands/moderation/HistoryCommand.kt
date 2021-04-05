@@ -27,7 +27,7 @@ class HistoryCommand : AbstractCommand("command.history") {
         )
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return
@@ -164,7 +164,7 @@ class HistoryCommand : AbstractCommand("command.history") {
             aliases = arrayOf("find", "fbci")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return

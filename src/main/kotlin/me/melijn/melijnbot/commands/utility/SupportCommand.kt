@@ -14,7 +14,7 @@ class SupportCommand : AbstractCommand("command.support") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val msg = context.getTranslation("$root.server")
         sendRsp(context, msg)
     }

@@ -14,7 +14,7 @@ class ThinkingCommand : AbstractCommand("command.thinking") {
         commandCategory = CommandCategory.ANIME
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         AnimeCommandUtil.executeShow(context, "thinking")
     }
 }

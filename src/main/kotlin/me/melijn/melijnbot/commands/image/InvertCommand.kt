@@ -18,7 +18,7 @@ class InvertCommand : AbstractCommand("command.invert") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("invertGif", true)) {
             executeGif(context)
         } else {

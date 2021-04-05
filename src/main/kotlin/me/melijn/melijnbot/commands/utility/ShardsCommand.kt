@@ -23,7 +23,7 @@ class ShardsCommand : AbstractCommand("command.shards") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val shardManager = context.shardManager
         val tableBuilder = TableBuilder().apply {
             this.setColumns(

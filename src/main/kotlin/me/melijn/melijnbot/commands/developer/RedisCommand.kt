@@ -12,7 +12,7 @@ class RedisCommand : AbstractCommand("command.redis") {
         name = "redis"
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val commands = context.daoManager.driverManager.redisConnection?.async()
         if (commands == null) {
             sendRsp(context, "Redis not initizialized")

@@ -13,7 +13,7 @@ class ClearCacheCommand : AbstractCommand("command.clearcache") {
         commandCategory = CommandCategory.DEVELOPER
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         context.daoManager.driverManager.redisConnection?.async()
             ?.flushdb()
 

@@ -2,7 +2,6 @@ package me.melijn.melijnbot.commands.anime
 
 import me.melijn.melijnbot.commands.utility.toUniversalDateFormat
 import me.melijn.melijnbot.commands.utility.toUniversalDateTimeFormat
-import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -16,14 +15,12 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.remove
 import me.melijn.melijnbot.internals.utils.withVariable
 import moe.ganen.jikankt.JikanKt
-import moe.ganen.jikankt.connection.RestClient
 import moe.ganen.jikankt.exception.JikanException
 import net.dv8tion.jda.api.entities.MessageEmbed
 
-class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("command.myanimelist") {
+class MyAnimeListCommand() : AbstractCommand("command.myanimelist") {
 
     private val animeArg: AnimeArg
-    private val jikanUrl: String
 
     init {
         id = 158
@@ -36,12 +33,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
             MangaArg(root),
             CharacterArg(root)
         )
-        jikanUrl =
-            "http${(if (jikanSettings.ssl) "s" else "")}://${jikanSettings.host}:${jikanSettings.port}/public/v3/"
-
-        JikanKt.apply {
-            restClient = RestClient(false, jikanUrl, jikanSettings.key)
-        }
+       
         commandCategory = CommandCategory.ANIME
     }
 
@@ -52,7 +44,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
             aliases = arrayOf("char")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -163,7 +155,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
         }
 
         // TODO get the actual manga entry
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -239,7 +231,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
         }
 
         // TODO get the actual anime entry
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             showSeries(context)
         }
 
@@ -315,7 +307,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
             aliases = arrayOf("profile", "u", "userProfile", "up")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -406,7 +398,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         animeArg.showSeries(context)
     }
 }

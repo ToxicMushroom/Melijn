@@ -13,7 +13,7 @@ class StareCommand : AbstractCommand("command.stare") {
         commandCategory = CommandCategory.ANIME
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         AnimeCommandUtil.execute(context, "stare")
     }
 }

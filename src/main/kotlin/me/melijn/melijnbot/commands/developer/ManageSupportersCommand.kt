@@ -33,7 +33,7 @@ class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
             context.daoManager.supporterWrapper.add(user.idLong)
@@ -48,7 +48,7 @@ class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
             aliases = arrayOf("s", "put", "p")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
             val guildId = getLongFromArgNMessage(context, 1, 0) ?: return
 
@@ -65,7 +65,7 @@ class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
             aliases = arrayOf("deleted", "del", "d", "rm", "rem", "r")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
             context.daoManager.supporterWrapper.remove(user.idLong)
@@ -80,7 +80,7 @@ class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
             aliases = arrayOf("ls", "l")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val supporters = context.daoManager.supporterWrapper.getUsers()
 
             var msg = "```INI\n[userId] - [guildId] - [lastServerPicked] - [startTime]\n"
@@ -114,7 +114,7 @@ class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }

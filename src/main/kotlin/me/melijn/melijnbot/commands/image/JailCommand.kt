@@ -31,7 +31,7 @@ class JailCommand : AbstractCommand("command.jail") {
 
     val jail = JailCommand::class.java.getResourceAsStream("/jail.png").use { ImageIO.read(it) }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("jailGif", true)) {
             executeGif(context)
         } else {

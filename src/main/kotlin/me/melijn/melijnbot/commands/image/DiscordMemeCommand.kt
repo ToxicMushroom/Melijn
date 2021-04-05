@@ -18,7 +18,7 @@ class DiscordMemeCommand : AbstractCommand("command.discordmeme") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val title = context.getTranslation("$root.title")
         val web = context.webManager
 

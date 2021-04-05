@@ -35,7 +35,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return

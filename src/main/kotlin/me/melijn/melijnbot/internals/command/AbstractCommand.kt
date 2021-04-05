@@ -3,6 +3,7 @@ package me.melijn.melijnbot.internals.command
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.PermState
+import me.melijn.melijnbot.internals.arguments.MethodArgumentInfo
 import me.melijn.melijnbot.internals.command.AbstractCommand.Companion.comparator
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
@@ -14,10 +15,13 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.GuildChannel
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
+import org.jetbrains.kotlin.ir.types.IdSignatureValues.continuation
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.suspendCoroutine
 
 const val PLACEHOLDER_PREFIX = "prefix"
 
@@ -38,7 +42,7 @@ abstract class AbstractCommand(val root: String) {
     var runConditions: Array<RunCondition> = arrayOf()
     var children: Array<AbstractCommand> = arrayOf()
     var permissionRequired: Boolean = false
-    //var args: Array<CommandArg> = arrayOf() cannot put extra information after global definitions with this
+    lateinit var selfExecuteInformation: MethodArgumentInfo
 
     init {
         description = "$root.description"
@@ -54,7 +58,6 @@ abstract class AbstractCommand(val root: String) {
 
     private val cmdlogger = LoggerFactory.getLogger("cmd")
 
-    protected abstract suspend fun execute(context: ICommandContext)
     suspend fun run(context: ICommandContext) {
         context.commandOrder = ArrayList(context.commandOrder + this).toList()
 
@@ -64,8 +67,8 @@ abstract class AbstractCommand(val root: String) {
         if (context.calculatedRoot.isEmpty()) context.calculatedRoot += cmd.id
         else context.calculatedRoot += "." + cmd.name
 
-        context.calculatedCommandPartsOffset += (context.partSpaceMap[context.calculatedRoot]
-            ?: 0) + 1 // +1 is for the index of the commandpart
+        // +1 is for the index of the commandpart
+        context.calculatedCommandPartsOffset += (context.partSpaceMap[context.calculatedRoot] ?: 0) + 1
 
         // Check for child commands
         if (context.commandParts.size > context.calculatedCommandPartsOffset && children.isNotEmpty()) {
@@ -155,7 +158,7 @@ abstract class AbstractCommand(val root: String) {
                 cmdlogger.info("${context.guildN?.name ?: ""}/${context.author.name}◠: ${context.message.contentRaw}")
                 val start = System.currentTimeMillis()
                 try {
-                    execute(context)
+                    runExecute(context)
                 } catch (t: Throwable) {
                     cmdlogger.error(
                         "↱ ${context.guildN?.name ?: ""}/${context.author.name}◡: ${context.message.contentRaw}",
@@ -202,6 +205,57 @@ abstract class AbstractCommand(val root: String) {
             context.daoManager.commandUsageWrapper.addUse(context.commandOrder[0].id)
         } else {
             sendMissingPermissionMessage(context, permission)
+        }
+    }
+
+    private suspend fun runExecute(context: ICommandContext) {
+        val params = mutableListOf<Any?>()
+        selfExecuteInformation.list.forEach {
+            val param = it.key
+
+            when (param.type) { // args of this type are known and non-user-input
+                ICommandContext::class.java -> {
+                    params.add(context)
+                    return@forEach
+                }
+                Continuation::class.java -> {
+                    params.add(continuation)
+                    return@forEach
+                }
+            }
+
+            val argInfo = it.value
+            val commandArg = argInfo.argumentInformation
+            val parsed = if (commandArg == null) {
+                println("no info on how to fetch ${param.name} in ${this.name}")
+                null
+            } else {
+                val argument = if (commandArg.optional) {
+                    if (context.args.size > commandArg.index) {
+                        context.args[commandArg.index]
+                    } else null
+                } else {
+                    context.args[commandArg.index]
+                }
+
+                argument?.let { it1 -> argInfo.argParser?.parse(context, it1) }
+            }
+            params.add(parsed)
+        }
+
+        val fancy: Array<Any?> = params.toTypedArray()
+
+        try {
+            suspendCoroutine<Unit> {
+                fancy[fancy.size - 1] = it
+                selfExecuteInformation.method.invoke(this, *fancy)
+            }
+        } catch (t: Throwable) {
+            cmdlogger.error(
+                "↱ ${context.guildN?.name ?: ""}/${context.author.name}◡: ${context.message.contentRaw}",
+                t
+            )
+            t.sendInGuild(context, shouldSend = true)
         }
     }
 
@@ -315,7 +369,6 @@ suspend fun hasPermission(context: ICommandContext, permission: String, required
         required ?: (rootCommand.permissionRequired || lowestCommand.permissionRequired)
     )
 }
-
 
 
 suspend fun hasPermission(

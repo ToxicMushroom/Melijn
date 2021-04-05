@@ -23,7 +23,7 @@ class DonateCommand : AbstractCommand("command.donate") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val msg = context.getTranslation("$root.response")
             .withVariable("url", "https://patreon.com/melijn")
             .withVariable("urlPaypal", "https://paypal.me/shroomish")
@@ -40,7 +40,7 @@ class DonateCommand : AbstractCommand("command.donate") {
             runConditions = arrayOf(RunCondition.GUILD, RunCondition.USER_SUPPORTER)
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.supporterWrapper
             val supporter = wrapper.getSupporter(context.authorId) ?: return
             val devIds = context.container.settings.botInfo.developerIds

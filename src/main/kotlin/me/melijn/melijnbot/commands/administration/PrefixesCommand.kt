@@ -30,7 +30,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -41,7 +41,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             aliases = arrayOf("ls", "view", "info")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val title = context.getTranslation("$root.response1.title")
             val prefixes = context.daoManager.guildPrefixWrapper.getPrefixes(context.guildId)
                 .sortedBy { it }
@@ -68,7 +68,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             aliases = arrayOf("a", "put", "p")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context)
                 return
@@ -107,7 +107,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             aliases = arrayOf("rm", "r", "delete", "d")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context)
                 return
@@ -129,7 +129,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             aliases = arrayOf("rma", "deleteAt", "dat")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context)
                 return

@@ -18,7 +18,7 @@ class MikuCommand : AbstractCommand("command.miku") {
         commandCategory = CommandCategory.ANIME
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val web = context.webManager
 
         val eb = Embedder(context)

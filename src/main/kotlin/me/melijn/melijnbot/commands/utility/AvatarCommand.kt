@@ -18,7 +18,7 @@ class AvatarCommand : AbstractCommand("command.avatar") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val user = if (context.args.isEmpty()) {
             context.author
         } else {

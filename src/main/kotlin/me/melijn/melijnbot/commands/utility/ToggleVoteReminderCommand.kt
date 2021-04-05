@@ -22,7 +22,7 @@ class ToggleVoteReminderCommand : AbstractCommand("command.togglevotereminder") 
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.voteReminderStatesWrapper
         val stateMap = wrapper.contains(context.authorId)
         val toggle = getEnumFromArgNMessage<VoteReminderOption>(context, 0, "$root.invalidoption") ?: return
@@ -45,7 +45,7 @@ class ToggleVoteReminderCommand : AbstractCommand("command.togglevotereminder") 
             name = "list"
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.voteReminderStatesWrapper
             val stateMap = wrapper.contains(context.authorId)
             val eb = Embedder(context)

@@ -16,7 +16,7 @@ class SnipeCommand : AbstractCommand("command.snipe") {
         commandCategory = CommandCategory.MODERATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val amount: Int
         val channelId: Long
         val guildId = context.guildId

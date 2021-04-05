@@ -16,7 +16,7 @@ class DailyCommand : AbstractCommand("command.daily") {
         commandCategory = CommandCategory.ECONOMY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (canDailyElseMessage(context)) {
             val balanceWrapper = context.daoManager.balanceWrapper
             val cash = balanceWrapper.getBalance(context.authorId)

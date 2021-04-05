@@ -43,7 +43,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val aliasMap = context.daoManager.aliasWrapper.getAliases(context.authorId)
             if (aliasMap.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
@@ -80,7 +80,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("ca")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -116,7 +116,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("c")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -143,7 +143,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("rma", "ra")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -182,7 +182,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("rm", "r")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -209,7 +209,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -275,7 +275,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }

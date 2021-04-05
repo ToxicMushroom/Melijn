@@ -19,7 +19,7 @@ class SyncChannelCommand : AbstractCommand("command.syncchannel") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val textChannel = if (context.args.isEmpty()) {
             context.textChannel
         } else {

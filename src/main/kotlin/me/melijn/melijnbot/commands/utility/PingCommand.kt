@@ -22,7 +22,7 @@ class PingCommand : AbstractCommand("command.ping") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val part1 = context.getTranslation("$root.response1.part1")
             .withVariable("gatewayPing", context.jda.gatewayPing)
 

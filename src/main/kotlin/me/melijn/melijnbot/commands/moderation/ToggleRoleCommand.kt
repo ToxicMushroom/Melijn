@@ -20,7 +20,7 @@ class ToggleRoleCommand : AbstractCommand("command.togglerole") {
         discordPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return

@@ -27,7 +27,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -45,7 +45,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             )
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -56,7 +56,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("put", "s")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.size < 3) {
                     sendSyntax(context)
                     return
@@ -99,7 +99,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("v", "vw", "list", "info")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -144,7 +144,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("clr")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -174,7 +174,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             )
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -185,7 +185,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("put", "s")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.size < 3) {
                     sendSyntax(context)
                     return
@@ -228,7 +228,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("v", "vw", "list", "info")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -273,7 +273,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("clr")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context)
                     return
@@ -302,7 +302,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             )
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -319,7 +319,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 )
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -330,7 +330,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("put", "s")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 4) {
                         sendSyntax(context)
                         return
@@ -376,7 +376,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("v", "vw", "list", "info")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return
@@ -426,7 +426,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("clr")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return
@@ -459,7 +459,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 )
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -470,7 +470,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("put", "s")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     if (context.args.size < 4) {
                         sendSyntax(context)
                         return
@@ -516,7 +516,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("v", "vw", "list", "info")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return
@@ -567,7 +567,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("clr")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context)
                         return
@@ -601,7 +601,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             )
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -611,7 +611,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("u")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val extraArg = if (
                     copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
                     copyParent is PermissionCommand.ChannelArg.UserChannelArg
@@ -738,7 +738,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("r")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val extraArg = if (
                     copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
                     copyParent is PermissionCommand.ChannelArg.UserChannelArg
@@ -863,7 +863,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 children = arrayOf(RoleChannelCommand(copyParent, root), UserChannelCommand(copyParent, root))
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -875,7 +875,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("r")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val extraArg = if (
                         copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
                         copyParent is PermissionCommand.ChannelArg.UserChannelArg
@@ -1008,7 +1008,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("u")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val extraArg = if (
                         copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
                         copyParent is PermissionCommand.ChannelArg.UserChannelArg

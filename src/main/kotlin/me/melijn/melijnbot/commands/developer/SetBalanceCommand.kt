@@ -16,7 +16,7 @@ class SetBalanceCommand : AbstractCommand("command.setbalance") {
         commandCategory = CommandCategory.DEVELOPER
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val user = retrieveUserByArgsNMessage(context, 0) ?: return
         val amount = getLongFromArgNMessage(context, 1) ?: return
         context.daoManager.balanceWrapper.setBalance(user.idLong, amount)

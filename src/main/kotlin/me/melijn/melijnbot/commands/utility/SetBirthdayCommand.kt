@@ -18,7 +18,7 @@ class SetBirthdayCommand : AbstractCommand("command.setbirthday") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             val birthday = context.daoManager.birthdayWrapper.getBirthday(context.author.idLong)
 

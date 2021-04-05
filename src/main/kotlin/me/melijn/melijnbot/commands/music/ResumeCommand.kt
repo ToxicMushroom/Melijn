@@ -17,7 +17,7 @@ class ResumeCommand : AbstractCommand("command.resume") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
 
         //Adds a message to the resumeEventMessageQueue thing so it gets logged to MUSIC logchannel

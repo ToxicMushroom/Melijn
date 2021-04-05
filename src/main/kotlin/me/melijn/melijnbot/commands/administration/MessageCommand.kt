@@ -37,7 +37,7 @@ class MessageCommand : AbstractCommand("command.message") {
             aliases = arrayOf("vw", "v")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val selected = MessageUtil.getSelectedMessage(context) ?: return
             MessageUtil.showMessagePreviewTyped(context, selected)
         }
@@ -63,7 +63,7 @@ class MessageCommand : AbstractCommand("command.message") {
                 aliases = arrayOf("pings")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val msgName = MessageUtil.getSelectedMessage(context) ?: return
                 if (context.rawArg.isBlank()) {
                     MessageUtil.showPingable(context, msgName)
@@ -76,7 +76,7 @@ class MessageCommand : AbstractCommand("command.message") {
         }
 
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
 
@@ -87,7 +87,7 @@ class MessageCommand : AbstractCommand("command.message") {
                 aliases = arrayOf("setContent", "sc", "c")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 if (context.args.isEmpty()) {
                     MessageUtil.showMessage(context, ModularMessageProperty.CONTENT)
                 } else {
@@ -109,7 +109,7 @@ class MessageCommand : AbstractCommand("command.message") {
                 )
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -120,7 +120,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     aliases = arrayOf("a")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     MessageUtil.addAttachment(context)
                 }
             }
@@ -132,7 +132,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     aliases = arrayOf("rm")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     MessageUtil.removeAttachment(context)
                 }
             }
@@ -144,7 +144,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     aliases = arrayOf("rma")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     MessageUtil.removeAttachmentAt(context)
                 }
             }
@@ -156,7 +156,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     aliases = arrayOf("ls")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     MessageUtil.listAttachments(context)
                 }
             }
@@ -185,7 +185,7 @@ class MessageCommand : AbstractCommand("command.message") {
                 )
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 sendSyntax(context)
             }
 
@@ -195,7 +195,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     name = "title"
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_TITLE
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -210,7 +210,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     name = "titleUrl"
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_URL
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -226,7 +226,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     name = "author"
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_AUTHOR
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -241,7 +241,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     name = "authorIcon"
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_AUTHOR_ICON_URL
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -256,7 +256,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     name = "authorUrl"
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_AUTHOR_URL
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -273,7 +273,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     aliases = arrayOf("thumb")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_THUMBNAIL
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -289,7 +289,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     aliases = arrayOf("img")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_IMAGE
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -314,7 +314,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     )
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     sendSyntax(context)
                 }
 
@@ -325,7 +325,7 @@ class MessageCommand : AbstractCommand("command.message") {
                         aliases = arrayOf("addInline", "a")
                     }
 
-                    override suspend fun execute(context: ICommandContext) {
+                    suspend fun execute(context: ICommandContext) {
                         if (context.args.size < 2) {
                             sendSyntax(context)
                             return
@@ -350,7 +350,7 @@ class MessageCommand : AbstractCommand("command.message") {
                         aliases = arrayOf("t")
                     }
 
-                    override suspend fun execute(context: ICommandContext) {
+                    suspend fun execute(context: ICommandContext) {
                         if (context.args.size < 2) {
                             sendSyntax(context)
                             return
@@ -370,7 +370,7 @@ class MessageCommand : AbstractCommand("command.message") {
                         aliases = arrayOf("v")
                     }
 
-                    override suspend fun execute(context: ICommandContext) {
+                    suspend fun execute(context: ICommandContext) {
                         if (context.args.size < 2) {
                             sendSyntax(context)
                             return
@@ -389,7 +389,7 @@ class MessageCommand : AbstractCommand("command.message") {
                         name = "inline"
                     }
 
-                    override suspend fun execute(context: ICommandContext) {
+                    suspend fun execute(context: ICommandContext) {
                         if (context.args.size < 2) {
                             sendSyntax(context)
                             return
@@ -407,7 +407,7 @@ class MessageCommand : AbstractCommand("command.message") {
                         aliases = arrayOf("rma", "rm", "remove")
                     }
 
-                    override suspend fun execute(context: ICommandContext) {
+                    suspend fun execute(context: ICommandContext) {
                         if (context.args.isEmpty()) {
                             sendSyntax(context)
                             return
@@ -424,7 +424,7 @@ class MessageCommand : AbstractCommand("command.message") {
                         aliases = arrayOf("ls")
                     }
 
-                    override suspend fun execute(context: ICommandContext) {
+                    suspend fun execute(context: ICommandContext) {
                         MessageUtil.showEmbedFields(context)
                     }
                 }
@@ -439,7 +439,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     aliases = arrayOf("desc")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_DESCRIPTION
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -455,7 +455,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     aliases = arrayOf("colour")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_COLOR
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -470,7 +470,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     name = "footer"
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_FOOTER
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -485,7 +485,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     name = "footerIcon"
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_FOOTER_ICON_URL
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -500,7 +500,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     name = "clear"
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     MessageUtil.clearEmbed(context)
                 }
             }
@@ -513,7 +513,7 @@ class MessageCommand : AbstractCommand("command.message") {
                     aliases = arrayOf("time")
                 }
 
-                override suspend fun execute(context: ICommandContext) {
+                suspend fun execute(context: ICommandContext) {
                     val property = ModularMessageProperty.EMBED_TIME_STAMP
                     when {
                         context.rawArg.isBlank() -> MessageUtil.showMessage(context, property)
@@ -531,7 +531,7 @@ class MessageCommand : AbstractCommand("command.message") {
             aliases = arrayOf("rma")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val messages = context.daoManager.messageWrapper.getMessages(context.guildId).sorted()
             val index = getIntegerFromArgNMessage(context, 0, 1, messages.size) ?: return
             val msgName = messages[index - 1]
@@ -549,7 +549,7 @@ class MessageCommand : AbstractCommand("command.message") {
             aliases = arrayOf("rm")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val msgName = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
             val messages = context.daoManager.messageWrapper.getMessages(context.guildId)
             val match = messages.firstOrNull {
@@ -576,7 +576,7 @@ class MessageCommand : AbstractCommand("command.message") {
             aliases = arrayOf("s", "sel")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val msgName = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
             val messages = context.daoManager.messageWrapper.getMessages(context.guildId)
             var match = messages.firstOrNull { it.equals(msgName, true) }
@@ -607,7 +607,7 @@ class MessageCommand : AbstractCommand("command.message") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val msgName = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
             val messages = context.daoManager.messageWrapper.getMessages(context.guildId)
             if (msgName.isInside(messages, true)) {
@@ -632,7 +632,7 @@ class MessageCommand : AbstractCommand("command.message") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val messages = context.daoManager.messageWrapper.getMessages(context.guildId).sorted()
             if (messages.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
@@ -647,7 +647,7 @@ class MessageCommand : AbstractCommand("command.message") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }

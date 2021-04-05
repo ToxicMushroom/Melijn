@@ -15,7 +15,8 @@ import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 import kotlin.math.roundToInt
 
-abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandContext) -> Long): AbstractCommand(root) {
+abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandContext) -> Long) :
+    AbstractCommand(root) {
 
     init {
         children = arrayOf(
@@ -38,7 +39,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
                 arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -70,7 +71,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -102,7 +103,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -146,7 +147,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -175,7 +176,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.gainProfileWrapper
             val map = wrapper.getGainProfile(idParser(context))
 
@@ -209,7 +210,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
             runConditions = arrayOf(RunCondition.VOTED)
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -220,12 +221,14 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
             val profiles = wrapper.getProfileCount(context.authorId)
             val bands = context.getGuildMusicPlayer().guildTrackManager.iPlayer.filters.bands
 
-            if (reachedPremiumLimitCount(context, profiles,
+            if (reachedPremiumLimitCount(
+                    context, profiles,
                     PRIVATE_GAIN_PROFILES_LIMIT,
                     PREMIUM_PRIVATE_GAIN_PROFILES_LIMIT,
                     PRIVATE_GAIN_PROFILES_LIMIT_PATH,
                     PRIVATE_GAIN_PROFILES_PREMIUM_LIMIT_PATH
-                )) return
+                )
+            ) return
 
             wrapper.add(idParser(context), name, bands)
 
@@ -262,7 +265,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }

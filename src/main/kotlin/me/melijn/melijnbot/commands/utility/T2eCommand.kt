@@ -25,12 +25,12 @@ class T2eCommand : AbstractCommand("command.t2e") {
             name = "noSpace"
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             t2e(context, false)
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         t2e(context, true)
     }
 

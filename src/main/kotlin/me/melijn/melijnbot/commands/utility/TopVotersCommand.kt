@@ -23,7 +23,7 @@ class TopVotersCommand : AbstractCommand("command.topvoters") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val page = (getIntegerFromArgN(context, 0) ?: 1) - 1
 
         val wrapper = context.daoManager.voteWrapper
@@ -46,49 +46,64 @@ class TopVotersCommand : AbstractCommand("command.topvoters") {
             this.seperatorOverrides[0] = " "
         }
 
-        val pos = if (!userMap.keys.contains(context.authorId)) {
-            wrapper.getPosition(context.authorId)
-        } else null
+        createFancyLeaderboard(userMap, context, { id ->
+            wrapper.getPosition(id)
+        }, page, tableBuilder, rowCount)
+    }
+
+    companion object {
+        suspend fun createFancyLeaderboard(
+            userMap: Map<Long, Long>,
+            context: ICommandContext,
+            positionGetter: suspend (Long) -> Pair<Long, Long>?,
+            page: Int,
+            tableBuilder: TableBuilder,
+            rowCount: Long
+        ) {
+            val pos = if (!userMap.keys.contains(context.authorId)) {
+                positionGetter(context.authorId)
+            } else null
 
 
-        val last = pos?.second == -1L
-        if (pos != null && pos.second < 1 + (10 * page) && !last) {
-            tableBuilder.addRow(
-                Cell("${pos.second}."),
-                Cell(bigNumberFormatter.valueToString(pos.first), Alignment.RIGHT),
-                Cell(context.author.asTag)
-            )
-            tableBuilder.addSplit()
-        }
-        for ((index, pair) in userMap.toList().withIndex()) {
-            val user = context.shardManager.retrieveUserById(pair.first).await()
+            val last = pos?.second == -1L
+            if (pos != null && pos.second < 1 + (10 * page) && !last) {
+                tableBuilder.addRow(
+                    Cell("${pos.second}."),
+                    Cell(bigNumberFormatter.valueToString(pos.first), Alignment.RIGHT),
+                    Cell(context.author.asTag)
+                )
+                tableBuilder.addSplit()
+            }
+            for ((index, pair) in userMap.toList().withIndex()) {
+                val user = context.shardManager.retrieveUserById(pair.first).await()
 
-            tableBuilder.addRow(
-                Cell("${index + 1 + (10 * page)}."),
-                Cell(bigNumberFormatter.valueToString(pair.second), Alignment.RIGHT),
-                Cell(user.asTag)
-            )
+                tableBuilder.addRow(
+                    Cell("${index + 1 + (10 * page)}."),
+                    Cell(bigNumberFormatter.valueToString(pair.second), Alignment.RIGHT),
+                    Cell(user.asTag)
+                )
 
-        }
-        if (pos != null && (pos.second > 1 + (10 * page) || last)) {
-            tableBuilder.addSplit()
-            tableBuilder.addRow(
-                Cell(if (last) "${rowCount + 1}." else "${pos.second}."),
-                Cell(bigNumberFormatter.valueToString(pos.first), Alignment.RIGHT),
-                Cell(context.author.asTag)
-            )
-        }
+            }
+            if (pos != null && (pos.second > 1 + (10 * page) || last)) {
+                tableBuilder.addSplit()
+                tableBuilder.addRow(
+                    Cell(if (last) "${rowCount + 1}." else "${pos.second}."),
+                    Cell(bigNumberFormatter.valueToString(pos.first), Alignment.RIGHT),
+                    Cell(context.author.asTag)
+                )
+            }
 
 
-        val msgs = tableBuilder.build(true)
+            val msgs = tableBuilder.build(true)
 
-        val totalPageCount = ceil(rowCount / 10.0).toLong()
+            val totalPageCount = ceil(rowCount / 10.0).toLong()
 
-        val eb = Embedder(context)
-        for (msg in msgs) {
-            eb.setDescription(msg)
-            eb.setFooter("Page ${page + 1}/$totalPageCount")
-            sendEmbedRsp(context, eb.build())
+            val eb = Embedder(context)
+            for (msg in msgs) {
+                eb.setDescription(msg)
+                eb.setFooter("Page ${page + 1}/$totalPageCount")
+                sendEmbedRsp(context, eb.build())
+            }
         }
     }
 }

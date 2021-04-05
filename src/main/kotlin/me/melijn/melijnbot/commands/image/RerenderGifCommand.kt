@@ -16,7 +16,7 @@ class RerenderGifCommand : AbstractCommand("command.rerendergif") {
         commandCategory = CommandCategory.DEVELOPER
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         executeGif(context)
     }
 

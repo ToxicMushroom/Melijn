@@ -13,7 +13,7 @@ class DabCommand : AbstractCommand("command.dab") {
         commandCategory = CommandCategory.ANIME
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         AnimeCommandUtil.execute(context, "dab")
     }
 }

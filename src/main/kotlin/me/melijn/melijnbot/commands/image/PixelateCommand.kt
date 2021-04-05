@@ -22,7 +22,7 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("pixelateGif", true)) {
             executeGif(context)
         } else {

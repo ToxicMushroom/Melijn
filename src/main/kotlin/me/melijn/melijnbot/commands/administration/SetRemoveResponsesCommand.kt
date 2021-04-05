@@ -22,7 +22,7 @@ class SetRemoveResponsesCommand : AbstractCommand("command.setremoveresponses") 
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -73,7 +73,7 @@ class SetRemoveResponsesCommand : AbstractCommand("command.setremoveresponses") 
             aliases = arrayOf("g")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val guildId = context.guildId
             val wrapper = context.daoManager.removeResponseWrapper
 

@@ -21,7 +21,7 @@ class EvalCommand : AbstractCommand("command.eval") {
 
     val engine: ScriptEngine? = ScriptEngineManager().getEngineByName("kotlin")
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         requireNotNull(engine)
         var code = context.rawArg.removePrefix("```kt\n").removePrefix("```").removeSuffix("```").trim()
         val imports = code.lines().takeWhile { it.startsWith("import ") || it.startsWith("\nimport ") }

@@ -24,7 +24,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
     }
 
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendCurrentLang(context)
         } else {
@@ -77,7 +77,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
             name = "list"
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             var msg = context.getTranslation("$root.title")
             msg += Language.values()
                 .withIndex()

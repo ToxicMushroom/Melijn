@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.getImageUrlFromArgsNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
-class GoogleReverseImageSearch : AbstractCommand("command.googlereverseimagesearch") {
+class GoogleReverseImageSearchCommand : AbstractCommand("command.googlereverseimagesearch") {
 
     init {
         id = 214
@@ -17,7 +17,7 @@ class GoogleReverseImageSearch : AbstractCommand("command.googlereverseimagesear
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val attachment = (getImageUrlFromArgsNMessage(context, 0) ?: return).second
 
         val eb = Embedder(context)

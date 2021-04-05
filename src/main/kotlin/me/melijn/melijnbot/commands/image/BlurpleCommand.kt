@@ -18,7 +18,7 @@ class BlurpleCommand : AbstractCommand("command.blurple") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("blurpleGif", true)) {
             executeGif(context)
         } else {

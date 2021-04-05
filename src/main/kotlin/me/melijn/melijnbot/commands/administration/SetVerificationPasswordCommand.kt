@@ -16,7 +16,7 @@ class SetVerificationPasswordCommand : AbstractCommand("command.setverificationp
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.verificationPasswordWrapper
         if (context.args.isEmpty()) {
             val password = wrapper.getPassword(context.guildId)

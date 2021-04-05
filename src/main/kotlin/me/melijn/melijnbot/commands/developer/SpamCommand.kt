@@ -14,7 +14,7 @@ class SpamCommand : AbstractCommand("command.spam") {
         commandCategory = CommandCategory.DEVELOPER
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val bool = getBooleanFromArgNMessage(context, 0) ?: return
         val msg = "blub exception logs have been "
 

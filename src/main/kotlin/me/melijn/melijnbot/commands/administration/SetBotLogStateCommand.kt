@@ -17,7 +17,7 @@ class SetBotLogStateCommand : AbstractCommand("command.setbotlogstate") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.botLogStateWrapper
         if (context.args.isEmpty()) {
             val state = wrapper.shouldLog(context.guildId)

@@ -37,7 +37,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             aliases = arrayOf("roleInfo")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -74,7 +74,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             aliases = arrayOf("userInfo")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -98,7 +98,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -109,7 +109,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -161,7 +161,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             aliases = arrayOf("rm")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -195,7 +195,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val userRolesMap = context.daoManager.forceRoleWrapper.getForceRoles(context.guildId)
             val reverseMap = mutableMapOf<Long, Int>()
 

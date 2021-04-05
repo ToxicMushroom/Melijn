@@ -18,7 +18,7 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val msg: String = if (context.args.isEmpty()) {
             val channel = context.textChannel
             val slowMode = channel.slowmode

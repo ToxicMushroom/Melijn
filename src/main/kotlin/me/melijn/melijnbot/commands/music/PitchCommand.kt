@@ -18,7 +18,7 @@ class PitchCommand : AbstractCommand("command.pitch") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
         if (context.args.isEmpty()) {
             val currentPitchPercent = (iPlayer.filters.timescale?.pitch ?: 1.0f) * 100

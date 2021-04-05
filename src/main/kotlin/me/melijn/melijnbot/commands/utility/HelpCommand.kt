@@ -45,7 +45,7 @@ class HelpCommand : AbstractCommand("command.help") {
             )
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -86,7 +86,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val inStream = Thread.currentThread().contextClassLoader.getResourceAsStream("strings_en.properties")
                     ?: return
                 val ir = InputStreamReader(inStream)
@@ -123,7 +123,7 @@ class HelpCommand : AbstractCommand("command.help") {
             )
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -154,7 +154,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val dList = DiscordMethods.getMethods().map { method -> method.name }
                 val ccList = CCMethods.getMethods().map { method -> method.name }
                 val bList = BirthdayMethods.getMethods().map { method -> method.name }
@@ -169,7 +169,7 @@ class HelpCommand : AbstractCommand("command.help") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val args = context.args
         if (args.isEmpty()) {
             val daoManager = context.daoManager
@@ -326,7 +326,7 @@ class HelpCommand : AbstractCommand("command.help") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val category = getEnumFromArgN<CommandCategory>(context, 0)
 
             val commandList = context.commandList

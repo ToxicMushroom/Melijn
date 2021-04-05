@@ -37,7 +37,7 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
             aliases = arrayOf("rma")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val reminderWrapper = context.daoManager.reminderWrapper
             val reminders = reminderWrapper.getRemindersOfUser(context.authorId)
             if (reminders.isEmpty()) {
@@ -65,7 +65,7 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
             name = "list"
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val reminderWrapper = context.daoManager.reminderWrapper
             val reminders = reminderWrapper.getRemindersOfUser(context.authorId)
             if (reminders.isEmpty()) {
@@ -88,7 +88,7 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return

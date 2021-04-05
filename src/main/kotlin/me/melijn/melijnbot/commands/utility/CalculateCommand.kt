@@ -16,7 +16,7 @@ class CalculateCommand : AbstractCommand("command.calculate") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.rawArg.isBlank()) {
             sendSyntax(context)
             return

@@ -27,7 +27,7 @@ class SetBandCommand : AbstractCommand("command.setband") {
         )
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -64,7 +64,7 @@ class SetBandCommand : AbstractCommand("command.setband") {
             name = "all"
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
             if (context.args.isEmpty()) {
                 val title = context.getTranslation("$root.show")

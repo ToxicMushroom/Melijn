@@ -1,292 +1,109 @@
-@file:Suppress("RemoveRedundantQualifierName")
-
 package me.melijn.melijnbot.internals.command
 
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.commands.administration.*
-import me.melijn.melijnbot.commands.animal.*
-import me.melijn.melijnbot.commands.anime.*
-import me.melijn.melijnbot.commands.developer.*
-import me.melijn.melijnbot.commands.economy.*
-import me.melijn.melijnbot.commands.games.PokerCommand
-import me.melijn.melijnbot.commands.games.RockPaperScissorsCommand
-import me.melijn.melijnbot.commands.games.SlotsCommand
-import me.melijn.melijnbot.commands.games.TicTacToeCommand
-import me.melijn.melijnbot.commands.image.*
-import me.melijn.melijnbot.commands.moderation.*
-import me.melijn.melijnbot.commands.music.*
-import me.melijn.melijnbot.commands.nsfw.*
-import me.melijn.melijnbot.commands.utility.*
+import me.melijn.melijnbot.internals.arguments.ArgumentInfo
+import me.melijn.melijnbot.internals.arguments.CommandArg
+import me.melijn.melijnbot.internals.arguments.CommandArgParser
+import me.melijn.melijnbot.internals.arguments.MethodArgumentInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
+import org.jetbrains.kotlin.descriptors.runtime.structure.parameterizedTypeArguments
+import org.reflections.Reflections
 import org.slf4j.LoggerFactory
-
+import java.lang.reflect.Parameter
 
 class CommandClientBuilder(private val container: Container) {
 
     private val logger = LoggerFactory.getLogger(this::class.java.name)
+    private var commands = HashSet<AbstractCommand>()
+    private var commandExecuteMap = HashMap<Class<out AbstractCommand>, MethodArgumentInfo>()
+    private var argumentParsers = HashMap<Class<Any>, CommandArgParser<Any>>()
 
     init {
         logger.info("Loading commands...")
     }
 
-    private val commands = hashSetOf<AbstractCommand>(
-        PunishmentCommand(),
-        SetCommandStateCommand(),
-        PunchCommand(),
-        ColorCommand(),
-        LoopCommand(),
-        ShuffleCommand(),
-        KickCommand(),
-        SetLogChannelCommand(),
-        KissCommand(),
-        MirrorCommand(),
-        LickCommand(),
-        NyancatCommand(),
-        SPlayCommand(),
-        ForceRoleCommand(),
-        TestCommand(),
-        BiteCommand(),
-        SetChannelCommand(),
-        VolumeCommand(),
-        GreyScaleCommand(),
-        InfoCommand(),
-        GifInfoCommand(),
-        FilterCommand(),
-        TempBanCommand(),
-        DabCommand(),
-        LoopQueueCommand(),
-        HelpCommand(),
-        PrefixesCommand(),
-        MuteCommand(),
-        StatsCommand(),
-        CatCommand(),
-        KoalaCommand(),
-        ResumeCommand(),
-        SoftBanCommand(),
-        TrackInfoCommand(),
-        RawCommand(),
-        BirdCommand(),
-        AvatarCommand(),
-        SetCooldownCommand(),
-        MetricsCommand(),
-        UnmuteCommand(),
-        PurgeCommand(),
-        SeekCommand(),
-        VoteCommand(),
-        SetVerificationTypeCommand(),
-        PlayCommand(),
-        SetMusicChannelCommand(),
-        FilterGroupCommand(),
-        BlushCommand(),
-        StareCommand(),
-        TempMuteCommand(),
-        SummonCommand(),
-        VerifyCommand(),
-        RewindCommand(),
-        SetSlowModeCommand(),
-        GreetCommand(),
-        BanCommand(),
-        InvertCommand(),
-        RestartCommand(),
-        UrbanCommand(),
-        HistoryCommand(),
-        RoleInfoCommand(),
-        AwooCommand(),
-        AlpacaCommand(),
-        PermissionCommand(),
-        WarnCommand(),
-        T2eCommand(),
-        FlipImgCommand(),
-        ClearChannelCommand(),
-        ServerInfoCommand(),
-        PatCommand(),
-        SelfRoleCommand(),
-        PingCommand(),
-        SmoothPixelateCommand(),
-        HighfiveCommand(),
-        InviteCommand(),
-        BlurCommand(),
-        SetEmbedColorCommand(),
-        PandaCommand(),
-        CuddleCommand(),
-        SlapCommand(),
-        EmoteCommand(),
-        ForwardCommand(),
-        BlurpleCommand(),
-        SetMaxUserVerificationFlowRateCommand(),
-        UnicodeCommand(),
-        UnbanCommand(),
-        SpookifyCommand(),
-        HugCommand(),
-        SetPrivateEmbedColorCommand(),
-        StopCommand(),
-        RolesCommand(),
-        VoteInfoCommand(),
-        FoxCommand(),
-        PixelateCommand(),
-        TickleCommand(),
-        SetStreamUrlCommand(),
-        SharpenCommand(),
-        ThinkingCommand(),
-        HandholdingCommand(),
-        ShardsCommand(),
-        SayCommand(),
-        ShootCommand(),
-        SettingsCommand(),
-        RemoveCommand(),
-        PokeCommand(),
-        PauseCommand(),
-        QueueCommand(),
-        PrivatePrefixesCommand(),
-        MeguminCommand(),
-        NowPlayingCommand(),
-        SetBandCommand(),
-        SetEmbedStateCommand(),
-        LewdCommand(),
-        ShrugCommand(),
-        PunishmentGroupCommand(),
-        PoutCommand(),
-        EvalCommand(),
-        OwOCommand(),
-        SmugCommand(),
-        SetVerificationPasswordCommand(),
-        DonateCommand(),
-        CryCommand(),
-        DiscordMemeCommand(),
-        SetRoleCommand(),
-        UserInfoCommand(),
-        SetLanguageCommand(),
-        SkipCommand(),
-        SetVerificationEmotejiCommand(),
-        DogCommand(),
-        CustomCommandCommand(),
-        ThumbsupCommand(),
-        NekoCommand(),
-        SetPrivateLanguageCommand(),
-        SetBirthdayCommand(),
-        SetPrivateTimeZoneCommand(),
-        SetTimeZoneCommand(),
-        SpamCommand(),
-        GainProfileCommand(),
-        DuckCommand(),
-        AIWaifuCommand(),
-        SetMusic247Command(),
-        SupportCommand(),
-        VoteSkipCommand(),
-        RerenderGifCommand(),
-        LyricsCommand(),
-        AppendReverseGifCommand(),
-        GlobalRecolorCommand(),
-        MoveCommand(),
-        JoinRoleCommand(),
-        MassMoveCommand(),
-        LimitRoleToChannelCommand(),
-        SetBannedOrKickedTriggersLeaveCommand(),
-        MyAnimeListCommand(container.settings.api.jikan),
-        SetBotLogStateCommand(),
-        SetRoleColorCommand(),
-        AniListCommand(),
-        NekoHCommand(),
-        Rule34Command(),
-        SafebooruCommand(),
-        TBibCommand(),
-        GelbooruCommand(),
-        AngryCommand(),
-        PngsFromGifCommand(),
-        PngsToGifCommand(),
-        ReplaceColorCommand(),
-        SetAllowSpacedPrefixState(),
-        SetPrivateAllowSpacedPrefixState(),
-        AliasesCommand(),
-        PrivateAliasesCommand(),
-        ManageHistoryCommand(),
-        ShutdownCommand(),
-        PenguinCommand(),
-        SpeedCommand(),
-        PitchCommand(),
-        RateCommand(),
-        PossumCommand(),
-        BalanceCommand(),
-        SetBalanceCommand(),
-        SetRemoveResponsesCommand(),
-        SetRemoveInvokeCommand(),
-        ManageSupportersCommand(),
-        me.melijn.melijnbot.commands.economy.FlipCommand(),
-        DailyCommand(),
-        PayCommand(),
-        BassBoostCommand(),
-        NightcoreCommand(),
-        LeaderBoardCommand(),
-        TopVotersCommand(),
-        ToggleVoteReminderCommand(),
-        MikuCommand(),
-        RedisCommand(),
-        RedditCommand(),
-        MemeCommand(),
-        BonkCommand(),
-        OsuCommand(),
-        EmotesCommand(),
-        IDInfoCommand(),
-        IAmCommand(),
-        IAmNotCommand(),
-        TokenInfoCommand(),
-        ChannelInfoCommand(),
-        ReverseImageSearchCommand(),
-        GoogleReverseImageSearch(),
-        BoostersCommand(),
-        ClearCacheCommand(),
-        SlotsCommand(),
-        PokerCommand(),
-        JailCommand(),
-        CalculateCommand(),
-        SnipeCommand(),
-        SnekCommand(),
-        PlaylistCommand(),
-        StarboardCommand(),
-        LikeCommand(),
-        RemindmeCommand(),
-        ShipCommand(),
-        MusicNodeCommand(),
-        ClearQueueCommand(),
-        TicTacToeCommand(),
-        RockPaperScissorsCommand(),
-        RepCommand(),
-        BegCommand(),
-        ChickenCommand(),
-        FishCommand(),
-        LockCommand(),
-        UnlockCommand(),
-        FlipXCommand(),
-        TimeCommand(),
-        NomCommand(),
-        ConfusedCommand(),
-        FrogCommand(),
-        ChangeNameCommand(),
-        ScriptsCommand(),
-        TwitterCommand(),
-        LynxCommand(),
-        SyncChannelCommand(),
-        MoveChannelCommand(),
-        SetChannelCategory(),
-        SetAutoRemoveInactiveJoinMessagesDuration(),
-        MessageCommand(),
-        LinkMessageCommand(),
-        ChannelRoleCommand(),
-        GiveRoleCommand(),
-        TakeRoleCommand(),
-        ToggleRoleCommand(),
-        PrivateGainProfileCommand()
-    )
-
     fun build(): CommandClient {
-        return CommandClient(commands.toSet(), container)
+        loadCommands()
+        loadArgumentParsers()
+        loadFunctions()
+
+        injectFunctionInfoIntoCommands()
+
+        return CommandClient(commands, commandExecuteMap, argumentParsers, container)
     }
 
-    fun loadCommands(): CommandClientBuilder {
+    private fun injectFunctionInfoIntoCommands() {
+        commands.forEach { cmd ->
+            val methodArgumentInfo = commandExecuteMap[cmd.javaClass]
+            if (methodArgumentInfo == null) {
+                println("no info for $cmd")
+            }
+            methodArgumentInfo?.let {
+                cmd.selfExecuteInformation = it
+            }
+        }
+    }
+
+    private fun loadArgumentParsers() {
+        val reflections = Reflections("me.melijn.melijnbot.internals.arguments.parser")
+        val notHash = reflections.getSubTypesOf(CommandArgParser::class.java)
+            .map {
+                val argParser: CommandArgParser<Any> = it.getConstructor().newInstance() as CommandArgParser<Any>
+                val clazz = it.genericSuperclass.parameterizedTypeArguments.first() as Class<Any>
+                clazz to argParser
+            }.toMap()
+        argumentParsers = HashMap(notHash)
+    }
+
+    private fun loadFunctions() {
+        val reflections = Reflections("me.melijn.melijnbot.commands")
+        val filtered = reflections.getSubTypesOf(AbstractCommand::class.java)
+            .filter {
+                it.methods.any { method ->
+                    method.name == "execute"
+                }
+            }.map {
+                val method = it.methods.first { method ->
+                    method.name == "execute"
+                }
+
+                val methodArgumentParsers = mutableMapOf<Parameter, ArgumentInfo>()
+                method.parameters.forEach { param ->
+                    val clazz = param.type as Class<Any>
+
+                    val argumentInfo = ArgumentInfo(
+                        param.getAnnotation(CommandArg::class.java),
+                        null,
+                        argumentParsers[clazz]
+                    )
+                    methodArgumentParsers[param] = argumentInfo
+                }
+                val methodArgumentInfo = MethodArgumentInfo(method, methodArgumentParsers)
+
+                it to methodArgumentInfo
+            }.toMap()
+
+
+
+        commandExecuteMap = HashMap(filtered)
+        logger.info("Loaded ${filtered.size} executes in commands")
+    }
+
+    private fun loadCommands() {
+        val reflections = Reflections("me.melijn.melijnbot.commands")
+        val filtered = reflections.getSubTypesOf(AbstractCommand::class.java)
+            .filter {
+                !it.isMemberClass && it.constructors[0].parameterCount == 0
+            }
+
+        commands = filtered.map {
+            it.getConstructor().newInstance()
+        }.toHashSet()
+
         TaskManager.async {
             container.daoManager.commandWrapper.bulkInsert(commands)
         }
+
         logger.info("Loaded ${commands.size} commands")
-        return this
     }
 }

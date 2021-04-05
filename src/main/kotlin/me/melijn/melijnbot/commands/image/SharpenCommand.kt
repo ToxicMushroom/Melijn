@@ -21,7 +21,7 @@ class SharpenCommand : AbstractCommand("command.sharpen") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("sharpenGif", true)) {
             executeGif(context)
         } else {

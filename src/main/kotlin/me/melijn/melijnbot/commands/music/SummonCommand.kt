@@ -22,7 +22,7 @@ class SummonCommand : AbstractCommand("command.summon") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             if (!RunConditionUtil.checkOtherBotAloneOrDJOrSameVC(
                     context.container,

@@ -23,7 +23,7 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val triple = ImageUtils.getImageBytesNMessage(context, "gif") ?: return
         val image = triple.first
         val byteArrayInputStream = ByteArrayInputStream(image)

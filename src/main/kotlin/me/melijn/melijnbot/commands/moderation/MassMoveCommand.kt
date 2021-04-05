@@ -23,7 +23,7 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
         commandCategory = CommandCategory.MODERATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return

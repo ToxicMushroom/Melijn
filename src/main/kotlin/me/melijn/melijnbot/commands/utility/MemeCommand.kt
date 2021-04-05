@@ -24,7 +24,7 @@ class MemeCommand : AbstractCommand("command.meme") {
         val subreddits = arrayOf("dankmemes", "memes", "funny")
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val subreddit =
             if (context.commandParts[0] == "dankmeme") "dankmemes" else subreddits[Random.nextInt(subreddits.size)]
 

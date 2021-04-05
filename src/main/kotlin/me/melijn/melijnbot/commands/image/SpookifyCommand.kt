@@ -17,7 +17,7 @@ class SpookifyCommand : AbstractCommand("command.spookify") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("spookifyGif", true)) {
             executeGif(context)
         } else {

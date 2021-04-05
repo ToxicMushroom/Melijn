@@ -23,7 +23,7 @@ class VolumeCommand : AbstractCommand("command.volume") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
         if (context.args.isEmpty()) {
             val amount = iPlayer.filters.volume

@@ -17,7 +17,7 @@ class SpamSettingsCommand : AbstractCommand("command.spamgroup") {
         )
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }

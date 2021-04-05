@@ -20,31 +20,39 @@ class SetPrivateEmbedColorCommand : AbstractCommand("command.setprivateembedcolo
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
-        val wrapper = context.daoManager.userEmbedColorWrapper
-        val msg = if (context.args.isEmpty()) {
-            val colorInt = wrapper.getColor(context.authorId)
+    suspend fun execute(context: ICommandContext) {
+        setEmbedColor(context) { it.authorId }
+    }
 
-            if (colorInt == 0) {
-                context.getTranslation("$root.show.unset")
+    companion object {
+        suspend fun setEmbedColor(context: ICommandContext, idParser: (ICommandContext) -> Long) {
+            val root = context.commandOrder.first().root
+            val wrapper = context.daoManager.embedColorWrapper
+            val id = idParser(context)
+            val msg = if (context.args.isEmpty()) {
+                val colorInt = wrapper.getColor(id)
+
+                if (colorInt == 0) {
+                    context.getTranslation("$root.show.unset")
+                } else {
+                    context.getTranslation("$root.show.set")
+                        .withVariable("color", colorInt.toHexString())
+                }
             } else {
-                context.getTranslation("$root.show.set")
-                    .withVariable("color", colorInt.toHexString())
-            }
-        } else {
-            if (context.rawArg.equals("null", true)) {
-                wrapper.removeColor(context.authorId)
+                if (context.rawArg.equals("null", true)) {
+                    wrapper.removeColor(id)
 
-                context.getTranslation("$root.unset")
-            } else {
-                val color = getColorFromArgNMessage(context, 0) ?: return
-                wrapper.setColor(context.authorId, color.rgb)
+                    context.getTranslation("$root.unset")
+                } else {
+                    val color = getColorFromArgNMessage(context, 0) ?: return
+                    wrapper.setColor(id, color.rgb)
 
-                context.getTranslation("$root.set")
-                    .withVariable(PLACEHOLDER_ARG, color.rgb.toHexString())
+                    context.getTranslation("$root.set")
+                        .withVariable(PLACEHOLDER_ARG, color.rgb.toHexString())
+                }
             }
+            sendRsp(context, msg)
         }
-        sendRsp(context, msg)
     }
 }
 

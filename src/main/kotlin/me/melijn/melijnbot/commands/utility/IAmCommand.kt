@@ -14,7 +14,7 @@ class IAmCommand : AbstractCommand("command.iam") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         IAmNotCommand.doSelfRoleSelect(context, true)
     }
 }

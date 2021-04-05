@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.utility
 
+import me.melijn.melijnbot.internals.arguments.CommandArg
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -8,10 +9,10 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
-import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.internals.utils.withVariable
 import me.melijn.melijnbot.internals.web.rest.voted.BotList
 import me.melijn.melijnbot.internals.web.rest.voted.getBotListTimeOut
+import net.dv8tion.jda.api.entities.User
 
 class VoteInfoCommand : AbstractCommand("command.voteinfo") {
 
@@ -22,13 +23,12 @@ class VoteInfoCommand : AbstractCommand("command.voteinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(
+        context: ICommandContext,
+        @CommandArg(index = 0, optional = true) user: User?
+    ) {
         val voteWrapper = context.daoManager.voteWrapper
-        val target = if (context.args.isEmpty()) {
-            context.author
-        } else {
-            retrieveUserByArgsNMessage(context, 0) ?: return
-        }
+        val target = user ?: context.author
 
         val userVote = voteWrapper.getUserVote(target.idLong)
         val title = context.getTranslation("$root.embed.title")

@@ -19,7 +19,7 @@ class SetVerificationTypeCommand : AbstractCommand("command.setverificationtype"
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.verificationTypeWrapper
         if (context.args.isEmpty()) {
             val type = wrapper.getType(context.guildId)

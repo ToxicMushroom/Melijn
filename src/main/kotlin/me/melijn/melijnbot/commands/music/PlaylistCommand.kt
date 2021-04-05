@@ -45,7 +45,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             aliases = arrayOf("changeName", "setName")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -74,7 +74,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             name = "clear"
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -110,7 +110,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             name = "saveQueue"
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -170,7 +170,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
 
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -182,7 +182,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             runConditions = arrayOf(RunCondition.VC_BOT_OR_USER_DJ)
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -238,7 +238,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 val playlists = context.daoManager.playlistWrapper.getPlaylists(context.authorId)
                 if (playlists.isEmpty()) {
@@ -315,7 +315,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             aliases = arrayOf("rm", "r")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -362,7 +362,7 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             runConditions = arrayOf(RunCondition.PLAYING_TRACK_NOT_NULL)
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return

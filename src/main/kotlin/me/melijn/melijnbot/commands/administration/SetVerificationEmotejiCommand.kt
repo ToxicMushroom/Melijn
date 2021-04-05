@@ -17,7 +17,7 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.verificationEmotejiWrapper
         if (context.args.isEmpty()) {
             val code = wrapper.getEmoteji(context.guildId)

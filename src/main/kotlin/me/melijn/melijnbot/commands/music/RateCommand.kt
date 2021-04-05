@@ -18,7 +18,7 @@ class RateCommand : AbstractCommand("command.rate") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
         if (context.args.isEmpty()) {
             val currentRatePercent = (iPlayer.filters.timescale?.rate ?: 1.0f) * 100

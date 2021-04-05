@@ -38,7 +38,6 @@ class EventManager(val container: Container) : IEventManager {
         val boostListener = BoostListener(container)
         val lavaEventListener = container.jdaLavaLink
         val commandListener = CommandClientBuilder(container)
-            .loadCommands()
             .build()
 
         // ORDER WILL AFFECT ORDER IN WICH EVENTS ARE CALLED

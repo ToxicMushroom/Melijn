@@ -17,7 +17,7 @@ class AppendReverseGifCommand : AbstractCommand("command.appendreversegif") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         ImageCommandUtil.executeGifFrameAppend(context)
     }
 }

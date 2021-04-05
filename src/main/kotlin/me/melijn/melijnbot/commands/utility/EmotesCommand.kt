@@ -19,7 +19,7 @@ class EmotesCommand : AbstractCommand("command.emotes") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val emotes = context.guild.retrieveEmotes().await()
         if (emotes.isEmpty()) {
             val msg = context.getTranslation("$root.noemotes")

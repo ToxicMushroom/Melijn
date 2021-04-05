@@ -24,7 +24,7 @@ class PollCommand : AbstractCommand("command.poll") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
         return
     }
@@ -38,7 +38,7 @@ class PollCommand : AbstractCommand("command.poll") {
 
         //>poll addTimed *d [textChannel] "question?" "a" "B"
         //>poll addTimed *d "question?" "a" "B"
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 4) {
                 sendSyntax(context)
                 return
@@ -54,7 +54,7 @@ class PollCommand : AbstractCommand("command.poll") {
 
         //>poll add [textChannel] "question?" "a" "B"
         //>poll add "question?" "a" "B"
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 3) {
                 sendSyntax(context)
                 return

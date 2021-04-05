@@ -22,12 +22,14 @@ class SupporterDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table", { resultset ->
             val list = HashSet<Supporter>()
             while (resultset.next()) {
-                list.add(Supporter(
-                    resultset.getLong("userId"),
-                    resultset.getLong("guildId"),
-                    resultset.getLong("startDate"),
-                    resultset.getLong("lastServerPickTime")
-                ))
+                list.add(
+                    Supporter(
+                        resultset.getLong("userId"),
+                        resultset.getLong("guildId"),
+                        resultset.getLong("startDate"),
+                        resultset.getLong("lastServerPickTime")
+                    )
+                )
             }
             supporters.invoke(list)
         })
@@ -37,12 +39,14 @@ class SupporterDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table", { resultset ->
             val list = HashSet<Supporter>()
             while (resultset.next()) {
-                list.add(Supporter(
-                    resultset.getLong("userId"),
-                    resultset.getLong("guildId"),
-                    resultset.getLong("startDate"),
-                    resultset.getLong("lastServerPickTime")
-                ))
+                list.add(
+                    Supporter(
+                        resultset.getLong("userId"),
+                        resultset.getLong("guildId"),
+                        resultset.getLong("startDate"),
+                        resultset.getLong("lastServerPickTime")
+                    )
+                )
             }
             it.resume(list)
         })
@@ -63,18 +67,24 @@ class SupporterDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun addUser(supporter: Supporter) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, guildId, startDate, lastServerPickTime) VALUES (?, ?, ?, ?)",
-            supporter.userId, supporter.guildId, supporter.startMillis, supporter.lastServerPickTime)
+        driverManager.executeUpdate(
+            "INSERT INTO $table (userId, guildId, startDate, lastServerPickTime) VALUES (?, ?, ?, ?)",
+            supporter.userId, supporter.guildId, supporter.startMillis, supporter.lastServerPickTime
+        )
     }
 
     fun removeUser(userId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?",
-            userId)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE userId = ?",
+            userId
+        )
     }
 
     fun setGuild(authorId: Long, guildId: Long, lastServerPickTime: Long) {
-        driverManager.executeUpdate("UPDATE $table SET guildId = ?, lastServerPickTime = ? WHERE userId = ?",
-            guildId, lastServerPickTime, authorId)
+        driverManager.executeUpdate(
+            "UPDATE $table SET guildId = ?, lastServerPickTime = ? WHERE userId = ?",
+            guildId, lastServerPickTime, authorId
+        )
     }
 }
 

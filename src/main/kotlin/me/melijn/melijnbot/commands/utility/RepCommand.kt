@@ -17,7 +17,7 @@ class RepCommand : AbstractCommand("command.rep") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             val rep = context.daoManager.repWrapper.getRep(context.authorId)
             val dailyCooldownWrapper = context.daoManager.economyCooldownWrapper

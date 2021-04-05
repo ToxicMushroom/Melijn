@@ -49,11 +49,8 @@ configure<ApolloExtension> {
 
 
 repositories {
-    maven {
-        url = uri("https://m2.dv8tion.net/releases")
-        name = "m2-dv8tion"
-    }
-    maven("https://duncte123.jfrog.io/artifactory/maven")
+    maven("https://m2.dv8tion.net/releases") // jda, lavaplayer
+    maven("https://duncte123.jfrog.io/artifactory/maven") // weeb.java
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://jitpack.io")
     mavenCentral()
@@ -138,6 +135,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.mariuszgromada.math/MathParser.org-mXparser
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:4.4.2")
+
+    // https://search.maven.org/artifact/org.reflections/reflections
+    implementation("org.reflections:reflections:0.9.12")
 
     // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
     implementation("com.apollographql.apollo:apollo-runtime:2.5.5")

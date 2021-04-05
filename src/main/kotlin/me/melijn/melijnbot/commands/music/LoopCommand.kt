@@ -17,7 +17,7 @@ class LoopCommand : AbstractCommand("command.loop") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         trackManager.loopedTrack = !trackManager.loopedTrack
 

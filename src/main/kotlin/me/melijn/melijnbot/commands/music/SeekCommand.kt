@@ -19,7 +19,7 @@ class SeekCommand : AbstractCommand("command.seek") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
         val track = iPlayer.playingTrack ?: throw IllegalArgumentException("checks failed")
         val trackDuration = track.duration

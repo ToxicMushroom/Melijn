@@ -24,7 +24,7 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             if (RunConditionUtil.checkPlayingTrackNotNull(context.container, context.message)) {
                 val info = context.getGuildMusicPlayer().guildTrackManager.playingTrack?.info

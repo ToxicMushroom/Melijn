@@ -20,7 +20,7 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         var guild = context.guild
         if (context.args.isNotEmpty()) {
             if (context.args[0].matches(Regex("\\d+"))) {

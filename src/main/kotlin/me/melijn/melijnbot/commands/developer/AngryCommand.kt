@@ -14,7 +14,7 @@ class AngryCommand : AbstractCommand("command.angry") {
         commandCategory = CommandCategory.DEVELOPER
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendRsp(context, ">angry <serverIdToMakeLeave aka destroy >:) (I hope)>")
             return

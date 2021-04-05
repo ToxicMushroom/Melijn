@@ -24,7 +24,7 @@ class LikeCommand : AbstractCommand("command.like") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val guildMusicPlayer = context.musicPlayerManager.getGuildMusicPlayer(context.guild)
         val audioTrack: AudioTrack = guildMusicPlayer.guildTrackManager.playingTrack ?: return
 

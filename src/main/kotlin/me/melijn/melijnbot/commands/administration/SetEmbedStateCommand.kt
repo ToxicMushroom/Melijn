@@ -17,7 +17,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         when {
             context.args.isEmpty() -> {
                 sendCurrentEmbedState(context)

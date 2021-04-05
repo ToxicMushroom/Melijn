@@ -51,7 +51,7 @@ class LockCommand : AbstractCommand("command.lock") {
                 name = "list"
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val locks = context.daoManager.lockExcludedWrapper.getExcluded(context.guildId, EntityType.TEXT_CHANNEL)
                 if (locks.isEmpty()) {
                     sendRsp(context, "No channels are currently excluded from being locked out by `>lock`")
@@ -75,7 +75,7 @@ class LockCommand : AbstractCommand("command.lock") {
                 name = "include"
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val roles = getTextChannelsByArgsNMessage(context, 0, context.args.size) ?: return
                 context.daoManager.lockExcludedWrapper.include(
                     context.guildId,
@@ -100,7 +100,7 @@ class LockCommand : AbstractCommand("command.lock") {
                 name = "exclude"
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val roles = getTextChannelsByArgsNMessage(context, 0, context.args.size) ?: return
                 context.daoManager.lockExcludedWrapper.exclude(
                     context.guildId,
@@ -116,7 +116,7 @@ class LockCommand : AbstractCommand("command.lock") {
             }
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }
@@ -139,7 +139,7 @@ class LockCommand : AbstractCommand("command.lock") {
                 name = "list"
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val locks = context.daoManager.lockExcludedWrapper.getExcluded(context.guildId, EntityType.ROLE)
                 if (locks.isEmpty()) {
                     sendRsp(context, "No roles are currently excluded from being locked out by `>lock`")
@@ -162,7 +162,7 @@ class LockCommand : AbstractCommand("command.lock") {
                 name = "include"
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val roles = getRolesByArgsNMessage(context, 0, context.args.size) ?: return
                 context.daoManager.lockExcludedWrapper.include(
                     context.guildId,
@@ -184,7 +184,7 @@ class LockCommand : AbstractCommand("command.lock") {
                 name = "exclude"
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val roles = getRolesByArgsNMessage(context, 0, context.args.size) ?: return
                 context.daoManager.lockExcludedWrapper.exclude(
                     context.guildId,
@@ -200,7 +200,7 @@ class LockCommand : AbstractCommand("command.lock") {
             }
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }
@@ -220,7 +220,7 @@ class LockCommand : AbstractCommand("command.lock") {
     }
 
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return

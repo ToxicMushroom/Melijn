@@ -20,7 +20,7 @@ class FlipXCommand : AbstractCommand("command.flipx") {
         commandCategory = CommandCategory.ECONOMY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.size != 3) {
             sendSyntax(context)
             return

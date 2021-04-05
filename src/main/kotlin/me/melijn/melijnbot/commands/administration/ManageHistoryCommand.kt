@@ -23,7 +23,7 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -34,7 +34,7 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
             aliases = arrayOf("cls", "c")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -103,7 +103,7 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
             aliases = arrayOf("r", "rm")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return

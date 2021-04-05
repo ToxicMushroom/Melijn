@@ -24,7 +24,7 @@ class SettingsCommand : AbstractCommand("command.settings") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
 
         val guild = if (context.args.isNotEmpty() && context.botDevIds.contains(context.authorId)) {
             val guild1 = context.shardManager.getGuildById(context.args[0])

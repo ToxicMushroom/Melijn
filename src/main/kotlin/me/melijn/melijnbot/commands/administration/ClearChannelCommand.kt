@@ -22,7 +22,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val textChannel = if (context.args.isEmpty()) {
             context.textChannel
         } else {

@@ -23,7 +23,7 @@ class FilterCommand : AbstractCommand("command.filter") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -34,7 +34,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -63,7 +63,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             aliases = arrayOf("removeAt", "rbi", "deleteByIndex")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context)
                 return
@@ -91,7 +91,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             aliases = arrayOf("r", "delete", "d")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -118,7 +118,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -156,7 +156,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             )
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }
@@ -176,7 +176,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             )
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }

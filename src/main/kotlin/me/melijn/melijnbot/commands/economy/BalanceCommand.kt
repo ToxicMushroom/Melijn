@@ -17,7 +17,7 @@ class BalanceCommand : AbstractCommand("command.balance") {
         commandCategory = CommandCategory.ECONOMY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             val balance = context.daoManager.balanceWrapper.getBalance(context.authorId)
             val description = context.getTranslation("$root.show.self")

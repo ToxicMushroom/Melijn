@@ -20,7 +20,7 @@ class SetPrivateAllowSpacedPrefixState : AbstractCommand("command.setprivateallo
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.allowSpacedPrefixWrapper
         if (context.args.isEmpty()) {
             val allowed = wrapper.getUserTriState(context.authorId)

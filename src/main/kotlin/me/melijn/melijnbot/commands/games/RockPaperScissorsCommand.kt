@@ -24,7 +24,7 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
         val activeGames: MutableList<RockPaperScissorsGame> = mutableListOf()
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return

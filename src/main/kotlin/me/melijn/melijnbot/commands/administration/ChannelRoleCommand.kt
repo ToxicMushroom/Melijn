@@ -32,7 +32,7 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.channelRoleWrapper
             if (context.args.isEmpty()) {
                 val channelRoles = wrapper.getChannelRoles(context.guildId)
@@ -96,7 +96,7 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
             aliases = arrayOf("c")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (argSizeCheckFailed(context, 1)) return
             val channelId = if (DISCORD_ID.matches(context.args[0])) {
                 context.args[0].toLong()
@@ -122,7 +122,7 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
             aliases = arrayOf("rma")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val channel = getVoiceChannelByArgNMessage(context, 0) ?: return
             val wrapper = context.daoManager.channelRoleWrapper
             val roles = wrapper.getRoleIds(context.guildId, channel.idLong)
@@ -147,7 +147,7 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
             aliases = arrayOf("rm")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val channel = getVoiceChannelByArgNMessage(context, 0) ?: return
             val role = getRoleByArgsNMessage(context, 1) ?: return
 
@@ -167,7 +167,7 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val channel = getVoiceChannelByArgNMessage(context, 0) ?: return
             val role = getRoleByArgsNMessage(context, 1, canInteract = true) ?: return
 
@@ -180,7 +180,7 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }

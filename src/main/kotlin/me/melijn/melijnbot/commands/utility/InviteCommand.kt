@@ -16,7 +16,7 @@ class InviteCommand : AbstractCommand("command.invite") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val botId = context.jda.selfUser.idLong
         val baseUrl = "https://discordapp.com/oauth2/authorize?client_id=$botId&scope=bot"
         val title = context.getTranslation("$root.title")

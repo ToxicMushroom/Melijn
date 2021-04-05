@@ -3,18 +3,14 @@ package me.melijn.melijnbot.internals.utils
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
 import me.melijn.llklient.io.LavalinkRestClient
 import me.melijn.llklient.utils.LavalinkUtil
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.SearchType
 import me.melijn.melijnbot.internals.music.SuspendingAudioLoadResultHandler
+import me.melijn.melijnbot.internals.threading.TaskManager
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 val URL_PATTERN =
     Regex("^(?:(?:https?)://)(?:\\S+(?::\\S*)?@)?(?:(?!10(?:\\.\\d{1,3}){3})(?!127(?:\\.\\d{1,3}){3})(?!169\\.254(?:\\.\\d{1,3}){2})(?!192\\.168(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\x{00a1}-\\x{ffff}0-9]+-?)*[a-z\\x{00a1}-\\x{ffff}0-9]+)(?:\\.(?:[a-z\\x{00a1}-\\x{ffff}0-9]+-?)*[a-z\\x{00a1}-\\x{ffff}0-9]+)*(?:\\.(?:[a-z\\x{00a1}-\\x{ffff}]{2,})))(?::\\d{2,5})?(?:/[^\\s]*)?$")
@@ -43,17 +39,12 @@ class YTSearch {
         }
     }
 
-    private val youtubeService: ExecutorService =
-        Executors.newCachedThreadPool { r: Runnable -> Thread(r, "Youtube-Search-Thread") }
-    private val youtubeScope = CoroutineScope(youtubeService.asCoroutineDispatcher())
-
-
     fun search(
         query: String, searchType: SearchType,
         audioTrackCallBack: suspend (audioTrack: List<AudioTrack>) -> Unit,
         llDisabledAndNotYT: suspend () -> Unit,
         lpCallback: SuspendingAudioLoadResultHandler
-    ) = youtubeScope.launch {
+    ) = TaskManager.async {
         try {
             val lManager = Container.instance.lavaManager
             if (lManager.lavalinkEnabled) {
@@ -74,13 +65,13 @@ class YTSearch {
                         } else {
                             restClient?.loadItem(query, lpCallback)
                         }
-                        return@launch
+                        return@async
                     }
                 }
 
                 if (tracks != null) {
                     audioTrackCallBack(tracks)
-                    return@launch
+                    return@async
                 }
             }
 

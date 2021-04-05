@@ -16,7 +16,7 @@ class SetChannelCategory : AbstractCommand("command.setchannelcategory") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (argSizeCheckFailed(context, 1)) return
         val channel = getChannelByArgsNMessage(context, 0, true) ?: return
         val category = getCategoryByArgsNMessage(context, 1, true) ?: return

@@ -21,7 +21,7 @@ class SmoothPixelateCommand : AbstractCommand("command.smoothpixelate") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("smoothPixelateGif", true)) {
             executeGif(context)
         } else {

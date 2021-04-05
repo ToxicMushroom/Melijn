@@ -16,7 +16,7 @@ class BegCommand : AbstractCommand("command.beg") {
         commandCategory = CommandCategory.ECONOMY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (!canBegElseMessage(context)) return
 
         val balanceWrapper = context.daoManager.balanceWrapper

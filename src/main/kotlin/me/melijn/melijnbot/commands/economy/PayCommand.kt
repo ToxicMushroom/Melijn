@@ -18,7 +18,7 @@ class PayCommand : AbstractCommand("command.pay") {
         commandCategory = CommandCategory.ECONOMY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
             return

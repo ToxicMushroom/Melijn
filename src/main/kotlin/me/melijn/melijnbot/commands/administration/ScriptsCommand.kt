@@ -35,7 +35,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
         private const val SCRIPTS_LIMIT_PATH = "premium.feature.scripts.limit"
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 
@@ -46,7 +46,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
             aliases = arrayOf("vw")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val trigger = getStringFromArgsNMessage(context, 0, 1, 128) ?: return
             val script = context.daoManager.scriptWrapper.getScripts(context.guildId)
                 .firstOrNull { it.trigger.equals(trigger, true) }
@@ -75,7 +75,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
             aliases = arrayOf("rma")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val scripts = context.daoManager.scriptWrapper.getScripts(context.guildId)
                 .sortedBy { it.trigger }
             val index = getIntegerFromArgNMessage(context, 0, 1, scripts.size) ?: return
@@ -93,7 +93,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
             aliases = arrayOf("rm")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val trigger = getStringFromArgsNMessage(context, 0, 1, 128) ?: return
             context.daoManager.scriptWrapper.removeScript(context.guildId, trigger)
 
@@ -108,7 +108,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val scripts = context.daoManager.scriptWrapper.getScripts(context.guildId)
                 .sortedBy { it.trigger }
 
@@ -135,7 +135,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
             aliases = arrayOf("a")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return

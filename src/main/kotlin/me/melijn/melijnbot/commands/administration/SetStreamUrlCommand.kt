@@ -16,7 +16,7 @@ class SetStreamUrlCommand : AbstractCommand("command.setstreamurl") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.streamUrlWrapper
         if (context.args.isEmpty()) {
             val url = wrapper.getUrl(context.guildId)

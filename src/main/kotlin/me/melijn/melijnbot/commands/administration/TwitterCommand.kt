@@ -63,7 +63,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
                 aliases = arrayOf("rm")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val twitterWebhook = getTwitterWebhookByArgsNMessage(context, 0) ?: return
                 val toInclude =
                     getEnumFromArgNMessage<TweetInfo.TweetType>(context, 1, MESSAGE_UNKNOWN_TWEETTYPE) ?: return
@@ -86,7 +86,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
                 aliases = arrayOf("a")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val twitterWebhook = getTwitterWebhookByArgsNMessage(context, 0) ?: return
                 val toExclude =
                     getEnumFromArgNMessage<TweetInfo.TweetType>(context, 1, MESSAGE_UNKNOWN_TWEETTYPE) ?: return
@@ -110,7 +110,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
                 aliases = arrayOf("ls")
             }
 
-            override suspend fun execute(context: ICommandContext) {
+            suspend fun execute(context: ICommandContext) {
                 val twitterWebhook = getTwitterWebhookByArgsNMessage(context, 0) ?: return
 
                 val title = "List of `%handle%`'s ignored tweetTypes:"
@@ -125,7 +125,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
 
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }
@@ -137,7 +137,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
             aliases = arrayOf("rma")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val twitterWrapper = context.daoManager.twitterWrapper
             val toRemove = getTwitterWebhookByArgsNMessage(context, 0) ?: return
             twitterWrapper.delete(context.guildId, toRemove.handle)
@@ -154,7 +154,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
             aliases = arrayOf("ls")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val list = context.daoManager.twitterWrapper.getAll(context.guildId)
             if (list.isEmpty()) {
                 sendRsp(context, "You don't track any twitter users")
@@ -177,7 +177,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
             aliases = arrayOf("sw")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             val twitters = context.daoManager.twitterWrapper.getAll(context.guildId)
             if (twitters.size > TWITTER_LIMIT && !isPremiumUser(context)) {
                 val replaceMap = mapOf(
@@ -250,7 +250,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 

@@ -23,7 +23,7 @@ class SkipCommand : AbstractCommand("command.skip") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val amount = getIntegerFromArgN(context, 0, 1) ?: 1
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val cTrack = trackManager.iPlayer.playingTrack ?: return

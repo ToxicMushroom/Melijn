@@ -25,7 +25,7 @@ class UrbanCommand : AbstractCommand("command.urban") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val web = context.webManager
         if (context.args.isEmpty()) {
             sendSyntax(context)

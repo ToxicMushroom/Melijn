@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.web.bins.BinApis
 import me.melijn.melijnbot.internals.web.booru.BooruApi
 import me.melijn.melijnbot.internals.web.botlist.BotListApi
+import me.melijn.melijnbot.internals.web.jikan.JikanApi
 import me.melijn.melijnbot.internals.web.kitsu.KitsuApi
 import me.melijn.melijnbot.internals.web.nsfw.Rule34Api
 import me.melijn.melijnbot.internals.web.osu.OsuApi
@@ -58,6 +59,7 @@ class WebManager(val settings: Settings) {
     val osuApi: OsuApi = OsuApi(proxiedHttpClient, settings.tokens.osu)
     val botListApi: BotListApi = BotListApi(httpClient, settings)
     val weebApi: WeebApi = WeebApi(httpClient, settings)
+    val jikanApi: JikanApi = JikanApi(settings.api.jikan)
 
     init {
         if (settings.api.spotify.clientId.isNotBlank() && settings.api.spotify.password.isNotBlank()) {

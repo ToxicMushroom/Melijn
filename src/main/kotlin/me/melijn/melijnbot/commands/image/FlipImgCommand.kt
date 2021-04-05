@@ -18,7 +18,7 @@ class FlipImgCommand : AbstractCommand("command.flipimg") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.commandParts[1].equals("flipGif", true)) {
             executeGif(context)
         } else {

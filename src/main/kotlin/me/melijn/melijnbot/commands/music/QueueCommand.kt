@@ -26,7 +26,7 @@ class QueueCommand : AbstractCommand("command.queue") {
         commandCategory = CommandCategory.MUSIC
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
 
 

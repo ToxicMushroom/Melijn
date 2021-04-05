@@ -22,7 +22,7 @@ class VoteCommand : AbstractCommand("command.vote") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val cMillis = System.currentTimeMillis()
         val userVote = context.daoManager.voteWrapper.getUserVote(context.authorId)
             ?: UserVote(context.authorId, 0, 0, 0, 0, 0, 0)

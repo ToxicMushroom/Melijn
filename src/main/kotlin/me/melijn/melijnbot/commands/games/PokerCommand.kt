@@ -39,7 +39,7 @@ class PokerCommand : AbstractCommand("command.poker") {
     private val ranks = listOf("2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "R", "A")
     private val types = listOf('♠', '♣', '♥', '♦')
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return

@@ -18,11 +18,11 @@ class SetTimeZoneCommand : AbstractCommand("command.settimezone") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendTimeZone(context)
         } else {
-            setTimeZone(context)
+            setTimeZone(context) { it.guildId }
         }
     }
 
@@ -41,38 +41,40 @@ class SetTimeZoneCommand : AbstractCommand("command.settimezone") {
         sendRsp(context, msg)
     }
 
-    private suspend fun setTimeZone(context: ICommandContext) {
-        val shouldUnset = "null".equals(context.commandParts[2], true)
+    companion object {
+        suspend fun setTimeZone(context: ICommandContext, idParser: (ICommandContext) -> Long) {
+            val shouldUnset = "null".equals(context.commandParts[2], true)
 
-        val zone = if (shouldUnset) {
-            null
-        } else {
-            getObjectFromArgNMessage(context, 0, { s ->
-                try {
-                    TimeZone.getTimeZone(s)
-                } catch (t: Throwable) {
-                    null
-                }
-            }, MESSAGE_UNKNOWN_TIMEZONE) ?: return
+            val zone = if (shouldUnset) {
+                null
+            } else {
+                getObjectFromArgNMessage(context, 0, { s ->
+                    try {
+                        TimeZone.getTimeZone(s)
+                    } catch (t: Throwable) {
+                        null
+                    }
+                }, MESSAGE_UNKNOWN_TIMEZONE) ?: return
+            }
+
+
+            val dao = context.daoManager.timeZoneWrapper
+            if (zone == null) {
+                dao.removeTimeZone(idParser(context))
+            } else {
+                dao.setTimeZone(idParser(context), zone)
+            }
+
+            val possible = if (shouldUnset) {
+                "un"
+            } else {
+                ""
+            }
+
+            val msg = context.getTranslation("${context.commandOrder.first().root}.${possible}set")
+                .withVariable("zone", zone?.id ?: "")
+
+            sendRsp(context, msg)
         }
-
-
-        val dao = context.daoManager.timeZoneWrapper
-        if (zone == null) {
-            dao.removeTimeZone(context.guildId)
-        } else {
-            dao.setTimeZone(context.guildId, zone)
-        }
-
-        val possible = if (shouldUnset) {
-            "un"
-        } else {
-            ""
-        }
-
-        val msg = context.getTranslation("$root.${possible}set")
-            .withVariable("zone", zone?.id ?: "")
-
-        sendRsp(context, msg)
     }
 }

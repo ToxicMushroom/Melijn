@@ -17,7 +17,7 @@ class SetMusic247Command : AbstractCommand("command.setmusic247") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.music247Wrapper
         if (context.args.isEmpty()) {
             val enabled = wrapper.is247Mode(context.guildId)

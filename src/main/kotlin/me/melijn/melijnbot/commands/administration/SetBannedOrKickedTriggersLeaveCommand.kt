@@ -15,7 +15,7 @@ class SetBannedOrKickedTriggersLeaveCommand : AbstractCommand("command.setbanned
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val wrapper = context.daoManager.bannedOrKickedTriggersLeaveWrapper
         if (context.args.isEmpty()) {
             val state = wrapper.shouldTrigger(context.guildId)

@@ -32,7 +32,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
             aliases = arrayOf("ex")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -60,7 +60,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
             aliases = arrayOf("inc")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -87,7 +87,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
             aliases = arrayOf("exl")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -113,7 +113,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
             aliases = arrayOf("hm")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -156,7 +156,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
             aliases = arrayOf("dm", "removeMessage", "rm")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
@@ -200,7 +200,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
             aliases = arrayOf("sms")
         }
 
-        override suspend fun execute(context: ICommandContext) {
+        suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 val starboardSettingsWrapper = context.daoManager.starboardSettingsWrapper
                 val starboardSettings = starboardSettingsWrapper.getStarboardSettings(context.guildId)
@@ -221,7 +221,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
         }
     }
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
 }

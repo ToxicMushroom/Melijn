@@ -38,7 +38,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
 
     data class SlotEntry(val name: String, val unicode: String, val occurrence: Int)
 
-    override suspend fun execute(context: ICommandContext) {
+    suspend fun execute(context: ICommandContext) {
         val slotEmote = context.shardManager.getEmoteById(context.container.settings.emote.slotId)
         val prizeMap = mutableMapOf<Int, String>()
 
