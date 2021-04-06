@@ -1,5 +1,7 @@
 package me.melijn.melijnbot.enums
 
-enum class DateFormat {
-    DMY, MDY, YMD
+import me.melijn.melijnbot.enums.parsable.ParsableEnum
+
+enum class DateFormat : ParsableEnum {
+    DMY, MDY, YMD;
 }

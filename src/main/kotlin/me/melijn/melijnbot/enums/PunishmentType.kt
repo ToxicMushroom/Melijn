@@ -1,14 +1,18 @@
 package me.melijn.melijnbot.enums
 
-enum class PunishmentType(val aliases: Array<String>) {
+import me.melijn.melijnbot.enums.parsable.ParsableEnum
 
-    BAN(arrayOf("ban", "bans")),
-    MUTE(arrayOf("mute", "mutes")),
-    KICK(arrayOf("kick", "kicks")),
-    WARN(arrayOf("warn", "warns")),
-    SOFTBAN(arrayOf("softban", "softbans")),
-    ADDROLE(arrayOf("addRole")),
-    REMOVEROLE(arrayOf("removeRole"));
+enum class PunishmentType(val aliases: Set<String>) : ParsableEnum {
+
+    BAN(setOf("ban", "bans")),
+    MUTE(setOf("mute", "mutes")),
+    KICK(setOf("kick", "kicks")),
+    WARN(setOf("warn", "warns")),
+    SOFTBAN(setOf("softban", "softbans")),
+    ADDROLE(setOf("addRole")),
+    REMOVEROLE(setOf("removeRole"));
+
+    override fun aliases(): Set<String> = this.aliases
 
     companion object {
         fun getMatchingTypesFromNode(node: String): List<PunishmentType> {

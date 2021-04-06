@@ -2,7 +2,7 @@ package me.melijn.melijnbot.database.disabled
 
 import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
-import me.melijn.melijnbot.enums.ChannelCommandState
+import me.melijn.melijnbot.internals.models.TriState
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -18,11 +18,11 @@ class ChannelCommandStateDao(driverManager: DriverManager) : CacheDBDao(driverMa
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun get(channelId: Long): Map<String, ChannelCommandState> = suspendCoroutine {
-        val map = HashMap<String, ChannelCommandState>()
+    suspend fun get(channelId: Long): Map<String, TriState> = suspendCoroutine {
+        val map = HashMap<String, TriState>()
         driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ?", { resultSet ->
             while (resultSet.next()) {
-                map[resultSet.getString("commandId")] = ChannelCommandState.valueOf(resultSet.getString("state"))
+                map[resultSet.getString("commandId")] = TriState.valueOf(resultSet.getString("state"))
             }
         }, channelId)
         it.resume(map)
@@ -34,14 +34,14 @@ class ChannelCommandStateDao(driverManager: DriverManager) : CacheDBDao(driverMa
         }, channelId, commandId)
     }
 
-    suspend fun insert(guildId: Long, channelId: Long, commandId: String, state: ChannelCommandState) {
+    fun insert(guildId: Long, channelId: Long, commandId: String, state: TriState) {
         driverManager.executeUpdate(
             "INSERT INTO $table (guildId, channelId, commandId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
             guildId, channelId, commandId, state.toString()
         )
     }
 
-    fun bulkPut(guildId: Long, channelId: Long, commands: Set<String>, channelCommandState: ChannelCommandState) {
+    fun bulkPut(guildId: Long, channelId: Long, commands: Set<String>, channelCommandState: TriState) {
         driverManager.getUsableConnection { con ->
             con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?")
                 .use { statement ->

@@ -1,6 +1,8 @@
 package me.melijn.melijnbot.enums
 
-enum class MessageType(val base: String) {
+import me.melijn.melijnbot.enums.parsable.ParsableEnum
+
+enum class MessageType(val base: String) : ParsableEnum{
 
     PRE_VERIFICATION_JOIN("PreVerificationJoin"),
     PRE_VERIFICATION_LEAVE("PreVerificationLeave"),
@@ -13,6 +15,10 @@ enum class MessageType(val base: String) {
     BOOST("Boost");
 
     val text: String = "${base}Message"
+
+    override fun aliases(): Set<String> {
+        return setOf(base, text)
+    }
 
     companion object {
 

@@ -1,6 +1,8 @@
 package me.melijn.melijnbot.enums
 
-enum class ChannelType {
+import me.melijn.melijnbot.enums.parsable.ParsableEnum
+
+enum class ChannelType : ParsableEnum {
     JOIN,
     LEAVE,
     KICKED,
@@ -11,5 +13,5 @@ enum class ChannelType {
     PRE_VERIFICATION_JOIN,
     PRE_VERIFICATION_LEAVE,
     BOOST,
-    STARBOARD
+    STARBOARD;
 }

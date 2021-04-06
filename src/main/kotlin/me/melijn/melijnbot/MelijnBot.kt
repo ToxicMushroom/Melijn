@@ -26,13 +26,11 @@ class MelijnBot {
     private val logger = LoggerFactory.getLogger(MelijnBot::class.java)
 
     companion object {
-        lateinit var instance: MelijnBot
         lateinit var shardManager: ShardManager
         lateinit var eventManager: EventManager
     }
 
     init {
-        instance = this
         Locale.setDefault(Locale.ENGLISH)
         System.setProperty(
             kotlinx.coroutines.DEBUG_PROPERTY_NAME,
@@ -76,7 +74,7 @@ class MelijnBot {
             .setActivity(Activity.playing("Starting.."))
             .setStatus(OnlineStatus.IDLE)
             .setAutoReconnect(true)
-            .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY)
+            .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY, CacheFlag.ONLINE_STATUS)
             .setBulkDeleteSplittingEnabled(false)
             .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }

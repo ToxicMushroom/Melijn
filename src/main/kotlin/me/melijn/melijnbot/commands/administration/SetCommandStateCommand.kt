@@ -1,12 +1,10 @@
 package me.melijn.melijnbot.commands.administration
 
-import me.melijn.melijnbot.enums.ChannelCommandState
-import me.melijn.melijnbot.enums.CommandState
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.models.TriState
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE
-import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_COMMANDSTATE
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -46,10 +44,10 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             }
 
             val commands = getCommandIdsFromArgNMessage(context, 0) ?: return
-            val commandState: CommandState = getEnumFromArgNMessage(context, 1, MESSAGE_UNKNOWN_COMMANDSTATE) ?: return
+            val enable: Boolean = getBooleanFromArgNMessage(context, 1) ?: return
 
             val dao = context.daoManager.disabledCommandWrapper
-            dao.setCommandState(context.guildId, commands, commandState)
+            dao.setCommandState(context.guildId, commands, enable)
             val path = "$root.response1" + if (commands.size > 1) {
                 ".multiple"
             } else {
@@ -57,7 +55,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             }
             val msg = context.getTranslation(path)
                 .withVariable("commandCount", commands.size.toString())
-                .withVariable("state", commandState.toString())
+                .withVariable("state", enable.toString())
                 .withVariable("commandNode", context.args[0])
 
             sendRsp(context, msg)
@@ -82,7 +80,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
             val nullS = context.args[2] == "null"
             val commandState = if (nullS) {
-                ChannelCommandState.DEFAULT
+                TriState.DEFAULT
             } else {
                 getEnumFromArgNMessage(context, 2, MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE) ?: return
             }

@@ -3,9 +3,6 @@ package me.melijn.melijnbot.internals.command
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.command.CustomCommand
-import me.melijn.melijnbot.enums.ChannelCommandState
-import me.melijn.melijnbot.internals.arguments.CommandArgParser
-import me.melijn.melijnbot.internals.arguments.MethodArgumentInfo
 import me.melijn.melijnbot.internals.command.custom.CustomCommandClient
 import me.melijn.melijnbot.internals.command.script.ScriptClient
 import me.melijn.melijnbot.internals.events.SuspendListener
@@ -24,8 +21,6 @@ val SPACE_REGEX = "\\s+".toRegex()
 
 class CommandClient(
     private val commandList: Set<AbstractCommand>,
-    private var commandExecuteMap: Map<Class<out AbstractCommand>, MethodArgumentInfo>,
-    private var argumentParsers: Map<Class<Any>, CommandArgParser<*>>,
     private val container: Container
 ) : SuspendListener() {
 
@@ -497,9 +492,9 @@ class CommandClient(
 
             val disabledChannelCommands = channelCommandStateCache.getMap(message.channel.idLong)
             if (disabledChannelCommands.contains(id)) {
-                if (disabledChannelCommands[id] == ChannelCommandState.ENABLED) {
+                if (disabledChannelCommands[id] == TriState.TRUE) {
                     return false
-                } else if (disabledChannelCommands[id] == ChannelCommandState.DISABLED) {
+                } else if (disabledChannelCommands[id] == TriState.FALSE) {
                     return true
                 }
             }

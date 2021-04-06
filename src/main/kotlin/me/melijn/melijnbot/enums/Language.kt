@@ -1,6 +1,8 @@
 package me.melijn.melijnbot.enums
 
-enum class Language {
+import me.melijn.melijnbot.enums.parsable.ParsableEnum
+
+enum class Language : ParsableEnum {
     EN
     //NL_BE
 }

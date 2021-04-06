@@ -10,6 +10,8 @@ import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
 import me.melijn.melijnbot.internals.utils.addIfNotPresent
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.GuildChannel
@@ -210,24 +212,21 @@ abstract class AbstractCommand(val root: String) {
 
     private suspend fun runExecute(context: ICommandContext) {
         val params = mutableListOf<Any?>()
-        selfExecuteInformation.list.forEach {
-            val param = it.key
-
+        for ((param, argInfo) in selfExecuteInformation.list) {
             when (param.type) { // args of this type are known and non-user-input
                 ICommandContext::class.java -> {
                     params.add(context)
-                    return@forEach
+                    continue
                 }
                 Continuation::class.java -> {
                     params.add(continuation)
-                    return@forEach
+                    continue
                 }
             }
 
-            val argInfo = it.value
             val commandArg = argInfo.argumentInformation
             val parsed = if (commandArg == null) {
-                println("no info on how to fetch ${param.name} in ${this.name}")
+                sendRsp(context, "no info on how to fetch ${param.name} in ${this.name}")
                 null
             } else {
                 val argument = if (commandArg.optional) {
@@ -235,10 +234,22 @@ abstract class AbstractCommand(val root: String) {
                         context.args[commandArg.index]
                     } else null
                 } else {
-                    context.args[commandArg.index]
+                    if (context.args.size > commandArg.index) {
+                        context.args[commandArg.index]
+                    } else {
+                        sendSyntax(context)
+                        return
+                    }
                 }
 
-                argument?.let { it1 -> argInfo.argParser?.parse(context, it1) }
+                if (argument != null) {
+                    val result = argInfo.argParser?.parse(context, argument)
+                    if (result == null) {
+                        argInfo.argParser?.wrongArg(context, argument)
+                        return
+                    }
+                    result
+                } else null
             }
             params.add(parsed)
         }

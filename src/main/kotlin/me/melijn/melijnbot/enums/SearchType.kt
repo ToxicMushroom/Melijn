@@ -1,5 +1,9 @@
 package me.melijn.melijnbot.enums
 
-enum class SearchType {
-    YT, SC, LINK
+import me.melijn.melijnbot.enums.parsable.ParsableEnum
+
+enum class SearchType : ParsableEnum {
+    YT,
+    SC,
+    LINK
 }

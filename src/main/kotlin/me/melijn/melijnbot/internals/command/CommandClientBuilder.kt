@@ -16,7 +16,7 @@ class CommandClientBuilder(private val container: Container) {
     private val logger = LoggerFactory.getLogger(this::class.java.name)
     private var commands = HashSet<AbstractCommand>()
     private var commandExecuteMap = HashMap<Class<out AbstractCommand>, MethodArgumentInfo>()
-    private var argumentParsers = HashMap<Class<Any>, CommandArgParser<Any>>()
+    private var argumentParsers = HashMap<String, CommandArgParser<Any>>()
 
     init {
         logger.info("Loading commands...")
@@ -29,7 +29,7 @@ class CommandClientBuilder(private val container: Container) {
 
         injectFunctionInfoIntoCommands()
 
-        return CommandClient(commands, commandExecuteMap, argumentParsers, container)
+        return CommandClient(commands, container)
     }
 
     private fun injectFunctionInfoIntoCommands() {
@@ -42,6 +42,7 @@ class CommandClientBuilder(private val container: Container) {
                 cmd.selfExecuteInformation = it
             }
         }
+        logger.info("Injected argInformation for argparsing in the ${commands.size} commands")
     }
 
     private fun loadArgumentParsers() {
@@ -49,8 +50,9 @@ class CommandClientBuilder(private val container: Container) {
         val notHash = reflections.getSubTypesOf(CommandArgParser::class.java)
             .map {
                 val argParser: CommandArgParser<Any> = it.getConstructor().newInstance() as CommandArgParser<Any>
-                val clazz = it.genericSuperclass.parameterizedTypeArguments.first() as Class<Any>
-                clazz to argParser
+                val parameterizedTypeArguments = it.genericSuperclass.parameterizedTypeArguments
+
+                parameterizedTypeArguments.first().toString() to argParser
             }.toMap()
         argumentParsers = HashMap(notHash)
     }
@@ -69,12 +71,13 @@ class CommandClientBuilder(private val container: Container) {
 
                 val methodArgumentParsers = mutableMapOf<Parameter, ArgumentInfo>()
                 method.parameters.forEach { param ->
-                    val clazz = param.type as Class<Any>
+                    val clazz = param.parameterizedType
+                    val argParser = argumentParsers[clazz.toString()]
 
                     val argumentInfo = ArgumentInfo(
                         param.getAnnotation(CommandArg::class.java),
                         null,
-                        argumentParsers[clazz]
+                        argParser
                     )
                     methodArgumentParsers[param] = argumentInfo
                 }

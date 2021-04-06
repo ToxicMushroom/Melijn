@@ -1,6 +1,8 @@
 package me.melijn.melijnbot.enums
 
-enum class RoleType {
+import me.melijn.melijnbot.enums.parsable.ParsableEnum
+
+enum class RoleType : ParsableEnum {
     MUTE,
     UNVERIFIED,
     BIRTHDAY

@@ -1,6 +1,8 @@
 package me.melijn.melijnbot.enums
 
-enum class LogChannelType(val text: String = this.toString(), val parentNodes: Array<String> = emptyArray()) {
+import me.melijn.melijnbot.enums.parsable.ParsableEnum
+
+enum class LogChannelType(val text: String = this.toString(), val parentNodes: Array<String> = emptyArray()) : ParsableEnum {
 
     //Punishments
     PERMANENT_BAN("PermanentBan", arrayOf("punishment", "punishments", "ban", "permban", "pblc")),
@@ -42,6 +44,8 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
     BOT("Bot", arrayOf("b", "blc")),
     PUNISHMENT_POINTS("PunishmentPoints", arrayOf("punishment", "punishments", "pp", "pplc"));
 
+
+    override fun aliases(): Set<String> = setOf(this.text)
 
     //Messages
     companion object {

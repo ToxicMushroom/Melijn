@@ -1,12 +1,13 @@
 package me.melijn.melijnbot.commands.utility
 
+import me.melijn.melijnbot.internals.arguments.CommandArg
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.asEpochMillisToDate
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withSafeVariable
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Emote
 
 class EmoteCommand : AbstractCommand("command.emote") {
@@ -18,54 +19,21 @@ class EmoteCommand : AbstractCommand("command.emote") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    suspend fun execute(context: ICommandContext) {
-        if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        }
-
-        val trans1 = context.getTranslation("$root.response1.part1")
-        val trans2 = context.getTranslation("$root.response1.part2")
+    suspend fun execute(
+        context: ICommandContext,
+        @CommandArg(index = 0) emote: Emote
+    ) {
+        val part1 = context.getTranslation("$root.response1.part1")
+        val part2 = context.getTranslation("$root.response1.part2")
         val transExtra = context.getTranslation("$root.response1.extra")
 
-        var emote: Emote? = getEmoteByArgsN(context, 0, false)
-        val arg = context.args[0]
+        val msg = replaceEmoteVars(
+            part1 + transExtra + part2,
+            context,
+            emote
+        )
 
-        if (emote == null && EMOTE_MENTION.matches(arg)) {
-            val result = (EMOTE_MENTION.find(arg) ?: return).groupValues
-            emote = context.shardManager.getEmoteById(result[2])
-
-            if (emote == null) {
-                val animated = arg.startsWith("<a")
-                val msg = replaceMissingEmoteVars(
-                    trans1 + trans2,
-                    context,
-                    result[2],
-                    result[1],
-                    animated
-                )
-
-                sendRsp(context, msg)
-                return
-            }
-        } else if (arg.isPositiveNumber()) {
-            emote = context.shardManager.getEmoteById(arg)
-        }
-
-        if (emote != null) {
-            val msg = replaceEmoteVars(
-                trans1 + transExtra + trans2,
-                context,
-                emote
-            )
-
-            sendRsp(context, msg)
-
-        } else {
-            val msg = context.getTranslation("$root.notanemote")
-                .withSafeVariable(PLACEHOLDER_ARG, arg)
-            sendRsp(context, msg)
-        }
+        sendRsp(context, msg)
     }
 
 

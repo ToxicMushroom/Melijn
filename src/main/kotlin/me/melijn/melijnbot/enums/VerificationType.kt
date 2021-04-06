@@ -1,5 +1,10 @@
 package me.melijn.melijnbot.enums
 
-enum class VerificationType {
-    PASSWORD, GOOGLE_RECAPTCHAV2, REACTION, NONE
+import me.melijn.melijnbot.enums.parsable.ParsableEnum
+
+enum class VerificationType : ParsableEnum {
+    PASSWORD,
+    GOOGLE_RECAPTCHAV2,
+    REACTION,
+    NONE
 }

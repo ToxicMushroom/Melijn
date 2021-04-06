@@ -3,7 +3,6 @@ package me.melijn.melijnbot.database.disabled
 import com.fasterxml.jackson.module.kotlin.readValue
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
-import me.melijn.melijnbot.enums.CommandState
 import me.melijn.melijnbot.objectMapper
 
 class DisabledCommandWrapper(private val disabledCommandDao: DisabledCommandDao) {
@@ -21,20 +20,20 @@ class DisabledCommandWrapper(private val disabledCommandDao: DisabledCommandDao)
         return set
     }
 
-    suspend fun setCommandState(guildId: Long, commandIds: Set<String>, commandState: CommandState) {
+    suspend fun setCommandState(guildId: Long, commandIds: Set<String>, enable: Boolean) {
         val set = getSet(guildId).toMutableSet()
 
-        if (commandState == CommandState.DISABLED) {
+        if (enable) {
+            for (id in commandIds) {
+                set.remove(id)
+            }
+            disabledCommandDao.bulkDelete(guildId, commandIds)
+        } else {
             for (id in commandIds) {
                 if (!set.contains(id))
                     set.add(id)
             }
             disabledCommandDao.bulkPut(guildId, commandIds)
-        } else {
-            for (id in commandIds) {
-                set.remove(id)
-            }
-            disabledCommandDao.bulkDelete(guildId, commandIds)
         }
         disabledCommandDao.setCacheEntry(guildId, objectMapper.writeValueAsString(set), NORMAL_CACHE)
     }
