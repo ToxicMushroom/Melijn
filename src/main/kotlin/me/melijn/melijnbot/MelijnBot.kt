@@ -76,7 +76,7 @@ class MelijnBot {
             .setActivity(Activity.playing("Starting.."))
             .setStatus(OnlineStatus.IDLE)
             .setAutoReconnect(true)
-            .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY)
+            .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY, CacheFlag.ONLINE_STATUS)
             .setBulkDeleteSplittingEnabled(false)
             .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }
