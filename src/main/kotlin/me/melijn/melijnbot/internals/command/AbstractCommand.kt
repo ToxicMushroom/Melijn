@@ -243,9 +243,17 @@ abstract class AbstractCommand(val root: String) {
                 }
 
                 if (argument != null) {
-                    val result = argInfo.argParser?.parse(context, argument)
+                    val argParser = argInfo.argParser
+                    if (argParser == null) {
+                        val msg = "No argparser for ${param.name} of type: ${param.type}"
+                        sendRsp(context, msg)
+                        cmdlogger.warn(msg)
+                        return
+                    }
+
+                    val result = argParser.parse(context, argument)
                     if (result == null) {
-                        argInfo.argParser?.wrongArg(context, argument)
+                        argParser?.wrongArg(context, argument)
                         return
                     }
                     result

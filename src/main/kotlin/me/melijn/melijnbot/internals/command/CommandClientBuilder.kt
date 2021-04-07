@@ -45,6 +45,11 @@ class CommandClientBuilder(private val container: Container) {
         logger.info("Injected argInformation for argparsing in the ${commands.size} commands")
     }
 
+    val primitives = mapOf(
+        "int" to "class java.lang.Integer",
+        "long" to "class java.lang.Long",
+    )
+
     private fun loadArgumentParsers() {
         val reflections = Reflections("me.melijn.melijnbot.internals.arguments.parser")
         val notHash = reflections.getSubTypesOf(CommandArgParser::class.java)
@@ -72,7 +77,9 @@ class CommandClientBuilder(private val container: Container) {
                 val methodArgumentParsers = mutableMapOf<Parameter, ArgumentInfo>()
                 method.parameters.forEach { param ->
                     val clazz = param.parameterizedType
-                    val argParser = argumentParsers[clazz.toString()]
+                    val coolType = clazz.toString()
+                    val mappedPrimitive = primitives[coolType] ?: coolType
+                    val argParser = argumentParsers[mappedPrimitive]
 
                     val argumentInfo = ArgumentInfo(
                         param.getAnnotation(CommandArg::class.java),
@@ -85,8 +92,6 @@ class CommandClientBuilder(private val container: Container) {
 
                 it to methodArgumentInfo
             }.toMap()
-
-
 
         commandExecuteMap = HashMap(filtered)
         logger.info("Loaded ${filtered.size} executes in commands")

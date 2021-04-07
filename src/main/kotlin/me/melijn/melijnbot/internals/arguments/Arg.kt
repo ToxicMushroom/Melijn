@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.internals.arguments
 
-class Arg<T>(val value: T) {
+class Arg<T>(val value: T?) {
 
     var nullReason: ArgNullReason? = null
 
@@ -12,4 +12,8 @@ class Arg<T>(val value: T) {
 
     // If argument had a parsing error can be null
     var isParsingError: Boolean = nullReason == ArgNullReason.PARSING_ERROR
+
+    val valueX: T
+        get() = value
+            ?: throw IllegalStateException("tried getting valueX without correctly checking isNull, value was null")
 }

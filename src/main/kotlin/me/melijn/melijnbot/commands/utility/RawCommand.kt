@@ -1,10 +1,11 @@
 package me.melijn.melijnbot.commands.utility
 
+import me.melijn.melijnbot.internals.arguments.ArgumentMode
+import me.melijn.melijnbot.internals.arguments.CommandArg
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class RawCommand : AbstractCommand("command.raw") {
 
@@ -14,11 +15,10 @@ class RawCommand : AbstractCommand("command.raw") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    suspend fun execute(context: ICommandContext) {
-        if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        }
-        sendRsp(context, "```${context.rawArg.replace("`", "'")}```")
+    suspend fun execute(
+        context: ICommandContext,
+        @CommandArg(index = 0, mode = ArgumentMode.RAW) raw: String
+    ) {
+        sendRsp(context, "```${raw.replace("`", "'")}```")
     }
 }

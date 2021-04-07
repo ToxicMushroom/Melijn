@@ -1,12 +1,18 @@
 package me.melijn.melijnbot.commands.utility
 
+import me.melijn.melijnbot.internals.arguments.Arg
+import me.melijn.melijnbot.internals.arguments.CommandArg
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.asTag
+import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.withSafeVariable
+import me.melijn.melijnbot.internals.utils.withVariable
+import net.dv8tion.jda.api.entities.Member
 
 class RepCommand : AbstractCommand("command.rep") {
 
@@ -17,14 +23,17 @@ class RepCommand : AbstractCommand("command.rep") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    suspend fun execute(context: ICommandContext) {
-        if (context.args.isEmpty()) {
+    suspend fun execute(
+        context: ICommandContext,
+        @CommandArg(index = 0) member: Arg<Member>
+    ) {
+        if (member.isMissing) {
             val rep = context.daoManager.repWrapper.getRep(context.authorId)
             val dailyCooldownWrapper = context.daoManager.economyCooldownWrapper
             val lastTime = dailyCooldownWrapper.getCooldown(context.authorId, name)
             val difference = System.currentTimeMillis() - lastTime
-            val extra = if (difference < 86400000) {
-                ". You can rep again in: `" + getDurationString(86400000 - difference) + "`"
+            val extra = if (difference < 86_400_000) {
+                ". You can rep again in: `" + getDurationString(86_400_000 - difference) + "`"
             } else ""
 
             val msg = context.getTranslation("$root.showrep")
@@ -32,7 +41,7 @@ class RepCommand : AbstractCommand("command.rep") {
             sendRsp(context, msg)
         } else {
             if (!canRepElseMessage(context)) return
-            val user = retrieveMemberByArgsNMessage(context, 0, false, botAllowed = false) ?: return
+            val user = member.value // retrieveMemberByArgsNMessage(context, 0, false, botAllowed = false) ?: return
             if (user.idLong == context.authorId) {
                 val msg = context.getTranslation("$root.selfrep")
                 sendRsp(context, msg)
@@ -51,12 +60,12 @@ class RepCommand : AbstractCommand("command.rep") {
         val dailyCooldownWrapper = context.daoManager.economyCooldownWrapper
         val lastTime = dailyCooldownWrapper.getCooldown(context.authorId, name)
         val difference = System.currentTimeMillis() - lastTime
-        if (difference > 86400000) {
+        if (difference > 86_400_000) {
             return true
         }
 
         val msg = context.getTranslation("$root.oncooldown")
-            .withVariable("duration", getDurationString(86400000 - difference))
+            .withVariable("duration", getDurationString(86_400_000 - difference))
         sendRsp(context, msg)
         return false
     }

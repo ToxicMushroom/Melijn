@@ -1,14 +1,15 @@
+@file:Suppress("unused")
+
 package me.melijn.melijnbot.commands.utility
 
+import me.melijn.melijnbot.internals.arguments.CommandArg
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE_ID
 import me.melijn.melijnbot.internals.utils.asLongLongGMTString
-import me.melijn.melijnbot.internals.utils.getRoleByArgsNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Role
 import java.awt.Color
@@ -22,13 +23,11 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    suspend fun execute(context: ICommandContext) {
-        if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        }
-
-        val role = getRoleByArgsNMessage(context, 0, false) ?: return
+    suspend fun execute(
+        context: ICommandContext,
+        @CommandArg(index = 0) role: Role,
+        @CommandArg(index = 1) number: Int
+    ) {
         val tile1 = context.getTranslation("$root.response1.field1.title")
         val yes = context.getTranslation("yes")
         val no = context.getTranslation("no")

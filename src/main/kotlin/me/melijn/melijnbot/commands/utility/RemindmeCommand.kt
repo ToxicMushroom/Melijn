@@ -1,6 +1,8 @@
 package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.database.reminder.Reminder
+import me.melijn.melijnbot.internals.arguments.ArgumentMode
+import me.melijn.melijnbot.internals.arguments.CommandArg
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -8,7 +10,6 @@ import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresGuildPremiumMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class RemindmeCommand : AbstractCommand("command.remindme") {
 
@@ -88,30 +89,21 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
         }
     }
 
-    suspend fun execute(context: ICommandContext) {
-        if (context.args.size < 2) {
-            sendSyntax(context)
-            return
-        }
-
-        val duration = getDurationByArgsNMessage(context, 0, 1) ?: return
-        val reason = context.getRawArgPart(1)
-        if (reason.isEmpty()) {
-            sendRsp(context, "I cant remind you for nothing, please write a message that you wanna be reminded about.")
-            return
-        }
-
+    suspend fun execute(
+        context: ICommandContext,
+        @CommandArg(index = 0) duration: Long,
+        @CommandArg(index = 1, mode = ArgumentMode.GREEDY) reason: String
+    ) {
         if (duration < 10) {
-            sendRsp(context, "Please use brain to remind you of thing under 10 seconds.")
+            sendRsp(context, "Please use brain to remind you of things under 10 seconds.")
             return
         }
-        val durationMillis = duration * 1000
 
+        val durationMillis = duration * 1000
         context.initCooldown()
 
         val reminderWrapper = context.daoManager.reminderWrapper
         val reminders = reminderWrapper.getRemindersOfUser(context.authorId)
-
 
         if (reminders.size > REMINDER_LIMIT && !isPremiumUser(context)) {
             val replaceMap = mapOf(

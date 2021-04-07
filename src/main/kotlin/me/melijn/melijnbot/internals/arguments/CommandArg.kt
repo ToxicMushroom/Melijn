@@ -16,4 +16,12 @@ annotation class CommandArg(
 
 
     val flag: String = ""
+) {
+
+}
+
+annotation class IntArg(
+    val min: Int = Int.MIN_VALUE,
+    val max: Int = Int.MAX_VALUE
 )
+
