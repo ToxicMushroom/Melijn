@@ -117,7 +117,7 @@ class TwitterService(
         }
     }
 
-    val twitterDotCoRegex = "https://t\\.co/(?:[a-zA-Z0-9]+)".toRegex()
+    private val twitterDotCoRegex = "https://t\\.co/(?:[a-zA-Z0-9]+)".toRegex()
     private suspend fun fetchNewTweets(twitterWebhook: TwitterWebhook): Tweets? {
         val patternFormatRFC3339 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
         val lastTweetTime = OffsetDateTime.ofInstant(
@@ -156,6 +156,9 @@ class TwitterService(
             parameter("end_time", currentTime)
             header("Authorization", "Bearer $twitterToken")
         })
+        if (!content.hasKey("meta")) {
+            return null
+        }
         val metaInfo = content.getObject("meta")
         val arrSize = metaInfo.getInt("result_count")
 
