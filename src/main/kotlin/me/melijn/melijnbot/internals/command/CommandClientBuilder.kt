@@ -2,9 +2,9 @@ package me.melijn.melijnbot.internals.command
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.arguments.ArgumentInfo
-import me.melijn.melijnbot.internals.arguments.CommandArg
 import me.melijn.melijnbot.internals.arguments.CommandArgParser
 import me.melijn.melijnbot.internals.arguments.MethodArgumentInfo
+import me.melijn.melijnbot.internals.arguments.annotations.CommandArg
 import me.melijn.melijnbot.internals.threading.TaskManager
 import org.jetbrains.kotlin.descriptors.runtime.structure.parameterizedTypeArguments
 import org.reflections.Reflections
@@ -69,7 +69,7 @@ class CommandClientBuilder(private val container: Container) {
                 it.methods.any { method ->
                     method.name == "execute"
                 }
-            }.map {
+            }.associateWith {
                 val method = it.methods.first { method ->
                     method.name == "execute"
                 }
@@ -81,6 +81,7 @@ class CommandClientBuilder(private val container: Container) {
                     val mappedPrimitive = primitives[coolType] ?: coolType
                     val argParser = argumentParsers[mappedPrimitive]
 
+                    println(param.annotations.joinToString())
                     val argumentInfo = ArgumentInfo(
                         param.getAnnotation(CommandArg::class.java),
                         null,
@@ -90,8 +91,8 @@ class CommandClientBuilder(private val container: Container) {
                 }
                 val methodArgumentInfo = MethodArgumentInfo(method, methodArgumentParsers)
 
-                it to methodArgumentInfo
-            }.toMap()
+                methodArgumentInfo
+            }
 
         commandExecuteMap = HashMap(filtered)
         logger.info("Loaded ${filtered.size} executes in commands")

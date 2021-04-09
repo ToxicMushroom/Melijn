@@ -4,6 +4,8 @@ import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.internals.arguments.MethodArgumentInfo
+import me.melijn.melijnbot.internals.arguments.annotations.ArgArg
+import me.melijn.melijnbot.internals.arguments.annotations.CommandArg
 import me.melijn.melijnbot.internals.command.AbstractCommand.Companion.comparator
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
@@ -21,9 +23,9 @@ import org.jetbrains.kotlin.ir.types.IdSignatureValues.continuation
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.suspendCoroutine
+import kotlin.reflect.KClass
 
 const val PLACEHOLDER_PREFIX = "prefix"
 
@@ -34,7 +36,7 @@ abstract class AbstractCommand(val root: String) {
     var description = "$root.description"
     var syntax = "$root.syntax"
     var help = "$root.help"
-    var arguments = "$root.arguments"
+    var argumentString = "$root.arguments"
     var examples = "$root.examples"
     var cooldown: Long = 0 // millis
     var commandCategory: CommandCategory = CommandCategory.DEVELOPER
@@ -45,6 +47,7 @@ abstract class AbstractCommand(val root: String) {
     var children: Array<AbstractCommand> = arrayOf()
     var permissionRequired: Boolean = false
     lateinit var selfExecuteInformation: MethodArgumentInfo
+    var arguments: MutableList<CommandArg> = mutableListOf()
 
     init {
         description = "$root.description"
@@ -192,7 +195,7 @@ abstract class AbstractCommand(val root: String) {
                                 Permission.MESSAGE_MANAGE
                             )
                         ) return@async
-                        message.delete().queue(null, { context.container.botDeletedMessageIds.remove(message.idLong) })
+                        message.delete().queue(null) { context.container.botDeletedMessageIds.remove(message.idLong) }
                     }
                 }
                 val second = System.currentTimeMillis()
@@ -253,7 +256,7 @@ abstract class AbstractCommand(val root: String) {
 
                     val result = argParser.parse(context, argument)
                     if (result == null) {
-                        argParser?.wrongArg(context, argument)
+                        argParser.wrongArg(context, argument)
                         return
                     }
                     result
@@ -310,6 +313,22 @@ abstract class AbstractCommand(val root: String) {
         return false
     }
 
+    fun arguments(func: () -> Unit) {
+        func()
+    }
+
+    fun arg(index: Int, type: KClass<*>) {
+
+    }
+
+    fun argArg(
+        index: Int,
+        errorable: Boolean = false,
+        unsetable: Boolean = false,
+        type: KClass<*>
+    ) {
+        arguments.add(index, ArgArg(index, unsetable, errorable))
+    }
 }
 
 /**

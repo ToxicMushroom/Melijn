@@ -1,7 +1,8 @@
 package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.arguments.Arg
-import me.melijn.melijnbot.internals.arguments.CommandArg
+import me.melijn.melijnbot.internals.arguments.annotations.ArgArg
+import me.melijn.melijnbot.internals.arguments.annotations.CommandArg
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -25,7 +26,7 @@ class RepCommand : AbstractCommand("command.rep") {
 
     suspend fun execute(
         context: ICommandContext,
-        @CommandArg(index = 0) member: Arg<Member>
+        @CommandArg(index = 0) member: @ArgArg(missable = true) Arg<Member>
     ) {
         if (member.isMissing) {
             val rep = context.daoManager.repWrapper.getRep(context.authorId)
@@ -41,7 +42,7 @@ class RepCommand : AbstractCommand("command.rep") {
             sendRsp(context, msg)
         } else {
             if (!canRepElseMessage(context)) return
-            val user = member.value // retrieveMemberByArgsNMessage(context, 0, false, botAllowed = false) ?: return
+            val user = member.valueX // retrieveMemberByArgsNMessage(context, 0, false, botAllowed = false) ?: return
             if (user.idLong == context.authorId) {
                 val msg = context.getTranslation("$root.selfrep")
                 sendRsp(context, msg)

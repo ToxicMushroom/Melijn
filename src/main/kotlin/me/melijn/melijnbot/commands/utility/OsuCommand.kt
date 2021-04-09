@@ -2,7 +2,8 @@ package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.commandutil.game.OsuUtil
 import me.melijn.melijnbot.internals.arguments.Arg
-import me.melijn.melijnbot.internals.arguments.CommandArg
+import me.melijn.melijnbot.internals.arguments.annotations.ArgArg
+import me.melijn.melijnbot.internals.arguments.annotations.CommandArg
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -12,6 +13,7 @@ import me.melijn.melijnbot.internals.utils.message.getSyntax
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.web.osu.OsuUser
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
@@ -56,11 +58,10 @@ class OsuCommand : AbstractCommand("command.osu") {
 
         suspend fun execute(
             context: ICommandContext,
-
             @CommandArg(index = 0, optional = true)
-            name: @ArgArg(true, true) Arg<String>
-        ) {
-            if (name.isMissing) {
+            user: @ArgArg(true, true) Arg<OsuUser>
+        ) = when {
+            user.isMissing -> {
                 val currentName = context.daoManager.osuWrapper.getUserName(context.authorId)
                 val msg = if (currentName == "") {
                     context.getTranslation("$root.show.unset")
@@ -69,36 +70,23 @@ class OsuCommand : AbstractCommand("command.osu") {
                         .withSafeVariable("name", currentName)
                 }
                 sendRsp(context, msg)
-                return
-            } else if (name.isNull) {
+
+            }
+            user.isNull -> {
                 context.daoManager.osuWrapper.remove(context.authorId)
                 val msg = context.getTranslation("$root.unset")
                 sendRsp(context, msg)
-                return
-            }
 
-            val osuname = name.valueX
-            val profile = context.webManager.osuApi.getUserInfo(osuname)
-            if (profile == null) {
-                val msg = context.getTranslation("$parent.unknownuser")
+            }
+            else -> {
+                val osuname = user.valueX
+                context.daoManager.osuWrapper.setName(context.authorId, osuname.username)
+
+                val msg = context.getTranslation("$root.set")
                     .withSafeVariable("name", osuname)
                 sendRsp(context, msg)
-                return
             }
-
-            context.daoManager.osuWrapper.setName(context.authorId, osuname)
-
-            val msg = context.getTranslation("$root.set")
-                .withSafeVariable("name", osuname)
-            sendRsp(context, msg)
         }
-
-        @Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.TYPE)
-        annotation class ArgArg(
-            val nullable: Boolean = false,
-            val missable: Boolean = false,
-            val errorable: Boolean = false
-        )
     }
 
     class RecentArg(val parent: String) : AbstractCommand("$parent.recent") {

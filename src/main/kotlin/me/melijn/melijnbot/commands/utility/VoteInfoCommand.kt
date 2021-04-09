@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.internals.arguments.CommandArg
 import me.melijn.melijnbot.internals.command.AbstractCommand
-import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
@@ -20,12 +18,12 @@ class VoteInfoCommand : AbstractCommand("command.voteinfo") {
         id = 117
         name = "voteInfo"
         aliases = arrayOf("voteStats", "vi")
-        commandCategory = CommandCategory.UTILITY
+        arg(0, User::class)
     }
 
     suspend fun execute(
         context: ICommandContext,
-        @CommandArg(index = 0, optional = true) user: User?
+        user: User?
     ) {
         val voteWrapper = context.daoManager.voteWrapper
         val target = user ?: context.author

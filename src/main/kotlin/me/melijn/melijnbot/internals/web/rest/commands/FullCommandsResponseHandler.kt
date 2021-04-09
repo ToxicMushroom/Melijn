@@ -44,7 +44,7 @@ object FullCommandsResponseHandler {
             innerDataArray.add(i18n.getTranslation("en", c.description)) // 1
             innerDataArray.add(getSyntax("en", c.syntax)) // 2
             innerDataArray.add(DataArray.fromCollection(c.aliases.toList())) // 3
-            val argumentsHelp = i18n.getTranslationN("en", c.arguments, false)
+            val argumentsHelp = i18n.getTranslationN("en", c.argumentString, false)
             innerDataArray.add(argumentsHelp?.replace("%help\\.arg\\..*?%".toRegex()) {
                 it.groups[0]?.let { (value) ->
                     i18n.getTranslation("en", value.substring(1, value.length - 1))

@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.internals.arguments.CommandArg
+import me.melijn.melijnbot.internals.arguments.annotations.CommandArg
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext

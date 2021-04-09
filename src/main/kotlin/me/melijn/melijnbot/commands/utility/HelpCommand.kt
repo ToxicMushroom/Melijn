@@ -221,7 +221,7 @@ class HelpCommand : AbstractCommand("command.help") {
         val cmdCategory = context.getTranslation("$root.cmd.category")
         val cmdHelpValue = i18n.getTranslationN(context.getLanguage(), command.help, false)
             ?.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
-        val cmdArgumentsValue = i18n.getTranslationN(context.getLanguage(), command.arguments, false)
+        val cmdArgumentsValue = i18n.getTranslationN(context.getLanguage(), command.argumentString, false)
             ?.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
         val cmdExamplesValue = i18n.getTranslationN(context.getLanguage(), command.examples, false)
             ?.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
