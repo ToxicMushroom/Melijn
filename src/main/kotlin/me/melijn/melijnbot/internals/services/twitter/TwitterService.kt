@@ -74,14 +74,15 @@ class TwitterService(
             ) { // Remove appended tweet urls
                 content = content.dropLastWhile { it != ' ' }
             }
-            content = StringEscapeUtils.unescapeHtml4(content)
 
-            for (mention in tweet.mentions.sortedBy { it.end }.reversed()) {
-                val p1 = content.substring(0, mention.start)
-                val p2 = content.substring(mention.end, content.length)
-                content = p1 + "[@" + mention.handle + "](https://twitter.com/${mention.handle})" + p2
+            val orderedMentions = tweet.mentions.sortedBy { it.end }.reversed()
+            for ((start, end, handle) in orderedMentions) {
+                val p1 = content.substring(0, start)
+                val p2 = content.substring(end, content.length)
+                content = p1 + "[@" + handle + "](https://twitter.com/${handle})" + p2
             }
 
+            content = StringEscapeUtils.unescapeHtml4(content)
             embed["description"] = content
             if (tweet.media.isNotEmpty()) {
                 embed["image"] = DataObject.empty().put("url", tweet.media.first().url)
