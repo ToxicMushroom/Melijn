@@ -5,6 +5,7 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.threading.SafeList
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
@@ -21,7 +22,7 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
     }
 
     companion object {
-        val activeGames: MutableList<RockPaperScissorsGame> = mutableListOf()
+        val activeGames: SafeList<RockPaperScissorsGame> = SafeList()
     }
 
     override suspend fun execute(context: ICommandContext) {

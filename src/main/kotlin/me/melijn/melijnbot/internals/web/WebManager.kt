@@ -2,6 +2,9 @@ package me.melijn.melijnbot.internals.web
 
 
 import com.apollographql.apollo.ApolloClient
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
@@ -22,10 +25,13 @@ import java.net.Proxy
 
 class WebManager(val settings: Settings) {
 
+    val objectMapper: ObjectMapper = jacksonObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
     val httpClient = HttpClient(OkHttp) {
         expectSuccess = false
         install(JsonFeature) {
-            serializer = JacksonSerializer()
+            serializer = JacksonSerializer(objectMapper)
         }
         install(UserAgent) {
             agent = "Melijn / 2.0.8 Discord bot"

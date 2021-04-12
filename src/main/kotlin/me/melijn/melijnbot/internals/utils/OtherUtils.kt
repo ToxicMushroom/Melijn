@@ -521,3 +521,18 @@ fun DataObject.getObjectN(key: String): DataObject? {
 fun DataObject.getArrayN(key: String): DataArray? {
     return if (this.hasKey(key)) getArray(key) else null
 }
+
+suspend fun <K, V> Map<K, V>.sum(function: suspend (Map.Entry<K, V>) -> Int): Int {
+    var count = 0
+    for (entry in this) {
+        count += function(entry)
+    }
+    return count
+}
+
+suspend fun <K, V> Map<K, V>.first(function: suspend (Map.Entry<K, V>) -> Boolean): Map.Entry<K, V> {
+    for (entry in this) {
+        if (function(entry)) return entry
+    }
+    throw IllegalStateException("Map#first failed to return, predicate was false for all of the entries")
+}

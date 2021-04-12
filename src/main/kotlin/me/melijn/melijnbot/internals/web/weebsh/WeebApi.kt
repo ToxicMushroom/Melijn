@@ -12,16 +12,19 @@ import me.duncte123.weebJava.types.TokenType
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.utils.toLCC
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class WeebApi(val httpClient: HttpClient, val settings: Settings) {
 
+    private val logger: Logger = LoggerFactory.getLogger("WeebApi")
     private val weebshApi: WeebApi = WeebApiBuilder(TokenType.WOLKETOKENS)
         .setBotInfo("Melijn", "latest", settings.environment.toLCC())
         .setToken(settings.tokens.weebSh)
         .build()
 
 
-    suspend fun getUrl(type: String, nsfw: Boolean = false, apiOrder: Array<Type> = emptyArray()): String {
+    suspend fun getUrlWaterfall(type: String, nsfw: Boolean = false, apiOrder: Array<Type> = emptyArray()): String {
         for (api in apiOrder + Type.values().filterNot { apiOrder.contains(it) }) {
             val url = when (api) {
                 Type.WEEBSH -> getWeebshUrl(type, nsfw)
@@ -34,10 +37,28 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
         return MISSING_IMAGE_URL
     }
 
+    var rotate = 0
+    suspend fun getUrlRandom(type: String, nsfw: Boolean = false): String {
+        val xigTypes = if (nsfw) arrayOf(Type.XIG, Type.XIG_NSFW) else arrayOf(Type.XIG)
+        val url = when (rotate % 3) {
+            0 -> getUrlWaterfall(type, nsfw, xigTypes)
+            1 -> getUrlWaterfall(type, nsfw, arrayOf(Type.WEEBSH))
+            2 -> getUrlWaterfall(type, nsfw, arrayOf(Type.MIKI))
+            else -> throw IllegalStateException("shouldn't reach this")
+        }
+
+        if (rotate == 2) rotate = 0
+        else rotate++
+
+        return url
+    }
+
     private suspend fun getMikiUrl(type: String, nsfw: Boolean): String? {
         if (nsfw || !mikiList.contains(type)) return null
 
-        return httpClient.getOrNull<MikiResponse>("https://api.miki.bot/images/random?tags=$type")?.url
+        val url = "https://api.miki.bot/images/random?tags=$type"
+        val mikiResponse = httpClient.getOrNull<MikiResponse>(url, logger = logger)
+        return mikiResponse?.url
     }
 
     private suspend fun getXigUrl(type: String, nsfw: Boolean): String? {
@@ -49,7 +70,9 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
             false -> "images"
         }
 
-        return httpClient.getOrNull<XigResponse>("https://shiro.gg/api/$endpoint/$type")?.url
+        val url = "https://shiro.gg/api/$endpoint/$type"
+        val xigResponse = httpClient.getOrNull<XigResponse>(url, logger = logger)
+        return xigResponse?.url
     }
 
     private suspend fun getWeebshUrl(type: String, nsfw: Boolean): String? {

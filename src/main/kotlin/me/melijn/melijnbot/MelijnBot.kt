@@ -69,7 +69,7 @@ class MelijnBot {
                 GatewayIntent.GUILD_MEMBERS,
                 GatewayIntent.GUILD_MESSAGES,
                 GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                GatewayIntent.GUILD_VOICE_STATES
+                GatewayIntent.GUILD_VOICE_STATES,
             )
             .setShardsTotal(container.settings.botInfo.shardCount)
             .setToken(container.settings.tokens.discord)

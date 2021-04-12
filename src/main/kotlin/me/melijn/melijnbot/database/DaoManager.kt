@@ -171,6 +171,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val messageWrapper: MessageWrapper
     val forceRoleWrapper: ForceRoleWrapper
     val channelRoleWrapper: ChannelRoleWrapper
+    val userChannelRoleWrapper: UserChannelRoleWrapper
 
     val verificationPasswordWrapper: VerificationPasswordWrapper
     val verificationEmotejiWrapper: VerificationEmotejiWrapper
@@ -293,6 +294,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         messageWrapper = MessageWrapper(MessageDao(driverManager))
         forceRoleWrapper = ForceRoleWrapper(ForceRoleDao(driverManager))
         channelRoleWrapper = ChannelRoleWrapper(ChannelRoleDao(driverManager))
+        userChannelRoleWrapper = UserChannelRoleWrapper(UserChannelRoleDao(driverManager))
 
         verificationPasswordWrapper = VerificationPasswordWrapper(VerificationPasswordDao(driverManager))
         verificationEmotejiWrapper = VerificationEmotejiWrapper(VerificationEmotejiDao(driverManager))
@@ -316,8 +318,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         botLogStateWrapper = BotLogStateWrapper(BotLogStateDao(driverManager))
         removeResponseWrapper = RemoveResponseWrapper(RemoveResponsesDao(driverManager))
         removeInvokeWrapper = RemoveInvokeWrapper(RemoveInvokeDao(driverManager))
-        voteReminderStatesWrapper =
-            VoteReminderStatesWrapper(me.melijn.melijnbot.database.settings.VoteReminderStatesDao(driverManager))
+        voteReminderStatesWrapper = VoteReminderStatesWrapper(VoteReminderStatesDao(driverManager))
         voteReminderWrapper = VoteReminderWrapper(VoteReminderDao(driverManager))
         reminderWrapper = ReminderWrapper(ReminderDao(driverManager))
 

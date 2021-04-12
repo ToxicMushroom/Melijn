@@ -66,7 +66,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     }
 
 
-    private fun checkRockPaperScissors(event: PrivateMessageReceivedEvent) {
+    private suspend fun checkRockPaperScissors(event: PrivateMessageReceivedEvent) {
         val author = event.author
         val rps1 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user1 == author.idLong && it.choice1 == null }
         if (rps1 != null) {

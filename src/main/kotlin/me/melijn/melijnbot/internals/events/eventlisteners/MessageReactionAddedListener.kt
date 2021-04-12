@@ -37,7 +37,9 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
     override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMessageReactionAddEvent) onGuildMessageReactionAdd(event)
-        if (event is PrivateMessageReactionAddEvent) onPrivateMessageReactionAdd(event)
+        if (event is PrivateMessageReactionAddEvent) {
+            onPrivateMessageReactionAdd(event)
+        }
     }
 
     private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = TaskManager.async(event.channel) {
@@ -47,7 +49,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
 
     private suspend fun handleRPSReaction(event: PrivateMessageReactionAddEvent) {
-        val author = event.jda.retrieveUserById(event.userIdLong).awaitOrNull() ?: return
+        val author = event.channel.user
 
         val rps1 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user1 == author.idLong && it.choice1 == null }
         if (rps1 != null) {
@@ -56,6 +58,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             rps1.choice1 = try {
                 RockPaperScissorsGame.RPS.fromEmote(event.reactionEmote.emoji)
             } catch (t: Throwable) {
+                t.printStackTrace()
                 null
             }
             RockPaperScissorsCommand.activeGames.add(rps1)
@@ -69,6 +72,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             rps2.choice2 = try {
                 RockPaperScissorsGame.RPS.fromEmote(event.reactionEmote.emoji)
             } catch (t: Throwable) {
+                t.printStackTrace()
                 null
             }
             RockPaperScissorsCommand.activeGames.add(rps2)

@@ -13,8 +13,12 @@ class VoiceMoveListener(container: Container) : AbstractListener(container) {
             if (!event.member.user.isBot) {
                 VoiceUtil.channelUpdate(container, event.channelJoined)
                 VoiceUtil.channelUpdate(container, event.channelLeft)
-                VoiceUtil.handleChannelRoleJoin(container.daoManager, event.member, event.channelJoined)
-                VoiceUtil.handleChannelRoleLeave(container.daoManager, event.member, event.channelLeft)
+                VoiceUtil.handleChannelRoleMove(
+                    container.daoManager,
+                    event.member,
+                    event.channelJoined,
+                    event.channelLeft
+                )
             }
         }
     }

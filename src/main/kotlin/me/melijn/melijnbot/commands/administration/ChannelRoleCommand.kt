@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.administration
 
+import me.melijn.melijnbot.enums.ChannelRoleState
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -15,7 +16,7 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
     init {
         name = "channelRole"
         children = arrayOf(
-            AddArg(root),
+            SetArg(root),
             RemoveArg(root),
             RemoveAtArg(root),
             ClearArg(root),
@@ -23,6 +24,29 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
         )
         aliases = arrayOf("cr")
         commandCategory = CommandCategory.ADMINISTRATION
+    }
+
+    class SetArg(parent: String) : AbstractCommand("$parent.set") {
+
+        init {
+            name = "set"
+            aliases = arrayOf("s")
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            val channel = getVoiceChannelByArgNMessage(context, 0) ?: return
+            val role = getRoleByArgsNMessage(context, 1, canInteract = true) ?: return
+            val path = "message.unknown.channelrolestate"
+            val state = getEnumFromArgNMessage<ChannelRoleState>(context, 2, path) ?: return
+
+            context.daoManager.channelRoleWrapper.set(context.guildId, channel.idLong, role.idLong, state)
+
+            val msg = context.getTranslation("$root.set")
+                .withSafeVariable(PLACEHOLDER_CHANNEL, channel.name)
+                .withSafeVariable(PLACEHOLDER_ROLE, role.name)
+                .withSafeVarInCodeblock("state", state.toString())
+            sendRsp(context, msg)
+        }
     }
 
     class ListArg(parent: String) : AbstractCommand("$parent.list") {
@@ -46,16 +70,13 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
                 val sb = StringBuilder(
                     "```ini\n" +
                         "[channelId] - [channelName]:\n" +
-                        "  [roleList (index. roleId - roleName)]\n"
+                        "  [roleList (index. roleId - roleName - state)]\n"
                 )
-                for ((channelId, roleIds) in channelRoles.toSortedMap()) {
-                    val channel = context.guild.getVoiceChannelById(channelId)
-                    sb.append("\n$channelId - [${channel?.name ?: "deleted channel"}]:\n")
-                    for ((index, roleId) in roleIds.sorted().withIndex()) {
-                        val role = context.guild.getRoleById(roleId)
-                        sb.append("  ").append(index + 1).append(". [").append(roleId)
-                            .append("] - ").appendLine(role?.name ?: "deleted role")
-
+                for ((channelId, map) in channelRoles.toSortedMap()) {
+                    for ((state, roles) in map) {
+                        val channel = context.guild.getVoiceChannelById(channelId)
+                        sb.append("\n$channelId - [${channel?.name ?: "deleted channel"}]:\n")
+                        addChannelRoles(context, sb, state, roles)
                     }
                 }
                 sb.append("```")
@@ -63,9 +84,8 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
 
             } else {
                 val channel = getVoiceChannelByArgNMessage(context, 0) ?: return
-                val roleIds = wrapper.getRoleIds(context.guildId, channel.idLong)
-
-                if (roleIds.isEmpty()) {
+                val map = wrapper.getRoleIds(context.guildId, channel.idLong)
+                if (map.isEmpty()) {
                     val msg = context.getTranslation("$root.vc.nochannelroles")
                     sendRsp(context, msg.withSafeVariable(PLACEHOLDER_CHANNEL, channel.name))
                     return
@@ -73,18 +93,29 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
 
                 val sb = StringBuilder(
                     "```ini\n" +
-                        "[index]. [roleId] - [roleName]\n"
+                        "[index]. [roleId] - [roleName] - [state]\n"
                 )
 
-                for ((index, roleId) in roleIds.sorted().withIndex()) {
-                    val role = context.guild.getRoleById(roleId)
-                    sb.append(index + 1).append(". [").append(roleId)
-                        .append("] - ").appendLine(role?.name ?: "deleted role")
-
+                for ((state, roles) in map) {
+                    addChannelRoles(context, sb, state, roles)
                 }
 
                 sb.append("```")
                 sendRspCodeBlock(context, sb.toString(), "INI")
+            }
+        }
+
+        private fun addChannelRoles(
+            context: ICommandContext,
+            sb: StringBuilder,
+            state: ChannelRoleState,
+            roles: List<Long>
+        ) {
+            for ((index, roleId) in roles.withIndex()) {
+                val role = context.guild.getRoleById(roleId)
+                sb.append("  ").append(index + 1).append(". [").append(roleId)
+                    .append("] - ").append(role?.name ?: "deleted role")
+                    .appendLine(" - [$state]")
             }
         }
     }
@@ -125,17 +156,25 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
         override suspend fun execute(context: ICommandContext) {
             val channel = getVoiceChannelByArgNMessage(context, 0) ?: return
             val wrapper = context.daoManager.channelRoleWrapper
-            val roles = wrapper.getRoleIds(context.guildId, channel.idLong)
-
-            val index = getIntegerFromArgNMessage(context, 1, 1, roles.size) ?: return
+            val roleIds = wrapper.getRoleIds(context.guildId, channel.idLong)
+            val map = roleIds.toSortedMap()
+            val roles = map.flatMap { it.value }
+            val index = (getIntegerFromArgNMessage(context, 1, 1, roles.size) ?: return) - 1
             val roleId = roles[index]
 
             wrapper.remove(context.guildId, channel.idLong, roleId)
-            val role = context.guild.getRoleById(roleId)
 
+            var count = 0
+            val (state, _) = roleIds.first {
+                count += it.value.size
+                index < count
+            }
+
+            val role = context.guild.getRoleById(roleId)
             val msg = context.getTranslation("$root.removed")
                 .withSafeVariable(PLACEHOLDER_CHANNEL, channel.name)
                 .withSafeVariable(PLACEHOLDER_ROLE, role?.name ?: "deleted role (${roleId})")
+                .withSafeVariable("state", state)
             sendRsp(context, msg)
         }
     }
@@ -154,26 +193,6 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
             context.daoManager.channelRoleWrapper.remove(context.guildId, channel.idLong, role.idLong)
 
             val msg = context.getTranslation("$root.removed")
-                .withSafeVariable(PLACEHOLDER_CHANNEL, channel.name)
-                .withSafeVariable(PLACEHOLDER_ROLE, role.name)
-            sendRsp(context, msg)
-        }
-    }
-
-    class AddArg(parent: String) : AbstractCommand("$parent.add") {
-
-        init {
-            name = "add"
-            aliases = arrayOf("a")
-        }
-
-        override suspend fun execute(context: ICommandContext) {
-            val channel = getVoiceChannelByArgNMessage(context, 0) ?: return
-            val role = getRoleByArgsNMessage(context, 1, canInteract = true) ?: return
-
-            context.daoManager.channelRoleWrapper.add(context.guildId, channel.idLong, role.idLong)
-
-            val msg = context.getTranslation("$root.added")
                 .withSafeVariable(PLACEHOLDER_CHANNEL, channel.name)
                 .withSafeVariable(PLACEHOLDER_ROLE, role.name)
             sendRsp(context, msg)

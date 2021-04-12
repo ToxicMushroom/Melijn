@@ -15,7 +15,8 @@ import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 import kotlin.math.roundToInt
 
-abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandContext) -> Long): AbstractCommand(root) {
+abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandContext) -> Long) :
+    AbstractCommand(root) {
 
     init {
         children = arrayOf(
@@ -85,7 +86,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
 
             val newName = getStringFromArgsNMessage(context, 0, 1, 20) ?: return
 
-            wrapper.add(context.authorId, newName, profile.toFloatArray())
+            wrapper.add(idParser(context), newName, profile.toFloatArray())
 
             val msg = context.getTranslation("$root.copied")
                 .withSafeVariable("gainProfile1", name)
@@ -137,7 +138,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
         }
     }
 
-    class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
+    inner class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
 
         init {
             name = "remove"
@@ -154,11 +155,11 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
 
 
             val wrapper = context.daoManager.gainProfileWrapper
-            val map = wrapper.getGainProfile(context.authorId)
+            val map = wrapper.getGainProfile(idParser(context))
 
             val profileName = getGainProfileNMessage(context, map, 0)?.first ?: return
 
-            wrapper.remove(context.authorId, profileName)
+            wrapper.remove(idParser(context), profileName)
 
             val msg = context.getTranslation("$root.removed")
                 .withSafeVariable(PLACEHOLDER_ARG, profileName)
@@ -217,15 +218,17 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
 
             val name = getStringFromArgsNMessage(context, 0, 1, 20) ?: return
             val wrapper = context.daoManager.gainProfileWrapper
-            val profiles = wrapper.getProfileCount(context.authorId)
+            val profiles = wrapper.getProfileCount(idParser(context))
             val bands = context.getGuildMusicPlayer().guildTrackManager.iPlayer.filters.bands
 
-            if (reachedPremiumLimitCount(context, profiles,
+            if (reachedPremiumLimitCount(
+                    context, profiles,
                     PRIVATE_GAIN_PROFILES_LIMIT,
                     PREMIUM_PRIVATE_GAIN_PROFILES_LIMIT,
                     PRIVATE_GAIN_PROFILES_LIMIT_PATH,
                     PRIVATE_GAIN_PROFILES_PREMIUM_LIMIT_PATH
-                )) return
+                )
+            ) return
 
             wrapper.add(idParser(context), name, bands)
 
