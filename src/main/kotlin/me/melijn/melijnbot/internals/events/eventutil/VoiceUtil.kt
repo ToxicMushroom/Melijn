@@ -199,7 +199,7 @@ object VoiceUtil {
 
         for ((state, roles) in mapChannel1) {
             // channel 2 does not have this state_role
-            val predicate: (Long) -> Boolean = { mapChannel2[state]?.contains(it) == false }
+            val predicate: (Long) -> Boolean = { mapChannel2[state]?.contains(it) != true }
             when (state) {
                 // granted in channel 1 and went over predicate, so now remove
                 ChannelRoleState.GRANT -> removeRoles(member, roles.filter(predicate))
