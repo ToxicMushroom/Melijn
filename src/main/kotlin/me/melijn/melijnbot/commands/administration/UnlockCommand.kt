@@ -26,7 +26,7 @@ class UnlockCommand : AbstractCommand("command.unlock") {
         aliases = arrayOf("unlockChannel")
 
         // need the server permission in order to create overrides for it
-        discordPermissions = (LockCommand.textDenyList + LockCommand.voiceDenyList).toTypedArray()
+        discordPermissions = (LockCommand.textDenyList + LockCommand.voiceDenyList)
         cooldown = 10_000
         commandCategory = CommandCategory.ADMINISTRATION
     }
@@ -237,7 +237,7 @@ class UnlockCommand : AbstractCommand("command.unlock") {
     }
 
     private fun revertPermsToOriginal(
-        denyList: List<Permission>,
+        denyList: Array<Permission>,
         flags: Pair<Long, Long>,
         manager: PermissionOverrideAction
     ): Int {
