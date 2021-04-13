@@ -80,8 +80,25 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 emotejiList.add(emoteji)
             }
 
+            val externalEmotes = containsExternalEmotes(context, emotejiList)
+            if (externalEmotes && notEnoughPermissionsAndMessage(context, channel, Permission.MESSAGE_EXT_EMOJI)) return
+
             SendGroupAutoArg.addEmotejisToMsg(emotejiList, message, context)
             sendRsp(context, "Added **${emotejiList.size}** emotejis to the message in ${channel.asTag}")
+        }
+
+        companion object {
+            fun containsExternalEmotes(
+                context: ICommandContext,
+                emotejiList: MutableList<String>
+            ) = emotejiList.any {
+                if (it.isPositiveNumber()) {
+                    val emote = context.guild.getEmoteById(it)
+                    if (emote != null) return@any false
+                    val remoteEmote = context.shardManager.getEmoteById(it)
+                    remoteEmote != null
+                } else false
+            }
         }
     }
 
@@ -176,11 +193,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 2) {
-                sendSyntax(context)
-                return
-            }
-
+            if (argSizeCheckFailed(context, 1)) return
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
 
             val pair = getEmotejiByArgsNMessage(context, 1) ?: return
@@ -280,12 +293,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
 
-            val channel = if (context.args.size < 2) {
-                context.textChannel
-
-            } else {
-                getTextChannelByArgsNMessage(context, 1)
-            } ?: return
+            val channel = if (context.args.size > 2) {
+                getTextChannelByArgsNMessage(context, 1) ?: return
+            } else context.textChannel
 
             if (notEnoughPermissionsAndMessage(
                     context,
@@ -293,11 +303,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
                     Permission.MESSAGE_READ,
-                    Permission.MESSAGE_ADD_REACTION
+                    Permission.MESSAGE_ADD_REACTION,
+                    Permission.MESSAGE_HISTORY
                 )
-            ) {
-                return
-            }
+            ) return
+
 
             val bodyFormat = group.pattern ?: context.getTranslation("$root.bodyformat")
 
@@ -321,48 +331,42 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 roleMention = roleMention.removeSuffix(", ")
 
                 val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
+                val emotejiValue = if (isEmoji) emoteji else {
+                    val emote = context.guild.getEmoteById(emoteji)
+                        ?: context.shardManager.getEmoteById(emoteji)
+                    emote?.asMention ?: "error"
+                }
+                val body = bodyFormat
+                    .withVariable("name", name)
+                    .withVariable("role", roleMention)
+                    .withVariable("roleMention", roleMention) // legacy support
+                    .withVariable("enter", "\n")
+                    .withVariable("emoteji", emotejiValue)
 
-                entries.add(
-                    bodyFormat
-                        .withVariable("name", name)
-                        .withVariable("role", roleMention)
-                        .withVariable("roleMention", roleMention) // legacy support
-                        .withVariable("enter", "\n")
-                        .withVariable(
-                            "emoteji",
-                            if (isEmoji) {
-                                emoteji
-                            } else {
-                                val emote = context.guild.getEmoteById(emoteji)
-                                    ?: context.shardManager.getEmoteById(emoteji)
-                                emote?.asMention ?: "error"
-                            }
-                        )
-                )
-
+                entries.add(body)
             }
 
+            val external = AddReactionsToMessage.containsExternalEmotes(context, emotejiList)
+            if (external && notEnoughPermissionsAndMessage(context, channel, Permission.MESSAGE_EXT_EMOJI)) return
             var alreadyUsedEmotesAmount = 0
             val messages = mutableListOf<Long>()
-
             val totalLength = entries.sumBy { it.length }
+            val embedDisabledWrapper = context.daoManager.embedDisabledWrapper
+
+            val titleFormat = context.getTranslation("$root.titleformat.part")
             if (entries.size > 20 || totalLength > MessageEmbed.TEXT_MAX_LENGTH) {
-                val titleFormat = context.getTranslation("$root.titleformat.part")
                 val body = StringBuilder()
                 var part = 1
                 for ((index, entry) in entries.withIndex()) {
                     if (body.length + entry.length > MessageEmbed.TEXT_MAX_LENGTH) {
-                        embedder.setTitle(
-                            titleFormat
-                                .withVariable("group", group.groupName)
-                                .withVariable("part", part++)
-                        )
-                        embedder.setDescription(body)
-                        val msg = sendEmbedAwaitEL(
-                            context.daoManager.embedDisabledWrapper,
-                            channel,
-                            embedder.build()
-                        ).firstOrNull()
+                        val title = titleFormat
+                            .withVariable("group", group.groupName)
+                            .withVariable("part", part++)
+                        val embed = embedder.setTitle(title)
+                            .setDescription(body)
+                            .build()
+
+                        val msg = sendEmbedAwaitEL(embedDisabledWrapper, channel, embed).firstOrNull()
                         if (msg != null) {
                             messages.add(msg.idLong)
                             val emotejisForMsg = emotejiList.subList(alreadyUsedEmotesAmount, index)
@@ -375,17 +379,14 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                 }
                 if (body.isNotBlank()) {
-                    embedder.setTitle(
-                        titleFormat
-                            .withVariable("group", group.groupName)
-                            .withVariable("part", part)
-                    )
-                    embedder.setDescription(body)
-                    val msg = sendEmbedAwaitEL(
-                        context.daoManager.embedDisabledWrapper,
-                        channel,
-                        embedder.build()
-                    ).firstOrNull()
+                    val title = titleFormat
+                        .withVariable("group", group.groupName)
+                        .withVariable("part", part)
+                    val embed = embedder.setTitle(title)
+                        .setDescription(body)
+                        .build()
+
+                    val msg = sendEmbedAwaitEL(embedDisabledWrapper, channel, embed).firstOrNull()
                     if (msg != null) {
                         messages.add(msg.idLong)
                         val emotejisForMsg = emotejiList.drop(alreadyUsedEmotesAmount)
@@ -393,13 +394,13 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     }
                 }
             } else {
-                val titleFormat = context.getTranslation("$root.titleformat")
-                embedder.setTitle(titleFormat.withVariable("group", group.groupName))
+                val title = titleFormat.withVariable("group", group.groupName)
+                embedder.setTitle(title)
                 for (entry in entries) {
                     embedder.appendDescription(entry)
                 }
-                val msg =
-                    sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build()).firstOrNull()
+
+                val msg = sendEmbedAwaitEL(embedDisabledWrapper, channel, embedder.build()).firstOrNull()
                 if (msg != null) {
                     messages.add(msg.idLong)
                     addEmotejisToMsg(emotejiList, msg, context)
