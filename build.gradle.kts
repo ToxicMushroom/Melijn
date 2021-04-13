@@ -9,6 +9,7 @@ plugins {
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
+application.mainClassName = "me.melijn.melijnbot.MelijnBotKt" // backwards compat for shadowjar v6.1.0
 group = "me.melijn.melijnbot"
 version = "2.0.8"
 
