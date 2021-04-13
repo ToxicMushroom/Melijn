@@ -49,10 +49,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 3) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 2)) return
 
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
             val channel = getTextChannelByArgsNMessage(context, 1) ?: return
@@ -102,7 +99,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
     }
 
-
     override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
     }
@@ -115,10 +111,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 2) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 1)) return
 
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
 
@@ -275,10 +268,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 0)) return
 
             val wrapper = context.daoManager.selfRoleGroupWrapper
             val wrapper2 = context.daoManager.selfRoleWrapper
@@ -449,10 +439,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val wrapper = context.daoManager.selfRoleGroupWrapper
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
@@ -483,10 +470,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val wrapper = context.daoManager.selfRoleGroupWrapper
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
@@ -516,10 +500,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val wrapper = context.daoManager.selfRoleGroupWrapper
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
@@ -568,10 +549,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
@@ -634,10 +612,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: ICommandContext) {
-                    if (context.args.size < 2) {
-                        sendSyntax(context)
-                        return
-                    }
+                    if (argSizeCheckFailed(context, 1)) return
 
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                     val argument = getLongFromArgNMessage(context, 1, 1000000000000000) ?: return
@@ -662,10 +637,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: ICommandContext) {
-                    if (context.args.size < 2) {
-                        sendSyntax(context)
-                        return
-                    }
+                    if (argSizeCheckFailed(context, 1)) return
 
                     val wrapper = context.daoManager.selfRoleGroupWrapper
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
@@ -690,10 +662,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: ICommandContext) {
-                    if (context.args.size < 2) {
-                        sendSyntax(context)
-                        return
-                    }
+                    if (argSizeCheckFailed(context, 1)) return
 
                     val wrapper = context.daoManager.selfRoleGroupWrapper
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
@@ -724,10 +693,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: ICommandContext) {
-                    if (context.args.isEmpty()) {
-                        sendSyntax(context)
-                        return
-                    }
+                    if (argSizeCheckFailed(context, 0)) return
 
                     val wrapper = context.daoManager.selfRoleGroupWrapper
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
@@ -751,10 +717,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: ICommandContext) {
-                    if (context.args.isEmpty()) {
-                        sendSyntax(context)
-                        return
-                    }
+                    if (argSizeCheckFailed(context, 0)) return
 
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
 
@@ -793,10 +756,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 if (context.args.size < 2) {
                     val msg = context.getTranslation("$root.show.${group.isEnabled}")
@@ -826,10 +786,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 if (context.args.size < 2) {
@@ -860,10 +817,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
@@ -903,10 +857,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val selfRoleGroup = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
@@ -953,10 +904,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.size < 2) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 1)) return
 
                 val selfRoleGroup1 = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 val name = getStringFromArgsNMessage(context, 1, 1, 64) ?: return
@@ -1011,11 +959,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 3) {
-                sendSyntax(context)
-                return
-            }
-
+            if (argSizeCheckFailed(context, 2)) return
 
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
 
@@ -1091,10 +1035,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 0)) return
 
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
             val selfRoleWrapper = context.daoManager.selfRoleWrapper
@@ -1115,10 +1056,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 2) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 1)) return
 
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
             val pair = getEmotejiByArgsN(context, 1) ?: return
@@ -1201,10 +1139,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 2) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 1)) return
 
             val selfRoleWrapper = context.daoManager.selfRoleWrapper
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
@@ -1248,7 +1183,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         override suspend fun execute(context: ICommandContext) {
             val wrapper = context.daoManager.selfRoleWrapper
             val map = wrapper.getMap(context.guildId)
-
 
             val msg = if (map.isNotEmpty()) {
                 val title = context.getTranslation("$root.title")
