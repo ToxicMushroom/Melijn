@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.getColorFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.toHex
+import net.dv8tion.jda.api.Permission
 import java.awt.Color
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
@@ -17,6 +18,7 @@ class ColorCommand : AbstractCommand("command.color") {
     init {
         id = 132
         name = "color"
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
         commandCategory = CommandCategory.UTILITY
     }
 
@@ -49,7 +51,8 @@ class ColorCommand : AbstractCommand("command.color") {
             ImageIO.write(ImageUtils.createPlane(64, color.rgb), "png", it)
         }
 
-        context.channel.sendMessage(eb.build()).addFile(bais.toByteArray(), "file.png").queue()
-
+        context.channel.sendMessage(eb.build())
+            .addFile(bais.toByteArray(), "file.png")
+            .queue()
     }
 }
