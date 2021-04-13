@@ -47,7 +47,6 @@ configure<ApolloExtension> {
 //    }
 }
 
-
 repositories {
     maven {
         url = uri("https://m2.dv8tion.net/releases")
@@ -61,22 +60,23 @@ repositories {
     jcenter()
 }
 
+val jackson = "2.12.3"
+val ktor = "1.5.3"
 
 dependencies {
-    // https://bintray.com/dv8fromtheworld/maven/JDA/
+    // https://ci.dv8tion.net/job/JDA/
     implementation("net.dv8tion:JDA:4.2.1_256") {
         exclude("opus-java")
     }
 
-
-    // https://bintray.com/sedmelluq/com.sedmelluq/jda-nas
+    // https://github.com/sedmelluq/jda-nas
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
-    // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
-    implementation("com.sedmelluq:lavaplayer:1.3.75")
+    // https://github.com/sedmelluq/lavaplayer
+    implementation("com.sedmelluq:lavaplayer:1.3.76")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
-    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.4")
+    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.5")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))
@@ -100,31 +100,31 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-jdk8
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.3")
 
-    // https://bintray.com/duncte123/weeb.java/weeb.java
+    // https://duncte123.jfrog.io/ui/packages/gav:%2F%2Fme.duncte123:weebJava
     implementation("me.duncte123:weebJava:3.0.1_4")
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation("se.michaelthelin.spotify:spotify-web-api-java:6.5.2")
+    implementation("se.michaelthelin.spotify:spotify-web-api-java:6.5.3")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation("ch.qos.logback:logback-classic:1.2.3")
 
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-    implementation("com.fasterxml.jackson.core:jackson-core:2.12.2")
+    implementation("com.fasterxml.jackson.core:jackson-core:$jackson")
 
     // https://github.com/FasterXML/jackson-module-kotlin
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jackson")
 
     // https://search.maven.org/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-xml
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.2")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jackson")
 
 
     // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
-    implementation("io.ktor:ktor:1.5.2")
-    implementation("io.ktor:ktor-client-okhttp:1.5.2")
-    implementation("io.ktor:ktor-server-netty:1.5.2")
-    implementation("io.ktor:ktor-client-jackson:1.5.2")
+    implementation("io.ktor:ktor:$ktor")
+    implementation("io.ktor:ktor-client-okhttp:$ktor")
+    implementation("io.ktor:ktor-server-netty:$ktor")
+    implementation("io.ktor:ktor-client-jackson:$ktor")
 
     // https://github.com/ToxicMushroom/gifencoder
     implementation("com.github.ToxicMushroom:gifencoder:23b3128881")
