@@ -28,7 +28,7 @@ class LockCommand : AbstractCommand("command.lock") {
             ChannelsArg(root)
         )
         discordPermissions =
-            (textDenyList + voiceDenyList).toTypedArray() // need the server permission in order to create overrides for it
+            (textDenyList + voiceDenyList) // need the server permission in order to create overrides for it
         cooldown = 10_000
         commandCategory = CommandCategory.ADMINISTRATION
     }
@@ -206,15 +206,27 @@ class LockCommand : AbstractCommand("command.lock") {
     }
 
     companion object {
-        val textDenyList = mutableListOf(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION)
-        val voiceDenyList = mutableListOf(Permission.VOICE_CONNECT)
-        val channelFilter: suspend (context: ICommandContext, it: GuildChannel) -> Boolean = { context, channel ->
+        val textDenyList = arrayOf(Permission.MESSAGE_WRITE, Permission.MESSAGE_ADD_REACTION)
+        val voiceDenyList = arrayOf(Permission.VOICE_CONNECT)
+        val channelFilter: suspend (ICommandContext, GuildChannel) -> Boolean = { context, channel ->
             val wrapper = context.daoManager.lockExcludedWrapper
-            val excludedChannels = wrapper.getExcluded(context.guildId, EntityType.TEXT_CHANNEL)
+            val entityType: EntityType
+            val permList: Array<Permission>
+
+            if (channel is TextChannel) {
+                entityType = EntityType.TEXT_CHANNEL
+                permList = textDenyList
+            } else {
+                entityType = EntityType.VOICE_CHANNEL
+                permList = voiceDenyList
+            }
+
+            val excludedChannels = wrapper.getExcluded(context.guildId, entityType)
             !excludedChannels.contains(channel.idLong) && context.selfMember.hasPermission(
                 channel,
                 Permission.MANAGE_CHANNEL,
-                Permission.MANAGE_ROLES
+                Permission.MANAGE_ROLES,
+                *permList
             )
         }
     }
@@ -383,10 +395,9 @@ class LockCommand : AbstractCommand("command.lock") {
         val pubRole = context.guild.publicRole
         val overrideMap = mutableMapOf<Long, Pair<Long, Long>>()
         overrideMap.putAll(
-            channel.rolePermissionOverrides.filterNotNull()
-                .map {
-                    it.idLong to Pair(it.allowedRaw, it.deniedRaw)
-                }.toMap()
+            channel.rolePermissionOverrides.filterNotNull().associate {
+                it.idLong to Pair(it.allowedRaw, it.deniedRaw)
+            }
         )
 
         // Save melijn perm overrides
