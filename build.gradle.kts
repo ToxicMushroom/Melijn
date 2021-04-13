@@ -1,26 +1,14 @@
 import com.apollographql.apollo.gradle.api.ApolloExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath("com.apollographql.apollo:apollo-gradle-plugin:2.5.5")
-    }
-}
-
 plugins {
     id("application")
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("org.jetbrains.kotlin.jvm") version "1.4.32"
-    id("com.apollographql.apollo") version "2.5.5"
+    id("com.apollographql.apollo") version "2.5.6"
 }
 
-application {
-    mainClassName = "me.melijn.melijnbot.MelijnBotKt"
-}
-
+application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
 group = "me.melijn.melijnbot"
 version = "2.0.8"
 
@@ -41,10 +29,6 @@ configure<ApolloExtension> {
         ("StartDate" to "me.melijn.melijnbot.internals.models.AnilistDateKt")
         ("MediaFragment.StartDate" to "me.melijn.melijnbot.internals.models.AnilistDateKt")
     }
-//    service("kitsu") {
-//        rootPackageName = "me.melijn.melijnbot.kitsu"
-//        sourceFolder = "me/melijn/melijnbot/kitsu"
-//    }
 }
 
 repositories {
@@ -60,8 +44,9 @@ repositories {
     jcenter()
 }
 
-val jackson = "2.12.3"
-val ktor = "1.5.3"
+val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+val ktor = "1.5.3"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
+val apollo = "2.5.6" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
@@ -140,8 +125,8 @@ dependencies {
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:4.4.2")
 
     // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
-    implementation("com.apollographql.apollo:apollo-runtime:2.5.5")
-    implementation("com.apollographql.apollo:apollo-coroutines-support:2.5.5")
+    implementation("com.apollographql.apollo:apollo-runtime:$apollo")
+    implementation("com.apollographql.apollo:apollo-coroutines-support:$apollo")
 
     // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
     implementation("io.lettuce:lettuce-core:6.1.0.RELEASE")
