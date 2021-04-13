@@ -128,7 +128,7 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (argSizeCheckFailed(context, 1)) return
+            if (argSizeCheckFailed(context, 0)) return
             val channelId = if (DISCORD_ID.matches(context.args[0])) {
                 context.args[0].toLong()
             } else {
