@@ -25,7 +25,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class DriverManager(
     dbSettings: Settings.Database,
-    val redisSettings: Settings.Redis
+    redisSettings: Settings.Redis
 ) {
 
     private val afterConnectToBeExecutedQueries = ArrayList<String>()
@@ -55,7 +55,6 @@ class DriverManager(
         if (redisSettings.enabled) {
             logger.info("Connecting to redis..")
             connectRedis(redisSettings.host, redisSettings.port, redisSettings.password)
-
         }
     }
 
