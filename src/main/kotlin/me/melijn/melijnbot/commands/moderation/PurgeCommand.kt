@@ -39,12 +39,9 @@ class PurgeCommand : AbstractCommand("command.purge") {
 
         // + 1 is to start counting above the .purge command
         val amount = (getIntegerFromArgNMessage(context, 0, 1, 1000) ?: return) + 1
-
         val targetUser = if (context.args.size == 2) {
             retrieveUserByArgsNMessage(context, 1) ?: return
-        } else {
-            null
-        }
+        } else null
 
         val purgePID = Pair(context.guildId, context.channelId)
         if (purgeInProgress.contains(purgePID)) {
@@ -89,7 +86,12 @@ class PurgeCommand : AbstractCommand("command.purge") {
 
                 purgeInProgress.remove(purgePID)
                 val invoke = context.commandParts[1]
-                if (!invoke.isInside(silentPruneName, silentPurgeName, ignoreCase = true)) {
+                if (!invoke.isInside(
+                        silentPruneName,
+                        silentPurgeName,
+                        ignoreCase = true
+                    ) && context.textChannel.canTalk()
+                ) {
                     sendMsgAwaitEL(context, msg)
                         .firstOrNull()
                         ?.delete()
