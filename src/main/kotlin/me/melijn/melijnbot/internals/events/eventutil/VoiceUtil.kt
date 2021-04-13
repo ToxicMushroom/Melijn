@@ -6,7 +6,6 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelRoleState
 import me.melijn.melijnbot.internals.utils.awaitBool
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyMusicChannel
-import me.melijn.melijnbot.internals.utils.isPremiumGuild
 import me.melijn.melijnbot.internals.utils.listeningMembers
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
@@ -139,7 +138,7 @@ object VoiceUtil {
     ) {
         val guild = member.guild
         val selfMember = guild.selfMember
-        if (!selfMember.hasPermission(Permission.MANAGE_ROLES) || !isPremiumGuild(daoManager, guild.idLong)) return
+        if (!selfMember.hasPermission(Permission.MANAGE_ROLES)) return
 
         val wrapper = daoManager.channelRoleWrapper
         val mapChannel1 = channelLeft?.let { wrapper.getRoleIds(guild.idLong, it.idLong) } ?: emptyMap()
