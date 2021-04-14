@@ -43,9 +43,9 @@ class RolesCommand : AbstractCommand("command.roles") {
         val title = context.getTranslation("$root.response1.title")
             .withSafeVariable("serverName", guild.name)
 
-        val selfRolesGrouped = TaskManager.taskValueAsync { context.daoManager.selfRoleWrapper.getMap(context.guildId) }
+        val selfRolesGrouped = TaskManager.taskValueAsync { context.daoManager.selfRoleWrapper.getMap(guild.idLong) }
         val selfRoleGroups =
-            TaskManager.taskValueAsync { context.daoManager.selfRoleGroupWrapper.getMap(context.guildId) }
+            TaskManager.taskValueAsync { context.daoManager.selfRoleGroupWrapper.getMap(guild.idLong) }
         val availableMap = mutableMapOf<String, List<Role>>()
         var content = if (available) "```MARKDOWN" else "```INI"
 
