@@ -21,18 +21,13 @@ import java.net.URI
 import java.util.*
 
 
-class MelijnBot {
+object MelijnBot {
 
     private val logger = LoggerFactory.getLogger(MelijnBot::class.java)
-
-    companion object {
-        lateinit var instance: MelijnBot
-        lateinit var shardManager: ShardManager
-        lateinit var eventManager: EventManager
-    }
+    var shardManager: ShardManager
+    var eventManager: EventManager
 
     init {
-        instance = this
         Locale.setDefault(Locale.ENGLISH)
         System.setProperty(
             kotlinx.coroutines.DEBUG_PROPERTY_NAME,
@@ -138,5 +133,5 @@ class MelijnBot {
 }
 
 fun main() {
-    MelijnBot()
+    MelijnBot
 }

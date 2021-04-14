@@ -5,16 +5,14 @@ import me.melijn.melijnbot.internals.web.RequestContext
 import me.melijn.melijnbot.internals.web.WebUtils.respondJson
 import me.melijn.melijnbot.objectMapper
 
-object StatsResponseHandler {
+object EventStatsResponseHandler {
 
     var lastRequest = System.currentTimeMillis()
 
-    @Deprecated("Marked for removal", replaceWith = ReplaceWith("EventStatsResponseHandler#handleEventStatsResponse"))
-    suspend fun handleStatsResponse(context: RequestContext) {
+    suspend fun handleEventStatsResponse(context: RequestContext) {
         val dataObject = computeBaseObject()
             .put("events", objectMapper.writeValueAsString(EventManager.eventCountMap))
             .put("lastPoint", lastRequest)
-            .put("shards", computePublicStatsObject(context))
         resetEventCounter()
         context.call.respondJson(dataObject)
         lastRequest = System.currentTimeMillis()
