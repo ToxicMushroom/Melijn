@@ -4,6 +4,8 @@ import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.internals.command.AbstractCommand.Companion.comparator
+import me.melijn.melijnbot.internals.models.CommandUsageInfo
+import me.melijn.melijnbot.internals.threading.SafeList
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
 import me.melijn.melijnbot.internals.utils.addIfNotPresent
@@ -17,7 +19,6 @@ import net.dv8tion.jda.api.entities.Message
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
-import kotlin.collections.ArrayList
 
 const val PLACEHOLDER_PREFIX = "prefix"
 
@@ -45,6 +46,7 @@ abstract class AbstractCommand(val root: String) {
     }
 
     companion object {
+        val commandUsageList = SafeList<CommandUsageInfo>()
         val comparator: (o1: String, o2: String) -> Int = { o1, o2 ->
             val s = o2.count { it == '.' }.compareTo(o1.count { it == '.' })
             if (s == 0) 1
@@ -187,7 +189,7 @@ abstract class AbstractCommand(val root: String) {
                                 Permission.MESSAGE_MANAGE
                             )
                         ) return@async
-                        message.delete().queue(null, { context.container.botDeletedMessageIds.remove(message.idLong) })
+                        message.delete().queue(null) { context.container.botDeletedMessageIds.remove(message.idLong) }
                     }
                 }
                 val second = System.currentTimeMillis()
@@ -199,7 +201,14 @@ abstract class AbstractCommand(val root: String) {
                 )
                 t.sendInGuild(context)
             }
-            context.daoManager.commandUsageWrapper.addUse(context.commandOrder[0].id)
+            val commandId = context.commandOrder[0].id
+            commandUsageList.add(CommandUsageInfo(
+                context.guildN?.idLong ?: context.authorId,
+                context.authorId,
+                commandId,
+                System.currentTimeMillis()
+            ))
+            context.daoManager.commandUsageWrapper.addUse(commandId)
         } else {
             sendMissingPermissionMessage(context, permission)
         }
