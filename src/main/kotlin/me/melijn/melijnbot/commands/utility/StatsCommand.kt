@@ -1,14 +1,17 @@
 package me.melijn.melijnbot.commands.utility
 
 import com.sun.management.OperatingSystemMXBean
+import me.melijn.melijnbot.internals.JvmUsage
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.getSystemUptime
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.withVariable
 import java.lang.management.ManagementFactory
 import java.text.DecimalFormat
 import java.util.concurrent.ForkJoinPool
@@ -27,18 +30,8 @@ class StatsCommand : AbstractCommand("command.stats") {
 
     override suspend fun execute(context: ICommandContext) {
         val bean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
-        val totalMem: Long
-        val usedMem: Long
-        if (OSValidator.isUnix) {
-            totalMem = getTotalMBUnixRam()
-            usedMem = getUsedMBUnixRam()
-        } else {
-            totalMem = bean.totalMemorySize shr 20
-            usedMem = totalMem - (bean.freeSwapSpaceSize shr 20)
-        }
-
-        val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
-        val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
+        val (totalMem, usedMem, totalJVMMem, usedJVMMem) = JvmUsage.current(bean)
+        
         val shardManager = context.shardManager
         val voiceChannels = VoiceUtil.getConnectedChannelsAmount(shardManager)
         val voiceChannelsNotEmpty = VoiceUtil.getConnectedChannelsAmount(shardManager, true)

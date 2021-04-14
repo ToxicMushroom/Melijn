@@ -35,7 +35,7 @@ import kotlin.math.sqrt
 
 object ImageUtils {
 
-    fun createPlane(side: Int, color: Int): BufferedImage? {
+    fun createPlane(side: Int, color: Int): BufferedImage {
         val bufferedImage = BufferedImage(side, side, BufferedImage.TYPE_INT_RGB)
         val graphics2D = bufferedImage.createGraphics()
         graphics2D.color = Color(color)

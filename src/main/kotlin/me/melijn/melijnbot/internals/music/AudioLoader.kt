@@ -533,13 +533,9 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
             }
 
-            override suspend fun noMatches() {
-                return
-            }
+            override suspend fun noMatches() = Unit
 
-            override suspend fun playlistLoaded(playlist: AudioPlaylist) {
-                return
-            }
+            override suspend fun playlistLoaded(playlist: AudioPlaylist) = Unit
         }
 
         audioPlayerManager.loadItemOrdered(guildMusicPlayer, source, resultHandler)
