@@ -50,7 +50,7 @@ class MelijnBot {
 
         logger.info("Connecting to lavalink")
         val jdaLavaLink = runBlocking {
-            TaskManager.taskValueAsync {
+            TaskManager.taskValueNAsync {
                 generateJdaLinkFromNodes(container, nodeMap)
             }.await()
         }
