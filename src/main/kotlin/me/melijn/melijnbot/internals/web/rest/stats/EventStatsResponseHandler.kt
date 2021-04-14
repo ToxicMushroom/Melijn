@@ -49,8 +49,6 @@ object EventStatsResponseHandler {
     }
 
     private fun resetEventCounter() {
-        for (event in EventManager.eventCountMap.keys) {
-            EventManager.eventCountMap[event] = 0
-        }
+        EventManager.eventCountMap.clear()
     }
 }

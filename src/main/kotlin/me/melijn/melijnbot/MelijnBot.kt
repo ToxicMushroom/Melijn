@@ -68,6 +68,7 @@ object MelijnBot {
                 GatewayIntent.GUILD_MESSAGE_REACTIONS,
                 GatewayIntent.GUILD_VOICE_STATES,
             )
+            .setRawEventsEnabled(true)
             .setShardsTotal(container.settings.botInfo.shardCount)
             .setToken(container.settings.tokens.discord)
             .setActivity(Activity.playing("Starting.."))
