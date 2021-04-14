@@ -118,7 +118,7 @@ class TwitterService(
         }
     }
 
-    private val twitterDotCoRegex = "https://t\\.co/(?:[a-zA-Z0-9]+)".toRegex()
+    private val twitterDotCoRegex = "https://t\\.co/[a-zA-Z0-9]+".toRegex()
     private suspend fun fetchNewTweets(twitterWebhook: TwitterWebhook): Tweets? {
         val patternFormatRFC3339 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
         val lastTweetTime = OffsetDateTime.ofInstant(

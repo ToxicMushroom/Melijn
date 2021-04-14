@@ -300,7 +300,7 @@ suspend fun sendRspWithAttachmentsAwaitN(
     message: Message,
     attachments: Map<String, String>
 ): Message? {
-    val msg = msgWithAttachmentsAction(textChannel, httpClient, message, attachments)?.awaitOrNull() ?: return null
+    val msg = msgWithAttachmentsAction(textChannel, httpClient, message, attachments).awaitOrNull() ?: return null
     TaskManager.async(textChannel) {
         handleRspDelete(daoManager, msg)
     }
@@ -354,7 +354,7 @@ fun sendRspWithAttachments(
     attachments: Map<String, String>
 ) {
     TaskManager.async(textChannel) {
-        val msg = msgWithAttachmentsAction(textChannel, httpClient, message, attachments)?.awaitOrNull() ?: return@async
+        val msg = msgWithAttachmentsAction(textChannel, httpClient, message, attachments).awaitOrNull() ?: return@async
 
         handleRspDelete(daoManager, msg)
     }

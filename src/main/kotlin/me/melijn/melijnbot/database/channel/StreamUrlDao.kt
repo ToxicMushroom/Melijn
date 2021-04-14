@@ -27,12 +27,12 @@ class StreamUrlDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         }, guildId)
     }
 
-    suspend fun set(guildId: Long, url: String) {
+    fun set(guildId: Long, url: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, url) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET url = ?",
             guildId, url, url)
     }
 
-    suspend fun remove(guildId: Long) {
+    fun remove(guildId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?", guildId)
     }
 }

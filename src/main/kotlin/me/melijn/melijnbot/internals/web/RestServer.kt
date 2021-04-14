@@ -42,7 +42,7 @@ class RestServer(container: Container) {
 
     private val jsonType = ContentType.parse("Application/JSON")
 
-    val logger = LoggerFactory.getLogger(RestServer::class.java)
+    private val logger = LoggerFactory.getLogger(RestServer::class.java)
 
     private val server: NettyApplicationEngine = embeddedServer(Netty, container.settings.restServer.port) {
         routing {

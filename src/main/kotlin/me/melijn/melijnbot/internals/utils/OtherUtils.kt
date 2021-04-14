@@ -21,11 +21,11 @@ import java.util.regex.Pattern
 
 
 val linuxUptimePattern: Pattern = Pattern.compile(
-    "(?:([0-9]+)(?:\\.[0-9]+)?) (?:[0-9]+(?:\\.[0-9]+)?)" // 11105353.49 239988480.98
+    "([0-9]+)(?:\\.[0-9]+)? [0-9]+(?:\\.[0-9]+)?" // 11105353.49 239988480.98
 )
 
 // Thx xavin
-val linuxRamPattern: Pattern = Pattern.compile("Mem(?:.*):\\s+([0-9]+) kB")
+val linuxRamPattern: Pattern = Pattern.compile("Mem.*:\\s+([0-9]+) kB")
 
 fun getSystemUptime(): Long {
     return try {
@@ -175,12 +175,11 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: ICommandContex
     }
 }
 
-val ccTagPattern = Pattern.compile("cc\\.(\\d+)")
+val ccTagPattern = Regex("cc\\.(\\d+)")
 suspend fun getCommandIdsFromArgNMessage(context: ICommandContext, index: Int): Set<String>? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val category: CommandCategory? = enumValueOrNull(arg)
-    val matcher = ccTagPattern.matcher(arg)
 
     val commands = if (category == null) {
         if (arg == "*") {
@@ -196,7 +195,7 @@ suspend fun getCommandIdsFromArgNMessage(context: ICommandContext, index: Int): 
 
     commands.removeIf { id -> id == "16" || id == "0" }
 
-    if (matcher.matches()) {
+    if (ccTagPattern.matches(arg)) {
         commands.add(arg)
     }
 

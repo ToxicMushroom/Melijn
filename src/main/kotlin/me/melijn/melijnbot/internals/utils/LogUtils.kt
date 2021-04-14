@@ -434,7 +434,7 @@ object LogUtils {
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    suspend fun sendRoleAddedLog(container: Container, adder: User, target: User, role: Role) {
+    fun sendRoleAddedLog(container: Container, adder: User, target: User, role: Role) {
 //        val daoManager = container.daoManager
 //        val guild = role.guild
 //        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.ROLES)
@@ -463,7 +463,7 @@ object LogUtils {
 //        sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    suspend fun sendRoleRemovedLog(container: Container, remover: User, target: User, role: Role) {
+    fun sendRoleRemovedLog(container: Container, remover: User, target: User, role: Role) {
 //        val daoManager = container.daoManager
 //        val guild = role.guild
 //        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.ROLES)

@@ -697,7 +697,7 @@ class EmbedEditor() {
 
     /**
      * Clears all fields from the embed, such as those created with the
-     * [EmbedBuilder(MessageEmbed)][net.dv8tion.jda.api.EmbedBuilder.EmbedBuilder]
+     * [EmbedBuilder(MessageEmbed)][net.dv8tion.jda.api.EmbedBuilder]
      * constructor or via the
      * [addField][net.dv8tion.jda.api.EmbedBuilder.addField] methods.
      *

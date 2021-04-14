@@ -49,7 +49,6 @@ class LavaManager(
 
     /**
      * @param context            This will be used to send replies
-     * @param guild              This will be used to check permissions
      * @param channel This is the voice channel you want to join
      * @return returns true on success and false when failed
      */

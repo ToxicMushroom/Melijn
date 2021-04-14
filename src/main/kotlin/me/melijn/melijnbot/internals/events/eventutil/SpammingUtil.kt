@@ -9,7 +9,7 @@ object SpammingUtil {
 
     val spamMap = mutableMapOf<Long, List<SpammingUser>>()
 
-    suspend fun handleSpam(container: Container, event: GuildMessageReceivedEvent) {
+    fun handleSpam(container: Container, event: GuildMessageReceivedEvent) {
         if (event.author.isBot) return
         val member = event.member ?: return
         val channel = event.channel

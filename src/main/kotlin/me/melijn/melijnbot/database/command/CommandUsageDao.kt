@@ -20,7 +20,7 @@ class CommandUsageDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun addUse(commandId: Int, currentTimeMillis: Long = System.currentTimeMillis()) {
+    fun addUse(commandId: Int, currentTimeMillis: Long = System.currentTimeMillis()) {
         if (currentHour != LocalTime.now().hour) {
             currentHour = LocalTime.now().hour
             hourMillis = currentTimeMillis

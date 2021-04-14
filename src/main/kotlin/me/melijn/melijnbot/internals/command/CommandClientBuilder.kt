@@ -29,7 +29,7 @@ class CommandClientBuilder(private val container: Container) {
         logger.info("Loading commands...")
     }
 
-    private val commands = hashSetOf<AbstractCommand>(
+    private val commands = hashSetOf(
         PunishmentCommand(),
         SetCommandStateCommand(),
         PunchCommand(),

@@ -18,7 +18,7 @@ class SoftBanDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey, uniqueKey)
     }
 
-    suspend fun addSoftBan(ban: SoftBan) {
+    fun addSoftBan(ban: SoftBan) {
         ban.apply {
             driverManager.executeUpdate(
                 "INSERT INTO $table (softBanId, guildId, softBannedId, softBanAuthorId, reason, moment) VALUES (?, ?, ?, ?, ?, ?)" +
@@ -70,14 +70,14 @@ class SoftBanDao(driverManager: DriverManager) : Dao(driverManager) {
         )
     }
 
-    suspend fun clear(guildId: Long, softbannedId: Long) {
+    fun clear(guildId: Long, softbannedId: Long) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guildId = ? AND softBannedId = ?",
             guildId, softbannedId
         )
     }
 
-    suspend fun remove(softBan: SoftBan) {
+    fun remove(softBan: SoftBan) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guildId = ? AND softBannedId = ? AND softBanId = ?",
             softBan.guildId, softBan.softBannedId, softBan.softBanId

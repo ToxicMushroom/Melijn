@@ -275,7 +275,9 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 var content = "```INI\n# [index] - [group] - [getAllRoles] - [userTypes] - [enabled]"
 
                 for ((index, roleInfo) in list.withIndex()) {
-                    val userTypesArg = UserType.setFromInt(roleInfo.forUserTypes).joinToString(",") { "${it.toUCC()}" }
+                    val userTypesArg = UserType.setFromInt(roleInfo.forUserTypes).joinToString(",") {
+                        it.toUCC()
+                    }
                     content += "\n${index + 1} - [${roleInfo.groupName}] - ${roleInfo.getAllRoles} - [$userTypesArg] - ${roleInfo.isEnabled}"
                 }
 
