@@ -45,9 +45,11 @@ object MelijnBot {
 
         logger.info("Connecting to lavalink")
         val jdaLavaLink = runBlocking {
-            TaskManager.taskValueNAsync {
+            try {
                 generateJdaLinkFromNodes(container, nodeMap)
-            }.await()
+            } catch (t: Throwable) {
+                null
+            }
         }
 
         container.initLava(jdaLavaLink)
