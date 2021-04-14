@@ -46,7 +46,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                 // SpammingUtil.handleSpam(container, event.message)
             }
         } else if (event is PrivateMessageReceivedEvent) {
-            TaskManager.async {
+            TaskManager.async(event.author, event.channel) {
                 checkTicTacToe(event)
                 checkRockPaperScissors(event)
             }
