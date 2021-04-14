@@ -25,7 +25,7 @@ import java.time.ZoneId
 class MassBanCommand : AbstractCommand("command.massban") {
 
     init {
-        name = "massban"
+        name = "massBan"
         aliases = arrayOf("mb")
         commandCategory = CommandCategory.MODERATION
         discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
@@ -56,9 +56,8 @@ class MassBanCommand : AbstractCommand("command.massban") {
         reason = reason.trim()
 
         val messages = mutableListOf<String>()
-        var i = 0
         val banning = context.getTranslation("message.banning")
-        for (targetUser in users) {
+        for ((i, targetUser) in users.withIndex()) {
             val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
             val ban = Ban(
                 context.guildId,
@@ -81,9 +80,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
                 sendMsgAwaitEL(it, banning)
             }?.firstOrNull()
 
-
             messages.add(i, continueBanning(context, targetUser, ban, activeBan, deldays, message))
-            i++
         }
         val separator = "\n"
         val string = java.lang.String.join(separator, messages)
