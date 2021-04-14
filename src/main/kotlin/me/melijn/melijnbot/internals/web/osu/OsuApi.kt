@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 
 
 class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
-    val logger = LoggerFactory.getLogger(OsuApi::class.java)
+    private val logger = LoggerFactory.getLogger(OsuApi::class.java)
 
     // k - api key (required).
     // u - specify a user_id or a username to return best scores from (required).

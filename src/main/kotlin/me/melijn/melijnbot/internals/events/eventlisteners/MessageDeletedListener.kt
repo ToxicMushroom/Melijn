@@ -61,7 +61,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     }
 
     /**
-     * [returns] if it checked that it was a melijn purge and deleted all the message Ids
+     * @returns if it checked that it was a melijn purge and deleted all the message Ids
      */
     private suspend fun onGuildBulkDelete(event: MessageBulkDeleteEvent): Boolean {
         val guild = event.guild

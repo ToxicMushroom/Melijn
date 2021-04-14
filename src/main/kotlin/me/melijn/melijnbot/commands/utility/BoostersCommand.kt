@@ -27,7 +27,7 @@ class BoostersCommand : AbstractCommand("command.boosters") {
             "**Boosters List (${boosters.size})**" +
                 boosters
                     .sortedBy { it.timeBoosted?.toInstant()?.toEpochMilli() ?: 0 }
-                    .joinToString() {
+                    .joinToString {
                         "\n${MarkdownSanitizer.escape(it.effectiveName)} (${it.id}) [${it.timeBoosted?.asLongLongGMTString()}]"
                     }
         }

@@ -18,8 +18,7 @@ import net.dv8tion.jda.api.entities.Message
 object RunConditionUtil {
 
     /**
-     * [return] returns true if the check passed
-     *
+     * @returns true if the check passed
      * **/
     suspend fun runConditionCheckPassed(
         container: Container,

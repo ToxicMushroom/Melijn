@@ -2,7 +2,6 @@ package me.melijn.melijnbot.database.logchannel
 
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
-import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 
 class LogChannelWrapper(private val logChannelDao: LogChannelDao) {

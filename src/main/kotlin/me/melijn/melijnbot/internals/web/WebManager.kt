@@ -10,7 +10,6 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
 import me.melijn.melijnbot.internals.Settings
-import me.melijn.melijnbot.internals.web.bins.BinApis
 import me.melijn.melijnbot.internals.web.booru.BooruApi
 import me.melijn.melijnbot.internals.web.botlist.BotListApi
 import me.melijn.melijnbot.internals.web.kitsu.KitsuApi
@@ -59,7 +58,6 @@ class WebManager(val settings: Settings) {
 
     val rule34Api: Rule34Api = Rule34Api(httpClient)
     val booruApi: BooruApi = BooruApi(httpClient)
-    val binApis: BinApis = BinApis(httpClient)
     val kitsuApi: KitsuApi = KitsuApi(httpClient)
     val osuApi: OsuApi = OsuApi(proxiedHttpClient, settings.tokens.osu)
     val botListApi: BotListApi = BotListApi(httpClient, settings)

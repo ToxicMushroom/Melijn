@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.database.newyear
 
 import me.melijn.melijnbot.database.CacheDBDao
-import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine

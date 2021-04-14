@@ -384,7 +384,7 @@ class OsuCommand : AbstractCommand("command.osu") {
                         :flag_${result.country.toLowerCase()}: - ${formatter.format(result.localRank)}
                         """.trimIndent(), true
                 )
-                .setThumbnail("http://s.ppy.sh/a/${result.id}")
+                .setThumbnail("https://s.ppy.sh/a/${result.id}")
                 .setFooter("Joined: ${result.joinDate}")
 
 

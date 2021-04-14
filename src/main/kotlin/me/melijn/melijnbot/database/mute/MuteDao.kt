@@ -135,21 +135,21 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         return mutes
     }
 
-    suspend fun clearHistory(guildId: Long, mutedId: Long) {
+    fun clearHistory(guildId: Long, mutedId: Long) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guildId = ? AND mutedId = ? AND active = ?",
             guildId, mutedId, false
         )
     }
 
-    suspend fun clear(guildId: Long, mutedId: Long) {
+    fun clear(guildId: Long, mutedId: Long) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guildId = ? AND mutedId = ?",
             guildId, mutedId
         )
     }
 
-    suspend fun remove(mute: Mute) {
+    fun remove(mute: Mute) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guildId = ? AND mutedId = ? AND muteId = ?",
             mute.guildId, mute.mutedId, mute.muteId

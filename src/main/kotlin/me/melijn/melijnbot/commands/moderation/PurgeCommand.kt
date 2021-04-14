@@ -21,7 +21,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
     private val silentPruneName = "sprune"
 
     // set of guildId,channelId
-    val purgeInProgress = ConcurrentHashMap.newKeySet<Pair<Long, Long>>()
+    private val purgeInProgress = ConcurrentHashMap.newKeySet<Pair<Long, Long>>()
 
     init {
         id = 39

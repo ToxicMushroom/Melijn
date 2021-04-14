@@ -156,7 +156,7 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
 suspend inline fun <reified T> HttpClient.getOrNull(
     urlString: String,
     block: HttpRequestBuilder.() -> Unit = {},
-    logger: org.slf4j.Logger? = null,
+    logger: Logger? = null,
 ): T? {
     return try {
         get {

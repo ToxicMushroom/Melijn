@@ -14,9 +14,9 @@ class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChann
 
         for ((guildId, trackMap) in map) {
             val newList = mutableListOf<AudioTrack>()
-            val sortedTrackMap = trackMap.toSortedMap(kotlin.Comparator { o1, o2 ->
+            val sortedTrackMap = trackMap.toSortedMap { o1, o2 ->
                 o1.compareTo(o2)
-            })
+            }
             for ((_, pair) in sortedTrackMap) {
                 val track = LavalinkUtil.toAudioTrack(pair.first)
                 if (pair.second.isNotEmpty()) {

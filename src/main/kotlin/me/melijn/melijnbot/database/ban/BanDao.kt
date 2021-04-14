@@ -20,7 +20,7 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey, uniqueKey)
     }
 
-    suspend fun setBan(ban: Ban) {
+    fun setBan(ban: Ban) {
         ban.apply {
             driverManager.executeUpdate(
                 "INSERT INTO $table (banId, guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
@@ -129,21 +129,21 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
         )
     }
 
-    suspend fun clear(guildId: Long, bannedId: Long) {
+    fun clear(guildId: Long, bannedId: Long) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guildId = ? AND bannedId = ?",
             guildId, bannedId
         )
     }
 
-    suspend fun clearHistory(guildId: Long, bannedId: Long) {
+    fun clearHistory(guildId: Long, bannedId: Long) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guildId = ? AND bannedId = ? AND active = ?",
             guildId, bannedId, false
         )
     }
 
-    suspend fun remove(ban: Ban) {
+    fun remove(ban: Ban) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guildID = ? AND bannedId = ? and banId = ?",
             ban.guildId, ban.bannedId, ban.banId

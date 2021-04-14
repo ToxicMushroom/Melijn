@@ -16,7 +16,7 @@ class MelijnOrderedExecutor(delegateService: ExecutorService) {
 
     /**
      * @param orderingKey Key for the ordering channel
-     * @param runnable Runnable to submit to the executor service
+     * @param func function to submit to the executor service
      * @return Future for the task
      */
     fun submit(orderingKey: Any, func: suspend () -> Unit) {
@@ -74,9 +74,6 @@ class MelijnOrderedExecutor(delegateService: ExecutorService) {
 
     }
 
-    /**
-     * @param delegateService Executor service where to delegate the actual execution to
-     */
     init {
         states = ConcurrentHashMap()
     }
