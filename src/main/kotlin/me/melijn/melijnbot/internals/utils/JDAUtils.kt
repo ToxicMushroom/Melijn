@@ -156,7 +156,7 @@ fun getUserByTag(shardManager: ShardManager, arg: String): User? {
     val name = arg.dropLast(5)
     return shardManager.userCache.firstOrNull { user ->
         user.discriminator == discriminator &&
-            user.name == name
+                user.name == name
     }
 }
 
@@ -499,7 +499,11 @@ suspend fun getColorFromArgNMessage(context: ICommandContext, index: Int): Color
                 val g = it[2].toIntOrNull()
                 val b = it[3].toIntOrNull()
                 if (r == null || g == null || b == null) null
-                else Color(r, g, b)
+                else try {
+                    Color(r, g, b)
+                } catch (t: Throwable) {
+                    null
+                }
             }
         }
         hsbColorRegex.matches(arg) -> {
