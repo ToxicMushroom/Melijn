@@ -11,6 +11,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.web.rest.codes.VerificationCodeResponseHandler
+import me.melijn.melijnbot.internals.web.rest.commands.CommandMapResponseHandler
 import me.melijn.melijnbot.internals.web.rest.commands.FullCommandsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.convert.UpgradeGuildsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.info.GetGuildResponseHandler
@@ -119,6 +120,10 @@ class RestServer(container: Container) {
 
             get("/fullCommands") {
                 FullCommandsResponseHandler.handleFullCommandsResponse(RequestContext(call, container))
+            }
+
+            get("/commandMap") {
+                CommandMapResponseHandler.handleCommandMapResponse(RequestContext(call, container))
             }
 
             get("/timezones") {
