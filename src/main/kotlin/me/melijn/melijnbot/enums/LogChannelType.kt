@@ -4,6 +4,7 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
 
     //Punishments
     PERMANENT_BAN("PermanentBan", arrayOf("punishment", "punishments", "ban", "permban", "pblc")),
+    MASS_BAN("MassBan", arrayOf("punishment", "punishments", "ban", "massban", "mblc")),
     TEMP_BAN("TemporaryBan", arrayOf("punishment", "punishments", "ban", "tempban", "tblc")),
     SOFT_BAN("SoftBan", arrayOf("punishment", "punishments", "ban", "sblc")),
     UNBAN("Unban", arrayOf("punishment", "punishments", "ban", "pardon", "ublc")),
