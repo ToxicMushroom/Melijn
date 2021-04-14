@@ -23,7 +23,7 @@ object EventStatsResponseHandler {
         val highestGuilds = LinkedList<Pair<Long, Int>>()
         entityUsesMap.forEach { (id, uses) ->
             if (highestGuilds.isEmpty()) highestGuilds.add(id to uses)
-            else for (index in 0..highestGuilds.size) {
+            else for (index in 0 until highestGuilds.size) {
                 val el = highestGuilds[index]
                 if (el.second < uses) {
                     highestGuilds.add(id to uses)
