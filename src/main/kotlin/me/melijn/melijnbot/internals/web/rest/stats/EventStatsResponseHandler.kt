@@ -39,8 +39,13 @@ object EventStatsResponseHandler {
             .put("highestGuilds", objectMapper.writeValueAsString(highestGuilds))
             .put("lastPoint", lastRequest)
         resetEventCounter()
+        resetCommands()
         context.call.respondJson(dataObject)
         lastRequest = System.currentTimeMillis()
+    }
+
+    private suspend fun resetCommands() {
+        AbstractCommand.commandUsageList.clear()
     }
 
     private fun resetEventCounter() {
