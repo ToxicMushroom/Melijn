@@ -3,9 +3,13 @@ package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.command.hasPermission
+import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
@@ -46,7 +50,29 @@ class MassBanCommand : AbstractCommand("command.massban") {
                 break
             }
             offset++
-            (retrieveUserByArgsNMessage(context, i) ?: return).let { users.add(i, it) }
+            val user = retrieveUserByArgsNMessage(context, i) ?: return
+
+            val member = context.guild.retrieveMember(user).awaitOrNull()
+            if (member != null) {
+                if (!context.guild.selfMember.canInteract(member)) {
+                    val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
+                        .withSafeVariable(PLACEHOLDER_USER, user.asTag)
+                    sendRsp(context, msg)
+                    return
+                }
+                if (!context.member.canInteract(member) && !hasPermission(
+                        context,
+                        SpecialPermission.PUNISH_BYPASS_HIGHER.node,
+                        true
+                    )
+                ) {
+                    val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
+                        .withSafeVariable(PLACEHOLDER_USER, user.asTag)
+                    sendRsp(context, msg)
+                    return
+                }
+            }
+            users.add(i, user)
         }
 
 
@@ -55,9 +81,11 @@ class MassBanCommand : AbstractCommand("command.massban") {
         if (reason.isBlank()) reason = "/"
         reason = reason.trim()
 
-        val messages = mutableListOf<String>()
         val banning = context.getTranslation("message.banning")
-        for ((i, targetUser) in users.withIndex()) {
+        var success = 0
+        var failed = 0
+
+        for (targetUser in users) {
             val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
             val ban = Ban(
                 context.guildId,
@@ -71,7 +99,8 @@ class MassBanCommand : AbstractCommand("command.massban") {
                 ban.startTime = activeBan.startTime
             }
 
-            val privateChannel = if (users.size < 11 && context.guild.retrieveMember(targetUser).awaitBool()) {
+
+            val privateChannel = if (users.size < 11) {
                 targetUser.openPrivateChannel().awaitOrNull()
             } else {
                 null
@@ -80,10 +109,14 @@ class MassBanCommand : AbstractCommand("command.massban") {
                 sendMsgAwaitEL(it, banning)
             }?.firstOrNull()
 
-            messages.add(i, continueBanning(context, targetUser, ban, activeBan, deldays, message))
+            if (continueBanning(context, targetUser, ban, activeBan, deldays, message)) success++
+            else failed++
         }
-        val separator = "\n"
-        val string = java.lang.String.join(separator, messages)
+
+        val msg = context.getTranslation("$root.banned.${if (failed == 0) "success" else "ok"}")
+            .withVariable("success", success)
+            .withVariable("failed", failed)
+            .withSafeVarInCodeblock("reason", reason)
 
         val ban = Ban(
             context.guildId,
@@ -93,13 +126,14 @@ class MassBanCommand : AbstractCommand("command.massban") {
             null
         )
 
-        val bannedMessageLc = getBanMessage(context.getLanguage(), context.getTimeZoneId(), context.guild, users, context.author, ban)
+        val bannedMessageLc =
+            getBanMessage(context.getLanguage(), context.getTimeZoneId(), context.guild, users, context.author, ban)
         val doaManager = context.daoManager
-        val logChannel = context.guild.getAndVerifyLogChannelByType(doaManager, LogChannelType.PERMANENT_BAN)
-        logChannel?.let{
+        val logChannel = context.guild.getAndVerifyLogChannelByType(doaManager, LogChannelType.MASS_BAN)
+        logChannel?.let {
             sendEmbed(doaManager.embedDisabledWrapper, it, bannedMessageLc)
         }
-        sendRsp(context, string)
+        sendRsp(context, msg)
     }
 
     private suspend fun continueBanning(
@@ -109,7 +143,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
         activeBan: Ban?,
         deldays: Int,
         banningMessage: Message? = null,
-    ): String {
+    ): Boolean {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
@@ -117,7 +151,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
         val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
         val bannedMessageDm = getBanMessage(language, privZoneId, guild, targetUser, author, ban)
 
-        val msg = try {
+        return try {
             guild.ban(targetUser, deldays)
                 .reason("(massBan) " + context.author.asTag + ": " + ban.reason)
                 .async { daoManager.banWrapper.setBan(ban) }
@@ -125,21 +159,12 @@ class MassBanCommand : AbstractCommand("command.massban") {
             banningMessage?.editMessage(
                 bannedMessageDm
             )?.override(true)?.queue()
-
-
-            context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
-                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVarInCodeblock("reason", ban.reason)
-
+            true
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.banning.failed")
             banningMessage?.editMessage(failedMsg)?.queue()
-
-            context.getTranslation("$root.failure")
-                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                .withSafeVarInCodeblock("cause", t.message ?: "/")
+            false
         }
-        return msg
     }
 
     fun getBanMessage(
@@ -164,7 +189,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
                 .withVariable("serverId", guild.id)
         }
 
-        val bannedList = bannedUsers.joinToString(separator = "\n- ", prefix = "\n- ") {  "${it.id} - [${it.asTag}]" }
+        val bannedList = bannedUsers.joinToString(separator = "\n- ", prefix = "\n- ") { "${it.id} - [${it.asTag}]" }
 
         description += i18n.getTranslation(language, "message.punishment.massban.description")
             .withSafeVarInCodeblock("banAuthor", banAuthor.asTag)
