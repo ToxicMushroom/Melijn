@@ -84,7 +84,7 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
         }
         val clause = map.joinToString(", ") { "?" }
         val list = mutableListOf<DaoMessage>()
-        driverManager.executeQueryList("SELECT * FROM $table WHERE messageId IN ($clause)", { rs ->
+        driverManager.executeQueryList("SELECT * FROM $table WHERE message_id IN ($clause)", { rs ->
             while (rs.next()) {
                 list.add(
                     DaoMessage(
