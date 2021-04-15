@@ -25,7 +25,7 @@ import java.time.ZoneId
 class MassUnbanCommand : AbstractCommand("command.massunban") {
 
     init {
-        name = "massunban"
+        name = "massUnban"
         aliases = arrayOf("mub")
         commandCategory = CommandCategory.MODERATION
         discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
