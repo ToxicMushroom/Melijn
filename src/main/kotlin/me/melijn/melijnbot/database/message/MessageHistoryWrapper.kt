@@ -21,4 +21,8 @@ class MessageHistoryWrapper(private val messageHistoryDao: MessageHistoryDao) {
     suspend fun getMessagesByIds(map: List<Long>): List<DaoMessage> {
         return messageHistoryDao.getMany(map)
     }
+
+    fun addMessages(results: List<DaoMessage>) {
+        messageHistoryDao.add(results)
+    }
 }

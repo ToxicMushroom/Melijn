@@ -226,10 +226,11 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         }
 
         val messageWrapper = daoManager.messageHistoryWrapper
-        var content = event.message.contentRaw
-        event.message.embeds.forEach { embed ->
-            content += "\n${embed.toMessage()}"
+        val content = event.message.contentRaw
+        val embeds = event.message.embeds.joinToString("\n") { embed ->
+            embed.toMessage()
         }
+        val attachments = event.message.attachments.map { it.url }
 
         TaskManager.async(event.author, event.channel) {
             messageWrapper.addMessage(
@@ -238,7 +239,9 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                     event.channel.idLong,
                     event.author.idLong,
                     event.messageIdLong,
-                    event.message.contentRaw,
+                    content,
+                    embeds,
+                    attachments,
                     event.message.timeCreated.toInstant().toEpochMilli()
                 )
             )

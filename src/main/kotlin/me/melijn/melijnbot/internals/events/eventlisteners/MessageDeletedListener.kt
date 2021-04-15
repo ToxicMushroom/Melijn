@@ -103,7 +103,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
                 val filtered = list.stream()
                     .filter {
                         it.getOption<String>(AuditLogOption.CHANNEL)?.toLong() == event.channel.idLong
-                            && it.timeCreated.until(msgDeleteTime, ChronoUnit.MINUTES) <= 5
+                                && it.timeCreated.until(msgDeleteTime, ChronoUnit.MINUTES) <= 5
                     }
                     .collect(Collectors.toList())
 
@@ -177,6 +177,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
             sb.append(":** ")
                 .append(MarkdownSanitizer.escape(escapeForLog(msg.content)))
+                .append(MarkdownSanitizer.escape(escapeForLog(msg.embed.take(2000))))
+                .append(MarkdownSanitizer.escape(escapeForLog(msg.attachments.joinToString("\n"))))
         }
 
         val language = getLanguage(daoManager, -1, guild.idLong)
@@ -292,8 +294,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
                 val filtered = list.stream()
                     .filter {
                         it.getOption<String>(AuditLogOption.CHANNEL)?.toLong() == msg.textChannelId &&
-                            it.targetIdLong == msg.authorId &&
-                            it.timeCreated.until(msgDeleteTime, ChronoUnit.MINUTES) <= 5
+                                it.targetIdLong == msg.authorId &&
+                                it.timeCreated.until(msgDeleteTime, ChronoUnit.MINUTES) <= 5
                     }
                     .collect(Collectors.toList())
 
@@ -323,8 +325,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
     private suspend fun snipeLogLimitReached(snipeMap: Map<DaoMessage, Long>, guildId: Long): Boolean {
         return snipeMap.size >= SNIPE_LIMIT &&
-            (!container.daoManager.supporterWrapper.getGuilds()
-                .contains(guildId) || snipeMap.size >= PREMIUM_SNIPE_LIMIT)
+                (!container.daoManager.supporterWrapper.getGuilds()
+                    .contains(guildId) || snipeMap.size >= PREMIUM_SNIPE_LIMIT)
     }
 
     private suspend fun logBots(textChannel: TextChannel): Boolean {
@@ -420,20 +422,27 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         messageAuthor: User,
         messageDeleterId: Long
     ): List<EmbedBuilder> {
-
         val daoManager = container.daoManager
         val zoneId = getZoneId(daoManager, event.guild.idLong)
         val channel = event.guild.getTextChannelById(msg.textChannelId)
-
 
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.deletion.log.title")
             .withVariable(PLACEHOLDER_CHANNEL, channel?.asTag ?: "<#${msg.textChannelId}>")
 
         val extra = if (msg.authorId == messageDeleterId) ".self" else ""
+        val embedValue = if (msg.embed.isNotBlank()) {
+            "\nEmbed: ${escapeForLog(msg.embed)}"
+        } else ""
+
+        val attachmentsValue =  if (msg.attachments.isNotEmpty()) {
+            "\nAttachments: ${escapeForLog(msg.attachments.joinToString("\n"))}"
+        } else ""
         val description = i18n.getTranslation(language, "listener.message.deletion.log${extra}.description")
             .withVariable("messageAuthor", messageAuthor.asTag)
             .withVariable("messageContent", escapeForLog(msg.content))
+            .withVariable("embed", embedValue)
+            .withVariable("attachments", attachmentsValue)
             .withVariable("messageAuthorId", msg.authorId.toString())
             .withVariable("messageDeleterId", messageDeleterId.toString())
             .withVariable("sentTime", msg.moment.asEpochMillisToDateTime(zoneId))

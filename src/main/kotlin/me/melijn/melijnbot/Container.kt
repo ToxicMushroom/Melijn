@@ -61,6 +61,7 @@ class Container {
     var commandMap = emptyMap<Int, AbstractCommand>()
     var commandSet = emptySet<AbstractCommand>()
 
+    // safe for clustering
     //<messageId, <infoType (must_contain ect), info (wordList)>>
     val filteredMap = mutableMapOf<Long, Map<String, List<String>>>()
 
