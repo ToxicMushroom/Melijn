@@ -19,7 +19,7 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun set(daoMessage: DaoMessage) {
         val sql =
-            "INSERT INTO $table (guild_id, channel_id,>pay author_id, message_id, content, embed, attachments, moment) VALUES (?, ?, ?, ?, ?, ?, ?, ?)" +
+            "INSERT INTO $table (guild_id, channel_id, author_id, message_id, content, embed, attachments, moment) VALUES (?, ?, ?, ?, ?, ?, ?, ?)" +
                     " ON CONFLICT ($primaryKey) DO UPDATE SET content = ?, embed = ?"
         daoMessage.run {
             driverManager.executeUpdate(
