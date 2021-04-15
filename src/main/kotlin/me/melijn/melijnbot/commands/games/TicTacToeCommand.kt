@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.internal.entities.UserImpl
 
 class TicTacToeCommand : AbstractCommand("command.tictactoe") {
 
@@ -83,8 +84,8 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
         ).withVariable("user2", user.asMention)
         sendMsg(context, msg2)
 
-        val channel1 = context.author.openPrivateChannel().awaitOrNull()
-        val channel2 = user.openPrivateChannel().awaitOrNull()
+        val channel1 = (context.author as UserImpl).openPrivateChannelCache().awaitOrNull()
+        val channel2 = (user as UserImpl).openPrivateChannelCache().awaitOrNull()
 
         context.container.eventWaiter.waitFor(MessageReceivedEvent::class.java, { event ->
             user.idLong == event.author.idLong &&

@@ -14,8 +14,9 @@ class RSPService(shardManager: ShardManager, daoManager: DaoManager) : Service("
         val toRemove = mutableListOf<RockPaperScissorsGame>()
         shardManager.shards.firstOrNull()?.let { jda ->
             RockPaperScissorsCommand.activeGames.forEach {
-                RockPaperScissors.checkForContinue(jda, daoManager, it)
-                toRemove.add(it)
+                if (RockPaperScissors.checkForContinue(jda, daoManager, it)) {
+                    toRemove.add(it)
+                }
             }
         }
         RockPaperScissorsCommand.activeGames.removeAll(toRemove)

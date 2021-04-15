@@ -292,6 +292,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     private suspend fun checkTicTacToe(event: PrivateMessageReceivedEvent) {
         val shardManager = event.jda.shardManager ?: return
         val author = event.author
+        if (author.isBot) return
         val ttt1 = TicTacToeCommand.activeGames.firstOrNull {
             it.user1 == author.idLong && TicTacToe.isTurnUserOne(it.game)
         }

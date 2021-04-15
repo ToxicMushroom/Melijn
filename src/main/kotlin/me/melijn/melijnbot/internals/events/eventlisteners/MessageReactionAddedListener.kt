@@ -50,6 +50,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
     private suspend fun handleRPSReaction(event: PrivateMessageReactionAddEvent) {
         val author = event.channel.user
+        if (event.userIdLong != author.idLong) return
 
         val rps1 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user1 == author.idLong && it.choice1 == null }
         if (rps1 != null) {
