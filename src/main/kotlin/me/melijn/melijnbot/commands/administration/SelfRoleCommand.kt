@@ -384,7 +384,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     }
                 }
             } else {
-                val title = titleFormat.withVariable("group", group.groupName)
+                val title = context.getTranslation("$root.titleformat")
+                    .withVariable("group", group.groupName)
                 embedder.setTitle(title)
                 for (entry in entries) {
                     embedder.appendDescription(entry)
