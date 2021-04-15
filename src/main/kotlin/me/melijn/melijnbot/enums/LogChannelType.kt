@@ -15,6 +15,7 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
     UNMUTE("Unmute", arrayOf("punishment", "punishments", "mute", "umlc")),
 
     KICK("Kick", arrayOf("punishment", "punishments", "klc")),
+    MASS_KICK("MassKick", arrayOf("punishment", "punishments", "mklc")),
     WARN("Warn", arrayOf("punishment", "punishments", "wlc")),
 
     //Deleted Messages
