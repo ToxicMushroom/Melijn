@@ -50,4 +50,8 @@ class TTTWrapper(private val tttDao: TTTDao) {
             tttDao.removeAll(games)
         }
     }
+
+    fun clear() {
+        tttDao.clear()
+    }
 }
