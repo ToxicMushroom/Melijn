@@ -26,7 +26,7 @@ class TTTDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
             "INSERT INTO $table (user1, user2, bet, game, startTime, lastUpdate) VALUES (?, ?, ?, ?, ?, ?)" +
                 " ON CONFLICT ($primaryKey) DO UPDATE SET game = ?, lastUpdate = ?"
         game.run {
-            val gameBody = this.gameState.joinToString(",") { it.representation }
+            val gameBody = this.gameState.joinToString(",") { it.toString() }
             driverManager.executeUpdate(
                 sql,
                 user1, user2, bet, gameBody, lastUpdate, startTime, gameBody, lastUpdate
