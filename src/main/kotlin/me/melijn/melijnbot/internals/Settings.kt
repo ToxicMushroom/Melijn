@@ -26,7 +26,9 @@ data class Settings(
         val id: Long,
         val shardCount: Int,
         val embedColor: Int,
+        val podCount: Int,
         val exceptionChannel: Long,
+        val hostPattern: String,
         val developerIds: LongArray
     )
 
@@ -161,7 +163,9 @@ data class Settings(
                     getLong("botinfo.id"),
                     getInt("botinfo.shardCount"),
                     getInt("botinfo.embedColor"),
+                    getInt("botinfo.podCount"),
                     getLong("botinfo.exceptionsChannelId"),
+                    get("botinfo.hostPattern"),
                     get("botinfo.developerIds").split(",").map { it.toLong() }.toLongArray()
                 ),
                 RestServer(

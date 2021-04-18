@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.events.EventManager
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.web.RestServer
 import net.dv8tion.jda.api.GatewayEncoding
@@ -17,6 +18,7 @@ import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import net.dv8tion.jda.internal.requests.restaction.MessageActionImpl
 import org.slf4j.LoggerFactory
+import java.net.InetAddress
 import java.net.URI
 import java.util.*
 
@@ -26,6 +28,8 @@ object MelijnBot {
     private val logger = LoggerFactory.getLogger(MelijnBot::class.java)
     var shardManager: ShardManager
     var eventManager: EventManager
+    var hostName: String = "localhost"
+    var podId: Int = 0
 
     init {
         Locale.setDefault(Locale.ENGLISH)
@@ -34,8 +38,27 @@ object MelijnBot {
             kotlinx.coroutines.DEBUG_PROPERTY_VALUE_ON
         )
         MessageActionImpl.setDefaultMentions(emptyList())
-
         val container = Container()
+        val settings = container.settings.botInfo
+        val podCount = settings.podCount
+        val shardCount = settings.shardCount
+
+        try {
+            hostName = InetAddress.getLocalHost().hostName
+            logger.info("[hostName] {}", hostName)
+            podId = if (podCount == 1) 0
+            else hostName.split("-").last().toInt()
+        } catch (t: Throwable) {
+            logger.warn("Cannot parse podId from hostname", t)
+//            Thread.sleep(1000)
+//            exitProcess(404)
+        }
+        logger.info("Starting $shardCount shards in $podCount pods")
+
+        val podInfo = PodInfo(podId, podCount, shardCount)
+        container.podInfo = podInfo
+        logger.info("Shards: {}-{}", podInfo.minShardId, podInfo.maxShardId)
+        logger.info("Launching shardManager with {} shards!", podInfo.shardsPerPod)
 
         val nodeMap = mutableMapOf<String, Array<Settings.Lavalink.LLNode>>()
         nodeMap["normal"] = container.settings.lavalink.verified_nodes
@@ -69,7 +92,8 @@ object MelijnBot {
                 GatewayIntent.GUILD_VOICE_STATES,
             )
             .setRawEventsEnabled(true)
-            .setShardsTotal(container.settings.botInfo.shardCount)
+            .setShardsTotal(shardCount)
+            .setShards(podInfo.minShardId, podInfo.maxShardId)
             .setToken(container.settings.tokens.discord)
             .setActivity(Activity.playing("Starting.."))
             .setStatus(OnlineStatus.IDLE)

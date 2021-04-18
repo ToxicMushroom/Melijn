@@ -4,11 +4,14 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
-import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.threading.SafeList
-import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.utils.getLongFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendOnShard0
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.retrieveMemberByArgsNMessage
+import me.melijn.melijnbot.internals.utils.withSafeVariable
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.internal.entities.UserImpl
@@ -22,10 +25,6 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
         commandCategory = CommandCategory.GAME
     }
 
-    companion object {
-        val activeGames: SafeList<RockPaperScissorsGame> = SafeList()
-    }
-
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
@@ -33,18 +32,17 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
         }
 
         val member = retrieveMemberByArgsNMessage(context, 0) ?: return
-        val user = member.user
-        val bet = if (context.args.size == 1) {
-            0
-        } else {
-            getLongFromArgNMessage(context, 1, 0) ?: return
-        }
-        if (user.isBot || user.idLong == context.authorId) return
-        if (activeGame(context, context.author, user)) return
+        val bet = if (context.args.size == 1) 0
+        else getLongFromArgNMessage(context, 1, 0) ?: return
 
-        val balanceWrapper = context.daoManager.balanceWrapper
+        val target = member.user
+        if (target.isBot || target.idLong == context.authorId) return
+        if (activeGame(context, context.author, target)) return
+
+        val daoManager = context.daoManager
+        val balanceWrapper = daoManager.balanceWrapper
         val bal11 = balanceWrapper.getBalance(context.authorId)
-        val bal22 = balanceWrapper.getBalance(user.idLong)
+        val bal22 = balanceWrapper.getBalance(target.idLong)
 
         if (bet > bal11) {
             val msg = context.getTranslation("$root.user1.notenoughbalance")
@@ -54,7 +52,7 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
         } else if (bet > bal22) {
             val msg = context.getTranslation(
                 "$root.user2.notenoughbalance"
-            ).withSafeVariable("user2", user.asTag)
+            ).withSafeVariable("user2", target.asTag)
                 .withVariable("bal", bal22)
             sendRsp(context, msg)
             return
@@ -62,14 +60,14 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
 
         val msg2 = context.getTranslation(
             "$root.challenged"
-        ).withVariable("user2", user.asMention)
+        ).withVariable("user2", target.asMention)
         sendRsp(context, msg2)
 
-        val channel1 = (context.author as UserImpl).openPrivateChannelCache().awaitOrNull()
-        val channel2 = (user as UserImpl).openPrivateChannelCache().awaitOrNull()
+        val user1 = context.author as UserImpl
+        val user2 = target as UserImpl
 
         context.container.eventWaiter.waitFor(MessageReceivedEvent::class.java, { event ->
-            user.idLong == event.author.idLong
+            target.idLong == event.author.idLong
         }, { event ->
             val content = event.message.contentRaw
             if (content.equals("yes", true) ||
@@ -77,7 +75,7 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
                 content.equals("accept", true)
             ) {
                 val bal1 = balanceWrapper.getBalance(context.authorId)
-                val bal2 = balanceWrapper.getBalance(user.idLong)
+                val bal2 = balanceWrapper.getBalance(target.idLong)
 
                 if (bet > bal1) {
                     val msg = context.getTranslation("$root.user1.notenoughbalance")
@@ -87,70 +85,58 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
                 } else if (bet > bal2) {
                     val msg = context.getTranslation(
                         "$root.user2.notenoughbalance"
-                    ).withSafeVariable("user2", user.asTag)
+                    ).withSafeVariable("user2", target.asTag)
                         .withVariable("bal", bal2)
                     sendRsp(context, msg)
                     return@waitFor
                 }
 
                 balanceWrapper.removeBalance(context.authorId, bet)
-                balanceWrapper.removeBalance(user.idLong, bet)
+                balanceWrapper.removeBalance(target.idLong, bet)
 
                 val title = context.getTranslation("$root.dmmenu.title")
                 val description = context.getTranslation("$root.dmmenu.description")
-                val optionMenu = Embedder(context)
+                val optionMenu = EmbedEditor()
                     .setTitle(title)
                     .setDescription(description)
-                    .build()
+
 
                 val defaultDisabledDMsMessage = context.getTranslation("message.dmsdisabledfix")
-                val msgMenu1 = channel1?.sendMessage(optionMenu)?.awaitOrNull()
-                if (msgMenu1 == null) {
+
+                val success1 = sendOnShard0(context, user1, optionMenu, "RPS")
+                if (!success1) {
                     val msg = defaultDisabledDMsMessage.withVariable("user", context.author.asMention)
                     sendRsp(context, msg)
 
                     balanceWrapper.addBalance(context.authorId, bet)
-                    balanceWrapper.addBalance(user.idLong, bet)
+                    balanceWrapper.addBalance(target.idLong, bet)
                     return@waitFor
                 }
 
-                val msgMenu2 = channel2?.sendMessage(optionMenu)?.awaitOrNull()
-                if (msgMenu2 == null) {
-                    msgMenu1.delete().queue()
-
-                    val msg = defaultDisabledDMsMessage.withVariable("user", user.asMention)
+                val success2 =  sendOnShard0(context, user2, optionMenu, "RPS")
+                if (!success2) {
+                    val msg = defaultDisabledDMsMessage.withVariable("user", target.asMention)
                     sendRsp(context, msg)
 
                     balanceWrapper.addBalance(context.authorId, bet)
-                    balanceWrapper.addBalance(user.idLong, bet)
+                    balanceWrapper.addBalance(target.idLong, bet)
                     return@waitFor
                 }
 
                 val game = RockPaperScissorsGame(
                     context.authorId,
-                    user.idLong,
+                    target.idLong,
                     bet,
                     null,
                     null,
                     System.currentTimeMillis()
                 )
-                if (activeGame(context, context.author, user)) {
-                    msgMenu1.delete().queue()
-                    msgMenu2.delete().queue()
-
+                if (activeGame(context, context.author, target)) {
                     balanceWrapper.addBalance(context.authorId, bet)
-                    balanceWrapper.addBalance(user.idLong, bet)
+                    balanceWrapper.addBalance(target.idLong, bet)
                     return@waitFor
                 }
-                activeGames.add(game)
-
-                msgMenu1.addReaction(RockPaperScissorsGame.RPS.ROCK.unicode).queue() // rock 🪨
-                msgMenu1.addReaction(RockPaperScissorsGame.RPS.PAPER.unicode).queue() // paper 📰
-                msgMenu1.addReaction(RockPaperScissorsGame.RPS.SCISSORS.unicode).queue() // scissors ✂
-
-                msgMenu2.addReaction(RockPaperScissorsGame.RPS.ROCK.unicode).queue() // rock 🪨
-                msgMenu2.addReaction(RockPaperScissorsGame.RPS.PAPER.unicode).queue() // paper 📰
-                msgMenu2.addReaction(RockPaperScissorsGame.RPS.SCISSORS.unicode).queue() // scissors ✂
+                daoManager.rpsWrapper.addGame(game)
 
                 val msg = if (bet > 0) {
                     context.getTranslation(
@@ -169,40 +155,32 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
                 val msg = context.getTranslation(
                     "$root.request.denied"
                 ).withVariable("user1", context.author.asMention)
-                    .withVariable("user2", user.asTag)
+                    .withVariable("user2", target.asTag)
                 sendRsp(context, msg)
             }
         }, {
             val msg = context.getTranslation(
                 "$root.request.expired"
             ).withVariable("user1", context.author.asMention)
-                .withVariable("user2", user.asTag)
+                .withVariable("user2", target.asTag)
             sendRsp(context, msg)
         }, 60)
     }
 
     private suspend fun activeGame(context: ICommandContext, user1: User, user2: User): Boolean {
-        return when {
-            activeGames.any {
-                it.user1 == user1.idLong || it.user2 == user1.idLong
-            } -> {
-                val msg = context.getTranslation(
-                    "$root.user1.ingame"
-                )
+        val rpsWrapper = context.daoManager.rpsWrapper
+        when {
+            rpsWrapper.getGame(user1.idLong) != null -> {
+                val msg = context.getTranslation("$root.user1.ingame")
                 sendRsp(context, msg)
-                true
             }
-            activeGames.any {
-                it.user1 == user2.idLong || it.user2 == user2.idLong
-            } -> {
-                val msg = context.getTranslation(
-                    "$root.user2.ingame"
-                ).withVariable("user", user2.asTag)
+            rpsWrapper.getGame(user2.idLong) != null -> {
+                val msg = context.getTranslation("$root.user2.ingame")
                 sendRsp(context, msg)
-                true
             }
-            else -> false
+            else -> return false
         }
+        return true
     }
 }
 

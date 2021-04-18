@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.mute
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.utils.StringUtils.toBase64
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -45,8 +46,9 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         }
     }
 
-    suspend fun getUnmuteableMutes(): List<Mute> = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table WHERE active = ? AND endTime < ?", { rs ->
+    suspend fun getUnmuteableMutes(podInfo: PodInfo): List<Mute> = suspendCoroutine {
+        val clause = podInfo.shardList.joinToString(", ") { "?" }
+        driverManager.executeQuery("SELECT * FROM $table WHERE active = ? AND endTime < ? AND ((guildId >> 22) % ${podInfo.shardCount}) IN ($clause)", { rs ->
             val mutes = ArrayList<Mute>()
             while (rs.next()) {
                 mutes.add(
@@ -65,7 +67,10 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
                 )
             }
             it.resume(mutes)
-        }, true, System.currentTimeMillis())
+        }, true,
+            System.currentTimeMillis(),
+            *podInfo.shardList.toTypedArray()
+        )
     }
 
     fun getActiveMute(guildId: Long, mutedId: Long): Mute? {

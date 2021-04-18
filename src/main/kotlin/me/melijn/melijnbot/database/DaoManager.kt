@@ -28,8 +28,7 @@ import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
 import me.melijn.melijnbot.database.filter.FilterGroupWrapper
 import me.melijn.melijnbot.database.filter.FilterWrapper
-import me.melijn.melijnbot.database.games.OsuDao
-import me.melijn.melijnbot.database.games.OsuWrapper
+import me.melijn.melijnbot.database.games.*
 import me.melijn.melijnbot.database.join.AutoRemoveInactiveJoinMessageDao
 import me.melijn.melijnbot.database.join.AutoRemoveInactiveJoinMessageWrapper
 import me.melijn.melijnbot.database.join.InactiveJMDao
@@ -200,6 +199,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val voteReminderWrapper: VoteReminderWrapper
     val reminderWrapper: ReminderWrapper
 
+    val rpsWrapper: RPSWrapper
+    val tttWrapper: TTTWrapper
+
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
     val repWrapper: RepWrapper
@@ -321,6 +323,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         voteReminderStatesWrapper = VoteReminderStatesWrapper(VoteReminderStatesDao(driverManager))
         voteReminderWrapper = VoteReminderWrapper(VoteReminderDao(driverManager))
         reminderWrapper = ReminderWrapper(ReminderDao(driverManager))
+
+        rpsWrapper = RPSWrapper(RPSDao(driverManager))
+        tttWrapper = TTTWrapper(TTTDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         balanceWrapper = BalanceWrapper(BalanceDao(driverManager))

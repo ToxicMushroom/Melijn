@@ -6,17 +6,10 @@ import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
-import net.dv8tion.jda.api.requests.Request
-import net.dv8tion.jda.api.requests.Response
 import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import net.dv8tion.jda.api.utils.concurrent.Task
-import net.dv8tion.jda.api.utils.data.DataObject
-import net.dv8tion.jda.internal.entities.UserImpl
-import net.dv8tion.jda.internal.requests.DeferredRestAction
-import net.dv8tion.jda.internal.requests.RestActionImpl
-import net.dv8tion.jda.internal.requests.Route
 import java.awt.Color
 import java.util.*
 import kotlin.coroutines.resume
@@ -930,22 +923,4 @@ suspend fun getTimeFromArgsNMessage(
         return null
     }
     return time
-}
-
-fun UserImpl.openPrivateChannelCache(): RestAction<PrivateChannel> {
-    return DeferredRestAction(
-        jda,
-        PrivateChannel::class.java,
-        { this.privateChannel },
-        {
-            val route = Route.Self.CREATE_PRIVATE_CHANNEL.compile()
-            val body = DataObject.empty().put("recipient_id", id)
-            RestActionImpl(
-                jda, route, body
-            ) { response: Response, _: Request<PrivateChannel?>? ->
-                val priv: PrivateChannel = this.jda.entityBuilder.createPrivateChannel(response.getObject(), this, true)
-                this.privateChannel = priv
-                priv
-            }
-        })
 }

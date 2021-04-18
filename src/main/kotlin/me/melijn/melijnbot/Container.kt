@@ -7,6 +7,7 @@ import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.eventlisteners.EventWaiter
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.music.LavaManager
 import me.melijn.melijnbot.internals.services.ServiceManager
 import me.melijn.melijnbot.internals.utils.ModularPaginationInfo
@@ -25,6 +26,7 @@ class Container {
 
     var voteReq: Boolean = true
     var logToDiscord: Boolean = true
+    lateinit var podInfo: PodInfo
 
     //millis, info
     val paginationMap = mutableMapOf<Long, PaginationInfo>()

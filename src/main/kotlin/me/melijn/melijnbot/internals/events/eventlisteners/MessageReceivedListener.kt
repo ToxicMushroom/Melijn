@@ -3,9 +3,7 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.awaitAll
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.commands.games.RockPaperScissorsCommand
 import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
-import me.melijn.melijnbot.commands.games.TicTacToeCommand
 import me.melijn.melijnbot.commands.games.TicTacToeGame
 import me.melijn.melijnbot.commands.utility.HelpCommand
 import me.melijn.melijnbot.commandutil.game.TicTacToe
@@ -68,30 +66,21 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
 
     private suspend fun checkRockPaperScissors(event: PrivateMessageReceivedEvent) {
         val author = event.author
-        val rps1 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user1 == author.idLong && it.choice1 == null }
-        if (rps1 != null) {
-            RockPaperScissorsCommand.activeGames.remove(rps1)
-
-            rps1.choice1 = try {
-                RockPaperScissorsGame.RPS.valueOf(event.message.contentRaw.toUpperCase())
-            } catch (t: Throwable) {
-                null
-            }
-            RockPaperScissorsCommand.activeGames.add(rps1)
-            return
+        val rpsWrapper = container.daoManager.rpsWrapper
+        val game = rpsWrapper.getGame(author.idLong) ?: return
+        val choice = try {
+            RockPaperScissorsGame.RPS.valueOf(event.message.contentRaw.toUpperCase())
+        } catch (t: Throwable) {
+            null
         }
 
-        val rps2 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user2 == author.idLong && it.choice2 == null }
-        if (rps2 != null) {
-            RockPaperScissorsCommand.activeGames.remove(rps2)
-
-            rps2.choice2 = try {
-                RockPaperScissorsGame.RPS.valueOf(event.message.contentRaw.toUpperCase())
-            } catch (t: Throwable) {
-                null
-            }
-            RockPaperScissorsCommand.activeGames.add(rps2)
+        if (game.user1 == author.idLong) {
+            game.choice1 = choice
+        } else {
+            game.choice2 = choice
         }
+
+        rpsWrapper.addGame(game)
     }
 
 
@@ -293,29 +282,16 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val shardManager = event.jda.shardManager ?: return
         val author = event.author
         if (author.isBot) return
-        val ttt1 = TicTacToeCommand.activeGames.firstOrNull {
-            it.user1 == author.idLong && TicTacToe.isTurnUserOne(it.game)
-        }
-        if (ttt1 != null) {
-            parseFieldNMessage(event, ttt1, TicTacToeGame.TTTState.O)?.let {
-                TicTacToeCommand.activeGames.remove(ttt1)
-                ttt1.game = it
-                TicTacToeCommand.activeGames.add(ttt1)
-                TicTacToe.sendNewMenu(shardManager, container.daoManager, ttt1)
-            }
-            return
-        }
 
-        val ttt2 = TicTacToeCommand.activeGames.firstOrNull {
-            it.user2 == author.idLong && !TicTacToe.isTurnUserOne(it.game)
-        }
-        if (ttt2 != null) {
-            parseFieldNMessage(event, ttt2, TicTacToeGame.TTTState.X)?.let {
-                TicTacToeCommand.activeGames.remove(ttt2)
-                ttt2.game = it
-                TicTacToeCommand.activeGames.add(ttt2)
-                TicTacToe.sendNewMenu(shardManager, container.daoManager, ttt2)
-            }
+        val game = container.daoManager.tttWrapper.getGame(author.idLong) ?: return
+        val tttState = if (author.idLong == game.user1 && TicTacToe.isTurnUserOne(game.gameState)) TicTacToeGame.TTTState.O
+        else if (author.idLong == game.user2 && !TicTacToe.isTurnUserOne(game.gameState)) TicTacToeGame.TTTState.X
+        else return
+
+        parseFieldNMessage(event, game, tttState)?.let {
+            game.gameState = it
+            container.daoManager.tttWrapper.addGame(game)
+            TicTacToe.sendNewMenu(shardManager, container.daoManager, game)
         }
     }
 
@@ -335,7 +311,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val x = out.groupValues[1].toInt()
         val y = out.groupValues[2].toInt()
         val linearIndex = (x - 1) + ((y - 1) * 3)
-        val array = ttt1.game
+        val array = ttt1.gameState
         if (array[linearIndex] != TicTacToeGame.TTTState.EMPTY) {
             event.channel.sendMessage("That coordinate has been used already.").queue()
             return null

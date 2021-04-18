@@ -13,9 +13,9 @@ import net.dv8tion.jda.api.sharding.ShardManager
 
 object TicTacToe {
 
-    suspend fun sendNewMenu(jda: ShardManager, daoManager: DaoManager, ttt: TicTacToeGame) {
-        val userId1 = ttt.user1
-        val userId2 = ttt.user2
+    suspend fun sendNewMenu(jda: ShardManager, daoManager: DaoManager, game: TicTacToeGame) {
+        val userId1 = game.user1
+        val userId2 = game.user2
 
         val user1 = jda.retrieveUserById(userId1).awaitOrNull()
         val user2 = jda.retrieveUserById(userId2).awaitOrNull()
@@ -25,19 +25,19 @@ object TicTacToe {
 
         if (pc1 == null || pc2 == null) {
             if (pc1 == null && pc2 == null) {
-                daoManager.balanceWrapper.addBalance(userId1, ttt.bet)
-                daoManager.balanceWrapper.addBalance(userId2, ttt.bet)
+                daoManager.balanceWrapper.addBalance(userId1, game.bet)
+                daoManager.balanceWrapper.addBalance(userId2, game.bet)
             } else if (pc1 == null) {
-                daoManager.balanceWrapper.addBalance(userId2, ttt.bet * 2)
+                daoManager.balanceWrapper.addBalance(userId2, game.bet * 2)
                 pc2?.sendMessage("Your opponent closed their dms, thus you are the winner.")?.queue()
             } else {
-                daoManager.balanceWrapper.addBalance(userId1, ttt.bet * 2)
+                daoManager.balanceWrapper.addBalance(userId1, game.bet * 2)
                 pc1.sendMessage("Your opponent closed their dms, thus you are the winner.").queue()
             }
             return
         }
 
-        val gameField = ttt.game
+        val gameField = game.gameState
         val won1 = checkWon(gameField, TicTacToeGame.TTTState.O)
         val won2 = checkWon(gameField, TicTacToeGame.TTTState.X)
         val draw = gameField.none { it == TicTacToeGame.TTTState.EMPTY } && !won1 && !won2
@@ -52,7 +52,7 @@ object TicTacToe {
             .setDescription(
                 "%gameField%\nYou won **%bet%** mel.".withVariable(
                     "bet",
-                    ttt.bet
+                    game.bet
                 ).withVariable("gameField", TicTacToeCommand.renderGame(gameField))
             )
             .build()
@@ -61,7 +61,7 @@ object TicTacToe {
             .setDescription(
                 "%gameField%\nYou lost **%bet%** mel.".withVariable(
                     "bet",
-                    ttt.bet
+                    game.bet
                 ).withVariable("gameField", TicTacToeCommand.renderGame(gameField))
             )
             .build()
@@ -77,21 +77,21 @@ object TicTacToe {
             won1 -> {
                 msg1 = wonMsg
                 msg2 = lostMsg
-                daoManager.balanceWrapper.addBalance(userId1, ttt.bet * 2)
-                TicTacToeCommand.activeGames.remove(ttt)
+                daoManager.balanceWrapper.addBalance(userId1, game.bet * 2)
+                daoManager.tttWrapper.removeGame(game)
             }
             won2 -> {
                 msg2 = wonMsg
                 msg1 = lostMsg
-                daoManager.balanceWrapper.addBalance(userId2, ttt.bet * 2)
-                TicTacToeCommand.activeGames.remove(ttt)
+                daoManager.balanceWrapper.addBalance(userId2, game.bet * 2)
+                daoManager.tttWrapper.removeGame(game)
             }
             draw -> {
                 msg1 = drawMsg
                 msg2 = drawMsg
-                daoManager.balanceWrapper.addBalance(userId1, ttt.bet)
-                daoManager.balanceWrapper.addBalance(userId2, ttt.bet)
-                TicTacToeCommand.activeGames.remove(ttt)
+                daoManager.balanceWrapper.addBalance(userId1, game.bet)
+                daoManager.balanceWrapper.addBalance(userId2, game.bet)
+                daoManager.tttWrapper.removeGame(game)
             }
             else -> {
                 val title = "Tic-Tac-Toe"

@@ -9,7 +9,10 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
+import me.melijn.melijnbot.internals.models.EmbedEditor
 import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.web.rest.codes.VerificationCodeResponseHandler
 import me.melijn.melijnbot.internals.web.rest.commands.CommandMapResponseHandler
 import me.melijn.melijnbot.internals.web.rest.commands.FullCommandsResponseHandler
@@ -32,6 +35,7 @@ import me.melijn.melijnbot.internals.web.rest.stats.StatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.voted.VotedResponseHandler
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
+import net.dv8tion.jda.internal.entities.UserImpl
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -132,6 +136,30 @@ class RestServer(container: Container) {
 
             post("/voted") {
                 VotedResponseHandler.handleVotedResponse(RequestContext(call, container))
+            }
+
+            post("/senddm/{userId}/{extra}") {
+                val id = call.parameters["userId"] ?: run {
+                    call.respond(false)
+                    return@post
+                }
+                val extra = call.parameters["extra"] ?: run {
+                    call.respond(false)
+                    return@post
+                }
+                println(id)
+                val embedEditor = call.receive<EmbedEditor>()
+                val result = (MelijnBot.shardManager.retrieveUserById(id).awaitOrNull() as UserImpl?)
+                    ?.openPrivateChannel()?.awaitOrNull()
+                    ?.sendMessage(embedEditor.build())?.awaitOrNull()?.run {
+                        if (extra == "RPS") {
+                            this.addReaction(RockPaperScissorsGame.RPS.ROCK.unicode).queue() // rock 🪨
+                            this.addReaction(RockPaperScissorsGame.RPS.PAPER.unicode).queue() // paper 📰
+                            this.addReaction(RockPaperScissorsGame.RPS.SCISSORS.unicode).queue() // scissors ✂
+                        }
+                        true
+                    } ?: false
+                call.respond(result)
             }
 
             post("/unverified/guilds") {

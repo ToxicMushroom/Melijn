@@ -1,17 +1,18 @@
 package me.melijn.melijnbot.database.ban
 
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
 class BanWrapper(private val banDao: BanDao) {
 
-    suspend fun getUnbannableBans(): List<Ban> {
-        return banDao.getUnbannableBans()
+    suspend fun getUnbannableBans(podInfo: PodInfo): List<Ban> {
+        return banDao.getUnbannableBans(podInfo)
     }
 
-    suspend fun setBan(newBan: Ban) {
+    fun setBan(newBan: Ban) {
         banDao.setBan(newBan)
     }
 
@@ -19,7 +20,7 @@ class BanWrapper(private val banDao: BanDao) {
         return banDao.getActiveBan(guildId, bannedId)
     }
 
-    suspend fun clear(guildId: Long, bannedId: Long, clearActive: Boolean) {
+    fun clear(guildId: Long, bannedId: Long, clearActive: Boolean) {
         if (clearActive) {
             banDao.clearHistory(guildId, bannedId)
         } else {

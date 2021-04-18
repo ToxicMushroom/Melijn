@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.socialmedia
 
 import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.services.twitter.TweetInfo
 import me.melijn.melijnbot.internals.utils.splitIETEL
 import java.sql.ResultSet
@@ -41,10 +42,14 @@ class TwitterDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         )
     }
 
-    suspend fun getAll(): List<TwitterWebhook> = suspendCoroutine {
+    suspend fun getAll(podInfo: PodInfo): List<TwitterWebhook> = suspendCoroutine {
+        val clause = podInfo.shardList.joinToString(", ") { "?" }
+
         driverManager.executeQuery(
-            "SELECT * FROM $table WHERE enabled = ?", handleWebhookResults(it),
-            true
+            "SELECT * FROM $table WHERE enabled = ? AND ((guild_id >> 22) % ${podInfo.shardCount}) IN ($clause)",
+            handleWebhookResults(it),
+            true,
+            *podInfo.shardList.toTypedArray()
         )
     }
 

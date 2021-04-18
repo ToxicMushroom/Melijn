@@ -39,7 +39,7 @@ object VerificationCodeResponseHandler {
             }
             val guildOjb = DataObject.empty()
             guildOjb.put("id", guild.id)
-            guildOjb.put("icon", guild.iconId)
+            guildOjb.put("icon", guild.iconId ?: "null")
             guildOjb.put("name", guild.name)
 
             guildObjectArray.add(

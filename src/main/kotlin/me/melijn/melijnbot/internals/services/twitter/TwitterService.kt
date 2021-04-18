@@ -6,6 +6,7 @@ import io.ktor.client.statement.*
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.database.socialmedia.TwitterWebhook
 import me.melijn.melijnbot.database.socialmedia.TwitterWrapper
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.services.Service
 import me.melijn.melijnbot.internals.threading.RunnableTask
 import me.melijn.melijnbot.internals.utils.*
@@ -26,11 +27,12 @@ class TwitterService(
     val httpClient: HttpClient,
     private val twitterToken: String,
     private val twitterWrapper: TwitterWrapper,
-    val shardManager: ShardManager
+    val shardManager: ShardManager,
+    private val podInfo: PodInfo
 ) : Service("Twitter", 5, 1, TimeUnit.MINUTES) {
 
     override val service: RunnableTask = RunnableTask {
-        val twitterWebhooks = twitterWrapper.getAll()
+        val twitterWebhooks = twitterWrapper.getAll(podInfo)
         val size = twitterWebhooks.size.toDouble()
         val delay = TimeUnit.MILLISECONDS.convert(floor(period / size).toLong(), unit)
 
@@ -57,6 +59,7 @@ class TwitterService(
         if (tweets.tweetList.isEmpty()) return
         val body = DataObject.empty()
         val selfUser = shardManager.shards.first().selfUser
+
 
         body["username"] = selfUser.name
         body["avatar_url"] = selfUser.effectiveAvatarUrl

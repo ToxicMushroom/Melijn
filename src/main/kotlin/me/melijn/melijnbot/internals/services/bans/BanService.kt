@@ -4,6 +4,7 @@ import me.melijn.melijnbot.commands.moderation.getUnbanMessage
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.services.Service
 import me.melijn.melijnbot.internals.threading.RunnableTask
 import me.melijn.melijnbot.internals.translation.getLanguage
@@ -19,11 +20,12 @@ import java.util.concurrent.TimeUnit
 
 class BanService(
     val shardManager: ShardManager,
-    val daoManager: DaoManager
+    val daoManager: DaoManager,
+    val podInfo: PodInfo
 ) : Service("Ban", 1_000, 1_200, TimeUnit.MILLISECONDS) {
 
     override val service = RunnableTask {
-        val bans = daoManager.banWrapper.getUnbannableBans()
+        val bans = daoManager.banWrapper.getUnbannableBans(podInfo)
         for (ban in bans) {
             val selfUser = shardManager.shards[0].selfUser
             val newBan = ban.run {

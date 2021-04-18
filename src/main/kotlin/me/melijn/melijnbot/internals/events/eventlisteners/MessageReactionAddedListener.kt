@@ -3,7 +3,6 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.games.PokerCommand
-import me.melijn.melijnbot.commands.games.RockPaperScissorsCommand
 import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
@@ -52,32 +51,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val author = event.channel.user
         if (event.userIdLong != author.idLong) return
 
-        val rps1 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user1 == author.idLong && it.choice1 == null }
-        if (rps1 != null) {
-            RockPaperScissorsCommand.activeGames.remove(rps1)
+        val rpsWrapper = container.daoManager.rpsWrapper
+        val game = rpsWrapper.getGame(author.idLong) ?: return
+        val choice = RockPaperScissorsGame.RPS.fromEmote(event.reactionEmote.emoji)
 
-            rps1.choice1 = try {
-                RockPaperScissorsGame.RPS.fromEmote(event.reactionEmote.emoji)
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                null
-            }
-            RockPaperScissorsCommand.activeGames.add(rps1)
-            return
+        if (game.user1 == author.idLong) {
+            game.choice1 = choice
+        } else {
+            game.choice2 = choice
         }
 
-        val rps2 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user2 == author.idLong && it.choice2 == null }
-        if (rps2 != null) {
-            RockPaperScissorsCommand.activeGames.remove(rps2)
-
-            rps2.choice2 = try {
-                RockPaperScissorsGame.RPS.fromEmote(event.reactionEmote.emoji)
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                null
-            }
-            RockPaperScissorsCommand.activeGames.add(rps2)
-        }
+        rpsWrapper.addGame(game)
     }
 
     // TODO fix duplicate code in this file

@@ -1,12 +1,15 @@
 package me.melijn.melijnbot.internals.utils.message
 
 import io.ktor.client.*
+import io.ktor.client.request.*
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.models.EmbedEditor
 import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
@@ -40,6 +43,22 @@ fun escapeForLog(string: String): String {
         .trim()
 }
 
+
+suspend fun sendOnShard0(
+    context: ICommandContext,
+    user: User,
+    editor: EmbedEditor,
+    extra: String
+): Boolean {
+    return if (MelijnBot.podId == 0) {
+        user.openPrivateChannel().awaitOrNull()?.sendMessage(editor.build())?.awaitBool() ?: false
+    } else {
+        val hostPattern = context.container.settings.botInfo.hostPattern
+        context.webManager.httpClient.post(hostPattern.replace("{podId}", 0) + "/senddm/${user.idLong}/$extra") {
+            this.body = editor
+        }
+    }
+}
 
 fun sendMsg(context: ICommandContext, msg: String) {
     if (context.isFromGuild) {
