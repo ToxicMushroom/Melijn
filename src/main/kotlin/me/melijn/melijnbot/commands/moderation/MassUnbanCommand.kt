@@ -10,7 +10,6 @@ import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
-import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
@@ -50,7 +49,9 @@ class MassUnbanCommand : AbstractCommand("command.massunban") {
                 break
             }
             offset++
-            (retrieveUserByArgsNMessage(context, i) ?: return).let { users.add(i, it) }
+            (retrieveUserByArgsNMessage(context, i) ?: return).let {
+                users.add(i, it)
+            }
         }
 
         var reason = context.getRawArgPart(1 + offset)
@@ -103,23 +104,8 @@ class MassUnbanCommand : AbstractCommand("command.massunban") {
                             true
                         )
 
-                    if (users.size < 11) {
-                        val privateChannel = if (context.guild.isMember(targetUser)) {
-                            targetUser.openPrivateChannel().awaitOrNull()
-                        } else {
-                            null
-                        }
 
-                        privateChannel?.let {
-                            try {
-                                val message: Message? = privateChannel?.let {
-                                    sendMsgAwaitEL(it, banning)
-                                }?.firstOrNull()
-                            } catch (t: Throwable) {
-                                continueUnbanning(context, targetUser, ban, banAuthor, null)
-                            }
-                        } ?: continueUnbanning(context, targetUser, ban, banAuthor, null)
-                    }
+                    continueUnbanning(context, targetUser, ban, banAuthor, null)
                     success++
 
 

@@ -8,7 +8,6 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
@@ -45,28 +44,20 @@ class MassKickCommand : AbstractCommand("command.masskick") {
                 break
             }
             offset++
-            val user = retrieveMemberByArgsNMessage(context, i) ?: return
+            val user = retrieveMemberByArgsNMessage(context, i, true) ?: return
 
-
-            if (user != null) {
-                if (!context.guild.selfMember.canInteract(user)) {
-                    val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                        .withSafeVariable(PLACEHOLDER_USER, user.asTag)
-                    sendRsp(context, msg)
-                    return
-                }
-                if (!context.member.canInteract(user) && !hasPermission(
-                        context,
-                        SpecialPermission.PUNISH_BYPASS_HIGHER.node,
-                        true
-                    )
-                ) {
-                    val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                        .withSafeVariable(PLACEHOLDER_USER, user.asTag)
-                    sendRsp(context, msg)
-                    return
-                }
+            if (!context.member.canInteract(user) && !hasPermission(
+                    context,
+                    SpecialPermission.PUNISH_BYPASS_HIGHER.node,
+                    true
+                )
+            ) {
+                val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
+                    .withSafeVariable(PLACEHOLDER_USER, user.asTag)
+                sendRsp(context, msg)
+                return
             }
+
             users.add(i, user)
         }
 
@@ -91,7 +82,7 @@ class MassKickCommand : AbstractCommand("command.masskick") {
             if (users.size < 11) {
                 val kicking = context.getTranslation("message.kicking")
                 val privateChannel = targetMember.user.openPrivateChannel().awaitOrNull()
-                val message: Message? = privateChannel?.let {
+                privateChannel?.let {
                     sendMsgAwaitEL(it, kicking)
                 }?.firstOrNull()
             }
@@ -204,7 +195,7 @@ fun getMassKickMessage(
             .withVariable("serverId", guild.id)
     }
     val users = mutableListOf<User>()
-    for ((i, member) in kickedUsers.withIndex()){
+    for ((i, member) in kickedUsers.withIndex()) {
         users.add(i, member.user)
     }
     val bannedList = users.joinToString(separator = "\n- ", prefix = "\n- ") { "${it.id} - [${it.asTag}]" }

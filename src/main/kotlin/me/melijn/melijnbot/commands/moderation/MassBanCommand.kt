@@ -20,10 +20,7 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.*
 import java.time.ZoneId
 
 class MassBanCommand : AbstractCommand("command.massban") {
@@ -44,7 +41,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
         val deldays = 7
         var offset = 0
         val size = context.args.size
-        val users = mutableListOf<User>()
+        val users = mutableMapOf<User, Member?>()
         for (i in 0 until size) {
             if (context.args[i] == "-r") {
                 break
@@ -72,7 +69,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
                     return
                 }
             }
-            users.add(i, user)
+            users[user] = member
         }
 
 
@@ -85,7 +82,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
         var success = 0
         var failed = 0
 
-        for (targetUser in users) {
+        for ((targetUser, member) in users) {
             val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
             val ban = Ban(
                 context.guildId,
@@ -100,7 +97,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
             }
 
 
-            val privateChannel = if (users.size < 11) {
+            val privateChannel = if (users.size < 11 && member != null) {
                 targetUser.openPrivateChannel().awaitOrNull()
             } else {
                 null
@@ -120,14 +117,14 @@ class MassBanCommand : AbstractCommand("command.massban") {
 
         val ban = Ban(
             context.guildId,
-            users[0].idLong,
+            -1,
             context.authorId,
             reason,
             null
         )
 
         val bannedMessageLc =
-            getBanMessage(context.getLanguage(), context.getTimeZoneId(), context.guild, users, context.author, ban)
+            getMassBanMessage(context.getLanguage(), context.getTimeZoneId(), context.guild, users.keys, context.author, ban)
         val doaManager = context.daoManager
         val logChannel = context.guild.getAndVerifyLogChannelByType(doaManager, LogChannelType.MASS_BAN)
         logChannel?.let {
@@ -167,11 +164,11 @@ class MassBanCommand : AbstractCommand("command.massban") {
         }
     }
 
-    fun getBanMessage(
+    fun getMassBanMessage(
         language: String,
         zoneId: ZoneId,
         guild: Guild,
-        bannedUsers: List<User>,
+        bannedUsers: Set<User>,
         banAuthor: User,
         ban: Ban,
         lc: Boolean = false,
