@@ -283,7 +283,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
 
-            val channel = if (context.args.size > 2) {
+            val channel = if (context.args.size > 1) {
                 getTextChannelByArgsNMessage(context, 1) ?: return
             } else context.textChannel
 
