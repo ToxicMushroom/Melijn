@@ -52,6 +52,7 @@ class ChannelInfoCommand : AbstractCommand("command.channelinfo") {
                 .setTitle("VoiceChannel Info")
                 .setDescription(
                     "**Name** ${voice.name}\n" +
+                        "**ID** ${voice.id}\n" +
                         "**Creation Time** ${voice.timeCreated.asEpochMillisToDateTime(context.getTimeZoneId())}\n" +
                         "**Position** ${voice.position}\n" +
                         "**UserLimit** ${voice.userLimit}\n" +
