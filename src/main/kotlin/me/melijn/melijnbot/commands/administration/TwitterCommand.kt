@@ -203,7 +203,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
             }, {
                 var response = it.message.contentRaw
                 if (!response.startsWith("@")) response = "@$response"
-                val res = context.webManager.httpClient.post<String>("https://tweeterid.com/ajax.php") {
+                val res = context.webManager.proxiedHttpClient.post<String>("https://tweeterid.com/ajax.php") {
                     body = FormDataContent(Parameters.build {
                         append("input", response)
                     })
