@@ -565,7 +565,7 @@ fun getChannelByArgsN(
 
     } else channel
 
-    if (sameGuildAsContext && !context.guild.textChannels.contains(channel)) return null
+    if (sameGuildAsContext && !context.guild.channels.contains(channel)) return null
     return channel
 }
 
@@ -575,13 +575,13 @@ suspend fun getChannelByArgsNMessage(
     sameGuildAsContext: Boolean = true
 ): GuildChannel? {
     if (argSizeCheckFailed(context, index)) return null
-    val textChannel = getChannelByArgsN(context, index, sameGuildAsContext)
-    if (textChannel == null) {
+    val channel = getChannelByArgsN(context, index, sameGuildAsContext)
+    if (channel == null) {
         val msg = context.getTranslation(MESSAGE_UNKNOWN_CHANNEL)
             .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
-    return textChannel
+    return channel
 }
 
 
