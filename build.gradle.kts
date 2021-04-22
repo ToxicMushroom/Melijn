@@ -51,7 +51,7 @@ val apollo = "2.5.6" // https://mvnrepository.com/artifact/com.apollographql.apo
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.2.1_259") {
+    implementation("net.dv8tion:JDA:4.2.1_260") {
         exclude("opus-java")
     }
 
@@ -130,7 +130,7 @@ dependencies {
     implementation("com.apollographql.apollo:apollo-coroutines-support:$apollo")
 
     // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
-    implementation("io.lettuce:lettuce-core:6.1.0.RELEASE")
+    implementation("io.lettuce:lettuce-core:6.1.1.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
