@@ -17,6 +17,6 @@ class TestCommand : AbstractCommand("command.test") {
     val logger: Logger = LoggerFactory.getLogger(TestCommand::class.java)
 
     override suspend fun execute(context: ICommandContext) {
-       context.daoManager.tttWrapper.clear()
+
     }
 }
