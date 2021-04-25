@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHY
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -95,7 +96,7 @@ class MassKickCommand : AbstractCommand("command.masskick") {
             reason
         )
 
-        val warnedMessageLc = getMassKickMessage(
+        val warnedMessagesLc = getMassKickMessage(
             context.getLanguage(),
             context.getTimeZoneId(),
             context.guild,
@@ -104,10 +105,11 @@ class MassKickCommand : AbstractCommand("command.masskick") {
             kick,
         )
 
-        val logChannelWrapper = context.daoManager.logChannelWrapper
-        val logChannelId = logChannelWrapper.getChannelId(context.guild.idLong, LogChannelType.MASS_KICK)
-        val logChannel = context.guild.getTextChannelById(logChannelId)
-        logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, warnedMessageLc) }
+        context.guild.getAndVerifyLogChannelByType(context.daoManager, LogChannelType.MASS_KICK)?.let { tc ->
+            warnedMessagesLc.forEach { msg ->
+                sendEmbed(context.daoManager.embedDisabledWrapper, tc, msg)
+            }
+        }
 
         val msg = context.getTranslation("$root.kicked.${if (failed == 0) "success" else "ok"}")
             .withVariable("success", success)
@@ -157,7 +159,7 @@ class MassKickCommand : AbstractCommand("command.masskick") {
         lc: Boolean = false,
         isBot: Boolean = false,
         received: Boolean = true
-    ): MessageEmbed {
+    ): List<MessageEmbed> {
         var description = "```LDIF\n"
         if (!lc) {
             description += i18n.getTranslation(language, "message.punishment.description.nlc")
@@ -197,10 +199,18 @@ class MassKickCommand : AbstractCommand("command.masskick") {
             .withSafeVariable(PLACEHOLDER_USER, kickAuthor.asTag)
             .withVariable("spaces", getAtLeastNCodePointsAfterName(kickAuthor) + "\u200B")
 
-        return EmbedBuilder()
-            .setAuthor(author, null, kickAuthor.effectiveAvatarUrl)
-            .setDescription(description)
-            .setColor(Color.ORANGE)
-            .build()
+
+        val list = StringUtils.splitMessageWithCodeBlocks(description, lang = "LDIF")
+            .withIndex()
+            .map { (index, part) ->
+                val eb = EmbedBuilder()
+                    .setDescription(part)
+                    .setColor(Color.ORANGE)
+                if (index == 0) eb.setAuthor(author, null, kickAuthor.effectiveAvatarUrl)
+                eb.build()
+            }
+
+
+        return list
     }
 }
