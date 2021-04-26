@@ -50,19 +50,14 @@ val ktor = "1.5.3"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-c
 val apollo = "2.5.6" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 
 dependencies {
-    // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.2.1_260") {
-        exclude("opus-java")
-    }
-
-    // https://github.com/sedmelluq/jda-nas
-    implementation("com.sedmelluq:jda-nas:1.1.0")
+    // https://jitpack.io/#pylonbot/pylon-gateway-client-java
+    implementation("com.github.pylonbot:pylon-gateway-client-java:6ec0fd6711")
 
     // https://github.com/sedmelluq/lavaplayer
     implementation("com.sedmelluq:lavaplayer:1.3.76")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
-    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.5")
+    implementation("com.github.ByteAlex:Lavalink-Client:8039799077")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))
