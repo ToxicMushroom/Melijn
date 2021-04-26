@@ -1038,13 +1038,13 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         override suspend fun execute(context: ICommandContext) {
             if (argSizeCheckFailed(context, 0)) return
 
-            val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+            val groupName = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
             val selfRoleWrapper = context.daoManager.selfRoleWrapper
-            val rows = selfRoleWrapper.clear(context.guildId, group.groupName)
+            val rows = selfRoleWrapper.clear(context.guildId, groupName)
 
             val msg = context.getTranslation("$root.cleared")
                 .withVariable("rows", rows)
-                .withSafeVariable("group", group.groupName)
+                .withSafeVariable("group", groupName)
             sendRsp(context, msg)
         }
     }

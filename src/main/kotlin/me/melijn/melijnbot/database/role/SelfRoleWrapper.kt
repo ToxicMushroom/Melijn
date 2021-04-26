@@ -198,6 +198,14 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
     }
 
     suspend fun clear(guildId: Long, groupName: String): Int {
+        // map
+        val map = getMap(guildId).toMutableMap()
+        map.remove(groupName)
+        selfRoleDao.setCacheEntry(
+            guildId,
+            objectMapper.writeValueAsString(map.mapValues { it.value.toString() }),
+            NORMAL_CACHE
+        )
         return selfRoleDao.clear(guildId, groupName)
     }
 }
