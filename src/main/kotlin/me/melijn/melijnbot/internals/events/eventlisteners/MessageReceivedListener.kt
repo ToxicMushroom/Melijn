@@ -17,23 +17,12 @@ import me.melijn.melijnbot.internals.events.eventutil.FilterUtil
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
-import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
-import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
-import me.melijn.melijnbot.internals.utils.message.toMessage
-import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.TextChannel
-import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
 import java.awt.Color
 
 class MessageReceivedListener(container: Container) : AbstractListener(container) {
 
-    override suspend fun onEvent(event: GenericEvent) {
+    override suspend fun onEvent(event: Event) {
         if (event is GuildMessageReceivedEvent) {
             TaskManager.async(event.author, event.channel) {
                 handleMessageReceivedStoring(event)

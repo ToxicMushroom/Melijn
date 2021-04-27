@@ -1,22 +1,15 @@
 package me.melijn.melijnbot
 
-import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory
 import kotlinx.coroutines.runBlocking
-import me.melijn.llklient.io.jda.JDALavalink
+import lol.up.pylon.gateway.client.GatewayGrpcClient
+import lol.up.pylon.gateway.client.entity.event.GuildMemberAddEvent
+import lol.up.pylon.gateway.client.event.EventSuppliers
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.events.EventManager
+import me.melijn.melijnbot.internals.events.eventlisteners.JoinLeaveListener
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.web.RestServer
-import net.dv8tion.jda.api.GatewayEncoding
-import net.dv8tion.jda.api.OnlineStatus
-import net.dv8tion.jda.api.entities.Activity
-import net.dv8tion.jda.api.requests.GatewayIntent
-import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
-import net.dv8tion.jda.api.sharding.ShardManager
-import net.dv8tion.jda.api.utils.ChunkingFilter
-import net.dv8tion.jda.api.utils.cache.CacheFlag
-import net.dv8tion.jda.internal.requests.restaction.MessageActionImpl
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import java.net.URI
@@ -26,7 +19,7 @@ import java.util.*
 object MelijnBot {
 
     private val logger = LoggerFactory.getLogger(MelijnBot::class.java)
-    var shardManager: ShardManager
+    private val client: GatewayGrpcClient? = null
     var eventManager: EventManager
     var hostName: String = "localhost"
     var podId: Int = 0
@@ -37,9 +30,26 @@ object MelijnBot {
             kotlinx.coroutines.DEBUG_PROPERTY_NAME,
             kotlinx.coroutines.DEBUG_PROPERTY_VALUE_ON
         )
-        MessageActionImpl.setDefaultMentions(emptyList())
         val container = Container()
         val settings = container.settings.botInfo
+        val client = GatewayGrpcClient.builder(settings.id)
+            .setRouterHost("ROUTER_HOST")
+            .setRouterPort(6969)
+            .build()
+        // TODO: Replace grpc server implementation with worker groups
+        /*
+        client.registerEventSupplier(EventSuppliers.grpcWorkerGroupSupplier(
+                env("WORKER_GROUP_AUTH_TOKEN"),
+                env("WORKER_GROUP_CONSUMER_GROUP"),
+                env("WORKER_GROUP_CONSUMER_ID")
+        ));
+        */
+
+        client.eventDispatcher = eventManager
+        client.registerEventSupplier(EventSuppliers.grpcServerEventSupplier(6969))
+        client.registerReceiver(GuildMemberAddEvent::class.java, JoinLeaveListener())
+
+
         val podCount = settings.podCount
         val shardCount = settings.shardCount
 
@@ -80,29 +90,6 @@ object MelijnBot {
         eventManager = EventManager(container)
 
         logger.info("Building JDA Shardmanager")
-        val defaultShardManagerBuilder = DefaultShardManagerBuilder
-            .create(
-                GatewayIntent.DIRECT_MESSAGES,
-                GatewayIntent.DIRECT_MESSAGE_REACTIONS,
-                GatewayIntent.GUILD_BANS,
-                GatewayIntent.GUILD_EMOJIS,
-                GatewayIntent.GUILD_MEMBERS,
-                GatewayIntent.GUILD_MESSAGES,
-                GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                GatewayIntent.GUILD_VOICE_STATES,
-            )
-            .setRawEventsEnabled(true)
-            .setShardsTotal(shardCount)
-            .setShards(podInfo.minShardId, podInfo.maxShardId)
-            .setToken(container.settings.tokens.discord)
-            .setActivity(Activity.playing("Starting.."))
-            .setStatus(OnlineStatus.IDLE)
-            .setAutoReconnect(true)
-            .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY, CacheFlag.ONLINE_STATUS)
-            .setBulkDeleteSplittingEnabled(false)
-            .setChunkingFilter(ChunkingFilter.NONE)
-            .setEventManagerProvider { eventManager }
-            .setGatewayEncoding(GatewayEncoding.ETF)
 
         if (!container.settings.lavalink.enabled) {
             defaultShardManagerBuilder.setAudioSendFactory(NativeAudioSendFactory())

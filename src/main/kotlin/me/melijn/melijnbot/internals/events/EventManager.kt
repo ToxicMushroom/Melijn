@@ -1,19 +1,17 @@
 package me.melijn.melijnbot.internals.events
 
+import bot.pylon.proto.discord.v1.event.EventEnvelope
+import lol.up.pylon.gateway.client.entity.event.Event
+import lol.up.pylon.gateway.client.event.AbstractEventReceiver
+import lol.up.pylon.gateway.client.event.EventDispatcher
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.command.CommandClientBuilder
 import me.melijn.melijnbot.internals.events.eventlisteners.*
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
-import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.events.RawGatewayEvent
-import net.dv8tion.jda.api.events.guild.GenericGuildEvent
-import net.dv8tion.jda.api.events.message.guild.GenericGuildMessageEvent
-import net.dv8tion.jda.api.events.message.priv.GenericPrivateMessageEvent
-import net.dv8tion.jda.api.hooks.IEventManager
 import java.util.*
 
-class EventManager(val container: Container) : IEventManager {
+class EventManager(val container: Container) : EventDispatcher {
 
     private val eventListeners: ArrayList<SuspendListener> = ArrayList()
 
@@ -33,8 +31,6 @@ class EventManager(val container: Container) : IEventManager {
         val voiceLeaveListener = VoiceLeaveListener(container)
         val voiceMoveListener = VoiceMoveListener(container)
         val joinLeaveListener = JoinLeaveListener(container)
-//        val roleAddedListener = RoleAddedListener(container)
-//        val roleRemovedListener = RoleRemovedListener(container)
         val boostListener = BoostListener(container)
         val lavaEventListener = container.jdaLavaLink
         val commandListener = CommandClientBuilder(container)
@@ -71,12 +67,24 @@ class EventManager(val container: Container) : IEventManager {
         val eventCountMap = mutableMapOf<String, Long>()
     }
 
-    override fun handle(event: GenericEvent) {
+    fun getRegisteredListeners(): MutableList<Any> {
+        return Collections.singletonList(eventListeners)
+    }
+
+    fun register(listener: Any) {
+        throw IllegalArgumentException()
+    }
+
+    fun unregister(listener: Any) {
+        throw IllegalArgumentException()
+    }
+
+    override fun <E : Event<E>?> registerReceiver(eventClass: Class<E>?, receiver: AbstractEventReceiver<E>?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun dispatchEvent(headerData: EventEnvelope.HeaderData?, event: Event<out Event<Event<*>>>?) {
         if (container.shuttingDown) return
-        if (event is RawGatewayEvent) {
-            eventCountMap[event.type] = eventCountMap.getOrDefault(event.type, 0) + 1
-            return
-        }
         TaskManager.async {
             try {
                 for (eventListener in eventListeners) {
@@ -84,24 +92,12 @@ class EventManager(val container: Container) : IEventManager {
                 }
             } catch (e: Exception) {
                 when (event) {
-                    is GenericGuildMessageEvent -> e.sendInGuild(event.guild, event.channel)
+                    is MessageEvent -> e.sendInGuild(event.guild, event.channel)
                     is GenericPrivateMessageEvent -> e.sendInGuild(channel = event.channel)
                     is GenericGuildEvent -> e.sendInGuild(event.guild)
                     else -> e.sendInGuild()
                 }
             }
         }
-    }
-
-    override fun getRegisteredListeners(): MutableList<Any> {
-        return Collections.singletonList(eventListeners)
-    }
-
-    override fun register(listener: Any) {
-        throw IllegalArgumentException()
-    }
-
-    override fun unregister(listener: Any) {
-        throw IllegalArgumentException()
     }
 }

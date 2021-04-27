@@ -1,33 +1,30 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
+import lol.up.pylon.gateway.client.entity.Guild
+import lol.up.pylon.gateway.client.entity.event.Event
+import lol.up.pylon.gateway.client.entity.event.GuildMemberAddEvent
+import lol.up.pylon.gateway.client.entity.event.GuildMemberRemoveEvent
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
-import me.melijn.melijnbot.internals.events.AbstractListener
+import me.melijn.melijnbot.internals.events.SuspendListener
 import me.melijn.melijnbot.internals.events.eventutil.JoinLeaveUtil
 import me.melijn.melijnbot.internals.events.eventutil.JoinLeaveUtil.joinRole
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.VerificationUtils
-import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
-import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.audit.ActionType
-import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
-import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 
-class JoinLeaveListener(container: Container) : AbstractListener(container) {
+class JoinLeaveListener(val container: Container) : SuspendListener() {
 
-    override suspend fun onEvent(event: GenericEvent) {
-        if (event is GuildMemberJoinEvent) onGuildMemberJoin(event)
+    override suspend fun onEvent(event: Event<*>) {
+        if (event is GuildMemberAddEvent) onGuildMemberJoin(event)
         else if (event is GuildMemberRemoveEvent) onGuildMemberLeave(event)
     }
 
-    private fun onGuildMemberJoin(event: GuildMemberJoinEvent) = TaskManager.async(event.member) {
+    private fun onGuildMemberJoin(event: GuildMemberAddEvent) = TaskManager.async(event.member) {
         val daoManager = container.daoManager
         val member = event.member
         JoinLeaveUtil.reAddMute(daoManager, event)

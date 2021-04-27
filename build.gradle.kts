@@ -51,7 +51,7 @@ val apollo = "2.5.6" // https://mvnrepository.com/artifact/com.apollographql.apo
 
 dependencies {
     // https://jitpack.io/#pylonbot/pylon-gateway-client-java
-    implementation("com.github.pylonbot:pylon-gateway-client-java:6ec0fd6711")
+    implementation("com.github.pylonbot:pylon-gateway-client-java:b1f4e149c8")
 
     // https://github.com/sedmelluq/lavaplayer
     implementation("com.sedmelluq:lavaplayer:1.3.76")

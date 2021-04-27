@@ -1,11 +1,11 @@
 package me.melijn.melijnbot.internals.threading
 
 import kotlinx.coroutines.*
+import lol.up.pylon.gateway.client.entity.Channel
+import lol.up.pylon.gateway.client.entity.Guild
+import lol.up.pylon.gateway.client.entity.Member
+import lol.up.pylon.gateway.client.entity.User
 import me.melijn.melijnbot.internals.command.ICommandContext
-import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.MessageChannel
-import net.dv8tion.jda.api.entities.User
 import java.util.concurrent.*
 
 object TaskManager {
@@ -67,7 +67,7 @@ object TaskManager {
         }.run()
     }
 
-    fun async(channel: MessageChannel, block: suspend CoroutineScope.() -> Unit) = coroutineScope.launch {
+    fun async(channel: Channel, block: suspend CoroutineScope.() -> Unit) = coroutineScope.launch {
         ChannelTask(channel) {
             block.invoke(this)
         }.run()
@@ -81,7 +81,7 @@ object TaskManager {
 
     fun async(
         user: User,
-        messageChannel: MessageChannel,
+        messageChannel: Channel,
         block: suspend CoroutineScope.() -> Unit
     ) = coroutineScope.launch {
         UserChannelTask(user, messageChannel) {
