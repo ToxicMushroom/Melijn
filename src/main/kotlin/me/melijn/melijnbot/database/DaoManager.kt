@@ -55,6 +55,7 @@ import me.melijn.melijnbot.database.prefix.GuildPrefixDao
 import me.melijn.melijnbot.database.prefix.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
+import me.melijn.melijnbot.database.ratelimit.RatelimitWrapper
 import me.melijn.melijnbot.database.reminder.ReminderDao
 import me.melijn.melijnbot.database.reminder.ReminderWrapper
 import me.melijn.melijnbot.database.rep.RepDao
@@ -220,6 +221,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val autoRemoveInactiveJoinMessageWrapper: AutoRemoveInactiveJoinMessageWrapper
     val inactiveJMWrapper: InactiveJMWrapper
 
+    val rateLimitWrapper: RatelimitWrapper
+
     var driverManager: DriverManager
 
     init {
@@ -344,6 +347,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
         autoRemoveInactiveJoinMessageWrapper = AutoRemoveInactiveJoinMessageWrapper(AutoRemoveInactiveJoinMessageDao(driverManager))
         inactiveJMWrapper = InactiveJMWrapper(InactiveJMDao(driverManager))
+
+        rateLimitWrapper = RatelimitWrapper(driverManager)
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {

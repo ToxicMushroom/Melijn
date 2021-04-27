@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.events.EventManager
+import me.melijn.melijnbot.internals.jda.MelijnSessionController
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.web.RestServer
@@ -99,6 +100,7 @@ object MelijnBot {
             .setStatus(OnlineStatus.IDLE)
             .setAutoReconnect(true)
             .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY, CacheFlag.ONLINE_STATUS)
+            .setSessionController(MelijnSessionController(container.daoManager.rateLimitWrapper))
             .setBulkDeleteSplittingEnabled(false)
             .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }
