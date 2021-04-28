@@ -54,12 +54,15 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
             val channel = getTextChannelByArgsNMessage(context, 1) ?: return
             val messageId = getLongFromArgNMessage(context, 2) ?: return
-
             val message = channel.retrieveMessageById(messageId).awaitOrNull()
             if (message == null) {
                 sendRsp(context, "**$messageId** doesn't exist")
                 return
             }
+
+            val appendMessageId = (if (context.args.size > 3) {
+                getBooleanFromArgNMessage(context, 3) ?: return
+            } else false) && !group.messageIds.contains(message.idLong)
 
             val selfRoles = context.daoManager.selfRoleWrapper.getMap(context.guildId)[group.groupName]
 
@@ -76,12 +79,21 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 val emoteji = dataEntry.getString(0)
                 emotejiList.add(emoteji)
             }
+            if (appendMessageId) {
+                group.messageIds = group.messageIds + message.idLong
+                context.daoManager.selfRoleGroupWrapper.insertOrUpdate(context.guildId, group)
+            }
 
             val externalEmotes = containsExternalEmotes(context, emotejiList)
             if (externalEmotes && notEnoughPermissionsAndMessage(context, channel, Permission.MESSAGE_EXT_EMOJI)) return
 
             SendGroupAutoArg.addEmotejisToMsg(emotejiList, message, context)
-            sendRsp(context, "Added **${emotejiList.size}** emotejis to the message in ${channel.asTag}")
+            val msg = "Added **${emotejiList.size}** emotejis to the message in ${channel.asTag}".run {
+                if (appendMessageId) {
+                    this + "\nAlso added ${message.idLong} to the messageIds in `${group.groupName.escapeCodeblockMarkdown()}`"
+                } else this
+            }
+            sendRsp(context, msg)
         }
 
         companion object {
@@ -644,7 +656,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                     val messageId = getLongFromArgNMessage(context, 1, 1000000000000000) ?: return
 
-                    group.messageIds = group.messageIds + messageId
+                    group.messageIds = group.messageIds - messageId
                     wrapper.insertOrUpdate(context.guildId, group)
 
                     val msg = context.getTranslation("$root.removed")
@@ -667,10 +679,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                     val wrapper = context.daoManager.selfRoleGroupWrapper
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
-                    val index = getIntegerFromArgNMessage(context, 1, 1, group.messageIds.size)
+                    val inputIndex = getIntegerFromArgNMessage(context, 1, 1, group.messageIds.size)
                         ?: return
+                    val index = inputIndex - 1
 
-                    val messages = group.messageIds.toMutableList()
+                    val messages = group.messageIds.sorted().toMutableList()
                     val messageId = messages[index]
                     messages.removeAt(index)
 
@@ -679,7 +692,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                     val msg = context.getTranslation("$root.removed")
                         .withVariable("group", group.groupName)
-                        .withVariable("index", "$index")
+                        .withVariable("index", "$inputIndex")
                         .withVariable("messageId", "$messageId")
 
                     sendRsp(context, msg)
@@ -734,7 +747,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     val content = StringBuilder("```INI\n[index] - [messageId]")
 
                     for ((index, id) in group.messageIds.sorted().withIndex()) {
-                        content.append("$index - [$id]")
+                        content.append("\n${index + 1} - [$id]")
                     }
 
                     content.append("```")
