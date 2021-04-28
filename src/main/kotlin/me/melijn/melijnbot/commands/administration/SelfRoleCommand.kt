@@ -62,7 +62,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             val appendMessageId = (if (context.args.size > 3) {
                 getBooleanFromArgNMessage(context, 3) ?: return
-            } else false) && !group.messageIds.contains(message.idLong)
+            } else false) && (!group.messageIds.contains(message.idLong) || group.channelId != channel.idLong)
 
             val selfRoles = context.daoManager.selfRoleWrapper.getMap(context.guildId)[group.groupName]
 
@@ -80,7 +80,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 emotejiList.add(emoteji)
             }
             if (appendMessageId) {
-                group.messageIds = group.messageIds + message.idLong
+                val ids = group.messageIds.toMutableList()
+                ids.addIfNotPresent(message.idLong)
+                group.messageIds = ids
+                group.channelId = channel.idLong
                 context.daoManager.selfRoleGroupWrapper.insertOrUpdate(context.guildId, group)
             }
 
@@ -845,15 +848,19 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     return
                 }
 
+                val selfRoleAble = if (context.args.size > 1) { getBooleanFromArgNMessage(context, 1) ?: return } else true
+                val limitToOneRole = if (context.args.size > 2) { getBooleanFromArgNMessage(context, 2) ?: return } else false
+                val requiresPermission = if (context.args.size > 2) { getBooleanFromArgNMessage(context, 3) ?: return } else false
+
                 val newSr = SelfRoleGroup(
                     name,
                     emptyList(),
                     channelId = -1,
                     isEnabled = true,
-                    isSelfRoleable = true,
+                    isSelfRoleable = selfRoleAble,
                     pattern = null,
-                    limitToOneRole = false,
-                    requiresPermission = false
+                    limitToOneRole = limitToOneRole,
+                    requiresPermission = requiresPermission
                 )
                 wrapper.insertOrUpdate(context.guildId, newSr)
 
