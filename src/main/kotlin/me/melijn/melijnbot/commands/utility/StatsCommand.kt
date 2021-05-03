@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.commands.utility
 
 import com.sun.management.OperatingSystemMXBean
+import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.JvmUsage
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -83,6 +84,7 @@ class StatsCommand : AbstractCommand("command.stats") {
         )
 
         val embed = Embedder(context)
+            .setTitle("Stats of cluster #" + MelijnBot.podId)
             .setThumbnail(context.selfUser.effectiveAvatarUrl)
             .setDescription(
                 """
