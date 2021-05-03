@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.audio
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.llklient.utils.LavalinkUtil
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.music.TrackUserData
 import me.melijn.melijnbot.internals.music.toMessage
 import me.melijn.melijnbot.internals.threading.SafeList
@@ -9,7 +10,7 @@ import me.melijn.melijnbot.internals.threading.SafeList
 class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChannelDao: LastVoiceChannelDao) {
 
     suspend fun getMap(): Map<Long, List<AudioTrack>> {
-        val map = tracksDao.getMap()
+        val map = tracksDao.getMap(PodInfo)
         val newMap = mutableMapOf<Long, List<AudioTrack>>()
 
         for ((guildId, trackMap) in map) {
@@ -31,7 +32,6 @@ class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChann
     }
 
     suspend fun put(guildId: Long, botId: Long, playingTrack: AudioTrack, queue: SafeList<AudioTrack>) {
-        //Concurrent modification don't ask me why
         val playing = LavalinkUtil.toMessage(playingTrack)
         var ud: TrackUserData? = playingTrack.userData as TrackUserData?
             ?: TrackUserData(botId, "", "")
@@ -51,7 +51,7 @@ class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChann
     }
 
     fun clear() {
-        tracksDao.clear()
+        tracksDao.clear(PodInfo)
     }
 
     fun addChannel(guildId: Long, channelId: Long) {
@@ -59,10 +59,10 @@ class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChann
     }
 
     suspend fun getChannels(): Map<Long, Long> {
-        return lastVoiceChannelDao.getMap()
+        return lastVoiceChannelDao.getMap(PodInfo)
     }
 
     fun clearChannels() {
-        lastVoiceChannelDao.clear()
+        lastVoiceChannelDao.clear(PodInfo)
     }
 }

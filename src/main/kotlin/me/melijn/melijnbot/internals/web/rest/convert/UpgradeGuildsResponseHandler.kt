@@ -44,7 +44,6 @@ object UpgradeGuildsResponseHandler {
             upgradedGuilds.add(upgradedGuild)
         }
 
-
         context.call.respondJson(upgradedGuilds)
     }
 }

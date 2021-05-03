@@ -11,6 +11,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
 import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.web.rest.codes.VerificationCodeResponseHandler
@@ -33,6 +34,7 @@ import me.melijn.melijnbot.internals.web.rest.stats.EventStatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.PublicStatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.StatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.voted.VotedResponseHandler
+import me.melijn.melijnbot.objectMapper
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.entities.UserImpl
@@ -43,13 +45,22 @@ import java.util.concurrent.TimeUnit
 
 class RestServer(container: Container) {
 
-
     private val jsonType = ContentType.parse("Application/JSON")
 
     private val logger = LoggerFactory.getLogger(RestServer::class.java)
 
     private val server: NettyApplicationEngine = embeddedServer(Netty, container.settings.restServer.port) {
         routing {
+            get("/podinfo") {
+                call.respondText(ContentType.Application.Json) {
+                    objectMapper.createObjectNode()
+                        .put("podId", PodInfo.podId)
+                        .put("podCount", PodInfo.podCount)
+                        .put("shardCount", PodInfo.shardCount)
+                        .toString()
+                }
+            }
+
             post("/dblvote") {
                 call.respondText { "pogu" }
                 logger.info("Go dblvote vote:\n" + call.receiveText())

@@ -19,7 +19,7 @@ class OsuCommand : AbstractCommand("command.osu") {
     init {
         id = 206
         name = "osu"
-        aliases = arrayOf("osu!")
+        aliases = arrayOf("osu!", "o")
         children = arrayOf(
             UserArg(root),
             TopArg(root),
@@ -50,6 +50,7 @@ class OsuCommand : AbstractCommand("command.osu") {
 
         init {
             name = "setUser"
+            aliases = arrayOf("su")
         }
 
         override suspend fun execute(context: ICommandContext) {

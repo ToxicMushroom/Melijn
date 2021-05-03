@@ -8,7 +8,6 @@ import me.melijn.melijnbot.internals.events.EventManager
 import me.melijn.melijnbot.internals.jda.MelijnSessionController
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.web.RestServer
 import net.dv8tion.jda.api.GatewayEncoding
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
@@ -22,6 +21,7 @@ import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import java.net.URI
 import java.util.*
+import kotlin.system.exitProcess
 
 
 object MelijnBot {
@@ -29,8 +29,7 @@ object MelijnBot {
     private val logger = LoggerFactory.getLogger(MelijnBot::class.java)
     var shardManager: ShardManager
     var eventManager: EventManager
-    var hostName: String = "localhost"
-    var podId: Int = 0
+    var hostName: String = "1-localhost"
 
     init {
         Locale.setDefault(Locale.ENGLISH)
@@ -43,23 +42,14 @@ object MelijnBot {
         val settings = container.settings.botInfo
         val podCount = settings.podCount
         val shardCount = settings.shardCount
+        val podId = fetchPodIdFromHostname(podCount, false) // TODO: remove dynamic
+        PodInfo.init(podCount, shardCount, podId)
 
-        try {
-            hostName = InetAddress.getLocalHost().hostName
-            logger.info("[hostName] {}", hostName)
-            podId = if (podCount == 1) 0
-            else hostName.split("-").last().toInt()
-        } catch (t: Throwable) {
-            logger.warn("Cannot parse podId from hostname", t)
-//            Thread.sleep(1000)
-//            exitProcess(404)
-        }
         logger.info("Starting $shardCount shards in $podCount pods")
 
-        val podInfo = PodInfo(podId, podCount, shardCount)
-        container.podInfo = podInfo
-        logger.info("Shards: {}-{}", podInfo.minShardId, podInfo.maxShardId)
-        logger.info("Launching shardManager with {} shards!", podInfo.shardsPerPod)
+        container.podInfo = PodInfo
+        logger.info("Shards: {}-{}", PodInfo.minShardId, PodInfo.maxShardId)
+        logger.info("Launching shardManager with {} shards!", PodInfo.shardsPerPod)
 
         val nodeMap = mutableMapOf<String, Array<Settings.Lavalink.LLNode>>()
         nodeMap["normal"] = container.settings.lavalink.verified_nodes
@@ -94,7 +84,7 @@ object MelijnBot {
             )
             .setRawEventsEnabled(true)
             .setShardsTotal(shardCount)
-            .setShards(podInfo.minShardId, podInfo.maxShardId)
+            .setShards(PodInfo.minShardId, PodInfo.maxShardId)
             .setToken(container.settings.tokens.discord)
             .setActivity(Activity.playing("Starting.."))
             .setStatus(OnlineStatus.IDLE)
@@ -124,12 +114,28 @@ object MelijnBot {
 
         TaskManager.async {
             logger.info("Starting rest-server..")
-
-            val restServer = RestServer(container)
-            restServer.start()
-
-            container.restServer = restServer
+            container.restServer.start()
             logger.info("Started rest-server")
+        }
+        TaskManager.async {
+            logger.info("Starting probe-server..")
+            container.probeServer.start()
+            logger.info("Started probe-server")
+        }
+    }
+
+    private fun fetchPodIdFromHostname(podCount: Int, dynamic: Boolean) = try {
+        if (dynamic) hostName = InetAddress.getLocalHost().hostName
+        logger.info("[hostName] {}", hostName)
+
+        if (podCount == 1) 0
+        else hostName.split("-").first().toInt()
+    } catch (t: Throwable) {
+        logger.warn("Cannot parse podId from hostname", t)
+        if (podCount == 1) 0
+        else {
+            Thread.sleep(1000)
+            exitProcess(404)
         }
     }
 

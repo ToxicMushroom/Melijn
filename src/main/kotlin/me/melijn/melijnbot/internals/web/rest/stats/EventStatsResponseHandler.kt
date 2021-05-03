@@ -32,7 +32,7 @@ object EventStatsResponseHandler {
                 }
             }
         }
-
+no compile
         val dataObject = computeBaseObject()
             .put("events", objectMapper.writeValueAsString(EventManager.eventCountMap))
             .put("commandUses", objectMapper.writeValueAsString(cmdUsesMap))
