@@ -5,19 +5,15 @@ import io.ktor.request.*
 import io.ktor.response.*
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.web.RequestContext
-import java.util.*
 
 object ShutdownResponseHandler {
-    suspend fun handleShutdownResponse(context: RequestContext) {
+    suspend fun handleShutdownResponse(context: RequestContext, reqAuth: Boolean = true) {
         val container = context.container
         val call = context.call
         val players = container.lavaManager.musicPlayerManager.getPlayers()
         val wrapper = container.daoManager.tracksWrapper
 
-        println(call.request.header("Authorization"))
-        println(context.restToken)
-
-        if (call.request.header("Authorization") != context.restToken) {
+        if (reqAuth && call.request.header("Authorization") != context.restToken) {
             call.respondText(status = HttpStatusCode.Forbidden) { "Invalid token\n" }
             return
         }

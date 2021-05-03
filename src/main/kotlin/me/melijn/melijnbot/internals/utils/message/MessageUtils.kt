@@ -4,13 +4,13 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.models.EmbedEditor
 import me.melijn.melijnbot.internals.models.ModularMessage
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
@@ -50,7 +50,7 @@ suspend fun sendOnShard0(
     editor: EmbedEditor,
     extra: String
 ): Boolean {
-    return if (MelijnBot.podId == 0) {
+    return if (PodInfo.podId == 0) {
         user.openPrivateChannel().awaitOrNull()?.sendMessage(editor.build())?.awaitBool() ?: false
     } else {
         val hostPattern = context.container.settings.botInfo.hostPattern

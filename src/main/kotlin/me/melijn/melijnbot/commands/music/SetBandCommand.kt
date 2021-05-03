@@ -15,7 +15,7 @@ class SetBandCommand : AbstractCommand("command.setband") {
     init {
         id = 112
         name = "setBand"
-        aliases = arrayOf("setGain", "setBands")
+        aliases = arrayOf("setGain", "setBands", "sb")
         commandCategory = CommandCategory.MUSIC
         children = arrayOf(
             AllArg(root)

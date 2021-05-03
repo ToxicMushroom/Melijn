@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.music.LavaManager
 import me.melijn.melijnbot.internals.services.ServiceManager
 import me.melijn.melijnbot.internals.utils.ModularPaginationInfo
 import me.melijn.melijnbot.internals.utils.PaginationInfo
+import me.melijn.melijnbot.internals.web.ProbeServer
 import me.melijn.melijnbot.internals.web.RestServer
 import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.OnlineStatus
@@ -32,9 +33,10 @@ class Container {
     val paginationMap = mutableMapOf<Long, PaginationInfo>()
     val modularPaginationMap = mutableMapOf<Long, ModularPaginationInfo>()
 
-    val eventWaiter = EventWaiter()
+    val eventWaiter by lazy { EventWaiter() }
 
-    var restServer: RestServer? = null
+    val restServer: RestServer by lazy { RestServer(this) }
+    val probeServer: ProbeServer by lazy { ProbeServer(this) }
     var shuttingDown: Boolean = false
         set(value) {
             if (value) {
@@ -50,11 +52,11 @@ class Container {
     var settings: Settings = Settings.initSettings()
 
     //Used by events
-    val daoManager = DaoManager(settings.database, settings.redis)
-    val webManager = WebManager(settings)
+    val daoManager by lazy { DaoManager(settings.database, settings.redis) }
+    val webManager by lazy { WebManager(settings) }
 
     //enabled on event
-    val serviceManager = ServiceManager(daoManager, webManager)
+    val serviceManager by lazy { ServiceManager(daoManager, webManager) }
 
     var jdaLavaLink: JDALavalink? = null
 

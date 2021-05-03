@@ -222,13 +222,6 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
                 total += aliasList.size
             }
 
-            if (total >= TOTAL_ALIASES_LIMIT) {
-                val msg = context.getTranslation("$root.limit.total")
-                    .withVariable("limit", "$TOTAL_ALIASES_LIMIT")
-
-                sendRsp(context, msg)
-                return
-            }
             if (total >= TOTAL_ALIASES_LIMIT && !isPremiumGuild(context)) {
                 val replaceMap = mapOf(
                     Pair("limit", "$TOTAL_ALIASES_LIMIT"),
