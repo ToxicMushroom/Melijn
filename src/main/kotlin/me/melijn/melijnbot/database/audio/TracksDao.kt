@@ -37,7 +37,7 @@ class TracksDao(driverManager: DriverManager) : Dao(driverManager) {
                 guildTracksMap[guildId] = trackMap
             }
             it.resume(guildTracksMap)
-        })
+        }, *podInfo.shardList.toTypedArray())
     }
 
     fun clear(podInfo: PodInfo) {
