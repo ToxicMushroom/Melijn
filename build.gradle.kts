@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("application")
     id("com.github.johnrengelman.shadow") version "6.1.0"
-    id("org.jetbrains.kotlin.jvm") version "1.4.32"
+    id("org.jetbrains.kotlin.jvm") version "1.5.0"
     id("com.apollographql.apollo") version "2.5.6"
 }
 
@@ -39,9 +39,9 @@ repositories {
     }
     maven("https://duncte123.jfrog.io/artifactory/maven")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
-    maven("https://jitpack.io")
     mavenCentral()
     mavenLocal()
+    maven("https://jitpack.io")
     jcenter()
 }
 
@@ -69,7 +69,7 @@ dependencies {
     api(kotlin("scripting-compiler"))
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.32")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.0")
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
     implementation("com.github.ToxicMushroom:JagTag-Kotlin:0.6.4")
@@ -78,7 +78,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:4.0.3")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.2.19")
+    implementation("org.postgresql:postgresql:42.2.20")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
