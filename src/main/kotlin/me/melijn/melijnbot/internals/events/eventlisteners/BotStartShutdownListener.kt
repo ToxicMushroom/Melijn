@@ -3,6 +3,7 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.OnlineStatus
@@ -30,7 +31,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
             val readyShards = shardManager.shards.count { jda -> jda.status == JDA.Status.CONNECTED }
             logger.info("$readyShards/${shardManager.shards.size} shards ready")
 
-            if (readyShards != container.settings.botInfo.shardCount) return
+            if (readyShards != PodInfo.shardsPerPod) return
 
             if (!container.serviceManager.slowStarted) {
                 shardManager.setStatus(OnlineStatus.ONLINE)
