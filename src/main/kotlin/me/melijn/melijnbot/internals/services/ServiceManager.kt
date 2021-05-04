@@ -16,7 +16,6 @@ import me.melijn.melijnbot.internals.services.reddit.RedditAboutService
 import me.melijn.melijnbot.internals.services.reddit.RedditService
 import me.melijn.melijnbot.internals.services.reminders.ReminderService
 import me.melijn.melijnbot.internals.services.roles.RolesService
-import me.melijn.melijnbot.internals.services.stats.StatsService
 import me.melijn.melijnbot.internals.services.twitter.TwitterService
 import me.melijn.melijnbot.internals.services.voice.VoiceScoutService
 import me.melijn.melijnbot.internals.services.voice.VoiceService
@@ -32,7 +31,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
     var shardManager: ShardManager? = null
 
     val services = mutableListOf<Service>()
-    val slowServices = mutableListOf<Service>()
+    private val slowServices = mutableListOf<Service>()
 
     // TODO make everything able to start as fast* services
     fun init(container: Container, shardManager: ShardManager) {
@@ -40,7 +39,6 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         val podInfo = container.podInfo
         slowServices.add(BanService(shardManager, daoManager, podInfo))
         slowServices.add(MuteService(shardManager, daoManager, podInfo))
-        slowServices.add(StatsService(shardManager, webManager.botListApi))
         slowServices.add(BirthdayService(shardManager, webManager.proxiedHttpClient, daoManager))
 
 

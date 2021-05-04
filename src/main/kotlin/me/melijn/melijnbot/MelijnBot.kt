@@ -30,7 +30,7 @@ object MelijnBot {
     private val logger = LoggerFactory.getLogger(MelijnBot::class.java)
     var shardManager: ShardManager
     var eventManager: EventManager
-    var hostName: String = "0-localhost"
+    var hostName: String = "localhost-0"
 
     init {
         Locale.setDefault(Locale.ENGLISH)

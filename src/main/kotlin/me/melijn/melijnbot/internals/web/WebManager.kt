@@ -11,7 +11,6 @@ import io.ktor.client.features.*
 import io.ktor.client.features.json.*
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.web.booru.BooruApi
-import me.melijn.melijnbot.internals.web.botlist.BotListApi
 import me.melijn.melijnbot.internals.web.kitsu.KitsuApi
 import me.melijn.melijnbot.internals.web.nsfw.Rule34Api
 import me.melijn.melijnbot.internals.web.osu.OsuApi
@@ -60,7 +59,6 @@ class WebManager(val settings: Settings) {
     val booruApi: BooruApi = BooruApi(httpClient)
     val kitsuApi: KitsuApi = KitsuApi(httpClient)
     val osuApi: OsuApi = OsuApi(proxiedHttpClient, settings.tokens.osu)
-    val botListApi: BotListApi = BotListApi(httpClient, settings)
     val weebApi: WeebApi = WeebApi(httpClient, settings)
 
     init {
