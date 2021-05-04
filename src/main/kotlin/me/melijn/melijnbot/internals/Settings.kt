@@ -90,14 +90,7 @@ data class Settings(
 
     data class Token(
         var discord: String,
-        var topDotGG: String,
         var weebSh: String,
-        var botsOnDiscordXYZ: String,
-        var botlistSpace: String,
-        var discordBotListCom: String,
-        var discordBotsGG: String,
-        var botsForDiscordCom: String,
-        var discordBoats: String,
         var randomCatApi: String,
         var kSoftApi: String,
         var osu: String
@@ -209,14 +202,7 @@ data class Settings(
                 ),
                 Token(
                     get("token.discord"),
-                    get("token.topDotGG"),
                     get("token.weebSh"),
-                    get("token.botsOnDiscordXYZ"),
-                    get("token.botListSpace"),
-                    get("token.discordBotListCom"),
-                    get("token.discordBotsGG"),
-                    get("token.botsForDiscordCom"),
-                    get("token.discordBoats"),
                     get("token.randomCatApi"),
                     get("token.kSoftApi"),
                     get("token.osuApi")
