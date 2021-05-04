@@ -133,7 +133,7 @@ object MelijnBot {
         logger.info("[hostName] {}", hostName)
 
         if (podCount == 1) 0
-        else hostName.split("-").first().toInt()
+        else hostName.split("-").last().toInt()
     } catch (t: Throwable) {
         logger.warn("Cannot parse podId from hostname", t)
         if (podCount == 1) 0
