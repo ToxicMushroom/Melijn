@@ -3,6 +3,7 @@ package me.melijn.melijnbot
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory
 import kotlinx.coroutines.runBlocking
 import me.melijn.llklient.io.jda.JDALavalink
+import me.melijn.melijnbot.enums.Environment
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.events.EventManager
 import me.melijn.melijnbot.internals.jda.MelijnSessionController
@@ -29,7 +30,7 @@ object MelijnBot {
     private val logger = LoggerFactory.getLogger(MelijnBot::class.java)
     var shardManager: ShardManager
     var eventManager: EventManager
-    var hostName: String = "1-localhost"
+    var hostName: String = "0-localhost"
 
     init {
         Locale.setDefault(Locale.ENGLISH)
@@ -42,7 +43,10 @@ object MelijnBot {
         val settings = container.settings.botInfo
         val podCount = settings.podCount
         val shardCount = settings.shardCount
-        val podId = fetchPodIdFromHostname(podCount, false) // TODO: remove dynamic
+        val podId = fetchPodIdFromHostname(
+            podCount,
+            container.settings.environment == Environment.PRODUCTION
+        )
         PodInfo.init(podCount, shardCount, podId)
 
         logger.info("Starting $shardCount shards in $podCount pods")
