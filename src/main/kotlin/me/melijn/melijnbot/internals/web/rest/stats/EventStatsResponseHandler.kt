@@ -5,6 +5,7 @@ import me.melijn.melijnbot.internals.events.EventManager
 import me.melijn.melijnbot.internals.web.RequestContext
 import me.melijn.melijnbot.internals.web.WebUtils.respondJson
 import me.melijn.melijnbot.objectMapper
+import net.dv8tion.jda.api.utils.data.DataObject
 import java.util.*
 
 object EventStatsResponseHandler {
@@ -32,8 +33,8 @@ object EventStatsResponseHandler {
                 }
             }
         }
-no compile
-        val dataObject = computeBaseObject()
+
+        val dataObject = DataObject.empty()
             .put("events", objectMapper.writeValueAsString(EventManager.eventCountMap))
             .put("commandUses", objectMapper.writeValueAsString(cmdUsesMap))
             .put("highestGuilds", objectMapper.writeValueAsString(highestGuilds))
