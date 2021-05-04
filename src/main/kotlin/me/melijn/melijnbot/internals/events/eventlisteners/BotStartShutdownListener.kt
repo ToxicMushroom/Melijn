@@ -35,7 +35,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
 
             if (!container.serviceManager.slowStarted) {
                 shardManager.setStatus(OnlineStatus.ONLINE)
-                shardManager .setActivity(Activity.listening("commands | ${container.settings.botInfo.prefix}help"))
+                shardManager.setActivity(Activity.listening("commands | ${container.settings.botInfo.prefix}help"))
                 TaskManager.async {
                     logger.info("Starting music clients..")
                     VoiceUtil.resumeMusic(event, container)
