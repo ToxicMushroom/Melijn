@@ -1,13 +1,13 @@
 package me.melijn.melijnbot.commands.utility
 
 import com.sun.management.OperatingSystemMXBean
-import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.JvmUsage
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.getSystemUptime
@@ -84,7 +84,7 @@ class StatsCommand : AbstractCommand("command.stats") {
         )
 
         val embed = Embedder(context)
-            .setTitle("Stats of cluster #" + MelijnBot.podId)
+            .setTitle("Stats of cluster #" + PodInfo.podId)
             .setThumbnail(context.selfUser.effectiveAvatarUrl)
             .setDescription(
                 """
