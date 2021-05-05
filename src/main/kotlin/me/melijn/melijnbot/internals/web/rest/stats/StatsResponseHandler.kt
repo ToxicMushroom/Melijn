@@ -7,7 +7,7 @@ import me.melijn.melijnbot.objectMapper
 
 object StatsResponseHandler {
 
-    var lastRequest = System.currentTimeMillis()
+    var lastRequest = System.currentTimeMillis() - 60_000
 
     @Deprecated("Marked for removal", replaceWith = ReplaceWith("EventStatsResponseHandler#handleEventStatsResponse"))
     suspend fun handleStatsResponse(context: RequestContext) {

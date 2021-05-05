@@ -10,7 +10,7 @@ import java.util.*
 
 object EventStatsResponseHandler {
 
-    var lastRequest = System.currentTimeMillis()
+    var lastRequest = System.currentTimeMillis() - 60_000
 
     suspend fun handleEventStatsResponse(context: RequestContext) {
         val cmdUsesMap = mutableMapOf<Int, Int>()

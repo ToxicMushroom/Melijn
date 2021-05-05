@@ -9,6 +9,5 @@ object PublicStatsResponseHandler {
         val dataObject = computeBaseObject()
             .put("shards", computePublicStatsObject(context))
         context.call.respondJson(dataObject)
-        StatsResponseHandler.lastRequest = System.currentTimeMillis()
     }
 }
