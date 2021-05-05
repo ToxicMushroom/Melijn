@@ -3,13 +3,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("application")
-    id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
     id("org.jetbrains.kotlin.jvm") version "1.5.0"
     id("com.apollographql.apollo") version "2.5.6"
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
-application.mainClassName = "me.melijn.melijnbot.MelijnBotKt" // backwards compat for shadowjar v6.1.0
 group = "me.melijn.melijnbot"
 version = "2.0.8"
 
@@ -37,11 +36,11 @@ repositories {
         url = uri("https://m2.dv8tion.net/releases")
         name = "m2-dv8tion"
     }
-    maven("https://duncte123.jfrog.io/artifactory/maven")
-    maven("https://oss.sonatype.org/content/repositories/snapshots/")
     mavenCentral()
     mavenLocal()
-    maven("https://jitpack.io")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://duncte123.jfrog.io/artifactory/maven")
+    maven("https://nexus.melijn.com/repository/maven-public/")
     jcenter()
 }
 
@@ -62,7 +61,7 @@ dependencies {
     implementation("com.sedmelluq:lavaplayer:1.3.76")
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
-    implementation("com.github.ToxicMushroom:Lavalink-Klient:2.1.5")
+    implementation("me.melijn.llklient:Lavalink-Klient:2.1.5")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))
@@ -71,8 +70,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.0")
 
-    // https://github.com/ToxicMushroom/JagTag-Kotlin
-    implementation("com.github.ToxicMushroom:JagTag-Kotlin:0.6.4")
+    // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fjagtag
+    implementation("me.melijn.jagtag:JagTag-Kotlin:2.1.5")
 
     // https://search.maven.org/artifact/com.zaxxer/HikariCP
     implementation("com.zaxxer:HikariCP:4.0.3")
@@ -90,7 +89,7 @@ dependencies {
     implementation("me.duncte123:weebJava:3.0.1_4")
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation("se.michaelthelin.spotify:spotify-web-api-java:6.5.3")
+    implementation("se.michaelthelin.spotify:spotify-web-api-java:6.5.4")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation("ch.qos.logback:logback-classic:1.2.3")
@@ -112,15 +111,14 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktor")
     implementation("io.ktor:ktor-client-jackson:$ktor")
 
-    // https://github.com/ToxicMushroom/gifencoder
-    implementation("com.github.ToxicMushroom:gifencoder:23b3128881")
+    // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fgifencoder
+    implementation("me.melijn.gifencoder:gifencoder:1.0.0")
 
-    // https://github.com/ToxicMushroom/animated-gif-lib-for-java
-    implementation("com.github.ToxicMushroom:animated-gif-lib-for-java:03e397e311")
+    // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fgifdecoder
+    implementation("me.melijn.gifdecoder:animated-gif-lib-for-java:1.0.1")
 
-    // https://github.com/GSculerlor/JikanKt/releases
-    // implementation("com.github.GSculerlor:JikanKT:1.3.1")
-    implementation("com.github.Melijn:JikanKt:dd5884b643")
+    // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fjikankt
+    implementation("me.melijn.jikankt:JikanKt:1.3.2")
 
     // https://mvnrepository.com/artifact/org.mariuszgromada.math/MathParser.org-mXparser
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:4.4.2")
