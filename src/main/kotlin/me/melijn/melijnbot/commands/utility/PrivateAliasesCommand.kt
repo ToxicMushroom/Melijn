@@ -189,8 +189,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             }
             val pathInfo = getCommandPathInfo(context, 0) ?: return
             val alias = getStringFromArgsNMessage(
-                context, 1, 1, 64,
-                cantContainChars = arrayOf(' '), cantContainWords = arrayOf("%SPLIT%")
+                context, 1, 1, 64, cantContainWords = arrayOf("%SPLIT%")
             ) ?: return
 
             context.daoManager.aliasWrapper.remove(context.authorId, pathInfo.fullPath, alias)
