@@ -9,11 +9,11 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
-import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
 import me.melijn.melijnbot.internals.models.EmbedEditor
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.awaitOrNull
+import me.melijn.melijnbot.internals.utils.message.sendPrivateMessageExtra
 import me.melijn.melijnbot.internals.web.rest.codes.VerificationCodeResponseHandler
 import me.melijn.melijnbot.internals.web.rest.commands.CommandMapResponseHandler
 import me.melijn.melijnbot.internals.web.rest.commands.FullCommandsResponseHandler
@@ -160,16 +160,13 @@ class RestServer(container: Container) {
                 }
                 println(id)
                 val embedEditor = call.receive<EmbedEditor>()
-                val result = (MelijnBot.shardManager.retrieveUserById(id).awaitOrNull() as UserImpl?)
-                    ?.openPrivateChannel()?.awaitOrNull()
-                    ?.sendMessage(embedEditor.build())?.awaitOrNull()?.run {
-                        if (extra == "RPS") {
-                            this.addReaction(RockPaperScissorsGame.RPS.ROCK.unicode).queue() // rock 🪨
-                            this.addReaction(RockPaperScissorsGame.RPS.PAPER.unicode).queue() // paper 📰
-                            this.addReaction(RockPaperScissorsGame.RPS.SCISSORS.unicode).queue() // scissors ✂
-                        }
-                        true
-                    } ?: false
+                val user = MelijnBot.shardManager.retrieveUserById(id).awaitOrNull() as UserImpl?
+                if (user == null) {
+                    call.respond(false)
+                    return@post
+                }
+
+                val result = sendPrivateMessageExtra(user, embedEditor, extra)
                 call.respond(result)
             }
 
