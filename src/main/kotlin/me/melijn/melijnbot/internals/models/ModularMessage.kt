@@ -90,6 +90,19 @@ data class ModularMessage(
         }
     }
 
+    suspend fun mapAllStringFieldsSafe(
+        infoAppend: String? = null,
+        function: suspend (s: String?) -> String?
+    ): ModularMessage {
+        return try {
+            mapAllStringFields(function)
+        } catch (t: UserFriendlyException) {
+            var msg = t.getUserFriendlyMessage()
+            if (infoAppend != null) msg += infoAppend
+            ModularMessage(msg)
+        }
+    }
+
     suspend fun mapAllStringFields(function: suspend (s: String?) -> String?): ModularMessage {
         val mappedModularMsg = ModularMessage()
         mappedModularMsg.messageContent = this.messageContent?.let { function(it) }
@@ -210,9 +223,9 @@ data class ModularMessage(
 
 class InvalidUrlVariableException(
     val field: String, val invalidValue: String
-) : Exception("$field was assigned the invalid value/variable $invalidValue") {
+) : UserFriendlyException("$field was assigned the invalid value/variable $invalidValue") {
 
-    fun getUserFriendlyMessage(): String {
+    override fun getUserFriendlyMessage(): String {
         return "You have a non valid variable or url in the **${field}** field:\n" +
             "```${invalidValue.escapeCodeblockMarkdown()}```"
     }
@@ -222,13 +235,17 @@ class TooLongUrlVariableException(
     val field: String,
     val invalidValue: String,
     val maxLength: Int
-) : Exception(
+) : UserFriendlyException(
     "$field was assigned the too long value/variable $invalidValue\n" +
         "Max-Length=$maxLength | Current-Length=${invalidValue.length}"
 ) {
-    fun getUserFriendlyMessage(): String {
+    override fun getUserFriendlyMessage(): String {
         return "You have a too long variable or url in the **${field}** field:\n" +
             "```${invalidValue.escapeCodeblockMarkdown()}```\n" +
-            "Max-Length=${maxLength} | Current-Length=${invalidValue.length}"
+            "Max-Length=${maxLength} | Current-Length=${invalidValue.length}\n"
     }
+}
+
+abstract class UserFriendlyException(message: String?) : Exception(message) {
+    abstract fun getUserFriendlyMessage(): String
 }

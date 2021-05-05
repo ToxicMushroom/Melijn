@@ -11,10 +11,11 @@ object BirthdayUtil {
         daoManager: DaoManager,
         member: Member,
         modularMessage: ModularMessage,
-        birthYear: Int?
+        birthYear: Int?,
+        msgName: String
     ): ModularMessage {
         val args = BirthdayParserArgs(daoManager, member, birthYear)
-        return modularMessage.mapAllStringFields {
+        return modularMessage.mapAllStringFieldsSafe("BirthdayMessage(msgName=$msgName)") {
             if (it != null) {
                 BirthdayJagTagParser.parseJagTag(args, it)
             } else {

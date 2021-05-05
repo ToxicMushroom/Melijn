@@ -10,9 +10,8 @@ import me.melijn.melijnbot.internals.jagtag.DiscordMethods
 import me.melijn.melijnbot.internals.jagtag.UrlJagTagParser
 import me.melijn.melijnbot.internals.jagtag.UrlParserArgs
 import me.melijn.melijnbot.internals.models.EmbedEditor
-import me.melijn.melijnbot.internals.models.InvalidUrlVariableException
 import me.melijn.melijnbot.internals.models.ModularMessage
-import me.melijn.melijnbot.internals.models.TooLongUrlVariableException
+import me.melijn.melijnbot.internals.models.UserFriendlyException
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.internals.utils.*
@@ -865,7 +864,7 @@ object MessageUtil {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
         val message = try {
-            val msg = replaceUrlVariables(context.member, modularMessage).toMessage()
+            val msg = replaceUrlVariablesInPreview(context.member, modularMessage).toMessage()
             if (msg == null && modularMessage.attachments.isEmpty()) {
                 val msg2 = context.getTranslation("message.view.isempty")
                     .withVariable("msgName", msgName)
@@ -875,13 +874,11 @@ object MessageUtil {
             msg
         } catch (t: Throwable) {
             when (t) {
-                is InvalidUrlVariableException -> sendRsp(context, t.getUserFriendlyMessage())
-                is TooLongUrlVariableException -> sendRsp(context, t.getUserFriendlyMessage())
+                is UserFriendlyException -> sendRsp(context, t.getUserFriendlyMessage())
                 else -> throw t
             }
             return
         }
-
 
         val httpClient = context.webManager.proxiedHttpClient
         val channel = context.textChannel
@@ -897,12 +894,12 @@ object MessageUtil {
         }
     }
 
-    suspend fun replaceUrlVariables(
+    suspend fun replaceUrlVariablesInPreview(
         member: Member,
         modularMessage: ModularMessage
     ): ModularMessage {
         val args = UrlParserArgs(member.guild, member.user)
-        return modularMessage.mapAllStringFields {
+        return modularMessage.mapAllStringFieldsSafe() {
             if (it != null) {
                 UrlJagTagParser.parseJagTag(args, it)
             } else {

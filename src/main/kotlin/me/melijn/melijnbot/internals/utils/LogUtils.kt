@@ -571,7 +571,7 @@ object LogUtils {
         } else {
             if (MessageUtil.removeMessageIfEmpty(guildId, messageType, message, linkedMessageWrapper)) return
 
-            message = BirthdayUtil.replaceVariablesInBirthdayMessage(daoManager, member, message, birthYear)
+            message = BirthdayUtil.replaceVariablesInBirthdayMessage(daoManager, member, message, birthYear, msgName)
 
             val msg: Message? = message.toMessage()
             when {

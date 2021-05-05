@@ -57,7 +57,7 @@ object JoinLeaveUtil {
         var modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
         if (MessageUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, linkedMessageWrapper)) return
 
-        modularMessage = replaceVariablesInWelcomeMessage(guild, user, modularMessage)
+        modularMessage = replaceVariablesInWelcomeMessage(guild, user, modularMessage, messageType, msgName)
 
         val message: Message? = modularMessage.toMessage()
         if (message?.embeds?.isNotEmpty() == true) {
@@ -115,9 +115,11 @@ object JoinLeaveUtil {
     private suspend fun replaceVariablesInWelcomeMessage(
         guild: Guild,
         user: User,
-        modularMessage: ModularMessage
+        modularMessage: ModularMessage,
+        msgType: MessageType,
+        msgName: String
     ): ModularMessage {
-        return modularMessage.mapAllStringFields {
+        return modularMessage.mapAllStringFieldsSafe("${msgType.text}(msgName=$msgName)") {
             if (it != null) {
                 WelcomeJagTagParser.parseJagTag(guild, user, it)
             } else {
