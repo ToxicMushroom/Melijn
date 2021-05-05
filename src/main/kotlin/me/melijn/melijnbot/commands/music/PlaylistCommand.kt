@@ -340,14 +340,21 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
 
             context.daoManager.playlistWrapper.removeAll(context.authorId, playlist.name, absPositions)
 
-            val msg = if (tracks.size > 1) {
-                context.getTranslation("$root.removed.multiple")
-                    .withSafeVariable("playlist", playlist.name)
-                    .withVariable("amount", tracks.size)
-            } else {
-                context.getTranslation("$root.removed")
-                    .withSafeVariable("playlist", playlist.name)
-                    .withVariable("title", tracks.first().info.title.escapeMarkdown())
+            val msg = when {
+                tracks.size > 1 -> {
+                    context.getTranslation("$root.removed.multiple")
+                        .withSafeVariable("playlist", playlist.name)
+                        .withVariable("amount", tracks.size)
+                }
+                tracks.size == 1 -> {
+                    context.getTranslation("$root.removed")
+                        .withSafeVariable("playlist", playlist.name)
+                        .withVariable("title", tracks.first().info.title.escapeMarkdown())
+                }
+                else -> {
+                    sendRsp(context, "Removed nothing from ${playlist.name.escapeMarkdown().escapeDiscordInvites()}")
+                    return
+                }
             }
 
             sendRsp(context, msg)

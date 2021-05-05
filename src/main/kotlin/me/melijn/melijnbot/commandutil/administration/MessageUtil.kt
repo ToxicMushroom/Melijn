@@ -10,7 +10,9 @@ import me.melijn.melijnbot.internals.jagtag.DiscordMethods
 import me.melijn.melijnbot.internals.jagtag.UrlJagTagParser
 import me.melijn.melijnbot.internals.jagtag.UrlParserArgs
 import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.models.InvalidUrlVariableException
 import me.melijn.melijnbot.internals.models.ModularMessage
+import me.melijn.melijnbot.internals.models.TooLongUrlVariableException
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.internals.utils.*
@@ -862,11 +864,21 @@ object MessageUtil {
         val guildId = context.guildId
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
-        val message = replaceUrlVariables(context.member, modularMessage).toMessage()
-        if (message == null && modularMessage.attachments.isEmpty()) {
-            val msg2 = context.getTranslation("message.view.isempty")
-                .withVariable("msgName", msgName)
-            sendRsp(context, msg2)
+        val message = try {
+            val msg = replaceUrlVariables(context.member, modularMessage).toMessage()
+            if (msg == null && modularMessage.attachments.isEmpty()) {
+                val msg2 = context.getTranslation("message.view.isempty")
+                    .withVariable("msgName", msgName)
+                sendRsp(context, msg2)
+                return
+            }
+            msg
+        } catch (t: Throwable) {
+            when (t) {
+                is InvalidUrlVariableException -> sendRsp(context, t.getUserFriendlyMessage())
+                is TooLongUrlVariableException -> sendRsp(context, t.getUserFriendlyMessage())
+                else -> throw t
+            }
             return
         }
 

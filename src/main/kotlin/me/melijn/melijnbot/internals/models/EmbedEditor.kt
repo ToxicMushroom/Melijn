@@ -24,7 +24,6 @@ import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.internal.entities.EntityBuilder
-import net.dv8tion.jda.internal.utils.Checks
 import java.awt.Color
 import java.time.*
 import java.time.temporal.TemporalAccessor
@@ -708,21 +707,18 @@ class EmbedEditor() {
         return this
     }
 
-
-    private fun urlCheck(url: String?) {
-        if (url != null) {
-            Checks.check(
-                url.length <= MessageEmbed.URL_MAX_LENGTH,
-                "URL cannot be longer than %d characters.",
-                MessageEmbed.URL_MAX_LENGTH
-            )
-            Checks.check(
-                EmbedBuilder.URL_PATTERN.matcher(url).matches(),
-                "URL must be a valid http(s) or attachment url."
-            )
+    companion object {
+        fun urlCheck(field: String, url: String?) {
+            if (url != null) {
+                if (url.length > MessageEmbed.URL_MAX_LENGTH) {
+                    throw TooLongUrlVariableException(field, url, MessageEmbed.URL_MAX_LENGTH)
+                }
+                if (!EmbedBuilder.URL_PATTERN.matcher(url).matches()) {
+                    throw InvalidUrlVariableException(field, url)
+                }
+            }
         }
     }
-
 
     /**
      * Returns a [MessageEmbed][net.dv8tion.jda.api.entities.MessageEmbed]

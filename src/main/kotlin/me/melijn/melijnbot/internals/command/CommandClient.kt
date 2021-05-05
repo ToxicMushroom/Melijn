@@ -12,7 +12,9 @@ import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.internals.events.SuspendListener
 import me.melijn.melijnbot.internals.jagtag.CCJagTagParser
 import me.melijn.melijnbot.internals.jagtag.CCJagTagParserArgs
+import me.melijn.melijnbot.internals.models.InvalidUrlVariableException
 import me.melijn.melijnbot.internals.models.ModularMessage
+import me.melijn.melijnbot.internals.models.TooLongUrlVariableException
 import me.melijn.melijnbot.internals.models.TriState
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n
@@ -516,12 +518,18 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         val ccArgs = CCJagTagParserArgs(member, rawArg, cc)
 
-        return modularMessage.mapAllStringFields {
-            if (it != null) {
-                CCJagTagParser.parseJagTag(ccArgs, it)
-            } else {
-                null
+        return try {
+            modularMessage.mapAllStringFields {
+                if (it != null) {
+                    CCJagTagParser.parseJagTag(ccArgs, it)
+                } else {
+                    null
+                }
             }
+        } catch (t: InvalidUrlVariableException) {
+            ModularMessage(t.getUserFriendlyMessage())
+        } catch (t: TooLongUrlVariableException) {
+            ModularMessage(t.getUserFriendlyMessage())
         }
     }
 
