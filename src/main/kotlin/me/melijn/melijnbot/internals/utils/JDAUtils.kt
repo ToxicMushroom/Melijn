@@ -370,8 +370,8 @@ suspend fun getStringFromArgsNMessage(
         if (arg.contains(char, ignoreCase)) {
             val msg = context.getTranslation("message.string.cantcontaincharfailed")
                 .withSafeVariable("arg", arg)
-                .withVariable("chars", cantContainChars)
-                .withVariable("char", char)
+                .withSafeVariable("chars", cantContainChars.joinToString("") { "$it"})
+                .withVariable("char", "$char")
                 .withVariable("ignorecase", ignoreCase)
             sendRsp(context, msg)
             return null
