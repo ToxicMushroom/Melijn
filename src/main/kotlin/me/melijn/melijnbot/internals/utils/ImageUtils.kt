@@ -1,7 +1,5 @@
 package me.melijn.melijnbot.internals.utils
 
-import com.madgag.gif.fmsware.GifDecoder
-import com.squareup.gifencoder.*
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -9,6 +7,8 @@ import io.ktor.client.statement.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.streams.*
 import kotlinx.coroutines.*
+import me.melijn.gifdecoder.GifDecoder
+import me.melijn.gifencoder.*
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL

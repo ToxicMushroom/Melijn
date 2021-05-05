@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.commands.image
 
-import com.squareup.gifencoder.*
+import me.melijn.gifencoder.*
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext

@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.commands.image
 
-import com.madgag.gif.fmsware.GifDecoder
+import me.melijn.gifdecoder.GifDecoder
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext

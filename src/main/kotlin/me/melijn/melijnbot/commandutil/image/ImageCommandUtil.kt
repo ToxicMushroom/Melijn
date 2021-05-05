@@ -1,9 +1,9 @@
 package me.melijn.melijnbot.commandutil.image
 
-import com.madgag.gif.fmsware.GifDecoder
-import com.squareup.gifencoder.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.melijn.gifdecoder.GifDecoder
+import me.melijn.gifencoder.*
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.getBooleanFromArgN
