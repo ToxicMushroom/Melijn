@@ -39,7 +39,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
     data class SlotEntry(val name: String, val unicode: String, val occurrence: Int)
 
     override suspend fun execute(context: ICommandContext) {
-        val slotEmote = context.shardManager.getEmoteById(context.container.settings.emote.slotId)
+        val slotEmoteMention = "<a:slots:${context.container.settings.emote.slotId}>"
         val prizeMap = mutableMapOf<Int, String>()
 
         for (i in prizeList.indices) {
@@ -70,9 +70,9 @@ class SlotsCommand : AbstractCommand("command.slots") {
             .setTitle("Slot | User: ${context.author.name}")
             .setDescription(
                 spinningMsg
-                    .withVariable("slot1", slotEmote?.asMention ?: "?")
-                    .withVariable("slot2", slotEmote?.asMention ?: "?")
-                    .withVariable("slot3", slotEmote?.asMention ?: "?")
+                    .withVariable("slot1", slotEmoteMention)
+                    .withVariable("slot2", slotEmoteMention)
+                    .withVariable("slot3", slotEmoteMention)
             )
 
 
@@ -88,8 +88,8 @@ class SlotsCommand : AbstractCommand("command.slots") {
         eb.setDescription(
             spinningMsg
                 .withVariable("slot1", slot1)
-                .withVariable("slot2", slotEmote?.asMention ?: "?")
-                .withVariable("slot3", slotEmote?.asMention ?: "?")
+                .withVariable("slot2", slotEmoteMention)
+                .withVariable("slot3", slotEmoteMention)
         )
         msg.editMessage(eb.build()).queue()
 
@@ -99,7 +99,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
             spinningMsg
                 .withVariable("slot1", slot1)
                 .withVariable("slot2", slot2)
-                .withVariable("slot3", slotEmote?.asMention ?: "?")
+                .withVariable("slot3", slotEmoteMention)
         )
         msg.editMessage(eb.build()).queue()
 

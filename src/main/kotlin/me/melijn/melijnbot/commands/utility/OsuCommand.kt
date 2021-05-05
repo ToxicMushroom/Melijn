@@ -34,16 +34,21 @@ class OsuCommand : AbstractCommand("command.osu") {
     }
 
     companion object {
-        val emotes = mapOf(
-            Pair("SSH", 744300240370139226),
-            Pair("SS", 744300239946514433),
-            Pair("SH", 744300240269475861),
-            Pair("S", 744300240202367017),
-            Pair("A", 744300239867084842),
-            Pair("B", 744300240114417665),
-            Pair("C", 744300239954903062),
-            Pair("D", 744300240248635503)
+        private val emotes = listOf(
+            Triple("SSH", 744300240370139226, "GradeSSSilver"),
+            Triple("SS", 744300239946514433, "GradeSS"),
+            Triple("SH", 744300240269475861, "GradeSSilver"),
+            Triple("S", 744300240202367017, "GradeS"),
+            Triple("A", 744300239867084842, "GradeA"),
+            Triple("B", 744300240114417665, "GradeB"),
+            Triple("C", 744300239954903062, "GradeC"),
+            Triple("D", 744300240248635503, "GradeD")
         )
+
+        fun convertRankToEmote(rank: String): String? {
+            val (_, id, name) = emotes.firstOrNull() { it.first == rank } ?: return null
+            return "<:$name:$id>"
+        }
     }
 
     class SetUserArg(val parent: String) : AbstractCommand("$parent.setuser") {
@@ -134,8 +139,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             val index = (getIntegerFromArgN(context, 1, 1, results.size) ?: 1) - 1
 
             val result = results[index]
-            val rankAchievedEmote = emotes[result.rank]?.let { context.shardManager.getEmoteById(it)?.asMention }
-                ?: result.rank
+            val rankAchievedEmote = convertRankToEmote(result.rank) ?: result.rank
             val formatter = DecimalFormat("#.##", DecimalFormatSymbols(Locale.GERMANY))
             formatter.isGroupingUsed = true
             formatter.groupingSize = 3
@@ -249,8 +253,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             val index = (getIntegerFromArgN(context, 1, 1, results.size) ?: 1) - 1
 
             val result = results[index]
-            val rankAchievedEmote = emotes[result.rank]?.let { context.shardManager.getEmoteById(it)?.asMention }
-                ?: result.rank
+            val rankAchievedEmote = convertRankToEmote(result.rank) ?: result.rank
             val formatter = DecimalFormat("#.##", DecimalFormatSymbols(Locale.GERMANY))
             formatter.isGroupingUsed = true
             formatter.groupingSize = 3
@@ -325,7 +328,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             var userName: String? = null
             if (context.args.isEmpty()) {
                 val name = context.daoManager.osuWrapper.getUserName(context.authorId)
-                userName = if (name.isEmpty()) null else name
+                userName = name.ifEmpty { null }
                 if (userName == null) {
                     val msg = context.getTranslation("$parent.guide")
                         .withVariable("syntax", getSyntax(context, syntax))
@@ -340,8 +343,7 @@ class OsuCommand : AbstractCommand("command.osu") {
                 val user = OsuUtil.retrieveDiscordUserForOsuByArgsN(context, 0)
                 userName = if (user != null) {
                     val cache = context.daoManager.osuWrapper.getUserName(user.idLong)
-                    if (cache.isEmpty()) null
-                    else cache
+                    cache.ifEmpty { null }
                 } else null
             }
 
@@ -354,11 +356,11 @@ class OsuCommand : AbstractCommand("command.osu") {
                 return
             }
 
-            val ssSEmote = emotes["SSH"]?.let { context.shardManager.getEmoteById(it)?.asMention } ?: "SSH"
-            val ssEmote = emotes["SS"]?.let { context.shardManager.getEmoteById(it)?.asMention } ?: "SS"
-            val sSEmote = emotes["SH"]?.let { context.shardManager.getEmoteById(it)?.asMention } ?: "SH"
-            val sEmote = emotes["S"]?.let { context.shardManager.getEmoteById(it)?.asMention } ?: "S"
-            val aEmote = emotes["A"]?.let { context.shardManager.getEmoteById(it)?.asMention } ?: "A"
+            val ssSEmote = convertRankToEmote("SSH")
+            val ssEmote = convertRankToEmote("SS")
+            val sSEmote = convertRankToEmote("SH")
+            val sEmote = convertRankToEmote("S")
+            val aEmote = convertRankToEmote("A")
 
             val formatter = DecimalFormat("#.##", DecimalFormatSymbols(Locale.GERMANY))
             formatter.isGroupingUsed = true

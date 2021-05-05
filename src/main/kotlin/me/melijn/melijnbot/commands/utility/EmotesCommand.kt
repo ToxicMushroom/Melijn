@@ -6,6 +6,7 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.await
+import me.melijn.melijnbot.internals.utils.message.sendMsgCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendPaginationMsg
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 
@@ -41,7 +42,11 @@ class EmotesCommand : AbstractCommand("command.emotes") {
             return
         }
         if (context.args.isNotEmpty() && context.args[0] == "raw") {
-            sendRsp(context, "List of raw emotes:```" + emotes.joinToString("\n") { it.asMention } + "```")
+            sendMsgCodeBlock(
+                context,
+                "List of raw emotes:```" + emotes.joinToString("\n") { it.asMention } + "```",
+                "",
+                false)
             return
         }
 
