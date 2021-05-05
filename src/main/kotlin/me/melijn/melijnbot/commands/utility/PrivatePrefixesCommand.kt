@@ -6,8 +6,8 @@ import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresPremiumMes
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
-const val PRIVATE_PREFIXES_LIMIT = 1
-const val PREMIUM_PRIVATE_PREFIXES_LIMIT = 10
+const val PRIVATE_PREFIXES_LIMIT = 3
+const val PREMIUM_PRIVATE_PREFIXES_LIMIT = 32
 const val PRIVATE_PREFIXES_LIMIT_PATH = "premium.feature.privateprefix.limit"
 
 class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
