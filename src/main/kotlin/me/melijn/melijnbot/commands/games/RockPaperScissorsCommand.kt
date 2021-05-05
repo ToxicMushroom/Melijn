@@ -13,7 +13,7 @@ import me.melijn.melijnbot.internals.utils.retrieveMemberByArgsNMessage
 import me.melijn.melijnbot.internals.utils.withSafeVariable
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.internal.entities.UserImpl
 
 class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
@@ -66,8 +66,9 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
         val user1 = context.author as UserImpl
         val user2 = target as UserImpl
 
-        context.container.eventWaiter.waitFor(MessageReceivedEvent::class.java, { event ->
-            target.idLong == event.author.idLong
+        context.container.eventWaiter.waitFor(GuildMessageReceivedEvent::class.java, { event ->
+            target.idLong == event.author.idLong &&
+                event.channel.idLong == context.channelId
         }, { event ->
             val content = event.message.contentRaw
             if (content.equals("yes", true) ||

@@ -13,7 +13,7 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveMemberByArgsNMessage
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.internal.entities.UserImpl
 
 class TicTacToeCommand : AbstractCommand("command.tictactoe") {
@@ -88,7 +88,7 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
         val user1 = context.author as UserImpl
         val user2 = user as UserImpl
 
-        context.container.eventWaiter.waitFor(MessageReceivedEvent::class.java, { event ->
+        context.container.eventWaiter.waitFor(GuildMessageReceivedEvent::class.java, { event ->
             user.idLong == event.author.idLong &&
                 event.channel.idLong == context.channelId
         }, { event ->
