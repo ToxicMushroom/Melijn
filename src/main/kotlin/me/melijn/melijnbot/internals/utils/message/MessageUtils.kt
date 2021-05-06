@@ -58,9 +58,9 @@ suspend fun sendOnShard0(
              sendPrivateMessageExtra(user as UserImpl, editor, extra)
          } else {
              val hostPattern = context.container.settings.botInfo.hostPattern
-             val res = context.webManager.httpClient.post<Boolean>(hostPattern.replace("{podId}", 0) + "/senddm/${user.idLong}/$extra") {
+             val res = context.webManager.httpClient.post<String>(hostPattern.replace("{podId}", 0) + "/senddm/${user.idLong}/$extra") {
                  this.body = objectMapper.writeValueAsString(editor)
-             }
+             }.toBoolean()
              res
          }
      } catch (t: Throwable) {
