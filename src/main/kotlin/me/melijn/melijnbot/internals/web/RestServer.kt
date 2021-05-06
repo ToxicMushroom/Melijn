@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.web
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
@@ -159,7 +160,9 @@ class RestServer(container: Container) {
                     return@post
                 }
 
-                val embedEditor = call.receive<EmbedEditor>()
+                val content = call.receiveText()
+                val embedEditor = objectMapper.readValue<EmbedEditor>(content)
+
                 val user = MelijnBot.shardManager.retrieveUserById(id).awaitOrNull() as UserImpl?
                 if (user == null) {
                     call.respondText("false")

@@ -1,5 +1,6 @@
 package me.melijn.melijnbot
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.database.DaoManager
@@ -21,6 +22,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 val objectMapper = jacksonObjectMapper()
+    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
 class Container {
 

@@ -306,7 +306,7 @@ class EmbedEditor() {
      *
      * @return the builder after the timestamp has been set
      */
-    fun setTimestamp(temporal: TemporalAccessor?): EmbedEditor {
+    fun setTimestampField(temporal: TemporalAccessor?): EmbedEditor {
         timestamp = when (temporal) {
             null -> null
             is OffsetDateTime -> temporal
