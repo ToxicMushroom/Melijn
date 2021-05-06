@@ -114,7 +114,7 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
                     return@waitFor
                 }
 
-                val success2 =  sendOnShard0(context, user2, optionMenu, "RPS")
+                val success2 = sendOnShard0(context, user2, optionMenu, "RPS")
                 if (!success2) {
                     val msg = defaultDisabledDMsMessage.withVariable("user", target.asMention)
                     sendRsp(context, msg)

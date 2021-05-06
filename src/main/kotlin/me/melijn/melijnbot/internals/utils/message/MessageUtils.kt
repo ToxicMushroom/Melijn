@@ -46,21 +46,28 @@ fun escapeForLog(string: String): String {
         .trim()
 }
 
-
+// Returns successState
 suspend fun sendOnShard0(
     context: ICommandContext,
     user: User,
     editor: EmbedEditor,
     extra: String
 ): Boolean {
-    return if (PodInfo.podId == 0) {
-        sendPrivateMessageExtra(user as UserImpl, editor, extra)
-    } else {
-        val hostPattern = context.container.settings.botInfo.hostPattern
-        context.webManager.httpClient.post(hostPattern.replace("{podId}", 0) + "/senddm/${user.idLong}/$extra") {
-            this.body = objectMapper.writeValueAsString(editor)
-        }
-    }
+    return try {
+         if (PodInfo.podId == 0) {
+             sendPrivateMessageExtra(user as UserImpl, editor, extra)
+         } else {
+             val hostPattern = context.container.settings.botInfo.hostPattern
+             val res = context.webManager.httpClient.post<Boolean>(hostPattern.replace("{podId}", 0) + "/senddm/${user.idLong}/$extra") {
+                 this.body = objectMapper.writeValueAsString(editor)
+             }
+             res
+         }
+     } catch (t: Throwable) {
+         t.sendInGuild(context)
+         t.printStackTrace()
+         false
+     }
 }
 
 suspend fun sendPrivateMessageExtra(
