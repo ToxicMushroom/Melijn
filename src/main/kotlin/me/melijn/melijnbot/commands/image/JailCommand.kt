@@ -11,11 +11,11 @@ import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import me.melijn.melijnbot.internals.web.apis.DiscordSize
 import net.dv8tion.jda.api.Permission
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.net.URL
 import javax.imageio.ImageIO
 
 
@@ -46,44 +46,42 @@ class JailCommand : AbstractCommand("command.jail") {
         }
 
         val user = retrieveUserByArgsNMessage(context, 0) ?: return
+        val redisCon = context.daoManager.driverManager.redisConnection
+        val cachedAvatar = redisCon?.async()?.get("avatarjailed:${user.id}")?.await()
 
-        val rediCon = context.daoManager.driverManager.redisConnection
-        val avatar = rediCon?.async()
-            ?.get("avatarjailed:${user.id}")
-            ?.await()
+        val jailedBytesArr = if (cachedAvatar == null) {
+            val imageApi = context.webManager.imageApi
+            val discordSize = DiscordSize.X512
+            val url = user.effectiveAvatarUrl
 
-        val jailedBytesArr = if (avatar == null) {
-            val inputImg = ImageIO.read(URL(user.effectiveAvatarUrl.replace(".gif", ".png") + "?size=512"))
-            val graphics = inputImg.graphics
-            graphics.drawImage(jail, 0, 0, inputImg.width, inputImg.height, null)
+            val avatarImg = imageApi.downloadDiscordImgNMessage(context, url, discordSize, false) ?: return
+            val graphics = avatarImg.graphics
+            graphics.drawImage(jail, 0, 0, avatarImg.width, avatarImg.height, null)
             graphics.dispose()
 
             ByteArrayOutputStream().use { baos ->
-                ImageIO.write(inputImg, "png", baos)
+                ImageIO.write(avatarImg, "png", baos)
                 baos.toByteArray()
             }
         } else {
-            rediCon.async()
-                .expire("avatarjailed:${user.id}", 600)
-            Base64.decode(avatar)
+            redisCon.async().expire("avatarjailed:${user.id}", 600)
+            Base64.decode(cachedAvatar)
         }
 
 
         sendFileRsp(context, "**Go to jail** ${user.asTag} 👮‍♀️", jailedBytesArr, "png")
 
-        rediCon?.async()
-            ?.set("avatarjailed:${user.id}", Base64.encode(jailedBytesArr), SetArgs().ex(600))
+        val encodedAvatar = Base64.encode(jailedBytesArr)
+        redisCon?.async()?.set("avatarjailed:${user.id}", encodedAvatar, SetArgs().ex(600))
     }
 
     private suspend fun executeGif(context: ICommandContext) {
         val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
-        val rediCon = context.daoManager.driverManager.redisConnection
-        val avatar = rediCon?.async()
-            ?.get("avatarjailedgif:${user.id}")
-            ?.await()
-        if (avatar != null) {
-            val byteArray = Base64.decode(avatar)
+        val redisCon = context.daoManager.driverManager.redisConnection
+        val cachedAvatar = redisCon?.async()?.get("avatarjailedgif:${user.id}")?.await()
+        if (cachedAvatar != null) {
+            val byteArray = Base64.decode(cachedAvatar)
             sendFileRsp(context, "**Go to jail** ${user.asTag} 👮‍♀️", byteArray, "gif")
             return
         }
@@ -111,7 +109,8 @@ class JailCommand : AbstractCommand("command.jail") {
             val byteArray = baos.toByteArray()
             sendFileRsp(context, "**Go to jail** ${user.asTag} 👮‍♀️", byteArray, "gif")
 
-            rediCon?.async()?.set("avatarjailedgif:${user.id}", Base64.encode(byteArray), SetArgs().ex(600))
+            val encodedAvatar = Base64.encode(byteArray)
+            redisCon?.async()?.set("avatarjailedgif:${user.id}", encodedAvatar, SetArgs().ex(600))
         }
     }
 }

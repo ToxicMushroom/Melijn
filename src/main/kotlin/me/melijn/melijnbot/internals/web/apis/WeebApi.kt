@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.internals.web.weebsh
+package me.melijn.melijnbot.internals.web.apis
 
 import io.ktor.client.*
 import io.ktor.client.request.*

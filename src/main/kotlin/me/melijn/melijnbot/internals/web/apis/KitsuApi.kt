@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.internals.web.kitsu
+package me.melijn.melijnbot.internals.web.apis
 
 import io.ktor.client.*
 import me.melijn.melijnbot.internals.web.WebUtils

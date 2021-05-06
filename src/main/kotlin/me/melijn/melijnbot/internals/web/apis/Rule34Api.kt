@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.internals.web.booru
+package me.melijn.melijnbot.internals.web.apis
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonRootName
@@ -13,7 +13,9 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import kotlin.random.Random
 
-class BooruApi(val httpClient: HttpClient) {
+class Rule34Api(val httpClient: HttpClient) {
+
+    val baseUrl = "https://rule34.xxx/index.php?page=dapi&s=post&q=index"
 
     private val kotlinXmlMapper = XmlMapper(JacksonXmlModule().apply {
         setDefaultUseWrapper(false)
@@ -21,13 +23,13 @@ class BooruApi(val httpClient: HttpClient) {
         .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-    suspend fun getRandomPost(domain: String, tags: String): BooruEntry? {
-        val response = httpClient.get<String>("https://$domain/index.php?page=dapi&s=post&q=index") {
+    suspend fun getRandomPost(tags: String): Rule34Entry? {
+        val response = httpClient.get<String>(baseUrl) {
             this.parameter("tags", tags)
         }
 
         return try {
-            val legal = kotlinXmlMapper.readValue<BooruResponse>(response).posts.filter { !it.hasChildren }
+            val legal = kotlinXmlMapper.readValue<Rule34Response>(response).posts.filter { !it.hasChildren }
             legal[Random.nextInt(legal.size)]
         } catch (t: Throwable) {
             null
@@ -37,14 +39,14 @@ class BooruApi(val httpClient: HttpClient) {
 }
 
 @JsonRootName("posts")
-data class BooruResponse(
+data class Rule34Response(
 
     @JsonProperty("post")
-    var posts: List<BooruEntry>
+    var posts: List<Rule34Entry>
 )
 
 @JsonRootName("post")
-data class BooruEntry(
+data class Rule34Entry(
     @JacksonXmlProperty(isAttribute = true, localName = "file_url")
     var imageUrl: String,
     @JacksonXmlProperty(isAttribute = true, localName = "has_children")

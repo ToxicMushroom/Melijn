@@ -7,12 +7,12 @@ import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveMemberByArgsNMessage
+import me.melijn.melijnbot.internals.web.apis.DiscordSize
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
 import java.awt.Font
 import java.awt.geom.Ellipse2D
-import java.net.URL
 import javax.imageio.ImageIO
 import kotlin.math.cos
 import kotlin.math.round
@@ -44,12 +44,16 @@ class ShipCommand : AbstractCommand("command.ship") {
                 user2 = (retrieveMemberByArgsNMessage(context, 0) ?: return).user
             }
 
-            val name1 = user1.idLong
-            val name2 = user2.idLong
+            val name1 = user1.name
+            val name2 = user2.name
 
-            val avatar1 = ImageIO.read(URL(user1.effectiveAvatarUrl.replace(".gif", ".png") + "?size=256"))
-            val avatar2 = ImageIO.read(URL(user2.effectiveAvatarUrl.replace(".gif", ".png") + "?size=256"))
-            val result = round((name1 + name2).toString().takeLast(3).toDouble() / 10.0)
+            val imageApi = context.webManager.imageApi
+            val avSize = DiscordSize.X256
+
+            val avatar1 = imageApi.downloadDiscordImgNMessage(context, user1.effectiveAvatarUrl, avSize, false) ?: return
+            val avatar2 = imageApi.downloadDiscordImgNMessage(context, user2.effectiveAvatarUrl, avSize, false) ?: return
+
+            val shipRes = round((user1.idLong + user2.idLong).toString().takeLast(3).toDouble() / 10.0)
             val bg = ShipCommand::class.java.getResourceAsStream("/love.png").use { ImageIO.read(it) }
             val graphics = bg.graphics
             graphics.clip = Ellipse2D.Float(124f, 175f, 251f, 251f)
@@ -59,7 +63,7 @@ class ShipCommand : AbstractCommand("command.ship") {
             graphics.clip = null
 
             val length = 95
-            val angle = Math.PI - ((result / 100) * Math.PI)
+            val angle = Math.PI - ((shipRes / 100) * Math.PI)
             val ex = cos(angle) * length
             val ey = sin(angle) * length
             graphics.color = Color.RED
@@ -81,16 +85,16 @@ class ShipCommand : AbstractCommand("command.ship") {
             val font2 = graphics.font.deriveFont(Font.BOLD, 60f)
             graphics.font = font2
             val halfLetter2 = graphics.fontMetrics.height / 2
-            val halfTextWidth = graphics.fontMetrics.stringWidth("${result.toInt()}%") / 2
-            graphics.drawString("${result.toInt()}%", 500 - halfTextWidth, 330 + halfLetter2)
+            val halfTextWidth = graphics.fontMetrics.stringWidth("${shipRes.toInt()}%") / 2
+            graphics.drawString("${shipRes.toInt()}%", 500 - halfTextWidth, 330 + halfLetter2)
 
             val font3 = graphics.font.deriveFont(30f)
             graphics.font = font3
             val halfLetter3 = graphics.fontMetrics.height / 2
-            val halfName1Width = graphics.fontMetrics.stringWidth(user1.name) / 2
-            graphics.drawString(user1.name, 250 - halfName1Width, 150 + halfLetter3)
-            val halfName2Width = graphics.fontMetrics.stringWidth(user2.name) / 2
-            graphics.drawString(user2.name, 750 - halfName2Width, 150 + halfLetter3)
+            val halfName1Width = graphics.fontMetrics.stringWidth(name1) / 2
+            graphics.drawString(name1, 250 - halfName1Width, 150 + halfLetter3)
+            val halfName2Width = graphics.fontMetrics.stringWidth(name2) / 2
+            graphics.drawString(name2, 750 - halfName2Width, 150 + halfLetter3)
 
             graphics.dispose()
 

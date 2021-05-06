@@ -9,7 +9,7 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsN
 import me.melijn.melijnbot.internals.utils.withVariable
-import me.melijn.melijnbot.internals.web.weebsh.WeebApi
+import me.melijn.melijnbot.internals.web.apis.WeebApi
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
 

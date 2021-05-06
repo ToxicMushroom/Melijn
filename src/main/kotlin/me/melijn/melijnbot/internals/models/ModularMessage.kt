@@ -103,7 +103,7 @@ data class ModularMessage(
         }
     }
 
-    suspend fun mapAllStringFields(function: suspend (s: String?) -> String?): ModularMessage {
+    private suspend fun mapAllStringFields(function: suspend (s: String?) -> String?): ModularMessage {
         val mappedModularMsg = ModularMessage()
         mappedModularMsg.messageContent = this.messageContent?.let { function(it) }
         this.embed?.let { embed ->

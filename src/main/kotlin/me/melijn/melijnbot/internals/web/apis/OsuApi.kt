@@ -1,8 +1,7 @@
-package me.melijn.melijnbot.internals.web.osu
+package me.melijn.melijnbot.internals.web.apis
 
 import io.ktor.client.*
 import me.melijn.melijnbot.internals.translation.OSU_URL
-import me.melijn.melijnbot.internals.web.weebsh.getOrNull
 import net.dv8tion.jda.api.utils.data.DataArray
 import org.slf4j.LoggerFactory
 

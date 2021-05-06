@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.internals.web.spotify
+package me.melijn.melijnbot.internals.web.apis
 
 import com.neovisionaries.i18n.CountryCode
 import com.wrapper.spotify.SpotifyApi

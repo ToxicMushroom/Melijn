@@ -120,11 +120,7 @@ object JoinLeaveUtil {
         msgName: String
     ): ModularMessage {
         return modularMessage.mapAllStringFieldsSafe("${msgType.text}(msgName=$msgName)") {
-            if (it != null) {
-                WelcomeJagTagParser.parseJagTag(guild, user, it)
-            } else {
-                null
-            }
+            it?.let { WelcomeJagTagParser.parseJagTag(guild, user, it) }
         }
     }
 

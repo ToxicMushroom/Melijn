@@ -342,6 +342,7 @@ suspend fun hasPermission(
 
     // Gives me better ability to help
     if (container.settings.botInfo.developerIds.contains(authorId)) return true
+
     val commands = container.commandSet
     val daoManager = container.daoManager
     val channelId = channel.idLong

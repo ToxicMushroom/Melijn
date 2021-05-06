@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.web
 
-
 import com.apollographql.apollo.ApolloClient
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -10,12 +9,7 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
 import me.melijn.melijnbot.internals.Settings
-import me.melijn.melijnbot.internals.web.booru.BooruApi
-import me.melijn.melijnbot.internals.web.kitsu.KitsuApi
-import me.melijn.melijnbot.internals.web.nsfw.Rule34Api
-import me.melijn.melijnbot.internals.web.osu.OsuApi
-import me.melijn.melijnbot.internals.web.spotify.MySpotifyApi
-import me.melijn.melijnbot.internals.web.weebsh.WeebApi
+import me.melijn.melijnbot.internals.web.apis.*
 import okhttp3.OkHttpClient
 import java.net.InetSocketAddress
 import java.net.Proxy
@@ -56,8 +50,8 @@ class WebManager(val settings: Settings) {
 
 
     val rule34Api: Rule34Api = Rule34Api(httpClient)
+    val imageApi: ImageApi = ImageApi(httpClient, proxiedHttpClient)
     val booruApi: BooruApi = BooruApi(httpClient)
-    val kitsuApi: KitsuApi = KitsuApi(httpClient)
     val osuApi: OsuApi = OsuApi(proxiedHttpClient, settings.tokens.osu)
     val weebApi: WeebApi = WeebApi(httpClient, settings)
 

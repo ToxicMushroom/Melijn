@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.utils.message.sendFileRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.internals.utils.withSafeVariable
+import me.melijn.melijnbot.internals.web.apis.DiscordSize
 import net.dv8tion.jda.api.Permission
 import org.w3c.dom.NamedNodeMap
 import org.w3c.dom.Node
@@ -19,7 +20,6 @@ import java.awt.image.BufferedImage
 import java.awt.image.RenderedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.net.URL
 import javax.imageio.IIOImage
 import javax.imageio.ImageIO
 import javax.imageio.ImageTypeSpecifier
@@ -46,17 +46,16 @@ class BonkCommand : AbstractCommand("command.bonk") {
 
         val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
-        val rediCon = context.daoManager.driverManager.redisConnection
-        val avatar = rediCon?.async()
-            ?.get("avatar:${user.id}")
-            ?.await()
+        val redisCon = context.daoManager.driverManager.redisConnection
+        val cachedAvatar = redisCon?.async()?.get("avatar:${user.id}")?.await()
 
-        val inputImg = if (avatar == null) {
-            ImageIO.read(URL(user.effectiveAvatarUrl.replace(".gif", ".png") + "?size=512"))
+        val inputImg = if (cachedAvatar == null) {
+            val imageApi = context.webManager.imageApi
+            val discordSize = DiscordSize.X512
+            imageApi.downloadDiscordImgNMessage(context, user.effectiveAvatarUrl, discordSize, false) ?: return
         } else {
-            rediCon.async()
-                .expire("avatar:${user.id}", 600)
-            ImageIO.read(ByteArrayInputStream(Base64.decode(avatar)))
+            redisCon.async().expire("avatar:${user.id}", 600)
+            ImageIO.read(ByteArrayInputStream(Base64.decode(cachedAvatar)))
         }
 
         val delay = getLongFromArgN(context, 1, 20) ?: 200
@@ -89,8 +88,8 @@ class BonkCommand : AbstractCommand("command.bonk") {
         ByteArrayOutputStream().use { baos ->
             ImageIO.write(inputImg, "png", baos)
 
-            rediCon?.async()
-                ?.set("avatar:${user.id}", Base64.encode(baos.toByteArray()), SetArgs().ex(600))
+            val encodedAvatar = Base64.encode(baos.toByteArray())
+            redisCon?.async()?.set("avatar:${user.id}", encodedAvatar, SetArgs().ex(600))
         }
     }
 }
