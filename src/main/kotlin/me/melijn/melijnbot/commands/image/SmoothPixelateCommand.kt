@@ -31,7 +31,7 @@ class SmoothPixelateCommand : AbstractCommand("command.smoothpixelate") {
 
     private suspend fun executeNormal(context: ICommandContext) {
         ImageCommandUtil.executeNormalEffect(context, effect = { image, imgData ->
-            ImageUtils.smoothPixelate(image, imgData.getInt("offset"), true)
+            ImageUtils.smoothPixelate(image, imgData.getInt("offset"))
 
         }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
             ImageCommandUtil.defaultOffsetArgParser(context, argInt, argData, imgData)
@@ -46,7 +46,7 @@ class SmoothPixelateCommand : AbstractCommand("command.smoothpixelate") {
 
     private suspend fun executeGif(context: ICommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, imgData ->
-            ImageUtils.smoothPixelate(image, imgData.getInt("offset"), true)
+            ImageUtils.smoothPixelate(image, imgData.getInt("offset"))
 
         }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
             ImageCommandUtil.defaultOffsetArgParser(context, argInt, argData, imgData)

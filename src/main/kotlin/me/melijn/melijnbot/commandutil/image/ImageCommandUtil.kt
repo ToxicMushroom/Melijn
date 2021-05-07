@@ -151,13 +151,7 @@ object ImageCommandUtil {
     ) {
         executeGifTransform(context, { gifDecoder, fps, repeat, _ ->
             val outputStream = ByteArrayOutputStream()
-            val repeatCount = if (repeat != null && repeat == true) {
-                0
-            } else if (repeat != null && repeat == false) {
-                -1
-            } else {
-                gifDecoder.loopCount
-            }
+            val repeatCount = fetchRepeatInt(repeat, gifDecoder)
 
             val width = gifDecoder.getFrame(0).width
             val height = gifDecoder.getFrame(0).height
@@ -207,6 +201,15 @@ object ImageCommandUtil {
         }, 0)
     }
 
+    fun fetchRepeatInt(repeat: Boolean?, gifDecoder: GifDecoder) =
+        if (repeat != null && repeat == true) {
+            0
+        } else if (repeat != null && repeat == false) {
+            -1
+        } else {
+            gifDecoder.loopCount
+        }
+
     private suspend fun addFrameToEncoderReverseThingie(
         decoder: GifDecoder,
         debug: Boolean,
@@ -241,31 +244,40 @@ object ImageCommandUtil {
         options.setDelay(delay, TimeUnit.MILLISECONDS)
 
         if (debug) {
-            val lct = if (frameMeta.lct.isEmpty()) {
-                gct
-            } else {
-                frameMeta.lct
-            }
-
-            val bgColor = if (lct.size > frameMeta.bgIndex && frameMeta.bgIndex != -1) {
-                Color(lct[frameMeta.bgIndex])
-            } else {
-                null
-            }
-
-            val transColor = if (lct.size > frameMeta.transIndex && frameMeta.transIndex != -1) {
-                Color(lct[frameMeta.transIndex])
-            } else {
-                null
-            }
-
-            sendMsgAwaitEL(context, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
+            sendDebugGifFrame(frameMeta, gct, context, gifFrame)
         }
 
         encoder.addImage(
             gifFrame.getRGB(0, 0, width, height, Array(width * height) { 0 }.toIntArray(), 0, width),
             width, options
         )
+    }
+
+    suspend fun sendDebugGifFrame(
+        frameMeta: GifDecoder.GifFrame,
+        gct: IntArray,
+        context: ICommandContext,
+        gifFrame: BufferedImage?
+    ) {
+        val lct = if (frameMeta.lct.isEmpty()) {
+            gct
+        } else {
+            frameMeta.lct
+        }
+
+        val bgColor = if (lct.size > frameMeta.bgIndex && frameMeta.bgIndex != -1) {
+            Color(lct[frameMeta.bgIndex])
+        } else {
+            null
+        }
+
+        val transColor = if (lct.size > frameMeta.transIndex && frameMeta.transIndex != -1) {
+            Color(lct[frameMeta.transIndex])
+        } else {
+            null
+        }
+
+        sendMsgAwaitEL(context, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
     }
 
 

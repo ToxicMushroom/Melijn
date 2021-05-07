@@ -9,11 +9,12 @@ import io.ktor.utils.io.streams.*
 import kotlinx.coroutines.*
 import me.melijn.gifdecoder.GifDecoder
 import me.melijn.gifencoder.*
+import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.web.apis.DiscordSize
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import java.awt.Color
@@ -45,7 +46,7 @@ object ImageUtils {
 
     //ByteArray (imageData)
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
-    val discordSize = "?size=2048"
+    private const val discordSize = "?size=2048"
 
     suspend fun getImageBytesNMessage(
         context: ICommandContext,
@@ -210,6 +211,8 @@ object ImageUtils {
     ): Triple<Map<String, ByteArray>, Pair<Int, Int>, Boolean>? {
         val args = context.args
         val attachments = context.message.attachments
+        val imgSize = DiscordSize.X1024
+        val imgApi = context.webManager.imageApi
 
         //filename, imagedata
         val imgMap: MutableMap<String, ByteArray> = mutableMapOf()
@@ -229,46 +232,34 @@ object ImageUtils {
 
                     if (isZip) {
                         // Attachment is a zip
-                        val zip = withContext(Dispatchers.IO) {
-                            context.webManager.httpClient.get<HttpResponse>(url).readBytes()
-                        }
-                        zip.inputStream().use { bais ->
-                            ZipInputStream(bais).use { zis ->
-                                var ze = zis.nextEntry
+                        val zipBytes = imgApi.downloadDiscordBytesNMessage(context, url) ?: return null
+                        ZipInputStream(zipBytes.inputStream()).use { zis ->
+                            var ze = zis.nextEntry
 
-                                while (ze != null) {
+                            while (ze != null) {
+                                val imgBytes = zis.readAllBytes()
 
-                                    val img = zis.readAllBytes()
-
-                                    val anImage = ImageIO.read(ByteArrayInputStream(img))
-                                    if (anImage == null) {
-                                        error = true
-                                        errorFile = url + " > " + ze.name
-                                    } else {
-                                        maxWidth = max(maxWidth, anImage.width)
-                                        maxHeight = max(maxHeight, anImage.height)
-                                        imgMap[ze.name] = img
-                                    }
-                                    ze = zis.nextEntry
+                                val img = ImageIO.read(imgBytes.inputStream())
+                                if (img == null) {
+                                    error = true
+                                    errorFile = url + " > " + ze.name
+                                } else {
+                                    maxWidth = max(maxWidth, img.width)
+                                    maxHeight = max(maxHeight, img.height)
+                                    imgMap[ze.name] = imgBytes
                                 }
+                                ze = zis.nextEntry
                             }
                         }
                     } else {
-                        //Attachment is an image (should be)
-                        url = attachment.url + "?size=2048"
+                        // Attachment is not a zip, download and analyze
+                        url = attachment.url + imgSize.getParam()
                         if (!checkFormat(context, attachment.url, reqFormat)) return null
 
-                        val img = withContext(Dispatchers.IO) {
-                            context.webManager.httpClient.get<HttpResponse>(url).readBytes()
-                        }
-
-                        ByteArrayInputStream(img).use { bais ->
-                            if (ImageIO.read(bais) == null) {
-                                error = true
-                                errorFile = url
-                            }
-                        }
-                        if (error) break
+                        val img = imgApi.downloadDiscordBytesNMessage(
+                            context, url, imgSize, allowGif = true,
+                            validateImg = true
+                        ) ?: return null
 
                         imgMap[attachment.fileName] = img
                     }
@@ -289,28 +280,24 @@ object ImageUtils {
 
                     if (isZip) {
                         // One of the arguments is a zip file
-                        val zip = withContext(Dispatchers.IO) {
-                            context.webManager.proxiedHttpClient.get<HttpResponse>(url1).readBytes()
-                        }
-                        zip.inputStream().use { bais ->
-                            ZipInputStream(bais).use { zis ->
-                                var ze = zis.nextEntry
+                        val zipBytes = imgApi.downloadDiscordBytesNMessage(context, url) ?: return null
+                        ZipInputStream(zipBytes.inputStream()).use { zis ->
+                            var ze = zis.nextEntry
 
-                                while (ze != null) {
+                            while (ze != null) {
+                                val tempZe = ze ?: continue
+                                val imgBytes = zis.readAllBytes()
 
-                                    val img = zis.readAllBytes()
-
-                                    val anImage = ImageIO.read(ByteArrayInputStream(img))
-                                    if (anImage == null) {
-                                        error = true
-                                        errorFile = url1 + " > " + ze.name
-                                    } else {
-                                        maxWidth = max(maxWidth, anImage.width)
-                                        maxHeight = max(maxHeight, anImage.height)
-                                        imgMap[ze.name] = img
-                                    }
-                                    ze = zis.nextEntry
+                                val anImage = ImageIO.read(imgBytes.inputStream())
+                                if (anImage == null) {
+                                    sendRsp(context, "Not an image")
+                                    return null
+                                } else {
+                                    maxWidth = max(maxWidth, anImage.width)
+                                    maxHeight = max(maxHeight, anImage.height)
+                                    imgMap[tempZe.name] = imgBytes
                                 }
+                                ze = zis.nextEntry
                             }
                         }
                     } else {
@@ -427,13 +414,7 @@ object ImageUtils {
         frameDebug: ICommandContext? = null
     ): ByteArrayOutputStream {
         val outputStream = ByteArrayOutputStream()
-        val repeatCount = if (repeat != null && repeat == true) {
-            0
-        } else if (repeat != null && repeat == false) {
-            -1
-        } else {
-            decoder.loopCount
-        }
+        val repeatCount = ImageCommandUtil.fetchRepeatInt(repeat, decoder)
 
         val width = decoder.getFrame(0).width
         val height = decoder.getFrame(0).height
@@ -462,25 +443,7 @@ object ImageUtils {
                 options.setDelay(delay, TimeUnit.MILLISECONDS)
 
                 frameDebug?.let {
-                    val lct = if (frameMeta.lct.isEmpty()) {
-                        gct
-                    } else {
-                        frameMeta.lct
-                    }
-
-                    val bgColor = if (lct.size > frameMeta.bgIndex && frameMeta.bgIndex != -1) {
-                        Color(lct[frameMeta.bgIndex])
-                    } else {
-                        null
-                    }
-
-                    val transColor = if (lct.size > frameMeta.transIndex && frameMeta.transIndex != -1) {
-                        Color(lct[frameMeta.transIndex])
-                    } else {
-                        null
-                    }
-
-                    sendMsgAwaitEL(it, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
+                    ImageCommandUtil.sendDebugGifFrame(frameMeta, gct, it, gifFrame)
                 }
 
                 framesDone[index] = FinishedFrame(
@@ -558,7 +521,7 @@ object ImageUtils {
         }
     }
 
-    fun smoothPixelate(image: BufferedImage, pixelSize: Int, isGif: Boolean = false) {
+    fun smoothPixelate(image: BufferedImage, pixelSize: Int) {
         // Get the raster data (array of pixels)
         val src: Raster = image.data
 

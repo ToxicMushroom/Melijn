@@ -11,6 +11,11 @@ import javax.imageio.ImageIO
 
 class ImageApi(val httpClient: HttpClient, val proxiedHttpClient: HttpClient) {
 
+    suspend fun downloadBytes(url: String, useProxy: Boolean = false): ByteArray {
+        val client = if (useProxy) proxiedHttpClient else httpClient
+        return client.get<HttpResponse>(url).readBytes()
+    }
+
     suspend fun download(url: String, useProxy: Boolean = false): ByteArrayInputStream {
         val client = if (useProxy) proxiedHttpClient else httpClient
         return ByteArrayInputStream(client.get<HttpResponse>(url).readBytes())
@@ -23,6 +28,13 @@ class ImageApi(val httpClient: HttpClient, val proxiedHttpClient: HttpClient) {
         return download(url + size.getParam())
     }
 
+    suspend fun downloadDiscordBytes(
+        url: String,
+        size: DiscordSize = DiscordSize.Original
+    ): ByteArray {
+        return downloadBytes(url + size.getParam())
+    }
+
     suspend fun downloadDiscordImgNMessage(
         context: ICommandContext,
         url: String,
@@ -32,13 +44,55 @@ class ImageApi(val httpClient: HttpClient, val proxiedHttpClient: HttpClient) {
         return try {
             var urlString = url + size.getParam()
             if (!allowGif) urlString = urlString.replace(".gif", ".png")
-            ImageIO.read(downloadDiscord(urlString, size))
+            val img = ImageIO.read(downloadDiscord(urlString, size))
+            if (img == null) {
+                sendMessageNotAnImage(context, url)
+                return null
+            }
+            img
         } catch (t: Throwable) {
-            sendRsp(context, "Error while downloading $url")
+            sendErrorDownloadingUrl(context, url)
             return null
         }
     }
 
+    // Method should not assume that the input url is an image
+    suspend fun downloadDiscordBytesNMessage(
+        context: ICommandContext,
+        url: String,
+        size: DiscordSize = DiscordSize.Original,
+        allowGif: Boolean = true,
+        validateImg: Boolean = false
+    ): ByteArray? {
+        return try {
+            var urlString = url + size.getParam()
+            if (!allowGif) urlString = urlString.replace(".gif", ".png")
+            val bytes = downloadDiscordBytes(urlString, size)
+            val img = ImageIO.read(ByteArrayInputStream(bytes))
+            if (img == null) {
+                sendMessageNotAnImage(context, url)
+                return null
+            }
+            bytes
+        } catch (t: Throwable) {
+            sendErrorDownloadingUrl(context, url)
+            return null
+        }
+    }
+
+    private suspend fun sendErrorDownloadingUrl(
+        context: ICommandContext,
+        url: String
+    ) {
+        sendRsp(context, "Error while downloading $url")
+    }
+
+    private suspend fun sendMessageNotAnImage(
+        context: ICommandContext,
+        url: String
+    ) {
+        sendRsp(context, "`$url` is not an image")
+    }
 }
 
 enum class DiscordSize {

@@ -45,8 +45,9 @@ repositories {
 }
 
 val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-val ktor = "1.5.3"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
+val ktor = "1.5.4"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.6" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
+val kotlinX = "1.5.0-RC" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
@@ -80,10 +81,10 @@ dependencies {
     implementation("org.postgresql:postgresql:42.2.20")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinX")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-jdk8
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinX")
 
     // https://duncte123.jfrog.io/ui/packages/gav:%2F%2Fme.duncte123:weebJava
     implementation("me.duncte123:weebJava:3.0.1_4")
