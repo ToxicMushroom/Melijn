@@ -6,6 +6,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelRoleState
 import me.melijn.melijnbot.internals.utils.awaitBool
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyMusicChannel
+import me.melijn.melijnbot.internals.utils.isPremiumGuild
 import me.melijn.melijnbot.internals.utils.listeningMembers
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
@@ -75,8 +76,7 @@ object VoiceUtil {
         val guildId = botChannel.guild.idLong
         if (
             listeningMembers(botChannel) == 0 &&
-            !(daoManager.music247Wrapper.is247Mode(guildId) &&
-                daoManager.supporterWrapper.getUsers().contains(guildId))
+            !(daoManager.music247Wrapper.is247Mode(guildId) && isPremiumGuild(daoManager, guildId))
         ) {
             if (!disconnectQueue.containsKey(guildId)) {
                 disconnectQueue[guildId] = System.currentTimeMillis() + 600_000
