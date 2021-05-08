@@ -42,6 +42,7 @@ repositories {
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://duncte123.jfrog.io/artifactory/maven")
     maven("https://nexus.melijn.com/repository/maven-public/")
+    maven("https://nexus.melijn.com/repository/jcenter-mirror/")
 }
 
 val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
@@ -54,6 +55,9 @@ dependencies {
     implementation("net.dv8tion:JDA:4.2.1_262") {
         exclude("opus-java")
     }
+
+    // https://github.com/sedmelluq/jda-nas
+    implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://github.com/sedmelluq/lavaplayer
     implementation("com.sedmelluq:lavaplayer:1.3.76")
