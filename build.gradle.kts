@@ -3,9 +3,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("application")
-    id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("org.jetbrains.kotlin.jvm") version "1.5.0"
     id("com.apollographql.apollo") version "2.5.6"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
+    kotlin("jvm") version "1.5.0"
+    kotlin("plugin.serialization") version "1.5.0"
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
@@ -41,7 +42,6 @@ repositories {
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://duncte123.jfrog.io/artifactory/maven")
     maven("https://nexus.melijn.com/repository/maven-public/")
-    jcenter()
 }
 
 val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
@@ -54,9 +54,6 @@ dependencies {
     implementation("net.dv8tion:JDA:4.2.1_262") {
         exclude("opus-java")
     }
-
-    // https://github.com/sedmelluq/jda-nas
-    implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://github.com/sedmelluq/lavaplayer
     implementation("com.sedmelluq:lavaplayer:1.3.76")
@@ -86,6 +83,9 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-jdk8
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinX")
 
+    // https://github.com/Kotlin/kotlinx.serialization/releases
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
+
     // https://duncte123.jfrog.io/ui/packages/gav:%2F%2Fme.duncte123:weebJava
     implementation("me.duncte123:weebJava:3.0.1_4")
 
@@ -110,7 +110,8 @@ dependencies {
     implementation("io.ktor:ktor:$ktor")
     implementation("io.ktor:ktor-client-okhttp:$ktor")
     implementation("io.ktor:ktor-server-netty:$ktor")
-    implementation("io.ktor:ktor-client-jackson:$ktor")
+    implementation("io.ktor:ktor-serialization:$ktor")
+    implementation("io.ktor:ktor-client-serialization:$ktor")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fgifencoder
     implementation("me.melijn.gifencoder:gifencoder:1.0.0")
