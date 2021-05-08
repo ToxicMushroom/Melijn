@@ -8,6 +8,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.web.apis.*
 import okhttp3.OkHttpClient
@@ -20,27 +21,28 @@ class WebManager(val settings: Settings) {
     val objectMapper: ObjectMapper = jacksonObjectMapper()
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-    val httpClient = HttpClient(OkHttp) {
+    val commonClientConfig: HttpClientConfig<OkHttpConfig>.() -> Unit = {
         expectSuccess = false
         install(JsonFeature) {
-            serializer = JacksonSerializer(objectMapper)
+            serializer = KotlinxSerializer()
         }
         install(UserAgent) {
             agent = "Melijn / 2.0.8 Discord bot"
         }
     }
+
+    val httpClient = HttpClient(OkHttp, commonClientConfig)
     val proxiedHttpClient = HttpClient(OkHttp) {
-        expectSuccess = false
+        commonClientConfig(this)
         this.engine {
-            val cb = OkHttpClient.Builder()
-            val client = cb.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress(settings.proxy.host, settings.proxy.port)))
+            val clientBuilder = OkHttpClient.Builder()
+            val proxy = Proxy(Proxy.Type.HTTP, InetSocketAddress(settings.proxy.host, settings.proxy.port))
+            val client = clientBuilder.proxy(proxy)
                 .build()
             this.preconfigured = client
         }
-        install(UserAgent) {
-            agent = "Melijn / 2.0.8 Discord bot"
-        }
     }
+
     val aniListApolloClient: ApolloClient = ApolloClient.builder()
         .serverUrl("https://graphql.anilist.co")
         .okHttpClient(OkHttpClient())
