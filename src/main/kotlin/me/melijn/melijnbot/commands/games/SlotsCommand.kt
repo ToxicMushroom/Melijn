@@ -60,7 +60,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
         val slot3 = prizeMap[Random.nextInt(prizeMap.size)] ?: throw IllegalArgumentException("slot3 error")
 
 
-        val spinningWord = context.getTranslation("word.spinning").toUpperCase()
+        val spinningWord = context.getTranslation("word.spinning").uppercase()
         val stripe = "**------------------**"
         val spinning = "\n---- **$spinningWord**"
         val slots = "**| %slot1% | %slot2% | %slot3% |**"
@@ -145,7 +145,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
 
         val newBalMsg = context.getTranslation("$root.newbalance")
         if (won) {
-            val wonWord = context.getTranslation("word.won").toUpperCase()
+            val wonWord = context.getTranslation("word.won").uppercase()
             val profit = context.getTranslation("$root.profit")
             val wonBody = ("\n---------- **$wonWord**" +
                 "\n$profit" +
@@ -155,7 +155,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
 
             eb.appendDescription(wonBody)
         } else {
-            val lostWord = context.getTranslation("word.lost").toUpperCase()
+            val lostWord = context.getTranslation("word.lost").uppercase()
             val loss = context.getTranslation("$root.loss")
 
             val lostMsg = ("\n---------- **$lostWord**" +

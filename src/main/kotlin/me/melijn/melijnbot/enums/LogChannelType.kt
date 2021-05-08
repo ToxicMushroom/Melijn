@@ -51,7 +51,7 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
 
         fun getMatchingTypesFromNode(node: String): List<LogChannelType> {
             return values().filter { channel ->
-                channel.parentNodes.contains(node.toLowerCase())
+                channel.parentNodes.contains(node.lowercase())
                     || node.equals("all", true)
                     || channel.text.equals(node, true)
                     || channel.toString().equals(node, true)

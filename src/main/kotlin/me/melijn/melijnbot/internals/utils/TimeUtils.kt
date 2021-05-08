@@ -198,7 +198,7 @@ suspend fun getDurationByArgsNMessage(
         }
 
         val typeNorm = matcher.group(2)
-        val type = typeNorm.toLowerCase()
+        val type = typeNorm.lowercase()
         val multiplier = when {
             ("M" == typeNorm || arrayOf("month", "months").contains(type)) -> 30 * 24 * 60 * 60
             arrayOf("s", "second", "seconds").contains(type) -> 1

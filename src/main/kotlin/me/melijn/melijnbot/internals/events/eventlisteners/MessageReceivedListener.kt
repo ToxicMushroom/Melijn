@@ -69,7 +69,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val rpsWrapper = container.daoManager.rpsWrapper
         val game = rpsWrapper.getGame(author.idLong) ?: return
         val choice = try {
-            RockPaperScissorsGame.RPS.valueOf(event.message.contentRaw.toUpperCase())
+            RockPaperScissorsGame.RPS.valueOf(event.message.contentRaw.uppercase())
         } catch (t: Throwable) {
             null
         }

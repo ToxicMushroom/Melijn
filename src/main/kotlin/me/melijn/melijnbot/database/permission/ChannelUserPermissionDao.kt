@@ -59,7 +59,7 @@ class ChannelUserPermissionDao(driverManager: DriverManager) : CacheDBDao(driver
         driverManager.executeQuery("SELECT * FROM $table WHERE userId = ? AND channelId = ?", { rs ->
             val map = HashMap<String, PermState>()
             while (rs.next()) {
-                map[rs.getString("permission").toLowerCase()] = PermState.valueOf(rs.getString("state"))
+                map[rs.getString("permission").lowercase()] = PermState.valueOf(rs.getString("state"))
             }
             it.resume(map)
         }, userId, channelId)

@@ -47,7 +47,7 @@ class RolePermissionDao(driverManager: DriverManager) : CacheDBDao(driverManager
         driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ?", { resultset ->
             val map = HashMap<String, PermState>()
             while (resultset.next()) {
-                map[resultset.getString("permission").toLowerCase()] = PermState.valueOf(resultset.getString("state"))
+                map[resultset.getString("permission").lowercase()] = PermState.valueOf(resultset.getString("state"))
             }
             it.resume(map)
         }, roleId)

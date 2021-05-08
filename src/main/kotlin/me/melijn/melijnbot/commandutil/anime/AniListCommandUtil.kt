@@ -155,7 +155,7 @@ object AniListCommandUtil {
             )
         }
 
-        val chosenColor = when (user.options?.profileColor?.toLowerCase() ?: "null") {
+        val chosenColor = when (user.options?.profileColor?.lowercase() ?: "null") {
             "green" -> Color(0x4CCA51)
             "blue" -> Color(0x3DB4F2)
             "purple" -> Color(0xC063FF)

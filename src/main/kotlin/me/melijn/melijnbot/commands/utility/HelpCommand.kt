@@ -51,8 +51,8 @@ class HelpCommand : AbstractCommand("command.help") {
                 return
             }
 
-            val path = "help.arg.${context.rawArg.toLowerCase()}"
-            val pathExtra = "help.arg.${context.rawArg.toLowerCase()}.examples"
+            val path = "help.arg.${context.rawArg.lowercase()}"
+            val pathExtra = "help.arg.${context.rawArg.lowercase()}.examples"
             val translation = context.getTranslation(path)
                 .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
             val translationExtra = context.getTranslation(pathExtra)
@@ -128,7 +128,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 sendSyntax(context)
                 return
             }
-            val path = "help.var.${context.rawArg.toLowerCase().remove("{", "}")}"
+            val path = "help.var.${context.rawArg.lowercase().remove("{", "}")}"
             val translation = context.getTranslation(path)
             if (path == translation) {
                 val msg = context.getTranslation("$root.missing")
@@ -229,7 +229,7 @@ class HelpCommand : AbstractCommand("command.help") {
         val embedder = Embedder(context)
             .setTitle(
                 cmdTitle,
-                "https://melijn.com/commands?q=${parent.name}&c=${parent.commandCategory.toString().toLowerCase()}"
+                "https://melijn.com/commands?q=${parent.name}&c=${parent.commandCategory.toString().lowercase()}"
             )
             .setDescription(
                 context.getTranslation(command.description)

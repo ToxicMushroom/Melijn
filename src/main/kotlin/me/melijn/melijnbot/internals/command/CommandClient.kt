@@ -39,9 +39,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
     init {
         commandList.forEach { command ->
-            commandMap[command.name.toLowerCase()] = command
+            commandMap[command.name.lowercase()] = command
             for (alias in command.aliases) {
-                commandMap[alias.toLowerCase()] = command
+                commandMap[alias.lowercase()] = command
             }
         }
         container.commandMap = commandList.map { it.id to it }.toMap()
@@ -128,7 +128,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             // If the command is disabled we will act like it doesn't exist.
             // This way aliases can take over on disabled commands
-            var command = commandMap[commandParts[1].toLowerCase()]?.let {
+            var command = commandMap[commandParts[1].lowercase()]?.let {
                 if (event.isFromGuild && commandIsDisabled(container.daoManager, it.id.toString(), message)) null
                 else it
             }
@@ -349,7 +349,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
 
             val rootInvoke = invoke.takeWhile { it != ' ' }
-            var command = commandMap[rootInvoke.toLowerCase()]
+            var command = commandMap[rootInvoke.lowercase()]
             val aliasesMap = mutableMapOf<String, List<String>>()
             val spaceMap = mutableMapOf<String, Int>()
             var searchedAliases = false

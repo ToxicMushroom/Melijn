@@ -74,7 +74,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                     for (part in parts) {
                         if (part.isBlank()) continue
                         val type = try {
-                            UserType.valueOf(part.toUpperCase())
+                            UserType.valueOf(part.uppercase())
                         } catch (t: Throwable) {
                             sendRsp(context, "`%type%` is not a valid UserType".withSafeVarInCodeblock("type", arg))
                             return

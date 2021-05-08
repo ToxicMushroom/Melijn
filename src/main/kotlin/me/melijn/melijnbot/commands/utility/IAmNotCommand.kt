@@ -106,7 +106,7 @@ class IAmNotCommand : AbstractCommand("command.iamnot") {
                     return
                 }
 
-                val permission = "rr.${group.groupName.toLowerCase()}.$emoteji"
+                val permission = "rr.${group.groupName.lowercase()}.$emoteji"
                 val hasPermission = hasPermission(
                     context.container,
                     context.member,

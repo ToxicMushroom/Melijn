@@ -15,7 +15,6 @@ import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
-import me.melijn.melijnbot.objectMapper
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.internal.entities.DataMessage
@@ -58,9 +57,10 @@ suspend fun sendOnShard0(
              sendPrivateMessageExtra(user as UserImpl, editor, extra)
          } else {
              val hostPattern = context.container.settings.botInfo.hostPattern
-             val res = context.webManager.httpClient.post<String>(hostPattern.replace("{podId}", 0) + "/senddm/${user.idLong}/$extra") {
-                 this.body = objectMapper.writeValueAsString(editor)
-             }.toBoolean()
+             val url = hostPattern.replace("{podId}", 0) + "/senddm/${user.idLong}/$extra"
+             val res = context.webManager.httpClient.post<Boolean>(url) {
+                 body = editor
+             }
              res
          }
      } catch (t: Throwable) {

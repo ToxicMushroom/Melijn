@@ -14,7 +14,7 @@ enum class PunishmentType(val aliases: Array<String>) {
         fun getMatchingTypesFromNode(node: String): List<PunishmentType> {
             return values().filter { punishmentType ->
                 node.equals("all", true)
-                    || punishmentType.aliases.contains(node.toLowerCase())
+                    || punishmentType.aliases.contains(node.lowercase())
                     || node.equals(toString(), true)
             }
         }

@@ -136,7 +136,7 @@ suspend fun getBooleanFromArgN(context: ICommandContext, index: Int): Boolean? {
     if (argSizeCheckFailed(context, index, true)) return null
     val arg = context.args[index]
 
-    return when (arg.toLowerCase()) {
+    return when (arg.lowercase()) {
         "true", "yes", "on", "enable", "enabled", "positive", "+" -> true
         "false", "no", "off", "disable", "disabled", "negative", "-" -> false
         else -> null

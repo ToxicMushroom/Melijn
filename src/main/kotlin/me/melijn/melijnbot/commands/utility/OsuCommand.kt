@@ -384,7 +384,7 @@ class OsuCommand : AbstractCommand("command.osu") {
                 .addField(
                     "Rank", """
                         🌐 - ${formatter.format(result.rank)}
-                        :flag_${result.country.toLowerCase()}: - ${formatter.format(result.localRank)}
+                        :flag_${result.country.lowercase()}: - ${formatter.format(result.localRank)}
                         """.trimIndent(), true
                 )
                 .setThumbnail("https://s.ppy.sh/a/${result.id}")

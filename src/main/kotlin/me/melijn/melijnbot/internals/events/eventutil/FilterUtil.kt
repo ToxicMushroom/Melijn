@@ -256,8 +256,8 @@ object FilterUtil {
 
     private fun addPositions(message: String, positions: MutableMap<Int, Int>, detectionList: List<String>) {
         for (toFind in detectionList) {
-            val word = Pattern.compile(Pattern.quote(toFind.toLowerCase()))
-            val match = word.matcher(message.toLowerCase())
+            val word = Pattern.compile(Pattern.quote(toFind.lowercase()))
+            val match = word.matcher(message.lowercase())
 
             while (match.find()) {
                 val start = match.start()

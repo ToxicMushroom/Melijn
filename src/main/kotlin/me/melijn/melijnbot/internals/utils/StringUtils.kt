@@ -279,7 +279,7 @@ fun String.toUpperWordCase(): String {
     var previous = ' '
     var newString = ""
     this.toCharArray().forEach { c: Char ->
-        newString += if (previous == ' ') c.toUpperCase() else c.toLowerCase()
+        newString += if (previous == ' ') c.uppercase() else c.lowercase()
         previous = c
     }
     return newString

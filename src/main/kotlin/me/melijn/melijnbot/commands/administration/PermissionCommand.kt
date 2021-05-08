@@ -106,7 +106,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val user = retrieveUserByArgsNMessage(context, 0) ?: return
-                val permissionNode = if (context.args.size > 1) context.args[1].toLowerCase() else "*"
+                val permissionNode = if (context.args.size > 1) context.args[1].lowercase() else "*"
                 val title = context.getTranslation("$root.response1.title")
                     .withVariable(PLACEHOLDER_USER, user.asTag)
                     .withVariable("permissionNode", permissionNode)
@@ -234,7 +234,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     return
                 }
 
-                val permissionNode = if (context.args.size > 1) context.args[1].toLowerCase() else "*"
+                val permissionNode = if (context.args.size > 1) context.args[1].lowercase() else "*"
                 val role = getRoleByArgsNMessage(context, 0) ?: return
 
                 val title = context.getTranslation("$root.response1.title")
@@ -382,7 +382,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         return
                     }
 
-                    val permissionNode = if (context.args.size > 2) context.args[2].toLowerCase() else "*"
+                    val permissionNode = if (context.args.size > 2) context.args[2].lowercase() else "*"
 
                     val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                     val role = getRoleByArgsNMessage(context, 1) ?: return
@@ -522,7 +522,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         return
                     }
 
-                    val permissionNode = if (context.args.size > 2) context.args[2].toLowerCase() else "*"
+                    val permissionNode = if (context.args.size > 2) context.args[2].lowercase() else "*"
 
                     val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                     val user = retrieveUserByArgsNMessage(context, 1) ?: return
@@ -1159,7 +1159,7 @@ fun nodeGrantsPerm(
             return true
         } else {
             val category = try {
-                CommandCategory.valueOf(granted.toUpperCase())
+                CommandCategory.valueOf(granted.uppercase())
             } catch (t: Throwable) {
                 null
             }
@@ -1188,7 +1188,7 @@ fun nodeGrantsPerm(
  */
 suspend fun getPermissionsFromArgsNMessage(context: ICommandContext, args: List<String>): Pair<Int, List<String>>? {
     var counter = 0
-    val lowerCasedArgs = args.map { it.toLowerCase() }
+    val lowerCasedArgs = args.map { it.lowercase() }
     for (arg in lowerCasedArgs) {
         val matches = getPermissionMatchesCount(context, arg)
         if (matches == null) {
@@ -1256,8 +1256,8 @@ fun getPermissionMatchesCount(context: ICommandContext, arg: String): Int? {
 fun getPermissions(commands: Collection<AbstractCommand>, prefix: String = ""): List<String> {
     val permissionList = ArrayList<String>()
     commands.forEach { cmd ->
-        permissionList.add((prefix + cmd.name).toLowerCase())
-        permissionList.addAll(getPermissions(cmd.children.toList(), (prefix + cmd.name).toLowerCase() + "."))
+        permissionList.add((prefix + cmd.name).lowercase())
+        permissionList.addAll(getPermissions(cmd.children.toList(), (prefix + cmd.name).lowercase() + "."))
     }
     return permissionList
 }

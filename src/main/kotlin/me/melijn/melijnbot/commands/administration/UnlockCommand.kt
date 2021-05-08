@@ -53,7 +53,7 @@ class UnlockCommand : AbstractCommand("command.unlock") {
                 break
             }
 
-            when (arg.toLowerCase()) {
+            when (arg.lowercase()) {
                 "all" -> {
                     text.addAllIfNotPresent(context.guild.textChannels.filter { channelFilter(context, it) })
                     voice.addAllIfNotPresent(context.guild.voiceChannels.filter { channelFilter(context, it) })

@@ -123,7 +123,7 @@ abstract class AbstractCommand(val root: String) {
             }
         }
 
-        val permission = context.commandOrder.joinToString(".", transform = { command -> command.name.toLowerCase() })
+        val permission = context.commandOrder.joinToString(".", transform = { command -> command.name.lowercase() })
         if (hasPermission(context, permission)) {
             context.initArgs()
             if (context.isFromGuild) {
@@ -294,7 +294,7 @@ private fun getStateFromEntry(
             return state to 4
         } else {
             val category = try {
-                CommandCategory.valueOf(rolePerm.toUpperCase())
+                CommandCategory.valueOf(rolePerm.uppercase())
             } catch (t: Throwable) {
                 null
             }
@@ -350,7 +350,7 @@ suspend fun hasPermission(
     val userMap = daoManager.userPermissionWrapper.getPermMap(guildId, authorId).toSortedMap(comparator)
     val channelUserMap = daoManager.channelUserPermissionWrapper.getPermMap(channelId, authorId).toSortedMap(comparator)
 
-    val lPermission = permission.toLowerCase()
+    val lPermission = permission.lowercase()
 
     // permission checking for user specific channel overrides (these override all)
     val channelUserState = getStateFromMap(channelUserMap, lPermission, commands, PermState.DEFAULT)

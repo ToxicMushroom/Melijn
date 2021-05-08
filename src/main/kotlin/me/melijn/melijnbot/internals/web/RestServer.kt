@@ -2,12 +2,15 @@ package me.melijn.melijnbot.internals.web
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.*
+import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.serialization.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import kotlinx.serialization.json.Json
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.models.EmbedEditor
@@ -51,6 +54,13 @@ class RestServer(container: Container) {
     private val logger = LoggerFactory.getLogger(RestServer::class.java)
 
     private val server: NettyApplicationEngine = embeddedServer(Netty, container.settings.restServer.port) {
+        install(ContentNegotiation) {
+            json(Json {
+                prettyPrint = true
+                isLenient = true
+            })
+        }
+
         routing {
             get("/podinfo") {
                 call.respondText(ContentType.Application.Json) {
@@ -152,11 +162,11 @@ class RestServer(container: Container) {
 
             post("/senddm/{userId}/{extra}") {
                 val id = call.parameters["userId"] ?: run {
-                    call.respondText("false")
+                    call.respond(false)
                     return@post
                 }
                 val extra = call.parameters["extra"] ?: run {
-                    call.respondText("false")
+                    call.respond(false)
                     return@post
                 }
 
@@ -165,12 +175,12 @@ class RestServer(container: Container) {
 
                 val user = MelijnBot.shardManager.retrieveUserById(id).awaitOrNull() as UserImpl?
                 if (user == null) {
-                    call.respondText("false")
+                    call.respond(false)
                     return@post
                 }
 
                 val result: Boolean = sendPrivateMessageExtra(user, embedEditor, extra)
-                call.respondText(result.toString())
+                call.respond(result)
             }
 
             post("/unverified/guilds") {

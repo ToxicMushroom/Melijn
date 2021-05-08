@@ -30,7 +30,7 @@ val linuxRamPattern: Pattern = Pattern.compile("Mem.*:\\s+([0-9]+) kB")
 fun getSystemUptime(): Long {
     return try {
         var uptime: Long = -1
-        val os = System.getProperty("os.name").toLowerCase()
+        val os = System.getProperty("os.name").lowercase()
         if (os.contains("win")) {
             uptime = getWindowsUptime()
         } else if (os.contains("mac") || os.contains("nix") || os.contains("nux") || os.contains("aix")) {
@@ -116,9 +116,9 @@ fun getWindowsUptime(): Long {
 }
 
 fun Color.toHex(): String {
-    val redHex = Integer.toHexString(red).toUpperCase().padStart(2, '0')
-    val greenHex = Integer.toHexString(green).toUpperCase().padStart(2, '0')
-    val blueHex = Integer.toHexString(blue).toUpperCase().padStart(2, '0')
+    val redHex = Integer.toHexString(red).uppercase().padStart(2, '0')
+    val greenHex = Integer.toHexString(green).uppercase().padStart(2, '0')
+    val blueHex = Integer.toHexString(blue).uppercase().padStart(2, '0')
     return "#$redHex$greenHex$blueHex"
 }
 
@@ -455,11 +455,11 @@ fun Enum<*>.toUCSC(): String {
 //lowerCamelCase
 fun Enum<*>.toLCC(): String {
     val uCC = this.toUCC()
-    return uCC[0].toLowerCase() + uCC.substring(1)
+    return uCC[0].lowercase() + uCC.substring(1)
 }
 
 //lowerCase
-fun Enum<*>.toLC(): String = this.toString().toLowerCase()
+fun Enum<*>.toLC(): String = this.toString().lowercase()
 
 
 val numberRegex = "-?\\d+".toRegex()

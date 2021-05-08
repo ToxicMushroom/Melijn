@@ -128,7 +128,7 @@ data class Settings(
             this.ignoreIfMissing = true
         }
 
-        fun get(path: String): String = dotenv[path.toUpperCase().replace(".", "_")]
+        fun get(path: String): String = dotenv[path.uppercase().replace(".", "_")]
             ?: throw IllegalStateException("missing env value: $path")
 
         fun getLong(path: String): Long = get(path).toLong()
