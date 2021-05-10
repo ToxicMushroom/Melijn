@@ -33,16 +33,16 @@ configure<ApolloExtension> {
 }
 
 repositories {
+    mavenCentral()
     maven {
         url = uri("https://m2.dv8tion.net/releases")
         name = "m2-dv8tion"
     }
-    mavenCentral()
-    mavenLocal()
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://duncte123.jfrog.io/artifactory/maven")
     maven("https://nexus.melijn.com/repository/maven-public/")
     maven("https://nexus.melijn.com/repository/jcenter-mirror/")
+    mavenLocal()
 }
 
 val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
