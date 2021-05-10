@@ -6,7 +6,6 @@ plugins {
     id("com.apollographql.apollo") version "2.5.6"
     id("com.github.johnrengelman.shadow") version "7.0.0"
     kotlin("jvm") version "1.5.0"
-    kotlin("plugin.serialization") version "1.5.0"
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
@@ -87,9 +86,6 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-jdk8
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinX")
 
-    // https://github.com/Kotlin/kotlinx.serialization/releases
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
-
     // https://duncte123.jfrog.io/ui/packages/gav:%2F%2Fme.duncte123:weebJava
     implementation("me.duncte123:weebJava:3.0.1_4")
 
@@ -102,11 +98,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     implementation("com.fasterxml.jackson.core:jackson-core:$jackson")
-
-    // https://github.com/FasterXML/jackson-module-kotlin
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jackson")
-
-    // https://search.maven.org/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-xml
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jackson")
 
 
@@ -114,8 +106,8 @@ dependencies {
     implementation("io.ktor:ktor:$ktor")
     implementation("io.ktor:ktor-client-okhttp:$ktor")
     implementation("io.ktor:ktor-server-netty:$ktor")
-    implementation("io.ktor:ktor-serialization:$ktor")
-    implementation("io.ktor:ktor-client-serialization:$ktor")
+    implementation("io.ktor:ktor-jackson:$ktor")
+    implementation("io.ktor:ktor-client-jackson:$ktor")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fgifencoder
     implementation("me.melijn.gifencoder:gifencoder:1.0.0")

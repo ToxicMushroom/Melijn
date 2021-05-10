@@ -109,7 +109,7 @@ object Base58 {
     init {
         Arrays.fill(INDEXES, -1)
         for (i in ALPHABET.indices) {
-            INDEXES[ALPHABET[i].toInt()] = i
+            INDEXES[ALPHABET[i].code] = i
         }
     }
 
@@ -159,7 +159,7 @@ object Base58 {
         val input58 = ByteArray(input.length)
         for (i in input.indices) {
             val c = input[i]
-            val digit = if (c.toInt() < 128) INDEXES.get(c.toInt()) else -1
+            val digit = if (c.code < 128) INDEXES[c.code] else -1
             if (digit < 0) {
                 return null
             }

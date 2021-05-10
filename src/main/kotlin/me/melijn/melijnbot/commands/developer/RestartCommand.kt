@@ -29,7 +29,7 @@ class RestartCommand : AbstractCommand("command.restart") {
         }, {
             if (it.message.contentRaw == "yes") {
                 context.container.shuttingDown = true
-                context.container.restServer?.stop()
+                context.container.restServer.stop()
 
                 for ((guildId, player) in HashMap(players)) {
                     val guild = context.shardManager.getGuildById(guildId) ?: continue

@@ -355,7 +355,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             if (external && notEnoughPermissionsAndMessage(context, channel, Permission.MESSAGE_EXT_EMOJI)) return
             var alreadyUsedEmotesAmount = 0
             val messages = mutableListOf<Long>()
-            val totalLength = entries.sumBy { it.length }
+            val totalLength = entries.sumOf { it.length }
             val embedDisabledWrapper = context.daoManager.embedDisabledWrapper
 
             val titleFormat = context.getTranslation("$root.titleformat.part")

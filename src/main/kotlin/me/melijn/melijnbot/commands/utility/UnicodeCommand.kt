@@ -26,8 +26,8 @@ class UnicodeCommand : AbstractCommand("command.unicode") {
         args.codePoints().forEachOrdered { code ->
             val chars = Character.toChars(code)
             if (chars.size > 1) {
-                val hex0 = StringBuilder(Integer.toHexString(chars[0].toInt()).uppercase())
-                val hex1 = StringBuilder(Integer.toHexString(chars[1].toInt()).uppercase())
+                val hex0 = StringBuilder(Integer.toHexString(chars[0].code).uppercase())
+                val hex1 = StringBuilder(Integer.toHexString(chars[1].code).uppercase())
                 while (hex0.length < 4)
                     hex0.insert(0, "0")
                 while (hex1.length < 4)

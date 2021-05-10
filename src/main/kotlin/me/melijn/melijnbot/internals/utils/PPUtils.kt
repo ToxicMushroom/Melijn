@@ -56,7 +56,7 @@ object PPUtils {
             for ((pgNames, extraPoints) in extraPPMap) {
                 if (!pgNames.contains(pg.groupName)) continue
 
-                val oldPoints = oldPPMap.values.sumBy {
+                val oldPoints = oldPPMap.values.sumOf {
                     it[pg.groupName]?.let { points: Points ->
                         points
                     } ?: 0

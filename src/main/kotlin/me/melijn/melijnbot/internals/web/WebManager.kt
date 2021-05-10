@@ -8,7 +8,6 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.web.apis.*
 import okhttp3.OkHttpClient
@@ -24,7 +23,7 @@ class WebManager(val settings: Settings) {
     val commonClientConfig: HttpClientConfig<OkHttpConfig>.() -> Unit = {
         expectSuccess = false
         install(JsonFeature) {
-            serializer = KotlinxSerializer()
+            serializer = JacksonSerializer(objectMapper)
         }
         install(UserAgent) {
             agent = "Melijn / 2.0.8 Discord bot"
