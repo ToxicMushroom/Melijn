@@ -59,8 +59,6 @@ class TwitterService(
         if (tweets.tweetList.isEmpty()) return
         val body = DataObject.empty()
         val selfUser = shardManager.shards.first().selfUser
-
-
         body["username"] = selfUser.name
         body["avatar_url"] = selfUser.effectiveAvatarUrl
 
@@ -123,6 +121,7 @@ class TwitterService(
 
     private val twitterDotCoRegex = "https://t\\.co/[a-zA-Z0-9]+".toRegex()
     private suspend fun fetchNewTweets(twitterWebhook: TwitterWebhook): Tweets? {
+        logger.info("Twitter fetch for: ${twitterWebhook.handle} (id=${twitterWebhook.twitterUserId})")
         val patternFormatRFC3339 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
         val lastTweetTime = OffsetDateTime.ofInstant(
             Instant.ofEpochMilli(twitterWebhook.lastTweetTime), ZoneOffset.UTC
