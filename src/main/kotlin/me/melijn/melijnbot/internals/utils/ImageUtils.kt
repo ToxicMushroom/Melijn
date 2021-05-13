@@ -366,44 +366,78 @@ object ImageUtils {
         return sqrt(r * r * .241 + g * g * .691 + b * b * .068).toInt()
     }
 
-    fun getBlurpleForPixel(r: Int, g: Int, b: Int, a: Int, offset: Int = 128, isGif: Boolean = false): IntArray {
-        val brightness = getBrightness(r, g, b)
-        val whiteThreshold = 24 + offset.absoluteValue
-        val blurpleThreshold = -43 + offset.absoluteValue
-        val invertOffset = offset < 0
+    private val blurpleColorMap: (Int) -> Triple<IntArray, IntArray, IntArray> = { a: Int ->
+        Triple(
+            intArrayOf(78, 93, 148, a), // dark blurple
+            intArrayOf(114, 137, 218, a), // blurple
+            intArrayOf(254, 254, 254, a) // white
+        )
+    }
+    private val fakeBlurpleColorMap: (Int) -> Triple<IntArray, IntArray, IntArray> = { a: Int ->
+        Triple(
+            intArrayOf(69, 79, 191, a), // dark blurple
+            intArrayOf(88, 101, 242, a), // blurple
+            intArrayOf(254, 254, 254, a) // white
+        )
+    }
+    private val spookyColorMap: (Int) -> Pair<IntArray, IntArray> = { a: Int ->
+        intArrayOf(255, 128, 0, a) to // ORANGE #FF8000
+            intArrayOf(50, 50, 50, a) // DARK #323232
+    }
 
+    private fun getTriColorForPixel(
+        r: Int, g: Int, b: Int, a: Int, triColor: (Int) -> Triple<IntArray, IntArray, IntArray>,
+        offset: Int = 128, isGif: Boolean = false
+    ): IntArray {
+        val brightness = getBrightness(r, g, b)
+        val lightThreshold = 24 + offset.absoluteValue
+        val normalThreshold = -43 + offset.absoluteValue
+        val invertOffset = offset < 0
 
         if (isGif && a < 128) {
             return intArrayOf(255, 255, 255, 255)
         }
 
+        val (dark, normal, light) = triColor(a)
         return when {
-            brightness >= whiteThreshold -> if (invertOffset) intArrayOf(78, 93, 148, a) else intArrayOf(
-                254,
-                254,
-                254,
-                a
-            ) //wit
-            brightness >= blurpleThreshold -> intArrayOf(114, 137, 218, a) //blurple
-            else -> if (invertOffset) intArrayOf(254, 254, 254, a) else intArrayOf(78, 93, 148, a) //dark blurple
+            brightness >= lightThreshold -> if (invertOffset) dark else light
+            brightness >= normalThreshold -> normal
+            else -> if (invertOffset) light else dark
+        }
+    }
+
+    fun getBlurpleForPixel(r: Int, g: Int, b: Int, a: Int, offset: Int = 128, isGif: Boolean = false): IntArray {
+        return getTriColorForPixel(r, g, b, a, blurpleColorMap, offset, isGif)
+    }
+
+    // Rebranded blurple
+    fun getFakeBlurpleForPixel(r: Int, g: Int, b: Int, a: Int, offset: Int = 128, isGif: Boolean = false): IntArray {
+        return getTriColorForPixel(r, g, b, a, fakeBlurpleColorMap, offset, isGif)
+    }
+
+    private fun getDiColorForPixel(
+        r: Int, g: Int, b: Int, a: Int, diColor: (Int) -> Pair<IntArray, IntArray>,
+        offset: Int = 128, isGif: Boolean = false
+    ): IntArray {
+        val brightness = getBrightness(r, g, b)
+        if (isGif && a < 128) {
+            return intArrayOf(255, 255, 255, 255)
+        }
+
+        val (light, dark) = diColor(a)
+
+        return if (offset >= 0) {
+            if (brightness >= offset) light
+            else dark
+        } else {
+            val i = offset.absoluteValue
+            if (brightness >= i) dark
+            else light
         }
     }
 
     fun getSpookyForPixel(r: Int, g: Int, b: Int, a: Int, offset: Int, isGif: Boolean = false): IntArray {
-        val brightness = getBrightness(r, g, b)
-
-        if (isGif && a < 128) {
-            return intArrayOf(255, 255, 255, 255)
-        }
-
-        return if (offset >= 0) {
-            if (brightness >= offset) intArrayOf(255, 128, 0, a) //ORANGE #FF8000
-            else intArrayOf(50, 50, 50, a) //DARK #323232
-        } else {
-            val i = offset.absoluteValue
-            if (brightness >= i) intArrayOf(50, 50, 50, a) //DARK #323232
-            else intArrayOf(255, 128, 0, a) //ORANGE #FF8000jd
-        }
+        return getDiColorForPixel(r, g, b, a, spookyColorMap, offset, isGif)
     }
 
     suspend fun addEffectToGifFrames(

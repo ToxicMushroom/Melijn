@@ -8,18 +8,17 @@ import me.melijn.melijnbot.internals.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 
 
-class BlurpleCommand : AbstractCommand("command.blurple") {
+class OldBlurpleCommand : AbstractCommand("command.oldblurple") {
 
     init {
-        id = 54
-        name = "blurple"
-        aliases = arrayOf("blurpleGif")
+        name = "oldBlurple"
+        aliases = arrayOf("oldBlurpleGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.commandParts[1].equals("blurpleGif", true)) {
+        if (context.commandParts[1].equals("oldBlurpleGif", true)) {
             executeGif(context)
         } else {
             executeNormal(context)
@@ -28,13 +27,13 @@ class BlurpleCommand : AbstractCommand("command.blurple") {
 
     private suspend fun executeNormal(context: ICommandContext) {
         ImageCommandUtil.executeNormalRecolorSingleOffset(context) { ints ->
-            ImageUtils.getFakeBlurpleForPixel(ints[0], ints[1], ints[2], ints[3], ints[4])
+            ImageUtils.getBlurpleForPixel(ints[0], ints[1], ints[2], ints[3], ints[4])
         }
     }
 
     private suspend fun executeGif(context: ICommandContext) {
         ImageCommandUtil.executeGifRecolorSingleOffset(context, { ints ->
-            ImageUtils.getFakeBlurpleForPixel(ints[0], ints[1], ints[2], ints[3], ints[4], true)
+            ImageUtils.getBlurpleForPixel(ints[0], ints[1], ints[2], ints[3], ints[4], true)
         }, false)
     }
 }

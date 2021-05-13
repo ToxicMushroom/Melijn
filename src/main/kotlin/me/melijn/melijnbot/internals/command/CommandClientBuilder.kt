@@ -112,7 +112,7 @@ class CommandClientBuilder(private val container: Container) {
         SlapCommand(),
         EmoteCommand(),
         ForwardCommand(),
-        BlurpleCommand(),
+        OldBlurpleCommand(),
         SetMaxUserVerificationFlowRateCommand(),
         UnicodeCommand(),
         UnbanCommand(),
@@ -278,7 +278,8 @@ class CommandClientBuilder(private val container: Container) {
         PrivateGainProfileCommand(),
         MassBanCommand(),
         MassUnbanCommand(),
-        MassKickCommand()
+        MassKickCommand(),
+        BlurpleCommand()
     )
 
     fun build(): CommandClient {
