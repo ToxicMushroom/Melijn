@@ -10,11 +10,11 @@ import kotlinx.coroutines.*
 import me.melijn.gifdecoder.GifDecoder
 import me.melijn.gifencoder.*
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
+import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.web.apis.DiscordSize
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import java.awt.Color
@@ -153,7 +153,7 @@ object ImageUtils {
         return Triple(nonnullImage, url, arg)
     }
 
-    suspend fun downloadImage(context: ICommandContext, url: String, doChecks: Boolean = true): ByteArray {
+    suspend fun downloadImage(context: ICommandContext, url: String, doChecks: Boolean = true): ByteArray? {
         return downloadImage(context.webManager.httpClient, url, doChecks, context.guildN, context)
     }
 
@@ -163,42 +163,31 @@ object ImageUtils {
         doChecks: Boolean = true,
         guild: Guild? = null,
         context: ICommandContext? = null
-    ): ByteArray {
-        return if (doChecks) {
-            httpClient.get<HttpStatement>(url).execute {
-                val channel = it.receive<ByteReadChannel>()
-                var running = true
+    ): ByteArray? {
+        return httpClient.get<HttpStatement>(url).execute {
+            if (!doChecks) return@execute it.readBytes()
+            val channel = it.receive<ByteReadChannel>()
+            val baos = ByteArrayOutputStream()
 
-                val baos = ByteArrayOutputStream()
+            val maxBytes = guild?.maxFileSize ?: Message.MAX_FILE_SIZE.toLong()
+            while (channel.availableForRead != 0) {
+                val read = channel.readRemaining(4096)
+                baos.writePacket(read)
 
-                var totalBytes = 0L
-                val toCompare = guild?.maxFileSize ?: Message.MAX_FILE_SIZE.toLong()
-                while (running) {
-                    val read = channel.readRemaining(4096)
-                    val readSize = read.remaining
-                    totalBytes += readSize
-                    baos.writePacket(read)
-                    if (totalBytes > toCompare) {
-                        running = false
-
-                        context?.let { ctx ->
-                            val msg = ctx.getTranslation("message.filetobig")
-                                .withVariable("size", "${toCompare / 1_048_576}MB")
-                            sendRsp(ctx, msg)
-                        }
-
-                        channel.cancel()
-                        throw SizeLimitExceededException("Size limit $toCompare")
+                if (baos.size() > maxBytes) {
+                    context?.let { ctx ->
+                        val msg = ctx.getTranslation("message.filetobig")
+                            .withVariable("size", "${maxBytes / 1_048_576}MB")
+                        sendRsp(ctx, msg)
                     }
-                    if (channel.availableForRead == 0) {
-                        running = false
-                    }
+
+                    channel.cancel()
+                    return@execute null
                 }
-                baos.toByteArray()
             }
-        } else {
-            httpClient.get(url)
+            baos.toByteArray()
         }
+
     }
 
     //ByteArray (imageData)

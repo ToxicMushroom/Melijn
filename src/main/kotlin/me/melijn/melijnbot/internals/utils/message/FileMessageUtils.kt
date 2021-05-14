@@ -4,13 +4,14 @@ import io.ktor.client.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
-import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.web.apis.ImageApi
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
@@ -241,13 +242,14 @@ private suspend fun attachmentsAction(
     urls: Map<String, String>
 ): MessageAction? {
     var messageAction: MessageAction? = null
-    val guild = if (textChannel is TextChannel) textChannel.guild else null
-    for ((index, url) in urls.iterator().withIndex()) {
-        val stream = ImageUtils.downloadImage(httpClient, url.key, true, guild, null)
+    for ((index, urlNamePair) in urls.iterator().withIndex()) {
+        val url = urlNamePair.key
+        val name = urlNamePair.value
+        val stream = ImageApi.downloadDiscordBytes(httpClient, url, DiscordSize.Original)
         messageAction = if (index == 0) {
-            textChannel.sendFile(stream, url.value)
+            textChannel.sendFile(stream, name)
         } else {
-            messageAction?.addFile(stream, url.value)
+            messageAction?.addFile(stream, name)
         }
     }
     return messageAction
@@ -271,9 +273,9 @@ private suspend fun msgWithAttachmentsAction(
     }
 
     val action = channel.sendMessage(mb.build())
-    val guild = if (channel is TextChannel) channel.guild else null
+    if (channel is TextChannel) channel.guild else null
     for ((url, fileName) in attachments.iterator()) {
-        val stream = ImageUtils.downloadImage(httpClient, url, true, guild, null)
+        val stream = ImageApi.downloadDiscordBytes(httpClient, url, DiscordSize.Original)
         action.addFile(stream, fileName)
     }
     return action

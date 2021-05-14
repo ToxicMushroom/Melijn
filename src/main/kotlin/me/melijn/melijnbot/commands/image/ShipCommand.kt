@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.image
 
+import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -7,7 +8,6 @@ import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveMemberByArgsNMessage
-import me.melijn.melijnbot.internals.web.apis.DiscordSize
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
