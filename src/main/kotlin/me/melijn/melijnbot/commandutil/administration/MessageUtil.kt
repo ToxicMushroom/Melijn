@@ -638,10 +638,10 @@ object MessageUtil {
 
         val msg = if (arg.equals("null", true)) {
             eb.setFooter(null, footerIconUrl)
-            context.getTranslation("message.embed.image.unset")
+            context.getTranslation("message.embed.footer.unset")
         } else {
             eb.setFooter(arg, footerIconUrl)
-            context.getTranslation("message.embed.image.set")
+            context.getTranslation("message.embed.footer.set")
                 .withVariable(PLACEHOLDER_ARG, arg)
         }.withVariable(PLACEHOLDER_TYPE, msgName)
 
@@ -933,7 +933,7 @@ object MessageUtil {
         message.extra = muteableMap
 
         val msg = context.getTranslation("message.pingable.set.$pingable")
-            .withVariable("msgName", msgName)
+            .withVariable(PLACEHOLDER_TYPE, msgName)
         sendRsp(context, msg)
     }
 
@@ -945,7 +945,7 @@ object MessageUtil {
         val isPingable = message.extra.containsKey("isPingable")
 
         val msg = context.getTranslation("message.pingable.show.$isPingable")
-            .withVariable("msgName", msgName)
+            .withVariable(PLACEHOLDER_TYPE, msgName)
         sendRsp(context, msg)
     }
 }
