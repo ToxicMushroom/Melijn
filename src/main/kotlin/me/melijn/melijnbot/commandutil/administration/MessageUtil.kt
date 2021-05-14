@@ -894,7 +894,7 @@ object MessageUtil {
         }
     }
 
-    suspend fun replaceUrlVariablesInPreview(
+    private suspend fun replaceUrlVariablesInPreview(
         member: Member,
         modularMessage: ModularMessage
     ): ModularMessage {
@@ -923,14 +923,14 @@ object MessageUtil {
         msgName: String,
         pingable: Boolean
     ) {
-        val muteableMap = message.extra.toMutableMap()
+        val mutableMap = message.extra.toMutableMap()
         if (pingable) {
-            muteableMap["isPingable"] = ""
+            mutableMap["isPingable"] = ""
         } else {
-            muteableMap.remove("isPingable")
+            mutableMap.remove("isPingable")
         }
 
-        message.extra = muteableMap
+        message.extra = mutableMap
 
         val msg = context.getTranslation("message.pingable.set.$pingable")
             .withVariable(PLACEHOLDER_TYPE, msgName)

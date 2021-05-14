@@ -54,21 +54,23 @@ suspend fun sendOnShard0(
     extra: String
 ): Boolean {
     return try {
-         if (PodInfo.podId == 0) {
-             sendPrivateMessageExtra(user as UserImpl, editor, extra)
-         } else {
-             val hostPattern = context.container.settings.botInfo.hostPattern
-             val url = hostPattern.replace("{podId}", 0) + "/senddm/${user.idLong}/$extra"
-             val res = context.webManager.httpClient.post<Boolean>(url) {
-                 body = objectMapper.writeValueAsString(editor)
-             }
-             res
-         }
-     } catch (t: Throwable) {
-         t.sendInGuild(context)
-         t.printStackTrace()
-         false
-     }
+        if (PodInfo.podId == 0) {
+            sendPrivateMessageExtra(user as UserImpl, editor, extra)
+        } else {
+            val hostPattern = context.container.settings.botInfo.hostPattern
+            val url = hostPattern.replace("{podId}", 0) + "/senddm/${user.idLong}/$extra"
+            val res = objectMapper.readValue(
+                context.webManager.httpClient.post<String>(url) {
+                    body = objectMapper.writeValueAsString(editor)
+                }, Boolean::class.java
+            )
+            res
+        }
+    } catch (t: Throwable) {
+        t.sendInGuild(context)
+        t.printStackTrace()
+        false
+    }
 }
 
 suspend fun sendPrivateMessageExtra(

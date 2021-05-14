@@ -169,33 +169,32 @@ object ImageUtils {
                 val channel = it.receive<ByteReadChannel>()
                 var running = true
 
+                val baos = ByteArrayOutputStream()
 
-                ByteArrayOutputStream().use { baos ->
-                    var totalBytes = 0L
-                    val toCompare = guild?.maxFileSize ?: Message.MAX_FILE_SIZE.toLong()
-                    while (running) {
-                        val read = channel.readRemaining(4096)
-                        val readsize = read.remaining
-                        totalBytes += readsize
-                        baos.writePacket(read)
-                        if (totalBytes > toCompare) {
-                            running = false
+                var totalBytes = 0L
+                val toCompare = guild?.maxFileSize ?: Message.MAX_FILE_SIZE.toLong()
+                while (running) {
+                    val read = channel.readRemaining(4096)
+                    val readSize = read.remaining
+                    totalBytes += readSize
+                    baos.writePacket(read)
+                    if (totalBytes > toCompare) {
+                        running = false
 
-                            context?.let { ctx ->
-                                val msg = ctx.getTranslation("message.filetobig")
-                                    .withVariable("size", "100MB")
-                                sendRsp(ctx, msg)
-                            }
-
-                            channel.cancel()
-                            throw SizeLimitExceededException("Size limit $toCompare")
+                        context?.let { ctx ->
+                            val msg = ctx.getTranslation("message.filetobig")
+                                .withVariable("size", "${toCompare / 1_048_576}MB")
+                            sendRsp(ctx, msg)
                         }
-                        if (channel.availableForRead == 0) {
-                            running = false
-                        }
+
+                        channel.cancel()
+                        throw SizeLimitExceededException("Size limit $toCompare")
                     }
-                    baos.toByteArray()
+                    if (channel.availableForRead == 0) {
+                        running = false
+                    }
                 }
+                baos.toByteArray()
             }
         } else {
             httpClient.get(url)
