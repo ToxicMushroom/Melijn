@@ -67,9 +67,8 @@ object ImageUtils {
                 if (!checkFormat(context, attachments[0].url, reqFormat)) return null
 
                 img = downloadImage(context, url)
-                ByteArrayInputStream(img).use { bis ->
-                    if (ImageIO.read(bis) == null) img = null
-                }
+                if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
+
 
             } catch (t: SizeLimitExceededException) {
                 t.printStackTrace()
@@ -93,9 +92,8 @@ object ImageUtils {
                 if (!checkFormat(context, fixedForm, reqFormat)) return null
 
                 img = downloadImage(context, url)
-                ByteArrayInputStream(img).use { bis ->
-                    if (ImageIO.read(bis) == null) img = null
-                }
+                if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
+
 
             } else if (EMOTE_MENTION.matches(args[0])) {
                 arg = true
@@ -113,11 +111,7 @@ object ImageUtils {
                     if (!checkValidUrl(context, url)) return null
 
                     img = downloadImage(context.webManager.proxiedHttpClient, url)
-                    ByteArrayInputStream(img).use { bis ->
-                        if (ImageIO.read(bis) == null) {
-                            img = null
-                        }
-                    }
+                    if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
 
                 } catch (t: SizeLimitExceededException) {
                     t.printStackTrace()
@@ -140,6 +134,7 @@ object ImageUtils {
             url = fixedForm + discordSize
             if (!checkFormat(context, fixedForm, reqFormat)) return null
             img = downloadImage(context, url)
+            if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
         }
 
         if (img == null) {
@@ -149,8 +144,7 @@ object ImageUtils {
             return null
         }
 
-        val nonnullImage: ByteArray = img ?: return null
-        return Triple(nonnullImage, url, arg)
+        return Triple(img, url, arg)
     }
 
     suspend fun downloadImage(context: ICommandContext, url: String, doChecks: Boolean = true): ByteArray? {
@@ -164,8 +158,12 @@ object ImageUtils {
         guild: Guild? = null,
         context: ICommandContext? = null
     ): ByteArray? {
-        return httpClient.get<HttpStatement>(url).execute {
-            if (!doChecks) return@execute it.readBytes()
+        val barr: ByteArray?
+        httpClient.get<HttpResponse>(url).let {
+            if (!doChecks) {
+                barr = it.readBytes()
+                return@let
+            }
             val channel = it.receive<ByteReadChannel>()
             val baos = ByteArrayOutputStream()
 
@@ -182,12 +180,13 @@ object ImageUtils {
                     }
 
                     channel.cancel()
-                    return@execute null
+                    barr = null
+                    return@let
                 }
             }
-            baos.toByteArray()
+            barr = baos.toByteArray()
         }
-
+        return barr
     }
 
     //ByteArray (imageData)

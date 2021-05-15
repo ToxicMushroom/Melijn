@@ -100,7 +100,7 @@ const val LARGE_CACHE = 200L
 const val NORMAL_CACHE_SIZE = 100L
 const val SMALL_CACHE = 50L
 
-class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
+class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, secretKey: String) {
 
     companion object {
         val afterTableFunctions = mutableListOf<() -> Unit>()
@@ -294,7 +294,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         warnWrapper = WarnWrapper(WarnDao(driverManager))
         softBanWrapper = SoftBanWrapper(SoftBanDao(driverManager))
 
-        messageHistoryWrapper = MessageHistoryWrapper(MessageHistoryDao(driverManager))
+        messageHistoryWrapper = MessageHistoryWrapper(MessageHistoryDao(driverManager, secretKey))
         linkedMessageWrapper = LinkedMessageWrapper(LinkedMessageDao(driverManager))
         messageWrapper = MessageWrapper(MessageDao(driverManager))
         forceRoleWrapper = ForceRoleWrapper(ForceRoleDao(driverManager))

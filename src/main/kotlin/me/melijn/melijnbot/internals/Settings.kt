@@ -93,7 +93,8 @@ data class Settings(
         var weebSh: String,
         var randomCatApi: String,
         var kSoftApi: String,
-        var osu: String
+        var osu: String,
+        var hot: String
     )
 
     data class Database(
@@ -205,7 +206,8 @@ data class Settings(
                     get("token.weebSh"),
                     get("token.randomCatApi"),
                     get("token.kSoftApi"),
-                    get("token.osuApi")
+                    get("token.osuApi"),
+                    get("token.hot")
                 ),
                 Database(
                     get("database.database"),

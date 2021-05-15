@@ -35,6 +35,7 @@ class Container {
     val paginationMap = mutableMapOf<Long, PaginationInfo>()
     val modularPaginationMap = mutableMapOf<Long, ModularPaginationInfo>()
 
+
     val eventWaiter by lazy { EventWaiter() }
 
     val restServer: RestServer by lazy { RestServer(this) }
@@ -54,7 +55,7 @@ class Container {
     var settings: Settings = Settings.initSettings()
 
     //Used by events
-    val daoManager by lazy { DaoManager(settings.database, settings.redis) }
+    val daoManager by lazy { DaoManager(settings.database, settings.redis, settings.tokens.hot) }
     val webManager by lazy { WebManager(settings) }
 
     //enabled on event
