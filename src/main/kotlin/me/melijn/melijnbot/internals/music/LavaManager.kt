@@ -86,13 +86,11 @@ class LavaManager(
     }
 
     // run with VOICE_SAFE pls
-    suspend fun closeConnection(guildId: Long) {
+    suspend fun closeConnection(guildId: Long, removeMusicPlayer: Boolean = true) {
         closeConnectionLite(guildId)
 
-        if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
-            MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
-            MusicPlayerManager.guildMusicPlayers.remove(guildId)
-            //logger.info("removed guildmusicplayer for $guildId")
+        if (removeMusicPlayer && MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
+            MusicPlayerManager.guildMusicPlayers.remove(guildId)?.removeTrackManagerListener()
         }
     }
 

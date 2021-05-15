@@ -4,6 +4,8 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelRoleState
+import me.melijn.melijnbot.internals.music.LavaManager
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.awaitBool
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyMusicChannel
 import me.melijn.melijnbot.internals.utils.isPremiumGuild
@@ -15,11 +17,13 @@ import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.StatusChangeEvent
 import net.dv8tion.jda.api.sharding.ShardManager
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ScheduledFuture
 
 object VoiceUtil {
 
     //guildId, timeOfLeave
-    var disconnectQueue = mutableMapOf<Long, Long>()
+    var disconnectQueue = ConcurrentHashMap<Long, ScheduledFuture<*>>()
 
     suspend fun channelUpdate(container: Container, channelUpdate: VoiceChannel) {
         val guild = channelUpdate.guild
@@ -28,7 +32,7 @@ object VoiceUtil {
 
         // Leave channel timer stuff
         botChannel?.let {
-            checkShouldDisconnectAndApply(it, daoManager)
+            checkShouldDisconnectAndApply(it, container.lavaManager, daoManager)
         }
 
         // Radio stuff
@@ -72,17 +76,20 @@ object VoiceUtil {
         }
     }
 
-    suspend fun checkShouldDisconnectAndApply(botChannel: VoiceChannel, daoManager: DaoManager) {
+    suspend fun checkShouldDisconnectAndApply(botChannel: VoiceChannel, lavaManager: LavaManager, daoManager: DaoManager) {
         val guildId = botChannel.guild.idLong
         if (
             listeningMembers(botChannel) == 0 &&
             !(daoManager.music247Wrapper.is247Mode(guildId) && isPremiumGuild(daoManager, guildId))
         ) {
-            if (!disconnectQueue.containsKey(guildId)) {
-                disconnectQueue[guildId] = System.currentTimeMillis() + 600_000
+            val job = TaskManager.asyncAfter(600_000) {
+                val guildMusicPlayer = lavaManager.musicPlayerManager.getGuildMusicPlayer(botChannel.guild)
+                guildMusicPlayer.guildTrackManager.clear()
+                guildMusicPlayer.guildTrackManager.stopAndDestroy()
             }
+            disconnectQueue[guildId] = job
         } else {
-            disconnectQueue.remove(guildId)
+            disconnectQueue.remove(guildId)?.cancel(false)
         }
     }
 

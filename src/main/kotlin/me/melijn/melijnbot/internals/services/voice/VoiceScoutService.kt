@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 class VoiceScoutService(
     val container: Container,
     val shardManager: ShardManager
-) : Service("VoiceScout", 1, 1, TimeUnit.MINUTES) {
+) : Service("VoiceScout", 30, 1, TimeUnit.SECONDS) {
 
     override val service = RunnableTask {
 
@@ -22,8 +22,7 @@ class VoiceScoutService(
             val guildMusicPlayer = iterator.next().value
             val guild = shardManager.getGuildById(guildMusicPlayer.guildId)
             if (guild == null) {
-                guildMusicPlayer.guildTrackManager.clear()
-                guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
+                guildMusicPlayer.guildTrackManager.stopAndDestroy(false)
                 guildMusicPlayer.removeTrackManagerListener()
                 iterator.remove()
             } else {
@@ -32,12 +31,11 @@ class VoiceScoutService(
 
                 // Leave channel timer stuff
                 botChannel?.let {
-                    checkShouldDisconnectAndApply(it, daoManager)
+                    checkShouldDisconnectAndApply(it, container.lavaManager, daoManager)
                 }
 
                 if (botChannel == null) {
-                    guildMusicPlayer.guildTrackManager.clear()
-                    guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
+                    guildMusicPlayer.guildTrackManager.stopAndDestroy(false)
                     guildMusicPlayer.removeTrackManagerListener()
                     iterator.remove()
                 }

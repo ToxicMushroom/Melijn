@@ -101,7 +101,7 @@ object TaskManager {
         }.run()
     }
 
-    inline fun asyncAfter(afterMillis: Long, crossinline func: suspend () -> Unit) {
-        scheduledExecutorService.schedule(RunnableTask { func() }, afterMillis, TimeUnit.MILLISECONDS)
+    inline fun asyncAfter(afterMillis: Long, crossinline func: suspend () -> Unit): ScheduledFuture<*> {
+        return scheduledExecutorService.schedule(RunnableTask { func() }, afterMillis, TimeUnit.MILLISECONDS)
     }
 }

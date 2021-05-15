@@ -22,7 +22,6 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.MessageEmbed
 import org.slf4j.LoggerFactory
-import java.util.*
 import kotlin.random.Random
 
 
@@ -236,12 +235,12 @@ class GuildTrackManager(
         }
 
     // PLEASE RUN IN VOICE_SAFE
-    suspend fun stopAndDestroy() {
+    suspend fun stopAndDestroy(removeMusicPlayer: Boolean = true) {
         clear()
         iPlayer.stopTrack()
 
         Task {
-            lavaManager.closeConnection(guildId)
+            lavaManager.closeConnection(guildId, removeMusicPlayer)
         }.run()
     }
 

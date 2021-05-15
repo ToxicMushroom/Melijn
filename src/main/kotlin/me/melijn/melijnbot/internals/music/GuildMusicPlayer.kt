@@ -35,7 +35,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
         addTrackManagerListener()
     }
 
-    fun addTrackManagerListener() {
+    private fun addTrackManagerListener() {
         guildTrackManager.iPlayer.addListener(guildTrackManager)
     }
 
