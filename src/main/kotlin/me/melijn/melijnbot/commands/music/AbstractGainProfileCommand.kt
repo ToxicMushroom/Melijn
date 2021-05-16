@@ -67,8 +67,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
         init {
             name = "copy"
             aliases = arrayOf("c", "cp")
-            permissionRequired = true
-            runConditions = arrayOf(RunCondition.VOTED)
+            runConditions = arrayOf(RunCondition.VOTED, RunCondition.EXPLICIT_MELIJN_PERMISSION)
         }
 
         override suspend fun execute(context: ICommandContext) {
@@ -143,8 +142,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
         init {
             name = "remove"
             aliases = arrayOf("rm", "r", "del", "d", "delete")
-            permissionRequired = true
-            runConditions = arrayOf(RunCondition.VOTED)
+            runConditions = arrayOf(RunCondition.VOTED, RunCondition.EXPLICIT_MELIJN_PERMISSION)
         }
 
         override suspend fun execute(context: ICommandContext) {
@@ -206,8 +204,7 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
         init {
             name = "set"
             aliases = arrayOf("a", "save", "s")
-            permissionRequired = true
-            runConditions = arrayOf(RunCondition.VOTED)
+            runConditions = arrayOf(RunCondition.VOTED, RunCondition.EXPLICIT_MELIJN_PERMISSION)
         }
 
         override suspend fun execute(context: ICommandContext) {

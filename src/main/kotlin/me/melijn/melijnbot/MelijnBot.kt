@@ -109,6 +109,7 @@ object MelijnBot {
         eventManager.start()
         shardManager = defaultShardManagerBuilder.build()
 
+
         container.startTime = System.currentTimeMillis()
 
         logger.info("Starting services..")

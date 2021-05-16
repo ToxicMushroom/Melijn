@@ -3,6 +3,7 @@ package me.melijn.melijnbot.internals.services
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.services.bans.BanService
+import me.melijn.melijnbot.internals.services.bans.BotBanService
 import me.melijn.melijnbot.internals.services.birthday.BirthdayService
 import me.melijn.melijnbot.internals.services.donator.DonatorService
 import me.melijn.melijnbot.internals.services.games.RSPService
@@ -48,6 +49,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
 
         slowServices.add(VoiceScoutService(container, shardManager))
         slowServices.add(RolesService(daoManager.tempRoleWrapper, shardManager))
+        slowServices.add(BotBanService(shardManager, daoManager))
 //        slowServices.add(SpamService(container, shardManager))
 
         services.add(MessageDeletionService(shardManager))

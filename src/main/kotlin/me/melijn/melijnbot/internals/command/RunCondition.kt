@@ -12,5 +12,6 @@ enum class RunCondition(val preRequired: Array<RunCondition> = emptyArray()) {
     CHANNEL_NSFW(arrayOf(GUILD)),
     VOTED,
     USER_SUPPORTER,
-    GUILD_SUPPORTER(arrayOf(GUILD))
+    GUILD_SUPPORTER(arrayOf(GUILD)),
+    EXPLICIT_MELIJN_PERMISSION(arrayOf(GUILD))
 }

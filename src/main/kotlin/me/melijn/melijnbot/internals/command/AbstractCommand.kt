@@ -38,8 +38,6 @@ abstract class AbstractCommand(val root: String) {
     var discordPermissions: Array<Permission> = arrayOf()
     var runConditions: Array<RunCondition> = arrayOf()
     var children: Array<AbstractCommand> = arrayOf()
-    var permissionRequired: Boolean = false
-    //var args: Array<CommandArg> = arrayOf() cannot put extra information after global definitions with this
 
     init {
         description = "$root.description"
@@ -202,12 +200,14 @@ abstract class AbstractCommand(val root: String) {
                 t.sendInGuild(context)
             }
             val commandId = context.commandOrder[0].id
-            commandUsageList.add(CommandUsageInfo(
-                context.guildN?.idLong ?: context.authorId,
-                context.authorId,
-                commandId,
-                System.currentTimeMillis()
-            ))
+            commandUsageList.add(
+                CommandUsageInfo(
+                    context.guildN?.idLong ?: context.authorId,
+                    context.authorId,
+                    commandId,
+                    System.currentTimeMillis()
+                )
+            )
             context.daoManager.commandUsageWrapper.addUse(commandId)
         } else {
             sendMissingPermissionMessage(context, permission)
@@ -316,15 +316,16 @@ suspend fun hasPermission(context: ICommandContext, permission: String, required
     val commandOrder = context.commandOrder
     val rootCommand = commandOrder.first()
     val lowestCommand = commandOrder.last()
+    val explicit = RunCondition.EXPLICIT_MELIJN_PERMISSION
     return hasPermission(
         context.container,
         context.message,
         permission,
         rootCommand.commandCategory,
-        required ?: (rootCommand.permissionRequired || lowestCommand.permissionRequired)
+        required ?: (rootCommand.runConditions.contains(explicit) ||
+            lowestCommand.runConditions.contains(explicit))
     )
 }
-
 
 
 suspend fun hasPermission(

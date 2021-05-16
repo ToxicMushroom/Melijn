@@ -4,10 +4,7 @@ import me.melijn.melijnbot.database.alias.AliasDao
 import me.melijn.melijnbot.database.alias.AliasWrapper
 import me.melijn.melijnbot.database.audio.*
 import me.melijn.melijnbot.database.autopunishment.*
-import me.melijn.melijnbot.database.ban.BanDao
-import me.melijn.melijnbot.database.ban.BanWrapper
-import me.melijn.melijnbot.database.ban.SoftBanDao
-import me.melijn.melijnbot.database.ban.SoftBanWrapper
+import me.melijn.melijnbot.database.ban.*
 import me.melijn.melijnbot.database.birthday.BirthdayDao
 import me.melijn.melijnbot.database.birthday.BirthdayHistoryDao
 import me.melijn.melijnbot.database.birthday.BirthdayHistoryWrapper
@@ -165,6 +162,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
     val kickWrapper: KickWrapper
     val warnWrapper: WarnWrapper
     val softBanWrapper: SoftBanWrapper
+    val botBannedWrapper: BotBannedWrapper
 
     val messageHistoryWrapper: MessageHistoryWrapper
     val linkedMessageWrapper: LinkedMessageWrapper
@@ -293,6 +291,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
         kickWrapper = KickWrapper(KickDao(driverManager))
         warnWrapper = WarnWrapper(WarnDao(driverManager))
         softBanWrapper = SoftBanWrapper(SoftBanDao(driverManager))
+        botBannedWrapper = BotBannedWrapper(BotBannedDao(driverManager))
 
         messageHistoryWrapper = MessageHistoryWrapper(MessageHistoryDao(driverManager, secretKey))
         linkedMessageWrapper = LinkedMessageWrapper(LinkedMessageDao(driverManager))

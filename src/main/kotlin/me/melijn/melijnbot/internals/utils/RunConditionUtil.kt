@@ -47,6 +47,7 @@ object RunConditionUtil {
             RunCondition.VOTED -> checkVoted(container, message, language)
             RunCondition.USER_SUPPORTER -> checkUserSupporter(container, message, language, prefix)
             RunCondition.GUILD_SUPPORTER -> checkGuildSupporter(container, message, language, prefix)
+            RunCondition.EXPLICIT_MELIJN_PERMISSION -> true // this is checked in other places later
         }
     }
 

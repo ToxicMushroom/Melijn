@@ -279,7 +279,8 @@ class CommandClientBuilder(private val container: Container) {
         MassBanCommand(),
         MassUnbanCommand(),
         MassKickCommand(),
-        BlurpleCommand()
+        BlurpleCommand(),
+        BotBanCommand()
     )
 
     fun build(): CommandClient {

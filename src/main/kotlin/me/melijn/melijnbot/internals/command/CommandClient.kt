@@ -5,7 +5,9 @@ import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.administration.ScriptsCommand
 import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.database.ban.BotBannedWrapper.Companion.isBotBanned
 import me.melijn.melijnbot.database.command.CustomCommand
+import me.melijn.melijnbot.database.locking.EntityType
 import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.scripts.Script
 import me.melijn.melijnbot.enums.ChannelCommandState
@@ -72,8 +74,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             )
         ) return
 
+        if (isBotBanned(EntityType.USER, event.author.idLong)) return
+        if (event.isFromGuild && isBotBanned(EntityType.GUILD, event.guild.idLong)) return
         val prefixes = getPrefixes(event)
-
 
         val ccsWithPrefix = mutableListOf<CustomCommand>()
         val ccsWithoutPrefix = mutableListOf<CustomCommand>()

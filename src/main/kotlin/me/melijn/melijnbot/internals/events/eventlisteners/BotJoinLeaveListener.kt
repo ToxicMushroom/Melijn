@@ -1,6 +1,9 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
+import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.database.ban.BotBannedWrapper.Companion.isBotBanned
+import me.melijn.melijnbot.database.locking.EntityType
 import me.melijn.melijnbot.internals.ConsoleColor
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -22,6 +25,9 @@ class BotJoinLeaveListener(container: Container) : AbstractListener(container) {
 
     private suspend fun onBotLeaveGuild(event: GuildLeaveEvent) {
         container.lavaManager.closeConnection(event.guild.idLong)
+        if (isBotBanned(EntityType.GUILD, event.guild.idLong)) {
+            return
+        }
 
         logger.info(
             "{}Left the '{}' guild, id: {}, shard: {}{}",
@@ -33,7 +39,12 @@ class BotJoinLeaveListener(container: Container) : AbstractListener(container) {
         )
     }
 
-    private fun onBotJoinGuild(event: GuildJoinEvent) {
+    private suspend fun onBotJoinGuild(event: GuildJoinEvent) {
+        if (isBotBanned(EntityType.GUILD, event.guild.idLong)) {
+            delay(1000)
+            event.guild.leave().queue()
+        }
+
         logger.info(
             "{}Joined the '{}' guild, id: {}, shard: {}{}",
             ConsoleColor.CYAN,

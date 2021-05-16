@@ -1,5 +1,7 @@
 package me.melijn.melijnbot.internals.utils
 
+import me.melijn.melijnbot.database.ban.BotBannedWrapper.Companion.isBotBanned
+import me.melijn.melijnbot.database.locking.EntityType
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
@@ -878,7 +880,10 @@ fun getTimespanFromArgNMessage(context: ICommandContext, beginIndex: Int): Pair<
 fun listeningMembers(vc: VoiceChannel, alwaysListeningUser: Long = -1L): Int {
     return vc.members.count { member ->
         // isDeafened checks both guild and self deafened (no worries)
-        !member.user.isBot && (member.voiceState?.isDeafened == false) && (member.idLong != alwaysListeningUser)
+        !member.user.isBot &&
+            (member.voiceState?.isDeafened == false) &&
+            (member.idLong != alwaysListeningUser) &&
+            !isBotBanned(EntityType.USER, member.idLong)
     }
 }
 

@@ -222,10 +222,9 @@ class DriverManager(
         } catch (e: SQLException) {
             logger.error(
                 "Something went wrong when executing the query: $query\n" +
-                    "Objects: ${objects.joinToString { o -> o.toString() }}"
+                    "Objects: ${objects.joinToString { o -> o.toString() }}", e
             )
             e.sendInGuild()
-            e.printStackTrace()
         }
     }
 

@@ -7,6 +7,8 @@ import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
 import me.melijn.melijnbot.commands.games.TicTacToeGame
 import me.melijn.melijnbot.commands.utility.HelpCommand
 import me.melijn.melijnbot.commandutil.game.TicTacToe
+import me.melijn.melijnbot.database.ban.BotBannedWrapper.Companion.isBotBanned
+import me.melijn.melijnbot.database.locking.EntityType
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
@@ -84,11 +86,12 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     }
 
 
+    val tags = arrayOf("<@${container.settings.botInfo.id}>", "<@!${container.settings.botInfo.id}>")
     private suspend fun handleSimpleMelijnPing(event: MessageReceivedEvent) {
         if (event.author.isBot) return
-        val tags = arrayOf("<@${event.jda.selfUser.idLong}>", "<@!${event.jda.selfUser.idLong}>")
         val usedMention = event.message.contentRaw.trim()
         if (!tags.contains(usedMention)) return
+        if (isBotBanned(EntityType.USER, event.author.idLong)) return
 
         val helpCmd = container.commandMap.values.firstOrNull { cmd ->
             cmd is HelpCommand
