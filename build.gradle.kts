@@ -62,8 +62,8 @@ dependencies {
     // https://github.com/sedmelluq/lavaplayer
     implementation("com.sedmelluq:lavaplayer:1.3.76")
 
-    // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
-    implementation("me.melijn.llklient:Lavalink-Klient:2.1.7")
+    // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fllklient%2FLavalink-Klient
+    implementation("me.melijn.llklient:Lavalink-Klient:2.1.8")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))
