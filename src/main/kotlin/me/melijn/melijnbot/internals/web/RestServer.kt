@@ -157,26 +157,32 @@ class RestServer(container: Container) {
             }
 
             post("/senddm/{userId}/{extra}") {
-                val id = call.parameters["userId"] ?: run {
+                try {
+                    val id = call.parameters["userId"] ?: run {
+                        call.respond(false)
+                        return@post
+                    }
+                    val extra = call.parameters["extra"] ?: run {
+                        call.respond(false)
+                        return@post
+                    }
+
+                    val content = call.receiveText()
+                    val embedEditor = objectMapper.readValue<EmbedEditor>(content)
+
+                    val user = MelijnBot.shardManager.retrieveUserById(id).awaitOrNull() as UserImpl?
+                    if (user == null) {
+                        call.respond(false)
+                        return@post
+                    }
+
+                    val result: Boolean = sendPrivateMessageExtra(user, embedEditor, extra)
+                    call.respond(result)
+                } catch (t: Throwable) {
+                    t.printStackTrace()
                     call.respond(false)
                     return@post
                 }
-                val extra = call.parameters["extra"] ?: run {
-                    call.respond(false)
-                    return@post
-                }
-
-                val content = call.receiveText()
-                val embedEditor = objectMapper.readValue<EmbedEditor>(content)
-
-                val user = MelijnBot.shardManager.retrieveUserById(id).awaitOrNull() as UserImpl?
-                if (user == null) {
-                    call.respond(false)
-                    return@post
-                }
-
-                val result: Boolean = sendPrivateMessageExtra(user, embedEditor, extra)
-                call.respond(result)
             }
 
             post("/unverified/guilds") {
