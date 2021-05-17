@@ -5,7 +5,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import io.ktor.client.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
-import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.settings.VoteReminderOption
 import me.melijn.melijnbot.enums.*
@@ -569,8 +568,6 @@ object LogUtils {
 
             sendRspOrMsg(textChannel, daoManager, msg)
         } else {
-            if (MessageUtil.removeMessageIfEmpty(guildId, messageType, message, linkedMessageWrapper)) return
-
             message = BirthdayUtil.replaceVariablesInBirthdayMessage(daoManager, member, message, birthYear, msgName)
 
             val msg: Message? = message.toMessage()

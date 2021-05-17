@@ -42,6 +42,7 @@ class EvalCommand : AbstractCommand("command.eval") {
 				    ${
             code.lines().dropWhile { imports.contains(it) }
                 .joinToString("\n\t\t\t\t\t")
+                .replace("return ", "return@evalTaskValueNAsync ")
         }
                 }
             }""".trimIndent()

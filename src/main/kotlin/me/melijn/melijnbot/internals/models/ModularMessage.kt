@@ -24,6 +24,13 @@ data class ModularMessage(
     var extra: Map<String, String> = emptyMap()
 ) {
 
+    fun isEmpty(): Boolean {
+        val tempEmbed = embed
+        return messageContent == null &&
+            attachments.isEmpty() &&
+            (tempEmbed == null || tempEmbed.isEmpty || !tempEmbed.isSendable)
+    }
+
     @JsonValue
     fun toJSON(): String {
         val json = DataObject.empty()
@@ -95,7 +102,10 @@ data class ModularMessage(
         function: suspend (s: String?) -> String?
     ): ModularMessage {
         return try {
-            mapAllStringFields(function)
+            mapAllStringFields(function).run {
+                if (this.isEmpty()) this.messageContent = "empty message"
+                this
+            }
         } catch (t: UserFriendlyException) {
             var msg = t.getUserFriendlyMessage()
             if (infoAppend != null) msg += infoAppend

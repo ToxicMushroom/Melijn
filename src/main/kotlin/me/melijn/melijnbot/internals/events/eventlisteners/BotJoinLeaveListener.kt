@@ -15,7 +15,9 @@ class BotJoinLeaveListener(container: Container) : AbstractListener(container) {
 
     override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildJoinEvent) {
-            onBotJoinGuild(event)
+            TaskManager.async(event.guild) {
+                onBotJoinGuild(event)
+            }
         } else if (event is GuildLeaveEvent) {
             TaskManager.async(event.guild) {
                 onBotLeaveGuild(event)

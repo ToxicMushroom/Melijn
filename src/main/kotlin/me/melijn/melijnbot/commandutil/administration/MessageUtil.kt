@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.commandutil.administration
 
 import me.melijn.melijnbot.database.NORMAL_CACHE
-import me.melijn.melijnbot.database.message.LinkedMessageWrapper
-import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
@@ -26,20 +24,6 @@ import net.dv8tion.jda.api.utils.data.DataObject
 import java.time.Instant
 
 object MessageUtil {
-
-    fun removeMessageIfEmpty(
-        guildId: Long,
-        type: MessageType,
-        message: ModularMessage,
-        messageWrapper: LinkedMessageWrapper
-    ): Boolean {
-        return if (messageWrapper.shouldRemove(message)) {
-            messageWrapper.removeMessage(guildId, type)
-            true
-        } else {
-            false
-        }
-    }
 
     suspend fun setMessage(context: ICommandContext, property: ModularMessageProperty) {
         val guildId = context.guildId

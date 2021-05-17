@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.events.AbstractListener
@@ -43,7 +42,6 @@ class BoostListener(container: Container) : AbstractListener(container) {
         val linkedMessageWrapper = daoManager.linkedMessageWrapper
         val msgName = linkedMessageWrapper.getMessage(guildId, messageType) ?: return
         var modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
-        if (MessageUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, linkedMessageWrapper)) return
 
         val boosted = event.guild
             .findMembers { it.timeBoosted != null }
