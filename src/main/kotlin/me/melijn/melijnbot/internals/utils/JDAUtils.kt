@@ -178,7 +178,12 @@ suspend fun retrieveUserByArgsN(context: ICommandContext, index: Int): User? {
                     context.message.mentionedUsers.firstOrNull { it.id == id }
                         ?: context.shardManager.retrieveUserById(id).awaitOrNull()
                 }
-                else -> context.guildN?.retrieveMembersByPrefix(arg, 1)?.awaitOrNull()?.firstOrNull()?.user
+                else -> context.guildN?.retrieveMembersByPrefix(arg, 1)?.awaitOrNull()?.run {
+                    this.firstOrNull { it.effectiveName.length == arg.length }?.let {
+                        return@run it.user
+                    }
+                    this.minByOrNull { it.effectiveName.length }?.user
+                }
             }
         }
         else -> null
