@@ -56,7 +56,7 @@ class BotBanCommand : AbstractCommand("command.botban") {
 
         override suspend fun execute(context: ICommandContext) {
             val guildId = getLongFromArgNMessage(context, 0) ?: return
-            val reason = context.getRawArgPart(1)
+            val reason = context.getRawArgPart(1).ifEmpty { "/" }
             context.daoManager.botBannedWrapper.add(EntityType.GUILD, guildId, reason)
             sendRsp(context, "Banned $guildId from using the bot, reason:\n```$reason```")
         }
@@ -70,7 +70,7 @@ class BotBanCommand : AbstractCommand("command.botban") {
 
         override suspend fun execute(context: ICommandContext) {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
-            val reason = context.getRawArgPart(1)
+            val reason = context.getRawArgPart(1).ifEmpty { "/" }
             context.daoManager.botBannedWrapper.add(EntityType.USER, user.idLong, reason)
             sendRsp(context, "Banned ${user.asTag} from using the bot, reason:\n```$reason```")
         }

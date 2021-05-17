@@ -4,7 +4,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelRoleState
-import me.melijn.melijnbot.internals.music.LavaManager
+import me.melijn.melijnbot.internals.music.MusicPlayerManager
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.awaitBool
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyMusicChannel
@@ -32,7 +32,7 @@ object VoiceUtil {
 
         // Leave channel timer stuff
         botChannel?.let {
-            checkShouldDisconnectAndApply(it, container.lavaManager, daoManager)
+            checkShouldDisconnectAndApply(it, daoManager)
         }
 
         // Radio stuff
@@ -77,18 +77,22 @@ object VoiceUtil {
         }
     }
 
-    suspend fun checkShouldDisconnectAndApply(botChannel: VoiceChannel, lavaManager: LavaManager, daoManager: DaoManager) {
+    suspend fun checkShouldDisconnectAndApply(botChannel: VoiceChannel, daoManager: DaoManager) {
         val guildId = botChannel.guild.idLong
         if (
+            MusicPlayerManager.guildMusicPlayers[guildId] != null &&
             listeningMembers(botChannel) == 0 &&
             !(daoManager.music247Wrapper.is247Mode(guildId) && isPremiumGuild(daoManager, guildId))
         ) {
-            val job = TaskManager.asyncAfter(600_000) {
-                val guildMusicPlayer = lavaManager.musicPlayerManager.getGuildMusicPlayer(botChannel.guild)
-                guildMusicPlayer.guildTrackManager.clear()
-                guildMusicPlayer.guildTrackManager.stopAndDestroy()
+            val queued = disconnectQueue[guildId]
+            if (queued == null) {
+                val job = TaskManager.asyncAfter(600_000) {
+                    val guildMusicPlayer = MusicPlayerManager.guildMusicPlayers[guildId]
+                    guildMusicPlayer?.guildTrackManager?.stopAndDestroy()
+                    guildMusicPlayer?.removeTrackManagerListener()
+                }
+                disconnectQueue[guildId] = job
             }
-            disconnectQueue[guildId] = job
         } else {
             disconnectQueue.remove(guildId)?.cancel(false)
         }
@@ -132,10 +136,6 @@ object VoiceUtil {
         }
         wrapper.clearChannels()
         wrapper.clear()
-    }
-
-    suspend fun destroyLink(container: Container, member: Member) {
-        container.lavaManager.closeConnection(member.guild.idLong)
     }
 
     suspend fun handleChannelRoleMove(

@@ -52,7 +52,7 @@ val kotlin = "1.5.0"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.2.1_262") {
+    implementation("net.dv8tion:JDA:4.2.1_264") {
         exclude("opus-java")
     }
 

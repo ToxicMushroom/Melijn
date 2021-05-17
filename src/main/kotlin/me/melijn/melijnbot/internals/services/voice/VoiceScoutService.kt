@@ -31,10 +31,8 @@ class VoiceScoutService(
 
                 // Leave channel timer stuff
                 botChannel?.let {
-                    checkShouldDisconnectAndApply(it, container.lavaManager, daoManager)
-                }
-
-                if (botChannel == null) {
+                    checkShouldDisconnectAndApply(it, daoManager)
+                } ?: run {
                     guildMusicPlayer.guildTrackManager.stopAndDestroy(false)
                     guildMusicPlayer.removeTrackManagerListener()
                     iterator.remove()

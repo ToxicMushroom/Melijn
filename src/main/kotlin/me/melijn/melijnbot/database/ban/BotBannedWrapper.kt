@@ -23,9 +23,6 @@ class BotBannedWrapper(private val botBannedDao: BotBannedDao) {
     }
 
     fun add(type: EntityType, id: Long, reason: String) {
-        if (type == EntityType.GUILD) bannedGuilds.add(id)
-        else if (type == EntityType.USER) bannedUsers.add(id)
-
         botBannedDao.add(type, id, reason)
     }
 
