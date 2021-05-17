@@ -18,6 +18,7 @@
 
 package me.melijn.melijnbot.internals.models
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.EmbedType
@@ -138,6 +139,7 @@ class EmbedEditor() {
      *
      * @return The current EmbedEditor with default values
      */
+    @JsonIgnore
     fun clear(): EmbedEditor {
         description = null
         fields.clear()
@@ -157,6 +159,7 @@ class EmbedEditor() {
      *
      * @return true if the embed is empty and cannot be built
      */
+    @JsonIgnore
     fun isEmpty(): Boolean {
         return title == null && timestamp == null && thumbnail == null && author == null && footer == null &&
             image == null && color == Role.DEFAULT_COLOR_RAW && description?.isEmpty() == true && fields.isEmpty()
@@ -168,6 +171,7 @@ class EmbedEditor() {
      *
      * @return length of the current builder state
      */
+    @JsonIgnore
     fun length(): Int {
         var length = description?.length ?: 0
         synchronized(fields) {
@@ -191,6 +195,7 @@ class EmbedEditor() {
      *
      * @see MessageEmbed.EMBED_MAX_LENGTH_BOT
      */
+    @JsonIgnore
     fun isValidLength(): Boolean {
         val length = length()
         return length <= MessageEmbed.EMBED_MAX_LENGTH_BOT
@@ -216,6 +221,7 @@ class EmbedEditor() {
      * @return the builder after the title has been set
      */
     @Nonnull
+    @JsonIgnore
     fun setTitle(title: String?): EmbedEditor {
         return setTitle(title, null)
     }
@@ -243,6 +249,7 @@ class EmbedEditor() {
      * @return the builder after the title has been set
      */
     @Nonnull
+    @JsonIgnore
     fun setTitle(title: String?, url: String?): EmbedEditor {
         this.title = title
         this.titleUrl = url
@@ -264,6 +271,7 @@ class EmbedEditor() {
      *
      * @return the builder after the description has been set
      */
+    @JsonIgnore
     fun setDescription(description: String?): EmbedEditor {
         this.description = description
         return this
@@ -286,6 +294,7 @@ class EmbedEditor() {
      *
      * @return the builder after the description has been set
      */
+    @JsonIgnore
     fun appendDescription(description: String): EmbedEditor {
         this.description = (this.description ?: "") + description
         return this
@@ -306,6 +315,7 @@ class EmbedEditor() {
      *
      * @return the builder after the timestamp has been set
      */
+    @JsonIgnore
     fun setTimestampField(temporal: TemporalAccessor?): EmbedEditor {
         timestamp = when (temporal) {
             null -> null
@@ -348,6 +358,7 @@ class EmbedEditor() {
      *
      * @see .setColor
      */
+    @JsonIgnore
     fun setColor(color: Color?): EmbedEditor {
         this.color = color?.rgb ?: Role.DEFAULT_COLOR_RAW
         return this
@@ -365,6 +376,7 @@ class EmbedEditor() {
      *
      * @see .setColor
      */
+    @JsonIgnore
     fun setColor(color: Int): EmbedEditor {
         this.color = color
         return this
@@ -404,6 +416,7 @@ class EmbedEditor() {
      *
      * @return the builder after the thumbnail has been set
      */
+    @JsonIgnore
     fun setThumbnail(url: String?): EmbedEditor {
         if (url == null) {
             thumbnail = null
@@ -453,6 +466,7 @@ class EmbedEditor() {
      *
      * @see net.dv8tion.jda.api.entities.MessageChannel.sendFile
      */
+    @JsonIgnore
     fun setImage(url: String?): EmbedEditor {
         if (url == null) {
             image = null
@@ -482,6 +496,7 @@ class EmbedEditor() {
      *
      * @return the builder after the author has been set
      */
+    @JsonIgnore
     fun setAuthor(name: String?): EmbedEditor {
         return setAuthor(name, null, null)
     }
@@ -508,6 +523,7 @@ class EmbedEditor() {
      *
      * @return the builder after the author has been set
      */
+    @JsonIgnore
     fun setAuthor(name: String?, url: String?): EmbedEditor {
         return setAuthor(name, url, null)
     }
@@ -555,6 +571,7 @@ class EmbedEditor() {
      * @return the builder after the author has been set
      */
     @Nonnull
+    @JsonIgnore
     fun setAuthor(name: String?, url: String?, iconUrl: String?): EmbedEditor {
         //We only check if the name is null because its presence is what determines if the
         // the author will appear in the embed.
@@ -584,6 +601,7 @@ class EmbedEditor() {
      *
      * @return the builder after the footer has been set
      */
+    @JsonIgnore
     fun setFooter(text: String?): EmbedEditor {
         return setFooter(text, null)
     }
@@ -626,19 +644,15 @@ class EmbedEditor() {
      * @return the builder after the footer has been set
      */
     @Nonnull
+    @JsonIgnore
     fun setFooter(text: String?, iconUrl: String?): EmbedEditor {
         // We only check if the text is null because its presence is what determines if the
         // footer will appear in the embed.
 
         if (text == null) footer = null
         else {
-            if (footer != null) {
-                footer?.iconUrl = iconUrl
-
-            } else {
-                footer = Footer(text)
-                footer?.iconUrl = iconUrl
-            }
+            footer = Footer(text)
+            footer?.iconUrl = iconUrl
         }
 
         return this
@@ -654,6 +668,7 @@ class EmbedEditor() {
      * @return the builder after the field has been added
      */
     @Nonnull
+    @JsonIgnore
     fun addField(field: Field): EmbedEditor {
         fields.add(field)
         return this
@@ -687,6 +702,7 @@ class EmbedEditor() {
      *
      * @return the builder after the field has been added
      */
+    @JsonIgnore
     fun addField(name: String, value: String, inline: Boolean): EmbedEditor {
         val field = Field(name, value)
         field.inline = inline
@@ -702,6 +718,7 @@ class EmbedEditor() {
      *
      * @return the builder after the field has been added
      */
+    @JsonIgnore
     fun clearFields(): EmbedEditor {
         fields.clear()
         return this
@@ -729,6 +746,7 @@ class EmbedEditor() {
      *
      * @return the built, sendable [net.dv8tion.jda.api.entities.MessageEmbed]
      */
+    @JsonIgnore
     fun build(): MessageEmbed {
         check(!isEmpty()) { "Cannot build an empty embed!" }
         val finalDesc = description
@@ -773,7 +791,7 @@ class EmbedEditor() {
         )
     }
 
-    inner class Footer(
+    class Footer(
         @JsonProperty("text")
         val text: String
     ) {
@@ -792,7 +810,6 @@ class EmbedEditor() {
         @JsonProperty("value")
         val value: String
     ) {
-
         @JsonProperty("inline")
         var inline: Boolean? = null
     }

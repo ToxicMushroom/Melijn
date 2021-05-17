@@ -59,9 +59,10 @@ suspend fun sendOnShard0(
         } else {
             val hostPattern = context.container.settings.botInfo.hostPattern
             val url = hostPattern.replace("{podId}", 0) + "/senddm/${user.idLong}/$extra"
+            val editorJson = objectMapper.writeValueAsString(editor)
             val res = objectMapper.readValue(
                 context.webManager.httpClient.post<String>(url) {
-                    body = objectMapper.writeValueAsString(editor)
+                    body = editorJson
                 }, Boolean::class.java
             )
             res

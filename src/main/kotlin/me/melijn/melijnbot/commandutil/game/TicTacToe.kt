@@ -103,42 +103,22 @@ object TicTacToe {
                     .setTitle(title)
                     .setDescription(description)
                 val yourAre1 = i18n.getTranslation(lang1, "message.ttt.yourare")
-                val pleaseWait1 = i18n.getTranslation(lang1, "message.ttt.pleasewait")
-                val yourTurn1 = i18n.getTranslation(lang1, "message.ttt.yourturn")
                 val yourAre2 = i18n.getTranslation(lang2, "message.ttt.yourare")
-                val pleaseWait2 = i18n.getTranslation(lang2, "message.ttt.pleasewait")
-                val yourTurn2 = i18n.getTranslation(lang2, "message.ttt.yourturn")
-                if (isTurnUserOne(gameField)) {
-                    baseMessage.setFooter(
-                        yourAre1.withVariable(
-                            "shape",
-                            TicTacToeGame.TTTState.O.representation
-                        ) + " $pleaseWait1"
-                    )
-                    msg1 = baseMessage.build()
-                    baseMessage.setFooter(
-                        yourAre2.withVariable(
-                            "shape",
-                            TicTacToeGame.TTTState.X.representation
-                        ) + " $yourTurn2"
-                    )
-                    msg2 = baseMessage.build()
-                } else {
-                    baseMessage.setFooter(
-                        yourAre1.withVariable(
-                            "shape",
-                            TicTacToeGame.TTTState.O.representation
-                        ) + " $yourTurn1"
-                    )
-                    msg1 = baseMessage.build()
-                    baseMessage.setFooter(
-                        yourAre2.withVariable(
-                            "shape",
-                            TicTacToeGame.TTTState.X.representation
-                        ) + " $pleaseWait2"
-                    )
-                    msg2 = baseMessage.build()
-                }
+                val (state1, state2) = getTurns(lang1, lang2, isTurnUserO(gameField))
+
+                msg1 = baseMessage.setFooter(
+                    yourAre1.withVariable(
+                        "shape",
+                        TicTacToeGame.TTTState.O.representation
+                    ) + " $state1"
+                ).build()
+
+                msg2 = baseMessage.setFooter(
+                    yourAre2.withVariable(
+                        "shape",
+                        TicTacToeGame.TTTState.X.representation
+                    ) + " $state2"
+                ).build()
             }
         }
 
@@ -146,7 +126,13 @@ object TicTacToe {
         pc2.sendMessage(msg2).queue()
     }
 
-    fun isTurnUserOne(game: Array<TicTacToeGame.TTTState>): Boolean {
+    private fun getTurns(lang1: String, lang2: String, turnOne: Boolean): Pair<String, String> {
+        val yourTurn = i18n.getTranslation(lang1, "message.ttt.yourturn")
+        val pleaseWait = i18n.getTranslation(lang2, "message.ttt.pleasewait")
+        return if (turnOne) yourTurn to pleaseWait else pleaseWait to yourTurn
+    }
+
+    fun isTurnUserO(game: Array<TicTacToeGame.TTTState>): Boolean {
         return game.count { state ->
             state == TicTacToeGame.TTTState.EMPTY
         } % 2 == 0

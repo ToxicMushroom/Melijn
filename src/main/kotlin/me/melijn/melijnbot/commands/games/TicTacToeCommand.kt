@@ -140,7 +140,6 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
                 val defaultDisabledDMsMessage = context.getTranslation("message.dmsdisabledfix")
 
                 optionMenu.setFooter("You are " + TicTacToeGame.TTTState.O.representation + " | Please wait for your opponent.")
-
                 val success = sendOnShard0(context, user1, optionMenu, "TTT")
                 if (!success) {
                     val msg = defaultDisabledDMsMessage.withVariable("user", context.author.asMention)

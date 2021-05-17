@@ -133,7 +133,6 @@ class GifSequenceReader(inputStream: ImageInputStream) {
                             // 0 == infinity loop
 
                             currentLoop = loopCount == 0
-                            println(loop.joinToString())
                         }
                     }
                 }

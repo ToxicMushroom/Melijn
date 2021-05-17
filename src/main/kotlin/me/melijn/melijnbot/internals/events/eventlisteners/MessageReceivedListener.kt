@@ -287,8 +287,8 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         if (author.isBot) return
 
         val game = container.daoManager.tttWrapper.getGame(author.idLong) ?: return
-        val tttState = if (author.idLong == game.user1 && TicTacToe.isTurnUserOne(game.gameState)) TicTacToeGame.TTTState.O
-        else if (author.idLong == game.user2 && !TicTacToe.isTurnUserOne(game.gameState)) TicTacToeGame.TTTState.X
+        val tttState = if (author.idLong == game.user1 && TicTacToe.isTurnUserO(game.gameState)) TicTacToeGame.TTTState.O
+        else if (author.idLong == game.user2 && !TicTacToe.isTurnUserO(game.gameState)) TicTacToeGame.TTTState.X
         else return
 
         parseFieldNMessage(event, game, tttState)?.let {
