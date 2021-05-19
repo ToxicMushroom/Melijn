@@ -14,7 +14,6 @@ import okhttp3.OkHttpClient
 import java.net.InetSocketAddress
 import java.net.Proxy
 
-
 class WebManager(val settings: Settings) {
 
     val objectMapper: ObjectMapper = jacksonObjectMapper()

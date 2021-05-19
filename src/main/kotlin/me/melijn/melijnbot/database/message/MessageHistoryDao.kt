@@ -48,7 +48,12 @@ class MessageHistoryDao(
     private fun encrypt(content: String, messageId: Long): String {
         if (content.isEmpty()) return ""
         val key = EncryptUtil.getKeyFromPassword(password, "$messageId")
-        return EncryptUtil.encrypt(content, key)
+        return EncryptUtil.encrypt(content, key).run {
+            if (this.length>5500) {
+                println("too big:$content")
+            }
+            this
+        }
     }
 
     private fun decrypt(content: String, messageId: Long): String {
