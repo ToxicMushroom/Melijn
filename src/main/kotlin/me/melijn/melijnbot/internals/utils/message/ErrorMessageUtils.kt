@@ -44,9 +44,10 @@ suspend fun Throwable.sendInGuildSuspend(
     extra: String? = null,
     shouldSend: Boolean = false
 ) {
-    if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
+    val settings = Container.instance.settings
+    if (settings.unLoggedThreads.contains(thread.name)) return
 
-    val channelId = Container.instance.settings.botInfo.exceptionChannel
+    val channelId = settings.botInfo.exceptionChannel
 
     val caseId = Base58.encode(
         ByteBuffer
@@ -80,9 +81,15 @@ suspend fun Throwable.sendInGuildSuspend(
     }
 
     if (Container.instance.logToDiscord) {
-        val host = Container.instance.settings.helperBot.host
-        Container.instance.webManager.httpClient.post<String>("$host/exception/$channelId") {
-            body = sb.toString()
+        val host = settings.helperBot.host
+        try {
+            val res = Container.instance.webManager.httpClient.post<String>("$host/exception/$channelId") {
+                header("Authorization", settings.helperBot.token)
+                body = sb.toString()
+            }
+            if (res != "success") println("Tried to report error but got: $res")
+        } catch (t: Throwable) {
+            t.printStackTrace()
         }
     }
 

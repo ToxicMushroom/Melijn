@@ -14,7 +14,7 @@ class MessageHistoryDao(
 
     override val table: String = "history_messages"
     override val tableStructure: String =
-        "guild_id bigint, channel_id bigint, author_id bigint, message_id bigint, content varchar(5500), embed varchar(6200), attachments varchar(4096), moment bigint"
+        "guild_id bigint, channel_id bigint, author_id bigint, message_id bigint, content varchar(16000), embed varchar(12000), attachments varchar(4096), moment bigint"
     override val primaryKey: String = "message_id"
 
     init {
@@ -48,12 +48,7 @@ class MessageHistoryDao(
     private fun encrypt(content: String, messageId: Long): String {
         if (content.isEmpty()) return ""
         val key = EncryptUtil.getKeyFromPassword(password, "$messageId")
-        return EncryptUtil.encrypt(content, key).run {
-            if (this.length>5500) {
-                println("too big:$content")
-            }
-            this
-        }
+        return EncryptUtil.encrypt(content, key)
     }
 
     private fun decrypt(content: String, messageId: Long): String {
