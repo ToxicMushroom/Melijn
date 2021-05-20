@@ -22,7 +22,11 @@ class CalculateCommand : AbstractCommand("command.calculate") {
             return
         }
 
-        var exp = Expression(context.rawArg).calculate().toString()
+        var exp = try {
+            Expression(context.rawArg).calculate().toString()
+        } catch (t: Throwable) {
+            "error"
+        }
         exp = if (exp.endsWith(".0")) exp.dropLast(2) else exp
         sendRsp(context, "Result: $exp")
     }
