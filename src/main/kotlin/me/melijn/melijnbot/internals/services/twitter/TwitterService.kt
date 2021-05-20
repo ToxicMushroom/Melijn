@@ -80,6 +80,7 @@ class TwitterService(
             .setUsername(selfUser.name)
             .setAvatarUrl(selfUser.effectiveAvatarUrl)
 
+        var all = 0
         for (tweet in tweets.tweetList.sortedBy { it.createdAt.toEpochSecond(ZoneOffset.UTC) }) {
             if (twitterWebhook.excludedTweetTypes.contains(tweet.type)) continue
             val eb = WebhookEmbedBuilder()
@@ -122,8 +123,12 @@ class TwitterService(
                 client.send(mb.build()).await()
             } catch (t: Throwable) {
                 t.printStackTrace()
-                return
+                all++
+                delay(100)
             }
+        }
+        if (all == tweets.tweetList.size) {
+            twitterWebhook.enabled = false
         }
     }
 
@@ -147,18 +152,13 @@ class TwitterService(
                 "expansions",
                 "author_id,entities.mentions.username,attachments.media_keys,referenced_tweets.id"
             )
+            val excludedTweetTypes = twitterWebhook.excludedTweetTypes
             when {
-                twitterWebhook.excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) && twitterWebhook.excludedTweetTypes.contains(
+                excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) && excludedTweetTypes.contains(
                     TweetInfo.TweetType.RETWEET
-                ) -> {
-                    parameter("exclude", "replies,retweets")
-                }
-                twitterWebhook.excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) -> {
-                    parameter("exclude", "replies")
-                }
-                twitterWebhook.excludedTweetTypes.contains(TweetInfo.TweetType.RETWEET) -> {
-                    parameter("exclude", "retweets")
-                }
+                ) -> parameter("exclude", "replies,retweets")
+                excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) -> parameter("exclude", "replies")
+                excludedTweetTypes.contains(TweetInfo.TweetType.RETWEET) -> parameter("exclude", "retweets")
             }
             parameter("tweet.fields", "created_at")
             parameter("media.fields", "preview_image_url,type,url")

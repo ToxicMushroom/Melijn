@@ -103,5 +103,5 @@ data class TwitterWebhook(
     var lastTweetId: Long,
     var lastTweetTime: Long,
     val monthStart: Long,
-    val enabled: Boolean
+    var enabled: Boolean
 )
