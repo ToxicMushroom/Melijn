@@ -1,8 +1,8 @@
 package me.melijn.melijnbot.internals.utils.message
 
+import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n
@@ -47,7 +47,6 @@ suspend fun Throwable.sendInGuildSuspend(
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 
     val channelId = Container.instance.settings.botInfo.exceptionChannel
-    val textChannel = MelijnBot.shardManager.getTextChannelById(channelId) ?: return
 
     val caseId = Base58.encode(
         ByteBuffer
@@ -79,8 +78,12 @@ suspend fun Throwable.sendInGuildSuspend(
         sb.appendLine("**Extra**")
         sb.appendLine(it)
     }
+
     if (Container.instance.logToDiscord) {
-        sendMsg(textChannel, sb.toString())
+        val host = Container.instance.settings.helperBot.host
+        Container.instance.webManager.httpClient.post<String>("$host/exception/$channelId") {
+            body = sb.toString()
+        }
     }
 
     if (shouldSend && channel != null && (channel !is TextChannel || channel.canTalk()) && (channel is TextChannel || channel is PrivateChannel)) {

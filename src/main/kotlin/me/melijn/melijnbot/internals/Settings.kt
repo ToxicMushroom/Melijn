@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.utils.data.DataArray
 data class Settings(
     val botInfo: BotInfo,
     val restServer: RestServer,
+    val helperBot: HelperBot,
     val api: Api,
     val proxy: Proxy,
     val environment: Environment,
@@ -123,6 +124,11 @@ data class Settings(
         val streakExpireHours: Int
     )
 
+    data class HelperBot(
+        val host: String,
+        val token: String
+    )
+
     companion object {
         private val dotenv = dotenv {
             this.filename = System.getenv("ENV_FILE") ?: ".env"
@@ -165,6 +171,10 @@ data class Settings(
                 RestServer(
                     getInt("restserver.port"),
                     get("restserver.token")
+                ),
+                HelperBot(
+                    get("helperbot.host"),
+                    get("helperbot.token")
                 ),
                 Api(
                     Api.Jikan(
