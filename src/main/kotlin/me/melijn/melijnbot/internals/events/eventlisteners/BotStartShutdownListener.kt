@@ -30,6 +30,9 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
         if (event.newStatus == JDA.Status.CONNECTED) {
             val readyShards = shardManager.shards.count { jda -> jda.status == JDA.Status.CONNECTED }
             logger.info("$readyShards/${shardManager.shards.size} shards ready")
+            event.jda.emotes.forEach {
+                container.daoManager.emoteCache.save(it)
+            }
 
             if (readyShards != PodInfo.shardsPerPod) return
 

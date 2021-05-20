@@ -2,6 +2,8 @@ package me.melijn.melijnbot.internals.utils
 
 import me.melijn.melijnbot.database.ban.BotBannedWrapper.Companion.isBotBanned
 import me.melijn.melijnbot.database.locking.EntityType
+import me.melijn.melijnbot.database.statesync.LiteEmote
+import me.melijn.melijnbot.database.statesync.toLite
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
@@ -403,7 +405,7 @@ suspend fun getEmotejiByArgsNMessage(
     context: ICommandContext,
     index: Int,
     sameGuildAsContext: Boolean = false
-): Pair<Emote?, String?>? {
+): Pair<LiteEmote?, String?>? {
     if (argSizeCheckFailed(context, index)) return null
     val emoteji = getEmotejiByArgsN(context, index, sameGuildAsContext)
     if (emoteji == null) {
@@ -420,7 +422,7 @@ suspend fun getEmotejiByArgsN(
     context: ICommandContext,
     index: Int,
     sameGuildAsContext: Boolean = false
-): Pair<Emote?, String?>? {
+): Pair<LiteEmote?, String?>? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val emoji = if (SupportedDiscordEmoji.helpMe.contains(arg)) {
@@ -430,7 +432,7 @@ suspend fun getEmotejiByArgsN(
     }
 
     val emote = if (emoji == null) {
-        getEmoteByArgsN(context, index, sameGuildAsContext)
+        getEmoteByArgsN(context, index, sameGuildAsContext)?.toLite()
     } else null
 
     if (emoji == null && emote == null) {

@@ -17,6 +17,8 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.internal.entities.EmoteImpl
+import net.dv8tion.jda.internal.entities.GuildImpl
 
 // const val UNKNOWN_SELFROLEMODE_PATH = "message.unknown.selfrolemode"
 
@@ -106,9 +108,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             ) = emotejiList.any {
                 if (it.isPositiveNumber()) {
                     val emote = context.guild.getEmoteById(it)
-                    if (emote != null) return@any false
-                    val remoteEmote = context.shardManager.getEmoteById(it)
-                    remoteEmote != null
+                    emote == null
                 } else false
             }
         }
@@ -264,7 +264,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         companion object {
-            fun addEmotejisToMsg(
+            suspend fun addEmotejisToMsg(
                 emotejisForMsg: List<String>,
                 msg: Message,
                 context: ICommandContext
@@ -273,9 +273,17 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
                     if (isEmoji) {
                         msg.addReaction(emoteji).queue()
-                    } else {
+                    } else if (emoteji.isPositiveNumber()) {
                         val emote = context.guild.getEmoteById(emoteji)
                             ?: context.shardManager.getEmoteById(emoteji)
+                            ?: context.daoManager.emoteCache.getEmote(emoteji.toLong())?.run {
+                                val guildImpl = context.shardManager.guilds.first { it.idLong != msg.guild.idLong } as GuildImpl
+                                EmoteImpl(emoteji.toLong(), guildImpl)
+                                    .setName(this.name)
+                                    .setAnimated(this.isAnimated)
+                                    .setAvailable(this.isAvailable)
+                                    .setManaged(this.isManaged)
+                            }
                         emote?.let { msg.addReaction(it).queue() }
                     }
                 }
@@ -992,7 +1000,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     pair.second
                 } else {
                     pair.first?.name?.let { rname = it }
-                    pair.first?.id
+                    pair.first?.id.toString()
                 } ?: return
 
                 val name = rname
@@ -1029,7 +1037,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                         pair.second
                     } else {
                         pair.first?.name?.let { rname = it }
-                        pair.first?.id
+                        pair.first?.id.toString()
                     } ?: return
 
                     val name = rname
@@ -1102,7 +1110,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val emoteji = if (pair.first == null) {
                 pair.second
             } else {
-                pair.first?.id
+                pair.first?.id.toString()
             } ?: return
 
             val emoteName = if (pair.first == null) {

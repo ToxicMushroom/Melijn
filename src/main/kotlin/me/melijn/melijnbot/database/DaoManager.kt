@@ -69,6 +69,7 @@ import me.melijn.melijnbot.database.starboard.StarboardMessageDao
 import me.melijn.melijnbot.database.starboard.StarboardMessageWrapper
 import me.melijn.melijnbot.database.starboard.StarboardSettingsDao
 import me.melijn.melijnbot.database.starboard.StarboardSettingsWrapper
+import me.melijn.melijnbot.database.statesync.EmoteCacheDao
 import me.melijn.melijnbot.database.supporter.SupporterDao
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.time.TimeZoneDao
@@ -103,6 +104,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
         val afterTableFunctions = mutableListOf<() -> Unit>()
     }
 
+    val emoteCache: EmoteCacheDao
     val tracksWrapper: TracksWrapper
     val playlistWrapper: PlaylistWrapper
     val songCacheWrapper: SongCacheWrapper
@@ -231,6 +233,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
             connectorVersion = driverManager.getConnectorVersion()
         }
 
+        emoteCache = EmoteCacheDao(driverManager)
         tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
         playlistWrapper = PlaylistWrapper(PlaylistDao(driverManager))
         songCacheWrapper = SongCacheWrapper(SongCacheDao(driverManager))

@@ -47,7 +47,7 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
 
                 }
                 first != null -> {
-                    wrapper.setEmoteji(context.guildId, first.id)
+                    wrapper.setEmoteji(context.guildId, first.id.toString())
                     context.getTranslation("$root.set.emote")
                         .withVariable("emoteId", first.id)
                         .withVariable("emoteName", first.name)
