@@ -95,12 +95,11 @@ class LavaManager(
     }
 
 
-    suspend fun closeConnectionLite(guildId: Long) {
+    private suspend fun closeConnectionLite(guildId: Long) {
         val guild = MelijnBot.shardManager.getGuildById(guildId)
 
         if (jdaLavaLink == null) {
             guild?.audioManager?.closeAudioConnection()
-
         } else {
             jdaLavaLink.getExistingLink(guildId)?.destroy()
             logger.info(

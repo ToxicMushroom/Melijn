@@ -40,7 +40,7 @@ class MusicPlayerManager(
             val newMusicPlayer = GuildMusicPlayer(daoManager, lavaManager, guild.idLong, "normal")
 
             guildMusicPlayers[guild.idLong] = newMusicPlayer
-            logger.debug("new player for ${guild.id}")
+            logger.info("new player for ${guild.id}")
 
             if (!lavaManager.lavalinkEnabled) {
                 guild.audioManager.sendingHandler = newMusicPlayer.getSendHandler()

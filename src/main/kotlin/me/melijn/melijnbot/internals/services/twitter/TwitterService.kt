@@ -1,15 +1,22 @@
 package me.melijn.melijnbot.internals.services.twitter
 
+import club.minnced.discord.webhook.WebhookClientBuilder
+import club.minnced.discord.webhook.external.JDAWebhookClient
+import club.minnced.discord.webhook.send.WebhookEmbed
+import club.minnced.discord.webhook.send.WebhookEmbedBuilder
+import club.minnced.discord.webhook.send.WebhookMessageBuilder
 import io.ktor.client.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.socialmedia.TwitterWebhook
 import me.melijn.melijnbot.database.socialmedia.TwitterWrapper
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.services.Service
 import me.melijn.melijnbot.internals.threading.RunnableTask
-import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.getArrayN
+import me.melijn.melijnbot.internals.utils.getObjectN
+import me.melijn.melijnbot.internals.utils.remove
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
@@ -57,24 +64,44 @@ class TwitterService(
 
     private suspend fun postNewTweets(twitterWebhook: TwitterWebhook, tweets: Tweets) {
         if (tweets.tweetList.isEmpty()) return
-        val body = DataObject.empty()
         val selfUser = shardManager.shards.first().selfUser
-        body["username"] = selfUser.name
-        body["avatar_url"] = selfUser.effectiveAvatarUrl
+        val builder = WebhookClientBuilder(twitterWebhook.webhookUrl.replace("discord.com/api", "discord.com/api/v8"))
+
+        builder.setThreadFactory { job ->
+            val thread = Thread(job)
+            thread.name = "Hello"
+            thread.isDaemon = true
+            thread
+        }
+        builder.setWait(true)
+        val client: JDAWebhookClient = builder.buildJDA()
+
+        val mb = WebhookMessageBuilder()
+            .setUsername(selfUser.name)
+            .setAvatarUrl(selfUser.effectiveAvatarUrl)
 
         for (tweet in tweets.tweetList.sortedBy { it.createdAt.toEpochSecond(ZoneOffset.UTC) }) {
             if (twitterWebhook.excludedTweetTypes.contains(tweet.type)) continue
-            val embed = DataObject.empty()
-            val url = "https://twitter.com/${twitterWebhook.handle}/status/${tweet.id}"
-            embed["type"] = "rich"
-            embed["color"] = 0x1A91DA
+            val eb = WebhookEmbedBuilder()
+                .setColor(0x1A91DA)
+                .setDescription("Hello World")
+                .setTimestamp(tweet.createdAt.atOffset(ZoneOffset.UTC))
 
+            val url = "https://twitter.com/${twitterWebhook.handle}/status/${tweet.id}"
+            val title = when (tweet.type) {
+                TweetInfo.TweetType.POST -> "${tweets.author.name} posted:"
+                TweetInfo.TweetType.REPLY -> "${tweets.author.name} replied:"
+                TweetInfo.TweetType.POLL -> "${tweets.author.name} posted a poll:"
+                TweetInfo.TweetType.RETWEET -> "${tweets.author.name} retweeted:"
+                TweetInfo.TweetType.QUOTED -> "${tweets.author.name} quoted:"
+            }
+            eb.setAuthor(WebhookEmbed.EmbedAuthor(title, tweets.author.avatarUrl, url))
 
             var content = tweet.content
-            if (content.takeLastWhile { it != ' ' }.contains("https://t.co/", true)
-            ) { // Remove appended tweet urls
-                content = content.dropLastWhile { it != ' ' }
-            }
+            if (content.takeLastWhile {
+                    it != ' '
+                }.contains("https://t.co/", true)
+            ) content = content.dropLastWhile { it != ' ' } // Remove appended tweet urls
 
             val orderedMentions = tweet.mentions.sortedBy { it.end }.reversed()
             for ((start, end, handle) in orderedMentions) {
@@ -84,34 +111,15 @@ class TwitterService(
             }
 
             content = StringEscapeUtils.unescapeHtml4(content)
-            embed["description"] = content
+            eb.setDescription(content)
             if (tweet.media.isNotEmpty()) {
-                embed["image"] = DataObject.empty().put("url", tweet.media.first().url)
+                eb.setImageUrl(tweet.media.first().url)
             }
 
-            val title = when (tweet.type) {
-                TweetInfo.TweetType.POST -> "${tweets.author.name} posted:"
-                TweetInfo.TweetType.REPLY -> "${tweets.author.name} replied:"
-                TweetInfo.TweetType.POLL -> "${tweets.author.name} posted a poll:"
-                TweetInfo.TweetType.RETWEET -> "${tweets.author.name} retweeted:"
-                TweetInfo.TweetType.QUOTED -> "${tweets.author.name} quoted:"
-            }
-
-            val author = DataObject.empty()
-            author["name"] = title
-            author["url"] = url
-            author["icon_url"] = tweets.author.avatarUrl
-            embed["author"] = author
-            embed["timestamp"] = tweet.createdAt.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
-            val embeds = DataArray.empty()
-            embeds.add(embed)
-            body["embeds"] = embeds
+            mb.addEmbeds(eb.build())
 
             try {
-                httpClient.post<HttpResponse>(twitterWebhook.webhookUrl) {
-                    this.body = body.toString()
-                    header("content-type", "application/json")
-                }
+                client.send(mb.build()).await()
             } catch (t: Throwable) {
                 t.printStackTrace()
                 return
@@ -121,7 +129,7 @@ class TwitterService(
 
     private val twitterDotCoRegex = "https://t\\.co/[a-zA-Z0-9]+".toRegex()
     private suspend fun fetchNewTweets(twitterWebhook: TwitterWebhook): Tweets? {
-        logger.info("Twitter fetch for: ${twitterWebhook.handle} (id=${twitterWebhook.twitterUserId})")
+        logger.debug("Twitter fetch for: ${twitterWebhook.handle} (id=${twitterWebhook.twitterUserId})")
         val patternFormatRFC3339 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
         val lastTweetTime = OffsetDateTime.ofInstant(
             Instant.ofEpochMilli(twitterWebhook.lastTweetTime), ZoneOffset.UTC

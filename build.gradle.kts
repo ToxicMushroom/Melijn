@@ -55,6 +55,9 @@ dependencies {
     implementation("net.dv8tion:JDA:4.2.1_264") {
         exclude("opus-java")
     }
+    // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
+    implementation("club.minnced:discord-webhooks:0.5.7")
+
 
     // https://github.com/sedmelluq/jda-nas
     implementation("com.sedmelluq:jda-nas:1.1.0")
