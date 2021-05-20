@@ -43,8 +43,6 @@ class LavaManager(
         } else {
             jdaLavaLink.getLink(channel.guild.idLong, groupId).connect(channel)
         }
-
-        musicPlayerManager.getGuildMusicPlayer(channel.guild)
     }
 
     /**

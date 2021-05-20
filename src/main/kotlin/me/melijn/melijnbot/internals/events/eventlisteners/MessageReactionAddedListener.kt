@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.SelfRoleUtil
 import me.melijn.melijnbot.internals.music.DONATE_QUEUE_LIMIT
+import me.melijn.melijnbot.internals.music.MusicPlayerManager
 import me.melijn.melijnbot.internals.music.QUEUE_LIMIT
 import me.melijn.melijnbot.internals.music.TrackUserData
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -381,11 +382,11 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
     private suspend fun searchMenuHandler(event: GuildMessageReactionAddEvent) {
         if (event.reactionEmote.isEmote || event.user.isBot) return
         val guild = event.guild
-        val guildPlayer = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(guild)
+        val guildPlayer = MusicPlayerManager.guildMusicPlayers[guild.idLong] ?: return
         val menus = guildPlayer.searchMenus
-        val menu = menus.getOrElse(event.messageIdLong, {
+        val menu = menus.getOrElse(event.messageIdLong) {
             return
-        })
+        }
 
         val tracks = menu.audioTracks
 

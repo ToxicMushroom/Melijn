@@ -43,11 +43,13 @@ object VoiceUtil {
         if (musicUrl.isBlank()) return
 
         val musicPlayerManager = container.lavaManager.musicPlayerManager
-        val trackManager = musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager
         val audioLoader = musicPlayerManager.audioLoader
-        val iPlayer = trackManager.iPlayer
 
-        if (musicChannel.id == botChannel?.id && channelUpdate.id == botChannel.id && iPlayer.playingTrack != null) {
+        if (
+            musicChannel.id == botChannel?.id &&
+            channelUpdate.id == botChannel.id &&
+            MusicPlayerManager.guildMusicPlayers[guild.idLong]?.guildTrackManager?.playingTrack != null
+        ) {
             return
         } else if (musicChannel.id == botChannel?.id && channelUpdate.id == botChannel.id) {
             if (listeningMembers(musicChannel, container.settings.botInfo.id) > 0) {
@@ -62,7 +64,7 @@ object VoiceUtil {
             }
         } else if (botChannel == null && musicChannel.id == channelUpdate.id) {
             if (listeningMembers(musicChannel, container.settings.botInfo.id) > 0) {
-                val groupId = trackManager.groupId
+                val groupId = musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager.groupId
                 if (container.lavaManager.tryToConnectToVCSilent(musicChannel, groupId)) {
                     audioLoader.loadNewTrack(
                         daoManager,
@@ -126,11 +128,11 @@ object VoiceUtil {
             val guild = shardManager.getGuildById(guildId) ?: continue
             val channel = channelMap[guildId]?.let { guild.getVoiceChannelById(it) } ?: continue
 
-            val groupId = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(guild).groupId
+            val player = mpm.getGuildMusicPlayer(guild)
+            val groupId = player.groupId
             if (container.lavaManager.tryToConnectToVCSilent(channel, groupId)) {
-                val mp = mpm.getGuildMusicPlayer(guild)
                 for (track in tracks) {
-                    mp.safeQueueSilent(container.daoManager, track, NextSongPosition.BOTTOM)
+                    player.safeQueueSilent(container.daoManager, track, NextSongPosition.BOTTOM)
                 }
             }
         }
