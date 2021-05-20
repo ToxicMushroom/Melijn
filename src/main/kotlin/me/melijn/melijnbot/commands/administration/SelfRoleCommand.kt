@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.database.role.SelfRoleGroup
+import me.melijn.melijnbot.database.statesync.getEmote
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -344,11 +345,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 roleMention = roleMention.removeSuffix(", ")
 
                 val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
-                val emotejiValue = if (isEmoji) emoteji else {
-                    val emote = context.guild.getEmoteById(emoteji)
-                        ?: context.shardManager.getEmoteById(emoteji)
-                    emote?.asMention ?: "error"
-                }
+                val emotejiValue = when {
+                    isEmoji -> emoteji
+                    emoteji.isPositiveNumber() -> getEmote(context, emoteji.toLong())?.asMention
+                    else -> null
+                } ?: "error"
                 val body = bodyFormat
                     .withVariable("name", name)
                     .withVariable("role", roleMention)

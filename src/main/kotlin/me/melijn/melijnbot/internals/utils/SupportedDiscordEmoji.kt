@@ -2,6 +2,7 @@ package me.melijn.melijnbot.internals.utils
 
 object SupportedDiscordEmoji {
     val helpMe = setOf(
+        "\uD83E\uDEB1",
         "🀄",
         "🃏",
         "🅰️",
