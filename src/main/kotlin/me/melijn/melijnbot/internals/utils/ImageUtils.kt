@@ -125,6 +125,7 @@ object ImageUtils {
     private fun changeUrlToFitTypes(url: String, acceptTypes: Set<ImageType>?): String {
         if (acceptTypes == null || acceptTypes.isEmpty()) return url
         if (acceptTypes.contains(ImageType.GIF) && url.endsWith(".gif", true)) return url
+        if (acceptTypes.any { url.endsWith(".$it", true) }) return url
 
         val importance = { type: ImageType ->
             when (type) {
@@ -146,8 +147,11 @@ object ImageUtils {
         proxy: Boolean = false
     ): ByteArray? {
         val bytes = downloadBytes(context, url, doChecks, proxy)
-        if (bytes == null) {
-            sendRsp(context, "Couldn't download your image :/")
+        if (bytes == null || bytes.isEmpty()) {
+            sendRsp(context, "Couldn't download your image :/\nUrl: %url%"
+                .withVariable("url", url)
+            )
+            return null
         }
         return bytes
     }
@@ -159,7 +163,7 @@ object ImageUtils {
         proxy: Boolean = false
     ): ByteArray? {
         val client = if (proxy) context.webManager.proxiedHttpClient else context.webManager.httpClient
-        return downloadBytes(client, url, false, context.guildN, context) ?: return null
+        return downloadBytes(client, url, false, context.guildN, context)
     }
 
     suspend fun downloadBytes(

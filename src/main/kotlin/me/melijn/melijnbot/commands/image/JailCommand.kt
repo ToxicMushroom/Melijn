@@ -34,20 +34,20 @@ class JailCommand : AbstractCommand("command.jail") {
         val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
 
         if (image.type == ImageType.GIF) {
-            sharpenGif(context, image)
+            jailGif(context, image)
         } else {
-            sharpenNormal(context, image)
+            jailNormal(context, image)
         }
     }
 
-    private suspend fun sharpenNormal(context: ICommandContext, image: ParsedImageByteArray) {
+    private suspend fun jailNormal(context: ICommandContext, image: ParsedImageByteArray) {
         ImageCommandUtil.applyImmutableImgModification(context, image, { img ->
             val jailRaw = jail.scaleTo(img.width, img.height).awt()
             img.overlayInPlace(jailRaw, 0, 0)
         },  message = "**Go to jail** \uD83D\uDC6E\u200D♀️")
     }
 
-    private suspend fun sharpenGif(context: ICommandContext, image: ParsedImageByteArray) {
+    private suspend fun jailGif(context: ICommandContext, image: ParsedImageByteArray) {
         var jailRaw: BufferedImage? = null
         ImageCommandUtil.applyGifImmutableFrameModification(context, image, { img ->
             val temp = jailRaw ?: run {

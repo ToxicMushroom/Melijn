@@ -7,10 +7,7 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
-import me.melijn.melijnbot.internals.utils.ImageType
-import me.melijn.melijnbot.internals.utils.ImageUtils
-import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
 
 class PixelateCommand : AbstractCommand("command.pixelate") {
@@ -27,23 +24,26 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
     override suspend fun execute(context: ICommandContext) {
         val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
         val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
-        val blockSize = if (context.args.size > 1) getIntegerFromArgNMessage(context, 1, 1, 50) ?: return else 1
+        val offset = image.usedArgument + 0
+        val intensity = context.optional(offset, 4) { getIntegerFromArgNMessage(context, it, 1, 100) } ?: return
         if (image.type == ImageType.GIF) {
-            pixelateGif(context, image, blockSize)
+            pixelateGif(context, image, intensity)
         } else {
-            pixelateNormal(context, image, blockSize)
+            pixelateNormal(context, image, intensity)
         }
     }
 
     private suspend fun pixelateNormal(context: ICommandContext, image: ParsedImageByteArray, blockSize: Int) {
         ImageCommandUtil.applyImmutableImgModification(context, image, { img ->
-            PixelateFilter(blockSize).apply(img)
+            val res = ((img.width + img.height) / 400).toFloat() * blockSize
+            PixelateFilter(res.toInt()).apply(img)
         })
     }
 
     private suspend fun pixelateGif(context: ICommandContext, image: ParsedImageByteArray, blockSize: Int) {
         ImageCommandUtil.applyGifImmutableFrameModification(context, image, { img ->
-            PixelateFilter(blockSize).apply(img)
+            val res = ((img.width + img.height) / 400).toFloat() * blockSize
+            PixelateFilter(res.toInt()).apply(img)
         })
     }
 }

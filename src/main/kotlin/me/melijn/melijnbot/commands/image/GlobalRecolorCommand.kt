@@ -7,10 +7,7 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
-import me.melijn.melijnbot.internals.utils.ImageType
-import me.melijn.melijnbot.internals.utils.ImageUtils
-import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
-import me.melijn.melijnbot.internals.utils.getColorFromArgNMessage
+import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
 import java.awt.Color
 
@@ -27,8 +24,9 @@ class GlobalRecolorCommand : AbstractCommand("command.globalrecolor") {
 
     override suspend fun execute(context: ICommandContext) {
         val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
-        val color = getColorFromArgNMessage(context, 1) ?: return
         val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
+        val offset = image.usedArgument + 0
+        val color = getColorFromArgNMessage(context, offset) ?: return
         if (image.type == ImageType.GIF) {
             greyscaleGif(context, image, color)
         } else {

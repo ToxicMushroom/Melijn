@@ -6,10 +6,7 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
-import me.melijn.melijnbot.internals.utils.ImageType
-import me.melijn.melijnbot.internals.utils.ImageUtils
-import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
 import thirdparty.jhlabs.image.SharpenFilter
 import java.awt.image.BufferedImage
@@ -29,7 +26,8 @@ class SharpenCommand : AbstractCommand("command.sharpen") {
     override suspend fun execute(context: ICommandContext) {
         val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
         val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
-        val intensity = if (context.args.size > 1) getIntegerFromArgNMessage(context, 1, 1, 100) ?: return else 1
+        val offset = image.usedArgument + 0
+        val intensity = context.optional(offset, 1) { getIntegerFromArgNMessage(context, it, 1, 100) } ?: return
         if (image.type == ImageType.GIF) {
             sharpenGif(context, image, intensity)
         } else {

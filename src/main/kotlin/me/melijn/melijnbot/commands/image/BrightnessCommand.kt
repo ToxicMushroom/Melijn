@@ -9,8 +9,8 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.ImageType
 import me.melijn.melijnbot.internals.utils.ImageUtils
-import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
 import me.melijn.melijnbot.internals.utils.getFloatFromArgNMessage
+import me.melijn.melijnbot.internals.utils.plus
 import net.dv8tion.jda.api.Permission
 
 class BrightnessCommand : AbstractCommand("command.brightness") {
@@ -25,11 +25,11 @@ class BrightnessCommand : AbstractCommand("command.brightness") {
     override suspend fun execute(context: ICommandContext) {
         val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
         val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
-        val brightness = getFloatFromArgNMessage(context, 1) ?: return
+        val brightness = getFloatFromArgNMessage(context, image.usedArgument + 0) ?: return
         if (image.type == ImageType.GIF) {
-            brightnessGif(context, image, brightness)
+            ImageCommandUtil.applyGifImmutableFrameModification(context, image, modification(brightness))
         } else {
-            brightnessNormal(context, image, brightness)
+            ImageCommandUtil.applyImmutableImgModification(context, image, modification(brightness))
         }
     }
 
@@ -37,13 +37,5 @@ class BrightnessCommand : AbstractCommand("command.brightness") {
         { img ->
             BrightnessFilter(brightness).apply(img)
         }
-    }
-
-    private suspend fun brightnessNormal(context: ICommandContext, image: ParsedImageByteArray, brightness: Float) {
-        ImageCommandUtil.applyImmutableImgModification(context, image, modification(brightness))
-    }
-
-    private suspend fun brightnessGif(context: ICommandContext, image: ParsedImageByteArray, brightness: Float) {
-        ImageCommandUtil.applyGifImmutableFrameModification(context, image, modification(brightness))
     }
 }

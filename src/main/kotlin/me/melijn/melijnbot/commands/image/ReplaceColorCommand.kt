@@ -24,47 +24,35 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
 
     override suspend fun execute(context: ICommandContext) {
         val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
-        val color = getColorFromArgNMessage(context, 1) ?: return
-        var target = getColorFromArgNMessage(context, 2) ?: return
-        val alpha = if (context.args.size > 3) getIntegerFromArgNMessage(context, 3) ?: return else 255
-        target = Color(target.red, target.green, target.blue, alpha)
         val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
+        val offset = image.usedArgument + 0
+
+        val color = getColorFromArgNMessage(context, offset) ?: return
+        var target = getColorFromArgNMessage(context, offset + 1) ?: return
+        val srcAlpha = context.optional(offset + 2, 255) { getIntegerFromArgNMessage(context, it, -1, 255) } ?: return
+        val alpha = context.optional(offset + 3, 255) { getIntegerFromArgNMessage(context, it, 0, 255) } ?: return
+        target = Color(target.red, target.green, target.blue, alpha)
+
         if (image.type == ImageType.GIF) {
-            replaceColorGif(context, image, color, target)
+            ImageCommandUtil.applyGifImmutableFrameModification(context, image, modification(color, srcAlpha, target))
         } else {
-            replaceColorNormal(context, image, color, target)
+            ImageCommandUtil.applyImmutableImgModification(context, image, modification(color, srcAlpha, target))
         }
     }
 
-    private val modification: (src: Color, target: Color) -> ((img: ImmutableImage) -> Unit) = { src, target ->
-        { img ->
-            img.mapInPlace {
-                if (
-                    it.red() == src.red &&
-                    it.green() == src.green &&
-                    it.blue() == src.blue
-                ) {
-                    target
-                } else Color(it.argb, true)
+    private val modification: (src: Color, srcAlpha: Int, target: Color) -> ((img: ImmutableImage) -> Unit) =
+        { src, srcAlpha, target ->
+            { img ->
+                img.mapInPlace {
+                    if (
+                        it.red() == src.red &&
+                        it.green() == src.green &&
+                        it.blue() == src.blue &&
+                        (srcAlpha == -1 || src.alpha == srcAlpha)
+                    ) {
+                        target
+                    } else Color(it.argb, true)
+                }
             }
         }
-    }
-
-    private suspend fun replaceColorNormal(
-        context: ICommandContext,
-        image: ParsedImageByteArray,
-        color: Color,
-        target: Color
-    ) {
-        ImageCommandUtil.applyImmutableImgModification(context, image, modification(color, target))
-    }
-
-    private suspend fun replaceColorGif(
-        context: ICommandContext,
-        image: ParsedImageByteArray,
-        color: Color,
-        target: Color
-    ) {
-        ImageCommandUtil.applyGifImmutableFrameModification(context, image, modification(color, target))
-    }
 }

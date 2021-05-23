@@ -12,12 +12,12 @@ import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
 import net.dv8tion.jda.api.Permission
 import java.awt.Color
 
-class FlipImgCommand : AbstractCommand("command.flipy") {
+class FlipImgCommand : AbstractCommand("command.flipimg") {
 
     init {
         id = 129
-        name = "flipY"
-        aliases = arrayOf("flipY", "flipYGif")
+        name = "flipImg"
+        aliases = arrayOf("flipY", "flipGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }

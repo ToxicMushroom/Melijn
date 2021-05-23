@@ -6,12 +6,10 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
-import me.melijn.melijnbot.internals.utils.ImageType
-import me.melijn.melijnbot.internals.utils.ImageUtils
-import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
 import thirdparty.jhlabs.image.BoxBlurFilter
+import java.awt.image.BufferedImage
 
 class BlurCommand : AbstractCommand("command.blur") {
 
@@ -28,23 +26,17 @@ class BlurCommand : AbstractCommand("command.blur") {
     override suspend fun execute(context: ICommandContext) {
         val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
         val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
-        val intensity = if (context.args.size > 1) getIntegerFromArgNMessage(context, 1, 1, 10) ?: return else 1
+        val offset = image.usedArgument + 0
+        val intensity = context.optional(offset, 1) { getIntegerFromArgNMessage(context, it, 1, 10) } ?: return
         if (image.type == ImageType.GIF) {
-            blurGif(context, image, intensity)
+            ImageCommandUtil.applyGifBufferFrameModification(context, image, modifications(intensity))
         } else {
-            blurNormal(context, image, intensity)
+            ImageCommandUtil.applyBufferedImgModification(context, image, modifications(intensity))
         }
     }
 
-    private suspend fun blurNormal(context: ICommandContext, image: ParsedImageByteArray, intensity: Int) {
-        ImageCommandUtil.applyBufferedImgModification(context, image) { src, dst ->
-            val res = ((src.width + src.height) / 100).toFloat() * intensity
-            BoxBlurFilter(res, res, 1).filter(src, dst)
-        }
-    }
-
-    private suspend fun blurGif(context: ICommandContext, image: ParsedImageByteArray, intensity: Int) {
-        ImageCommandUtil.applyGifBufferFrameModification(context, image) { src, dst ->
+    val modifications: (intensity: Int) -> ((src: BufferedImage, dst: BufferedImage) -> Unit) = { intensity ->
+        { src, dst ->
             val res = ((src.width + src.height) / 100).toFloat() * intensity
             BoxBlurFilter(res, res, 1).filter(src, dst)
         }

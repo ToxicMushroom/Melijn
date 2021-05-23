@@ -11,12 +11,12 @@ import me.melijn.melijnbot.internals.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 import java.awt.Color
 
-class MirrorCommand : AbstractCommand("command.flipx") {
+class MirrorCommand : AbstractCommand("command.mirror") {
 
     init {
         id = 130
-        name = "flipX"
-        aliases = arrayOf("flipXGif", "mirror")
+        name = "mirror"
+        aliases = arrayOf("flipXGif", "flipXImg", "mirrorGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }

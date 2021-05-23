@@ -282,7 +282,10 @@ class CommandClientBuilder(private val container: Container) {
         BotBanCommand(),
         VintageCommand(),
         SpeedupGif(),
-        BrightnessCommand()
+        BrightnessCommand(),
+        JPGCommand(),
+        PNGCommand(),
+        WebpCommand()
     )
 
     fun build(): CommandClient {

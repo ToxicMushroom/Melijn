@@ -33,7 +33,7 @@ fun getSystemUptime(): Long {
         val os = System.getProperty("os.name").lowercase()
         if (os.contains("win")) {
             uptime = getWindowsUptime()
-        } else if (os.contains("mac") || os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+        } else if (os.contains("web_binariesaa/mac") || os.contains("nix") || os.contains("nux") || os.contains("aix")) {
             uptime = getUnixUptime()
         }
         uptime
@@ -534,4 +534,14 @@ suspend fun <K, V> Map<K, V>.first(function: suspend (Map.Entry<K, V>) -> Boolea
         if (function(entry)) return entry
     }
     throw IllegalStateException("Map#first failed to return, predicate was false for all of the entries")
+}
+
+suspend fun <T> ICommandContext.optional(index: Int, default: T, func: suspend (Int) -> T): T {
+    return if (this.args.size > index) func(index)
+    else default
+}
+
+operator fun Boolean.plus(i: Int): Int {
+    return if (this) i + 1
+    else i
 }

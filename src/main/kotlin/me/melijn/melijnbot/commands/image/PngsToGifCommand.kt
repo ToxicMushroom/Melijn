@@ -6,8 +6,9 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.ImageUtils
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
+import me.melijn.melijnbot.internals.utils.optional
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
@@ -25,8 +26,8 @@ class PngsToGifCommand : AbstractCommand("command.pngstogif") {
         val parsedImages = ImageUtils.getImagesBytesNMessage(context, 0) ?: return
 
         val argOffset = if (parsedImages.usedArgument) 1 else 0
-        val iterations = getIntegerFromArgN(context, argOffset) ?: 0
-        val delay = getIntegerFromArgN(context, argOffset + 1, 0) ?: 100
+        val iterations = context.optional(argOffset, 0) { getIntegerFromArgNMessage(context, argOffset) } ?: return
+        val delay = context.optional(argOffset + 1, 300) { getIntegerFromArgNMessage(context, argOffset) } ?: return
 
         val baos = ByteArrayOutputStream()
         ImageIO.createImageOutputStream(baos).use { ios ->

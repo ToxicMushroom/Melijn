@@ -118,6 +118,8 @@ dependencies {
     implementation("com.github.zh79325:open-gif:1.0.4")
     implementation("com.sksamuel.scrimage:scrimage-core:4.0.18")
     implementation("com.sksamuel.scrimage:scrimage-filters:4.0.18")
+    implementation("com.sksamuel.scrimage:scrimage-webp:4.2.0.92-SNAPSHOT")
+    implementation("com.sksamuel.scrimage:scrimage-formats-extra:4.0.18")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fjikankt
     implementation("me.melijn.jikankt:JikanKt:1.3.2")
