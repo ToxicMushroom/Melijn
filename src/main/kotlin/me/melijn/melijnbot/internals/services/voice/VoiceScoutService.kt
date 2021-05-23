@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 class VoiceScoutService(
     val container: Container,
     val shardManager: ShardManager
-) : Service("VoiceScout", 30, 1, TimeUnit.SECONDS) {
+) : Service("VoiceScout", 30, 30, TimeUnit.SECONDS) {
 
     override val service = RunnableTask {
 
