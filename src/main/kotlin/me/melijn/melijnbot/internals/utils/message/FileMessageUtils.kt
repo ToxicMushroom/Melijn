@@ -245,7 +245,7 @@ private suspend fun attachmentsAction(
     for ((index, urlNamePair) in urls.iterator().withIndex()) {
         val url = urlNamePair.key
         val name = urlNamePair.value
-        val stream = ImageApi.downloadDiscordBytes(httpClient, url, DiscordSize.Original)
+        val stream = ImageApi.downloadDiscordBytes(httpClient, url, DiscordSize.Original) ?: return null
         messageAction = if (index == 0) {
             textChannel.sendFile(stream, name)
         } else {
@@ -275,7 +275,7 @@ private suspend fun msgWithAttachmentsAction(
     val action = channel.sendMessage(mb.build())
     if (channel is TextChannel) channel.guild else null
     for ((url, fileName) in attachments.iterator()) {
-        val stream = ImageApi.downloadDiscordBytes(httpClient, url, DiscordSize.Original)
+        val stream = ImageApi.downloadDiscordBytes(httpClient, url, DiscordSize.Original) ?: continue
         action.addFile(stream, fileName)
     }
     return action

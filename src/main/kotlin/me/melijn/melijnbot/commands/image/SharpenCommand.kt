@@ -1,14 +1,19 @@
 package me.melijn.melijnbot.commands.image
 
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
+import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.utils.ImageType
 import me.melijn.melijnbot.internals.utils.ImageUtils
+import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.utils.data.DataObject
+import thirdparty.jhlabs.image.SharpenFilter
 import java.awt.image.BufferedImage
+import java.awt.image.Kernel
 
 class SharpenCommand : AbstractCommand("command.sharpen") {
 
@@ -22,40 +27,36 @@ class SharpenCommand : AbstractCommand("command.sharpen") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.commandParts[1].equals("sharpenGif", true)) {
-            executeGif(context)
+        val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
+        val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
+        val intensity = if (context.args.size > 1) getIntegerFromArgNMessage(context, 1, 1, 100) ?: return else 1
+        if (image.type == ImageType.GIF) {
+            sharpenGif(context, image, intensity)
         } else {
-            executeNormal(context)
+            sharpenNormal(context, image, intensity)
         }
     }
 
-    private suspend fun executeNormal(context: ICommandContext) {
-        ImageCommandUtil.executeNormalEffect(context, effect = { image, imgData ->
-            ImageUtils.sharpen(image, imgData.getInt("offset"))
-
-        }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
-            ImageCommandUtil.defaultOffsetArgParser(context, argInt, argData, imgData)
-
-        }, imgDataParser = { img: BufferedImage, imgData: DataObject ->
-            imgData.put("lower", 1)
-            imgData.put("higher", Integer.max(img.height, img.width))
-            imgData.put("defaultOffset", 1)
-
-        })
+    val sharpener: (src: BufferedImage, dst: BufferedImage, intensity: Float) -> Unit = { src, dst, intensity ->
+        val farr = floatArrayOf(
+            0.0f, -0.2f - intensity, 0.0f,
+            -0.2f - intensity, 1.8f + intensity * 4, -0.2f - intensity,
+            0.0f, -0.2f - intensity, 0.0f
+        )
+        SharpenFilter().apply {
+            kernel = Kernel(3, 3, farr)
+        }.filter(src, dst)
     }
 
-    private suspend fun executeGif(context: ICommandContext) {
-        ImageCommandUtil.executeGifEffect(context, effect = { image, imgData ->
-            ImageUtils.sharpen(image, imgData.getInt("offset"), true)
+    private suspend fun sharpenNormal(context: ICommandContext, image: ParsedImageByteArray, intensity: Int) {
+        ImageCommandUtil.applyBufferedImgModification(context, image) { src, dst ->
+            sharpener(src, dst, (intensity - 1) / 10f)
+        }
+    }
 
-        }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
-            ImageCommandUtil.defaultOffsetArgParser(context, argInt, argData, imgData)
-
-        }, imgDataParser = { img: BufferedImage, imgData: DataObject ->
-            imgData.put("lower", 1)
-            imgData.put("higher", Integer.max(img.height, img.width))
-            imgData.put("defaultOffset", 1)
-
-        })
+    private suspend fun sharpenGif(context: ICommandContext, image: ParsedImageByteArray, intensity: Int) {
+        ImageCommandUtil.applyGifBufferFrameModification(context, image) { src, dst ->
+            sharpener(src, dst, (intensity - 1) / 10f)
+        }
     }
 }

@@ -102,7 +102,6 @@ class CommandClientBuilder(private val container: Container) {
         PatCommand(),
         SelfRoleCommand(),
         PingCommand(),
-        SmoothPixelateCommand(),
         HighfiveCommand(),
         InviteCommand(),
         BlurCommand(),
@@ -280,7 +279,10 @@ class CommandClientBuilder(private val container: Container) {
         MassUnbanCommand(),
         MassKickCommand(),
         BlurpleCommand(),
-        BotBanCommand()
+        BotBanCommand(),
+        VintageCommand(),
+        SpeedupGif(),
+        BrightnessCommand()
     )
 
     fun build(): CommandClient {

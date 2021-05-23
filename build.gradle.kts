@@ -52,7 +52,7 @@ val kotlin = "1.5.0"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.2.1_264") {
+    implementation("net.dv8tion:JDA:4.2.1_265") {
         exclude("opus-java")
     }
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
@@ -66,7 +66,7 @@ dependencies {
     implementation("com.sedmelluq:lavaplayer:1.3.76")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fllklient%2FLavalink-Klient
-    implementation("me.melijn.llklient:Lavalink-Klient:2.1.8")
+    implementation("me.melijn.llklient:Lavalink-Klient:2.2.0")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))
@@ -113,11 +113,11 @@ dependencies {
     implementation("io.ktor:ktor-jackson:$ktor")
     implementation("io.ktor:ktor-client-jackson:$ktor")
 
-    // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fgifencoder
-    implementation("me.melijn.gifencoder:gifencoder:1.0.0")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fgifdecoder
-    implementation("me.melijn.gifdecoder:animated-gif-lib-for-java:1.0.1")
+    implementation("com.github.zh79325:open-gif:1.0.4")
+    implementation("com.sksamuel.scrimage:scrimage-core:4.0.18")
+    implementation("com.sksamuel.scrimage:scrimage-filters:4.0.18")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fjikankt
     implementation("me.melijn.jikankt:JikanKt:1.3.2")

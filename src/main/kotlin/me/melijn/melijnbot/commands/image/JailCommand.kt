@@ -1,21 +1,17 @@
 package me.melijn.melijnbot.commands.image
 
 
-import com.wrapper.spotify.Base64
-import io.lettuce.core.SetArgs
-import kotlinx.coroutines.future.await
+import com.sksamuel.scrimage.ImmutableImage
+import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.utils.ImageType
 import me.melijn.melijnbot.internals.utils.ImageUtils
-import me.melijn.melijnbot.internals.utils.message.sendFileRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
 import net.dv8tion.jda.api.Permission
 import java.awt.image.BufferedImage
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
 
@@ -29,88 +25,36 @@ class JailCommand : AbstractCommand("command.jail") {
         commandCategory = CommandCategory.IMAGE
     }
 
-    private val jail = JailCommand::class.java.getResourceAsStream("/jail.png").use { ImageIO.read(it) }
+    private val jail = JailCommand::class.java.getResourceAsStream("/jail.png").use {
+        ImmutableImage.wrapAwt(ImageIO.read(it))
+    }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.commandParts[1].equals("jailGif", true)) {
-            executeGif(context)
+        val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
+        val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
+
+        if (image.type == ImageType.GIF) {
+            sharpenGif(context, image)
         } else {
-            executeNormal(context)
+            sharpenNormal(context, image)
         }
     }
 
-    private suspend fun executeNormal(context: ICommandContext) {
-        if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        }
-
-        val user = retrieveUserByArgsNMessage(context, 0) ?: return
-        val redisCon = context.daoManager.driverManager.redisConnection
-        val cachedAvatar = redisCon?.async()?.get("avatarjailed:${user.id}")?.await()
-
-        val jailedBytesArr = if (cachedAvatar == null) {
-            val imageApi = context.webManager.imageApi
-            val discordSize = DiscordSize.X512
-            val url = user.effectiveAvatarUrl
-
-            val avatarImg = imageApi.downloadDiscordImgNMessage(context, url, discordSize, false) ?: return
-            val graphics = avatarImg.graphics
-            graphics.drawImage(jail, 0, 0, avatarImg.width, avatarImg.height, null)
-            graphics.dispose()
-
-            ByteArrayOutputStream().use { baos ->
-                ImageIO.write(avatarImg, "png", baos)
-                baos.toByteArray()
-            }
-        } else {
-            redisCon.async().expire("avatarjailed:${user.id}", 600)
-            Base64.decode(cachedAvatar)
-        }
-
-
-        sendFileRsp(context, "**Go to jail** ${user.asTag} 👮‍♀️", jailedBytesArr, "png")
-
-        val encodedAvatar = Base64.encode(jailedBytesArr)
-        redisCon?.async()?.set("avatarjailed:${user.id}", encodedAvatar, SetArgs().ex(600))
+    private suspend fun sharpenNormal(context: ICommandContext, image: ParsedImageByteArray) {
+        ImageCommandUtil.applyImmutableImgModification(context, image, { img ->
+            val jailRaw = jail.scaleTo(img.width, img.height).awt()
+            img.overlayInPlace(jailRaw, 0, 0)
+        },  message = "**Go to jail** \uD83D\uDC6E\u200D♀️")
     }
 
-    private suspend fun executeGif(context: ICommandContext) {
-        val user = retrieveUserByArgsNMessage(context, 0) ?: return
-
-        val redisCon = context.daoManager.driverManager.redisConnection
-        val cachedAvatar = redisCon?.async()?.get("avatarjailedgif:${user.id}")?.await()
-        if (cachedAvatar != null) {
-            val byteArray = Base64.decode(cachedAvatar)
-            sendFileRsp(context, "**Go to jail** ${user.asTag} 👮‍♀️", byteArray, "gif")
-            return
-        }
-
-        val img = ImageUtils.downloadImage(context, user.effectiveAvatarUrl + "?size=256", true)
-        val imgInputStream = ByteArrayInputStream(img).use { ImageIO.createImageInputStream(it) }
-        val gd = GifSequenceReader(imgInputStream)
-        var frame1: BufferedImage? = null
-        var gw: GifSequenceWriter? = null
-        ByteArrayOutputStream().use { baos ->
-            ImageIO.createImageOutputStream(baos).use { ios ->
-                gd.readAll {
-                    if (frame1 == null) {
-                        frame1 = it
-                        gw = GifSequenceWriter(ios, BufferedImage.TYPE_INT_ARGB, gd.currentLoop)
-                    }
-
-                    val graphics = it.graphics
-                    graphics.drawImage(jail, 0, 0, it.width, it.height, null)
-                    graphics.dispose()
-                    gw?.writeToSequence(it, gd.currentDelay * 10)
-                }
-                gw?.close()
+    private suspend fun sharpenGif(context: ICommandContext, image: ParsedImageByteArray) {
+        var jailRaw: BufferedImage? = null
+        ImageCommandUtil.applyGifImmutableFrameModification(context, image, { img ->
+            val temp = jailRaw ?: run {
+                jailRaw = jail.scaleTo(img.width, img.height).awt()
+                jailRaw ?: throw StinkyException()
             }
-            val byteArray = baos.toByteArray()
-            sendFileRsp(context, "**Go to jail** ${user.asTag} 👮‍♀️", byteArray, "gif")
-
-            val encodedAvatar = Base64.encode(byteArray)
-            redisCon?.async()?.set("avatarjailedgif:${user.id}", encodedAvatar, SetArgs().ex(600))
-        }
+            img.overlayInPlace(temp, 0, 0)
+        }, message = "**Go to jail** \uD83D\uDC6E\u200D♀️")
     }
 }

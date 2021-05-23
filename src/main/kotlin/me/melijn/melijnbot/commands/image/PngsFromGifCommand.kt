@@ -1,14 +1,15 @@
 package me.melijn.melijnbot.commands.image
 
-import me.melijn.gifdecoder.GifDecoder
+import at.dhyan.open_imaging.GifDecoder
 import me.melijn.melijnbot.commands.utility.prependZeros
+import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.utils.ImageType
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -26,18 +27,15 @@ class PngsFromGifCommand : AbstractCommand("command.pngsfromgif") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        val triple = ImageUtils.getImageBytesNMessage(context, "gif") ?: return
-        val decoder = GifDecoder()
-
-        ByteArrayInputStream(triple.first).use { bais ->
-            decoder.read(bais)
-        }
+        val acceptTypes = setOf(ImageType.GIF)
+        val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
+        val gif = GifDecoder.read(image.bytes)
 
         ByteArrayOutputStream().use { baos ->
             ZipOutputStream(baos).use { zos ->
-                for (i in 0 until decoder.frameCount) {
-                    val coolFrame = decoder.getFrame(i)
-                    val zipEntry = ZipEntry("frame_${gitGud(i, decoder.frameCount)}.png")
+                for (i in 0 until gif.frameCount) {
+                    val coolFrame = gif.getFrame(i)
+                    val zipEntry = ZipEntry("frame_${gitGud(i, gif.frameCount)}.png")
 
                     zos.putNextEntry(zipEntry)
 

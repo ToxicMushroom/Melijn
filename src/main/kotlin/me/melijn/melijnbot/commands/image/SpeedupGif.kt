@@ -7,26 +7,32 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.ImageType
 import me.melijn.melijnbot.internals.utils.ImageUtils
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.getBooleanFromArgNMessage
+import me.melijn.melijnbot.internals.utils.getFloatFromArgNMessage
 import net.dv8tion.jda.api.Permission
+import kotlin.math.max
 
-class RerenderGifCommand : AbstractCommand("command.rerendergif") {
+class SpeedupGif : AbstractCommand("command.speedupgif") {
 
     init {
-        id = 151
-        name = "rerenderGif"
-        aliases = arrayOf("rerender")
+        name = "speedupGif"
+        aliases = arrayOf("sug")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
-        commandCategory = CommandCategory.DEVELOPER
+        commandCategory = CommandCategory.IMAGE
     }
+
 
     override suspend fun execute(context: ICommandContext) {
         val acceptTypes = setOf(ImageType.GIF)
         val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
-        val centiSecondDelay = if (context.args.size > 1) getIntegerFromArgNMessage(context, 1, 2) ?: return else null
+        val multiplier = if (context.args.size > 1) getFloatFromArgNMessage(context, 1, 0.001f, 1000f) ?: return else 1f
+        val unlock = if (context.args.size > 2) getBooleanFromArgNMessage(context, 2) ?: return else false
+        val extension = if (unlock) "gif.removethis" else "gif"
 
         ImageCommandUtil.applyGifImmutableFrameModification(context, image, {}, { delay ->
-            centiSecondDelay ?: delay
-        })
+            val value = (delay / multiplier).toInt()
+            if (unlock) value
+            else max(value, 2)
+        }, extension = extension)
     }
 }

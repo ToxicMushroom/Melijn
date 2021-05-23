@@ -13,8 +13,12 @@ import javax.imageio.ImageIO
 class ImageApi(val httpClient: HttpClient, val proxiedHttpClient: HttpClient) {
 
     companion object {
-        suspend fun downloadBytes(client: HttpClient, url: String): ByteArray {
-            return client.get<HttpResponse>(url).readBytes()
+        suspend fun downloadBytes(client: HttpClient, url: String): ByteArray? {
+            return try {
+                client.get<HttpResponse>(url).readBytes()
+            } catch (t: Throwable) {
+                null
+            }
         }
 
         suspend fun download(client: HttpClient, url: String): ByteArrayInputStream {
@@ -33,12 +37,12 @@ class ImageApi(val httpClient: HttpClient, val proxiedHttpClient: HttpClient) {
             client: HttpClient,
             url: String,
             size: DiscordSize = DiscordSize.Original
-        ): ByteArray {
+        ): ByteArray? {
             return downloadBytes(client, url + size.getParam())
         }
     }
 
-    suspend fun downloadBytes(url: String, useProxy: Boolean = false): ByteArray {
+    suspend fun downloadBytes(url: String, useProxy: Boolean = false): ByteArray? {
         val client = if (useProxy) proxiedHttpClient else httpClient
         return downloadBytes(client, url)
     }
@@ -58,7 +62,7 @@ class ImageApi(val httpClient: HttpClient, val proxiedHttpClient: HttpClient) {
     suspend fun downloadDiscordBytes(
         url: String,
         size: DiscordSize = DiscordSize.Original
-    ): ByteArray {
+    ): ByteArray? {
         return downloadBytes(httpClient, url + size.getParam())
     }
 
