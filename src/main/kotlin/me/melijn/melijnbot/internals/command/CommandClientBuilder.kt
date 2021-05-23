@@ -285,7 +285,14 @@ class CommandClientBuilder(private val container: Container) {
         BrightnessCommand(),
         JPGCommand(),
         PNGCommand(),
-        WebpCommand()
+        WebpCommand(),
+        RotateRightCommand(),
+        RotateLeftCommand(),
+        TrimCommand(),
+        TakeCommand(),
+        ContrastCommand(),
+        KaleidoScopeCommand(),
+        CalculateCommand()
     )
 
     fun build(): CommandClient {
