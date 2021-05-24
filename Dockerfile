@@ -1,4 +1,4 @@
-FROM openjdk:15-jdk-buster as builder
+FROM openjdk:15.0.2-jdk-buster as builder
 WORKDIR /etc/melijn
 COPY ./ ./
 USER root
@@ -6,7 +6,7 @@ RUN chmod +x ./gradlew
 RUN ./gradlew shadowJar
 
 # Full jdk required for font rendering on ship ect
-FROM openjdk:15-jdk-buster
+FROM openjdk:15.0.2-jdk-buster
 WORKDIR /opt/melijn
 COPY --from=builder ./etc/melijn/build/libs/ .
 ENTRYPOINT java \
