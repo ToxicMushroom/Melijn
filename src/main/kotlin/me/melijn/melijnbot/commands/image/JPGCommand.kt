@@ -20,7 +20,7 @@ class JPGCommand : AbstractCommand("command.jpg") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        val acceptTypes = setOf(ImageType.PNG, ImageType.JPG, ImageType.WEBP)
+        val acceptTypes = setOf(ImageType.PNG, ImageType.JPG, ImageType.TIFF)
         val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
         val offset = image.usedArgument
         val quality = context.optional(offset + 0, 100) { getIntegerFromArgNMessage(context, it, 0, 100) } ?: return

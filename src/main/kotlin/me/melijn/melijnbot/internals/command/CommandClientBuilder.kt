@@ -285,7 +285,7 @@ class CommandClientBuilder(private val container: Container) {
         BrightnessCommand(),
         JPGCommand(),
         PNGCommand(),
-        WebpCommand(),
+        // WebpCommand(),
         RotateRightCommand(),
         RotateLeftCommand(),
         TrimCommand(),

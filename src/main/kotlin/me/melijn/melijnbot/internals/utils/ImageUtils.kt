@@ -47,7 +47,7 @@ data class ParsedImages(
 )
 
 enum class ImageType {
-    PNG, JPG, GIF, WEBP
+    PNG, JPG, GIF, TIFF
 }
 
 
@@ -132,7 +132,7 @@ object ImageUtils {
                 ImageType.PNG -> 1
                 ImageType.GIF -> 2
                 ImageType.JPG -> 3
-                ImageType.WEBP -> 4
+                ImageType.TIFF -> 4
             }
         }
 

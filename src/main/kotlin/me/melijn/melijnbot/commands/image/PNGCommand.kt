@@ -20,7 +20,7 @@ class PNGCommand : AbstractCommand("command.png") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        val acceptTypes = setOf(ImageType.PNG, ImageType.JPG, ImageType.WEBP)
+        val acceptTypes = setOf(ImageType.PNG, ImageType.JPG, ImageType.TIFF)
         val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
         val png = ImmutableImage.loader()
             .fromBytes(image.bytes)
