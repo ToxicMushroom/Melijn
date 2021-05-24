@@ -49,6 +49,7 @@ val ktor = "1.5.4"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-c
 val apollo = "2.5.6" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.5.0" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 val kotlin = "1.5.0"
+val scrimage = "4.2.0.92-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
@@ -116,10 +117,10 @@ dependencies {
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fgifdecoder
     implementation("com.github.zh79325:open-gif:1.0.4")
-    implementation("com.sksamuel.scrimage:scrimage-core:4.0.18")
-    implementation("com.sksamuel.scrimage:scrimage-filters:4.0.18")
-    implementation("com.sksamuel.scrimage:scrimage-webp:4.2.0.92-SNAPSHOT")
-    implementation("com.sksamuel.scrimage:scrimage-formats-extra:4.0.18")
+    implementation("com.sksamuel.scrimage:scrimage-core:$scrimage")
+    implementation("com.sksamuel.scrimage:scrimage-filters:$scrimage")
+    implementation("com.sksamuel.scrimage:scrimage-webp:$scrimage")
+    implementation("com.sksamuel.scrimage:scrimage-formats-extra:$scrimage")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fjikankt
     implementation("me.melijn.jikankt:JikanKt:1.3.2")
