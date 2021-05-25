@@ -21,7 +21,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
     private val silentPruneName = "sprune"
 
     // set of guildId,channelId
-    val purgeInProgress = ConcurrentHashMap.newKeySet<Pair<Long, Long>>()
+    private val purgeInProgress = ConcurrentHashMap.newKeySet<Pair<Long, Long>>()
 
     init {
         id = 39
@@ -39,12 +39,9 @@ class PurgeCommand : AbstractCommand("command.purge") {
 
         // + 1 is to start counting above the .purge command
         val amount = (getIntegerFromArgNMessage(context, 0, 1, 1000) ?: return) + 1
-
         val targetUser = if (context.args.size == 2) {
             retrieveUserByArgsNMessage(context, 1) ?: return
-        } else {
-            null
-        }
+        } else null
 
         val purgePID = Pair(context.guildId, context.channelId)
         if (purgeInProgress.contains(purgePID)) {
@@ -56,55 +53,55 @@ class PurgeCommand : AbstractCommand("command.purge") {
 
         val messages = mutableListOf<Message>()
         var counter = 1
-        context.textChannel.iterableHistory
-            .forEachAsync { message ->
-                if (targetUser == null) {
-                    messages.add(message)
-                } else {
-                    if (message.author.idLong == targetUser.idLong) {
-                        messages.add(message)
-                    }
+        context.textChannel.iterableHistory.forEachAsync { message ->
+            if ((targetUser == null || targetUser.idLong == message.author.idLong) && !message.isPinned) {
+                messages.add(message)
+            }
+            if (amount <= counter) {
+                false
+            } else {
+                counter++
+                true
+            }
+        }.thenRun {
+            TaskManager.async(context) {
+                for (message in messages) {
+                    context.container.purgedIds[message.idLong] = context.authorId
                 }
-                if (amount <= counter) {
-                    false
-                } else {
-                    counter++
-                    true
+
+                val msg = try {
+                    val futures = context.textChannel.purgeMessages(messages)
+                    futures.forEach {
+                        it.await()
+                    }
+
+                    val userMore = if (targetUser == null) "" else ".user"
+                    val more = if (amount > 1) ".more" else ".one"
+                    context.getTranslation("$root.success$userMore$more")
+                        .withVariable("amount", amount.toString())
+                        .withSafeVariable(PLACEHOLDER_USER, targetUser?.asTag ?: "")
+                } catch (t: Throwable) {
+                    context.getTranslation("$root.error")
+                }
+
+                purgeInProgress.remove(purgePID)
+                val invoke = context.commandParts[1]
+                if (!invoke.isInside(
+                        silentPruneName,
+                        silentPurgeName,
+                        ignoreCase = true
+                    ) && context.textChannel.canTalk()
+                ) {
+                    sendMsgAwaitEL(context, msg)
+                        .firstOrNull()
+                        ?.delete()
+                        ?.queueAfter(5, TimeUnit.SECONDS)
+                }
+
+                if (messages.isNotEmpty()) {
+                    LogUtils.sendPurgeLog(context, messages)
                 }
             }
-            .thenRun {
-                TaskManager.async(context) {
-                    for (message in messages) {
-                        context.container.purgedIds[message.idLong] = context.authorId
-                    }
-
-                    val msg = try {
-                        val futures = context.textChannel.purgeMessages(messages)
-                        futures.forEach {
-                            it.await()
-                        }
-
-                        val userMore = if (targetUser == null) "" else ".user"
-                        val more = if (amount > 1) ".more" else ".one"
-                        context.getTranslation("$root.success$userMore$more")
-                            .withVariable("amount", amount.toString())
-                            .withSafeVariable(PLACEHOLDER_USER, targetUser?.asTag ?: "")
-                    } catch (t: Throwable) {
-                        context.getTranslation("$root.error")
-                    }
-
-                    purgeInProgress.remove(purgePID)
-                    if (!context.commandParts[1].equals(silentPurgeName, true) && !context.commandParts[1].equals(
-                            silentPruneName,
-                            true
-                        )
-                    )
-                        sendMsgAwaitEL(context, msg).firstOrNull()?.delete()?.queueAfter(5, TimeUnit.SECONDS)
-
-                    if (messages.isNotEmpty()) {
-                        LogUtils.sendPurgeLog(context, messages)
-                    }
-                }
-            }
+        }
     }
 }

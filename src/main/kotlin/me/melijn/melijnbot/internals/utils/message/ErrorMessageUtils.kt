@@ -1,8 +1,8 @@
 package me.melijn.melijnbot.internals.utils.message
 
+import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n
@@ -44,10 +44,10 @@ suspend fun Throwable.sendInGuildSuspend(
     extra: String? = null,
     shouldSend: Boolean = false
 ) {
-    if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
+    val settings = Container.instance.settings
+    if (settings.unLoggedThreads.contains(thread.name)) return
 
-    val channelId = Container.instance.settings.botInfo.exceptionChannel
-    val textChannel = MelijnBot.shardManager.getTextChannelById(channelId) ?: return
+    val channelId = settings.botInfo.exceptionChannel
 
     val caseId = Base58.encode(
         ByteBuffer
@@ -79,8 +79,18 @@ suspend fun Throwable.sendInGuildSuspend(
         sb.appendLine("**Extra**")
         sb.appendLine(it)
     }
+
     if (Container.instance.logToDiscord) {
-        sendMsg(textChannel, sb.toString())
+        val host = settings.helperBot.host
+        try {
+            val res = Container.instance.webManager.httpClient.post<String>("$host/exception/$channelId") {
+                header("Authorization", settings.helperBot.token)
+                body = sb.toString()
+            }
+            if (res != "success") println("Tried to report error but got: $res")
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
     }
 
     if (shouldSend && channel != null && (channel !is TextChannel || channel.canTalk()) && (channel is TextChannel || channel is PrivateChannel)) {
@@ -109,7 +119,7 @@ object Base58 {
     init {
         Arrays.fill(INDEXES, -1)
         for (i in ALPHABET.indices) {
-            INDEXES[ALPHABET[i].toInt()] = i
+            INDEXES[ALPHABET[i].code] = i
         }
     }
 
@@ -159,7 +169,7 @@ object Base58 {
         val input58 = ByteArray(input.length)
         for (i in input.indices) {
             val c = input[i]
-            val digit = if (c.toInt() < 128) INDEXES.get(c.toInt()) else -1
+            val digit = if (c.code < 128) INDEXES[c.code] else -1
             if (digit < 0) {
                 return null
             }

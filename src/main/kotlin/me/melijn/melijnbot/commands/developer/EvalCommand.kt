@@ -11,7 +11,6 @@ import javax.script.ScriptEngineManager
 
 class EvalCommand : AbstractCommand("command.eval") {
 
-
     init {
         id = 22
         name = "eval"
@@ -19,7 +18,7 @@ class EvalCommand : AbstractCommand("command.eval") {
         commandCategory = CommandCategory.DEVELOPER
     }
 
-    val engine: ScriptEngine? = ScriptEngineManager().getEngineByName("kotlin")
+    private val engine: ScriptEngine? = ScriptEngineManager().getEngineByName("kotlin")
 
     override suspend fun execute(context: ICommandContext) {
         requireNotNull(engine)
@@ -41,8 +40,9 @@ class EvalCommand : AbstractCommand("command.eval") {
 			fun exec(context: ICommandContext): Deferred<Any?> {
                 return TaskManager.evalTaskValueNAsync {
 				    ${
-            code.lines().dropWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
+            code.lines().dropWhile { imports.contains(it) }
                 .joinToString("\n\t\t\t\t\t")
+                .replace("return ", "return@evalTaskValueNAsync ")
         }
                 }
             }""".trimIndent()

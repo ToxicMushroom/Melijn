@@ -5,7 +5,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import io.ktor.client.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
-import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.settings.VoteReminderOption
 import me.melijn.melijnbot.enums.*
@@ -434,7 +433,7 @@ object LogUtils {
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    suspend fun sendRoleAddedLog(container: Container, adder: User, target: User, role: Role) {
+    fun sendRoleAddedLog(container: Container, adder: User, target: User, role: Role) {
 //        val daoManager = container.daoManager
 //        val guild = role.guild
 //        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.ROLES)
@@ -463,7 +462,7 @@ object LogUtils {
 //        sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    suspend fun sendRoleRemovedLog(container: Container, remover: User, target: User, role: Role) {
+    fun sendRoleRemovedLog(container: Container, remover: User, target: User, role: Role) {
 //        val daoManager = container.daoManager
 //        val guild = role.guild
 //        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.ROLES)
@@ -569,9 +568,7 @@ object LogUtils {
 
             sendRspOrMsg(textChannel, daoManager, msg)
         } else {
-            if (MessageUtil.removeMessageIfEmpty(guildId, messageType, message, linkedMessageWrapper)) return
-
-            message = BirthdayUtil.replaceVariablesInBirthdayMessage(daoManager, member, message, birthYear)
+            message = BirthdayUtil.replaceVariablesInBirthdayMessage(daoManager, member, message, birthYear, msgName)
 
             val msg: Message? = message.toMessage()
             when {

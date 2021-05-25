@@ -1,18 +1,15 @@
 package me.melijn.melijnbot.commands.image
 
-import com.squareup.gifencoder.*
+import com.sksamuel.scrimage.ImmutableImage
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.ImageUtils
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
-import me.melijn.melijnbot.internals.utils.getLongFromArgN
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
-import java.awt.Color
-import java.io.ByteArrayInputStream
+import me.melijn.melijnbot.internals.utils.optional
 import java.io.ByteArrayOutputStream
-import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 
 class PngsToGifCommand : AbstractCommand("command.pngstogif") {
@@ -26,46 +23,23 @@ class PngsToGifCommand : AbstractCommand("command.pngstogif") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        val triple = ImageUtils.getImagesBytesNMessage(context, "png") ?: return
+        val parsedImages = ImageUtils.getImagesBytesNMessage(context, 0) ?: return
 
-        ByteArrayOutputStream().use { baos ->
-            val argOffset = if (triple.third) 1 else 0
-            val loopAmount = getIntegerFromArgN(context, argOffset) ?: 0
-            val frameDelay = getLongFromArgN(context, argOffset + 1, 0) ?: 100
+        val argOffset = if (parsedImages.usedArgument) 1 else 0
+        val iterations = context.optional(argOffset, 0) { getIntegerFromArgNMessage(context, argOffset) } ?: return
+        val delay = context.optional(argOffset + 1, 300) { getIntegerFromArgNMessage(context, argOffset) } ?: return
 
-            val maxWidth = triple.second.first
-            val maxHeight = triple.second.second
-            val gifEncoder = GifEncoder(baos, maxWidth, maxHeight, loopAmount)
-
-            for ((_, f) in triple.first.toSortedMap()) {
-                val frame = ByteArrayInputStream(f).use {
-                    ImageIO.read(it)
+        val baos = ByteArrayOutputStream()
+        ImageIO.createImageOutputStream(baos).use { ios ->
+            GifSequenceWriter(ios, iterations).use { writer ->
+                for (frame in parsedImages.images) {
+                    val immutableImage = ImmutableImage.loader()
+                        .fromBytes(frame.bytes)
+                    writer.writeToSequence(immutableImage.awt(), delay)
                 }
-
-                val width = frame.width
-                val height = frame.height
-
-                ImageUtils.recolorPixelSingleOffset(frame, colorPicker = { ints ->
-                    if (ints[0] == 255 && ints[1] == 255 && ints[2] == 255) {
-                        intArrayOf(254, 254, 254, 255)
-                    } else if (ints[3] < 128) {
-                        intArrayOf(255, 255, 255, 255)
-                    } else ints
-                })
-
-                val options = ImageOptions()
-                    .setColorQuantizer(MedianCutQuantizer.INSTANCE)
-                    .setDitherer(FloydSteinbergDitherer.INSTANCE)
-                    .setTransparencyColor(Color.WHITE.rgb)
-                    .setDisposalMethod(DisposalMethod.DO_NOT_DISPOSE)
-                    .setDelay(frameDelay, TimeUnit.MILLISECONDS)
-
-                val img = frame.getRGB(0, 0, width, height, IntArray(width * height), 0, width)
-                gifEncoder.addImage(img, width, options)
             }
-
-            gifEncoder.finishEncoding()
-            sendFileRsp(context, baos.toByteArray(), "gif")
         }
+
+        sendFileRsp(context, baos.toByteArray(), "gif")
     }
 }

@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.escapeForLog
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.toMessage
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.GenericEvent
@@ -32,6 +33,10 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         if (event.author.isBot) return
         val message = event.message
         val newContent = event.message.contentRaw
+        val embeds = event.message.embeds.joinToString("\n") { embed ->
+            embed.toMessage()
+        }
+        val attachments = event.message.attachments.map { it.url }
         val guild = event.guild
         val daoManager = container.daoManager
         val messageWrapper = daoManager.messageHistoryWrapper
@@ -44,11 +49,14 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
                 event.author.idLong,
                 message.idLong,
                 newContent,
+                embeds,
+                attachments,
                 message.timeCreated.toInstant().toEpochMilli()
             )
 
         val oldContent = daoMessage.content
         daoMessage.content = newContent
+        daoMessage.embed = embeds
 
         TaskManager.async(event.author, event.channel) {
             messageWrapper.setMessage(daoMessage)

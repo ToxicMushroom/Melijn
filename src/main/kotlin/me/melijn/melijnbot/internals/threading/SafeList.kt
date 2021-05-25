@@ -119,4 +119,10 @@ class SafeList<E> {
             return list.firstOrNull(function)
         }
     }
+
+    suspend fun removeAll(toRemove: List<E>) {
+        lock.withLock {
+            list.removeAll(toRemove)
+        }
+    }
 }

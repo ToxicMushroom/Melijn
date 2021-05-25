@@ -35,17 +35,17 @@ class BirthdayService(
         val currentMinuteOfDay = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
         val currentDay = calendar.get(Calendar.DAY_OF_YEAR)
 
-        //If role is set
+        // If role is set
         for (guildId in roles.keys) {
             val guild = shardManager.getGuildById(guildId) ?: continue
 
-            //Get birthday role
+            // Get birthday role
             val role = roles[guildId]?.let {
-                guild.getAndVerifyRoleById(daoManager, RoleType.BIRTHDAY, it, true)
+                guild.getAndVerifyRoleById(daoManager, RoleType.BIRTHDAY, it, true, true)
             } ?: continue
 
             val guildZone = daoManager.timeZoneWrapper.getTimeZone(guild.idLong)
-            val guildTZ = TimeZone.getTimeZone(if (guildZone.isBlank()) "GMT" else guildZone)
+            val guildTZ = TimeZone.getTimeZone(guildZone.ifBlank { "GMT" })
 
             //Add birthday role (maybe channel message)
             for ((userId, info) in HashMap(birthdays)) {

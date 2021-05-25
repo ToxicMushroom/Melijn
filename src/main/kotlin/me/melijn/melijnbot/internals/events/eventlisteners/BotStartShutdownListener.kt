@@ -3,6 +3,7 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.OnlineStatus
@@ -29,12 +30,15 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
         if (event.newStatus == JDA.Status.CONNECTED) {
             val readyShards = shardManager.shards.count { jda -> jda.status == JDA.Status.CONNECTED }
             logger.info("$readyShards/${shardManager.shards.size} shards ready")
+            event.jda.emotes.forEach {
+                container.daoManager.emoteCache.save(it)
+            }
 
-            if (readyShards != container.settings.botInfo.shardCount) return
+            if (readyShards != PodInfo.shardsPerPod) return
 
             if (!container.serviceManager.slowStarted) {
                 shardManager.setStatus(OnlineStatus.ONLINE)
-                shardManager .setActivity(Activity.listening("commands | ${container.settings.botInfo.prefix}help"))
+                shardManager.setActivity(Activity.listening("commands | ${container.settings.botInfo.prefix}help"))
                 TaskManager.async {
                     logger.info("Starting music clients..")
                     VoiceUtil.resumeMusic(event, container)

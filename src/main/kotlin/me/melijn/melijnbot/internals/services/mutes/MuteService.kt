@@ -5,6 +5,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.services.Service
 import me.melijn.melijnbot.internals.threading.RunnableTask
 import me.melijn.melijnbot.internals.translation.getLanguage
@@ -21,11 +22,12 @@ import java.util.concurrent.TimeUnit
 
 class MuteService(
     val shardManager: ShardManager,
-    val daoManager: DaoManager
+    val daoManager: DaoManager,
+    val podInfo: PodInfo
 ) : Service("Mute", 1000, 1100, TimeUnit.MILLISECONDS) {
 
     override val service = RunnableTask {
-        val mutes = daoManager.muteWrapper.getUnmuteableMutes()
+        val mutes = daoManager.muteWrapper.getUnmuteableMutes(podInfo)
         for (mute in mutes) {
             val selfUser = shardManager.shards[0].selfUser
             val newMute = mute.run {

@@ -29,7 +29,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
         val scriptLineRegex = "%line(\\d+)%".toRegex()
         val scriptLineArgRegex = "%line(\\d+)arg(\\d+)%".toRegex()
         private const val SCRIPTS_LIMIT = 5
-        private const val PREMIUM_SCRIPTS_LIMIT = 25
+        private const val PREMIUM_SCRIPTS_LIMIT = 50
         private const val CMD_PER_SCRIPT_LIMIT = 4
         private const val PREMIUM_CMD_PER_SCRIPT_LIMIT = 10
         private const val SCRIPTS_LIMIT_PATH = "premium.feature.scripts.limit"

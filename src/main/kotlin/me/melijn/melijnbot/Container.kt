@@ -1,17 +1,19 @@
 package me.melijn.melijnbot
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.enums.RoleUpdateCause
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.eventlisteners.EventWaiter
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.music.LavaManager
 import me.melijn.melijnbot.internals.services.ServiceManager
 import me.melijn.melijnbot.internals.utils.ModularPaginationInfo
 import me.melijn.melijnbot.internals.utils.PaginationInfo
+import me.melijn.melijnbot.internals.web.ProbeServer
 import me.melijn.melijnbot.internals.web.RestServer
 import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.OnlineStatus
@@ -20,24 +22,24 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 val objectMapper = jacksonObjectMapper()
+    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
 class Container {
 
 
     var voteReq: Boolean = true
     var logToDiscord: Boolean = true
-
-    // userId, roleId, cause
-    val roleAddedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
-    val roleRemovedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
+    lateinit var podInfo: PodInfo
 
     //millis, info
     val paginationMap = mutableMapOf<Long, PaginationInfo>()
     val modularPaginationMap = mutableMapOf<Long, ModularPaginationInfo>()
 
-    val eventWaiter = EventWaiter()
 
-    var restServer: RestServer? = null
+    val eventWaiter by lazy { EventWaiter() }
+
+    val restServer: RestServer by lazy { RestServer(this) }
+    val probeServer: ProbeServer by lazy { ProbeServer(this) }
     var shuttingDown: Boolean = false
         set(value) {
             if (value) {
@@ -53,11 +55,11 @@ class Container {
     var settings: Settings = Settings.initSettings()
 
     //Used by events
-    val daoManager = DaoManager(settings.database, settings.redis)
-    val webManager = WebManager(settings)
+    val daoManager by lazy { DaoManager(settings.database, settings.redis, settings.tokens.hot) }
+    val webManager by lazy { WebManager(settings) }
 
     //enabled on event
-    val serviceManager = ServiceManager(daoManager, webManager)
+    val serviceManager by lazy { ServiceManager(daoManager, webManager) }
 
     var jdaLavaLink: JDALavalink? = null
 
@@ -66,6 +68,7 @@ class Container {
     var commandMap = emptyMap<Int, AbstractCommand>()
     var commandSet = emptySet<AbstractCommand>()
 
+    // safe for clustering
     //<messageId, <infoType (must_contain ect), info (wordList)>>
     val filteredMap = mutableMapOf<Long, Map<String, List<String>>>()
 

@@ -28,6 +28,11 @@ class FlipCommand : AbstractCommand("command.flip") {
         val balanceWrapper = context.daoManager.balanceWrapper
         val cash = balanceWrapper.getBalance(context.authorId)
 
+        if (cash == 0L) {
+            sendRsp(context, context.getTranslation("$root.youarebroke"))
+            return
+        }
+
         val amount = if (context.args[0].equals("all", true)) {
             cash
         } else {
@@ -68,7 +73,6 @@ class FlipCommand : AbstractCommand("command.flip") {
     ) {
         val nextInt = Random.nextInt(2)
         val balanceWrapper = context.daoManager.balanceWrapper
-
 
         if (nextInt == winCon) {
             val newCash = bet + cash

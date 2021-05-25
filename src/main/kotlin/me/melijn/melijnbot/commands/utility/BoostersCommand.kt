@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.asLongLongGMTString
@@ -13,9 +14,10 @@ class BoostersCommand : AbstractCommand("command.boosters") {
     init {
         id = 215
         name = "boosters"
-        cooldown = 5000
+        cooldown = 10_000
         runConditions = arrayOf(RunCondition.VOTED)
         aliases = arrayOf("listBoosters", "boosterList", "boostersList")
+        commandCategory = CommandCategory.UTILITY
     }
 
     override suspend fun execute(context: ICommandContext) {
@@ -27,7 +29,7 @@ class BoostersCommand : AbstractCommand("command.boosters") {
             "**Boosters List (${boosters.size})**" +
                 boosters
                     .sortedBy { it.timeBoosted?.toInstant()?.toEpochMilli() ?: 0 }
-                    .joinToString() {
+                    .joinToString {
                         "\n${MarkdownSanitizer.escape(it.effectiveName)} (${it.id}) [${it.timeBoosted?.asLongLongGMTString()}]"
                     }
         }

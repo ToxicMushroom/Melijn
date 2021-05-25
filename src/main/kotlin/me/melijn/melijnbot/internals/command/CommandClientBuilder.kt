@@ -29,7 +29,7 @@ class CommandClientBuilder(private val container: Container) {
         logger.info("Loading commands...")
     }
 
-    private val commands = hashSetOf<AbstractCommand>(
+    private val commands = hashSetOf(
         PunishmentCommand(),
         SetCommandStateCommand(),
         PunchCommand(),
@@ -87,7 +87,7 @@ class CommandClientBuilder(private val container: Container) {
         GreetCommand(),
         BanCommand(),
         InvertCommand(),
-        RestartCommand(),
+//        RestartCommand(),
         UrbanCommand(),
         HistoryCommand(),
         RoleInfoCommand(),
@@ -102,7 +102,6 @@ class CommandClientBuilder(private val container: Container) {
         PatCommand(),
         SelfRoleCommand(),
         PingCommand(),
-        SmoothPixelateCommand(),
         HighfiveCommand(),
         InviteCommand(),
         BlurCommand(),
@@ -112,7 +111,7 @@ class CommandClientBuilder(private val container: Container) {
         SlapCommand(),
         EmoteCommand(),
         ForwardCommand(),
-        BlurpleCommand(),
+        OldBlurpleCommand(),
         SetMaxUserVerificationFlowRateCommand(),
         UnicodeCommand(),
         UnbanCommand(),
@@ -200,7 +199,7 @@ class CommandClientBuilder(private val container: Container) {
         AliasesCommand(),
         PrivateAliasesCommand(),
         ManageHistoryCommand(),
-        ShutdownCommand(),
+//        ShutdownCommand(),
         PenguinCommand(),
         SpeedCommand(),
         PitchCommand(),
@@ -238,7 +237,7 @@ class CommandClientBuilder(private val container: Container) {
         SlotsCommand(),
         PokerCommand(),
         JailCommand(),
-        CalculateCommand(),
+        // CalculateCommand(),
         SnipeCommand(),
         SnekCommand(),
         PlaylistCommand(),
@@ -270,7 +269,30 @@ class CommandClientBuilder(private val container: Container) {
         SetChannelCategory(),
         SetAutoRemoveInactiveJoinMessagesDuration(),
         MessageCommand(),
-        LinkMessageCommand()
+        LinkMessageCommand(),
+        ChannelRoleCommand(),
+        GiveRoleCommand(),
+        TakeRoleCommand(),
+        ToggleRoleCommand(),
+        PrivateGainProfileCommand(),
+        MassBanCommand(),
+        MassUnbanCommand(),
+        MassKickCommand(),
+        BlurpleCommand(),
+        BotBanCommand(),
+        VintageCommand(),
+        SpeedupGif(),
+        BrightnessCommand(),
+        JPGCommand(),
+        PNGCommand(),
+        // WebpCommand(),
+        RotateRightCommand(),
+        RotateLeftCommand(),
+        TrimCommand(),
+        TakeCommand(),
+        ContrastCommand(),
+        KaleidoScopeCommand(),
+        CalculateCommand()
     )
 
     fun build(): CommandClient {

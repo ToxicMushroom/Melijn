@@ -1,14 +1,14 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.awaitAll
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.commands.games.RockPaperScissorsCommand
 import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
-import me.melijn.melijnbot.commands.games.TicTacToeCommand
 import me.melijn.melijnbot.commands.games.TicTacToeGame
 import me.melijn.melijnbot.commands.utility.HelpCommand
 import me.melijn.melijnbot.commandutil.game.TicTacToe
+import me.melijn.melijnbot.database.ban.BotBannedWrapper.Companion.isBotBanned
+import me.melijn.melijnbot.database.locking.EntityType
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
@@ -46,7 +46,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                 // SpammingUtil.handleSpam(container, event.message)
             }
         } else if (event is PrivateMessageReceivedEvent) {
-            TaskManager.async {
+            TaskManager.async(event.author, event.channel) {
                 checkTicTacToe(event)
                 checkRockPaperScissors(event)
             }
@@ -66,40 +66,32 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     }
 
 
-    private fun checkRockPaperScissors(event: PrivateMessageReceivedEvent) {
+    private suspend fun checkRockPaperScissors(event: PrivateMessageReceivedEvent) {
         val author = event.author
-        val rps1 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user1 == author.idLong && it.choice1 == null }
-        if (rps1 != null) {
-            RockPaperScissorsCommand.activeGames.remove(rps1)
-
-            rps1.choice1 = try {
-                RockPaperScissorsGame.RPS.valueOf(event.message.contentRaw.toUpperCase())
-            } catch (t: Throwable) {
-                null
-            }
-            RockPaperScissorsCommand.activeGames.add(rps1)
-            return
+        val rpsWrapper = container.daoManager.rpsWrapper
+        val game = rpsWrapper.getGame(author.idLong) ?: return
+        val choice = try {
+            RockPaperScissorsGame.RPS.valueOf(event.message.contentRaw.uppercase())
+        } catch (t: Throwable) {
+            null
         }
 
-        val rps2 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user2 == author.idLong && it.choice2 == null }
-        if (rps2 != null) {
-            RockPaperScissorsCommand.activeGames.remove(rps2)
-
-            rps2.choice2 = try {
-                RockPaperScissorsGame.RPS.valueOf(event.message.contentRaw.toUpperCase())
-            } catch (t: Throwable) {
-                null
-            }
-            RockPaperScissorsCommand.activeGames.add(rps2)
+        if (game.user1 == author.idLong) {
+            game.choice1 = choice
+        } else {
+            game.choice2 = choice
         }
+
+        rpsWrapper.addGame(game)
     }
 
 
+    val tags = arrayOf("<@${container.settings.botInfo.id}>", "<@!${container.settings.botInfo.id}>")
     private suspend fun handleSimpleMelijnPing(event: MessageReceivedEvent) {
         if (event.author.isBot) return
-        val tags = arrayOf("<@${event.jda.selfUser.idLong}>", "<@!${event.jda.selfUser.idLong}>")
         val usedMention = event.message.contentRaw.trim()
         if (!tags.contains(usedMention)) return
+        if (isBotBanned(EntityType.USER, event.author.idLong)) return
 
         val helpCmd = container.commandMap.values.firstOrNull { cmd ->
             cmd is HelpCommand
@@ -201,30 +193,36 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         }
     }
 
-    suspend fun shouldLogBots(guildId: Long): Boolean {
-        return container.daoManager.supporterWrapper.getGuilds().contains(guildId) &&
-            container.daoManager.botLogStateWrapper.shouldLog(guildId)
+    private suspend fun shouldLogBots(guildId: Long): Boolean {
+        val daoManager = container.daoManager
+        return isPremiumGuild(daoManager, guildId) &&
+            daoManager.botLogStateWrapper.shouldLog(guildId)
     }
 
     private suspend fun handleMessageReceivedStoring(event: GuildMessageReceivedEvent) {
-        if (event.author.isBot && event.author.idLong != container.settings.botInfo.id && shouldLogBots(event.guild.idLong)) return
+        if (event.author.isBot && event.author.idLong != container.settings.botInfo.id && !shouldLogBots(event.guild.idLong)) return
         val guildId = event.guild.idLong
         val daoManager = container.daoManager
-        val logChannelWrapper = daoManager.logChannelWrapper
-
-        val odmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.OTHER_DELETED_MESSAGE) }
-        val sdmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.SELF_DELETED_MESSAGE) }
-        val pmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.PURGED_MESSAGE) }
-        val fmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.FILTERED_MESSAGE) }
-        val emId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.EDITED_MESSAGE) }
-        if (odmId.await() == -1L && sdmId.await() == -1L && pmId.await() == -1L && fmId.await() == -1L && emId.await() == -1L) return
-
+        if (awaitAll(
+                channelIdByTypeAsync(guildId, LogChannelType.OTHER_DELETED_MESSAGE),
+                channelIdByTypeAsync(guildId, LogChannelType.SELF_DELETED_MESSAGE),
+                channelIdByTypeAsync(guildId, LogChannelType.PURGED_MESSAGE),
+                channelIdByTypeAsync(guildId, LogChannelType.FILTERED_MESSAGE),
+                channelIdByTypeAsync(guildId, LogChannelType.EDITED_MESSAGE),
+                channelIdByTypeAsync(guildId, LogChannelType.BULK_DELETED_MESSAGE)
+            ).all {
+                it == -1L
+            }
+        ) {
+            return
+        }
 
         val messageWrapper = daoManager.messageHistoryWrapper
-        var content = event.message.contentRaw
-        event.message.embeds.forEach { embed ->
-            content += "\n${embed.toMessage()}"
+        val content = event.message.contentRaw
+        val embeds = event.message.embeds.joinToString("\n") { embed ->
+            embed.toMessage()
         }
+        val attachments = event.message.attachments.map { it.url }
 
         TaskManager.async(event.author, event.channel) {
             messageWrapper.addMessage(
@@ -233,10 +231,18 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                     event.channel.idLong,
                     event.author.idLong,
                     event.messageIdLong,
-                    event.message.contentRaw,
+                    content,
+                    embeds,
+                    attachments,
                     event.message.timeCreated.toInstant().toEpochMilli()
                 )
             )
+        }
+    }
+
+    private suspend fun channelIdByTypeAsync(guildId: Long, channelType: LogChannelType): Deferred<Long> {
+        return TaskManager.taskValueAsync {
+            container.daoManager.logChannelWrapper.getChannelId(guildId, channelType)
         }
     }
 
@@ -278,29 +284,17 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     private suspend fun checkTicTacToe(event: PrivateMessageReceivedEvent) {
         val shardManager = event.jda.shardManager ?: return
         val author = event.author
-        val ttt1 = TicTacToeCommand.activeGames.firstOrNull {
-            it.user1 == author.idLong && TicTacToe.isTurnUserOne(it.game)
-        }
-        if (ttt1 != null) {
-            parseFieldNMessage(event, ttt1, TicTacToeGame.TTTState.O)?.let {
-                TicTacToeCommand.activeGames.remove(ttt1)
-                ttt1.game = it
-                TicTacToeCommand.activeGames.add(ttt1)
-                TicTacToe.sendNewMenu(shardManager, container.daoManager, ttt1)
-            }
-            return
-        }
+        if (author.isBot) return
 
-        val ttt2 = TicTacToeCommand.activeGames.firstOrNull {
-            it.user2 == author.idLong && !TicTacToe.isTurnUserOne(it.game)
-        }
-        if (ttt2 != null) {
-            parseFieldNMessage(event, ttt2, TicTacToeGame.TTTState.X)?.let {
-                TicTacToeCommand.activeGames.remove(ttt2)
-                ttt2.game = it
-                TicTacToeCommand.activeGames.add(ttt2)
-                TicTacToe.sendNewMenu(shardManager, container.daoManager, ttt2)
-            }
+        val game = container.daoManager.tttWrapper.getGame(author.idLong) ?: return
+        val tttState = if (author.idLong == game.user1 && TicTacToe.isTurnUserO(game.gameState)) TicTacToeGame.TTTState.O
+        else if (author.idLong == game.user2 && !TicTacToe.isTurnUserO(game.gameState)) TicTacToeGame.TTTState.X
+        else return
+
+        parseFieldNMessage(event, game, tttState)?.let {
+            game.gameState = it
+            container.daoManager.tttWrapper.addGame(game)
+            TicTacToe.sendNewMenu(shardManager, container.daoManager, game)
         }
     }
 
@@ -320,7 +314,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val x = out.groupValues[1].toInt()
         val y = out.groupValues[2].toInt()
         val linearIndex = (x - 1) + ((y - 1) * 3)
-        val array = ttt1.game
+        val array = ttt1.gameState
         if (array[linearIndex] != TicTacToeGame.TTTState.EMPTY) {
             event.channel.sendMessage("That coordinate has been used already.").queue()
             return null

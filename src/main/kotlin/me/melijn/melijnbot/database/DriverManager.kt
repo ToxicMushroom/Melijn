@@ -25,7 +25,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class DriverManager(
     dbSettings: Settings.Database,
-    val redisSettings: Settings.Redis
+    redisSettings: Settings.Redis
 ) {
 
     private val afterConnectToBeExecutedQueries = ArrayList<String>()
@@ -55,7 +55,6 @@ class DriverManager(
         if (redisSettings.enabled) {
             logger.info("Connecting to redis..")
             connectRedis(redisSettings.host, redisSettings.port, redisSettings.password)
-
         }
     }
 
@@ -65,7 +64,7 @@ class DriverManager(
             .withPort(port)
 
         val uri = if (password.isNotBlank()){
-            uriBuilder.withPassword(password)
+            uriBuilder.withPassword(password.toCharArray())
         } else {
             uriBuilder
         }.build()
@@ -79,21 +78,14 @@ class DriverManager(
         try {
             redisConnection = redisClient.connect()
             logger.info("Connected to redis")
-            flushdb()
 
         } catch (e: Throwable) {
             TaskManager.async {
                 logger.warn("Retrying to connect to redis..")
                 recursiveConnectRedis(host, port)
-                flushdb()
                 logger.warn("Retrying to connect to redis has succeeded!")
             }
         }
-    }
-
-    private fun flushdb() {
-        redisConnection?.sync()?.flushdb()
-        logger.info("Flushed redis")
     }
 
     private suspend fun recursiveConnectRedis(host: String, port: Int) {
@@ -202,6 +194,19 @@ class DriverManager(
      *   resultset: Consumer object to handle the resultset
      * **/
     fun executeQuery(query: String, resultset: (ResultSet) -> Unit, vararg objects: Any?) {
+        executeQueryList(query, resultset, objects.toList())
+    }
+
+    /**
+     * [query] the sql query that needs execution
+     * [resultset] The consumer that will contain the resultset after executing the query
+     * [objects] the arguments of the query
+     * example:
+     *   query: "SELECT * FROM apples WHERE id = ?"
+     *   objects: 5
+     *   resultset: Consumer object to handle the resultset
+     * **/
+    fun executeQueryList(query: String, resultset: (ResultSet) -> Unit, objects: List<Any?>) {
         try {
             getUsableConnection { connection ->
                 if (connection.isClosed) {
@@ -217,10 +222,9 @@ class DriverManager(
         } catch (e: SQLException) {
             logger.error(
                 "Something went wrong when executing the query: $query\n" +
-                    "Objects: ${objects.joinToString { o -> o.toString() }}"
+                    "Objects: ${objects.joinToString { o -> o.toString() }}", e
             )
             e.sendInGuild()
-            e.printStackTrace()
         }
     }
 

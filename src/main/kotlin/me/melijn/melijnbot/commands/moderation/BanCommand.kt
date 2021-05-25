@@ -220,7 +220,7 @@ fun getBanMessage(
 
     val author = i18n.getTranslation(language, "message.punishment.ban.author")
         .withVariable(PLACEHOLDER_USER, banAuthor.asTag)
-        .withVariable("spaces", " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B")
+        .withVariable("spaces", getAtLeastNCodePointsAfterName(banAuthor) + "\u200B")
 
     return EmbedBuilder()
         .setAuthor(author, null, banAuthor.effectiveAvatarUrl)
@@ -228,4 +228,9 @@ fun getBanMessage(
         .setColor(Color.RED)
         .setDescription(description)
         .build()
+}
+
+fun getAtLeastNCodePointsAfterName(user: User): String {
+    val amount = 0.coerceAtLeast((45L - user.name.codePoints().count()).toInt())
+    return " ".repeat(amount)
 }

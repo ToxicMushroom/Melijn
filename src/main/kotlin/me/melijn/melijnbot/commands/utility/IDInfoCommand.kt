@@ -18,8 +18,12 @@ class IDInfoCommand : AbstractCommand("command.idinfo") {
 
     override suspend fun execute(context: ICommandContext) {
         val id = getLongFromArgNMessage(context, 0, 0) ?: return
-        val sentTime = (id shr 22) + 1420070400000
+        val sentTime = snowflakeToEpochMillis(id)
 
         sendRsp(context, "Snowflake created at `${sentTime.asEpochMillisToDateTimeMillis(context.getTimeZoneId())}`")
     }
+}
+
+fun snowflakeToEpochMillis(snowflake: Long): Long {
+    return (snowflake shr 22) + 1420070400000
 }

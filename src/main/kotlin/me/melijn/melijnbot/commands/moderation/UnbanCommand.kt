@@ -207,7 +207,7 @@ fun getUnbanMessage(
 
     val author = i18n.getTranslation(language, "message.punishment.unban.author")
         .withVariable(PLACEHOLDER_USER, unbanAuthor.asTag)
-        .withVariable("spaces", " ".repeat(45).substring(0, 45 - unbanAuthor.name.length) + "\u200B")
+        .withVariable("spaces", getAtLeastNCodePointsAfterName(unbanAuthor) + "\u200B")
 
     return EmbedBuilder()
         .setAuthor(author, null, unbanAuthor.effectiveAvatarUrl)

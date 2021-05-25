@@ -4,7 +4,7 @@ import me.melijn.melijnbot.commandutil.anime.AnimeCommandUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.web.weebsh.WeebApi
+import me.melijn.melijnbot.internals.web.apis.WeebApi
 
 class NomCommand : AbstractCommand("command.nom") {
 

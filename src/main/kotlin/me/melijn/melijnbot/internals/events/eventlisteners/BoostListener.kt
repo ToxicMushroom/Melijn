@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.events.AbstractListener
@@ -43,7 +42,6 @@ class BoostListener(container: Container) : AbstractListener(container) {
         val linkedMessageWrapper = daoManager.linkedMessageWrapper
         val msgName = linkedMessageWrapper.getMessage(guildId, messageType) ?: return
         var modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
-        if (MessageUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, linkedMessageWrapper)) return
 
         val boosted = event.guild
             .findMembers { it.timeBoosted != null }
@@ -58,7 +56,7 @@ class BoostListener(container: Container) : AbstractListener(container) {
         }
 
 
-        modularMessage = replaceVariablesInBoostMessage(guild, boosted, modularMessage)
+        modularMessage = replaceVariablesInBoostMessage(guild, boosted, modularMessage, msgName)
 
         val message: Message? = modularMessage.toMessage()
         when {
@@ -80,11 +78,12 @@ class BoostListener(container: Container) : AbstractListener(container) {
     private suspend fun replaceVariablesInBoostMessage(
         guild: Guild,
         booster: Member,
-        modularMessage: ModularMessage
+        modularMessage: ModularMessage,
+        msgName: String
     ): ModularMessage {
         val user = booster.user
 
-        return modularMessage.mapAllStringFields {
+        return modularMessage.mapAllStringFieldsSafe("BoostMessage(msgName=$msgName)") {
             if (it != null) WelcomeJagTagParser.parseJagTag(guild, user, it)
             else null
         }

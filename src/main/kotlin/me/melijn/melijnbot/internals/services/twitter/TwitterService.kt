@@ -1,14 +1,22 @@
 package me.melijn.melijnbot.internals.services.twitter
 
+import club.minnced.discord.webhook.WebhookClientBuilder
+import club.minnced.discord.webhook.external.JDAWebhookClient
+import club.minnced.discord.webhook.send.WebhookEmbed
+import club.minnced.discord.webhook.send.WebhookEmbedBuilder
+import club.minnced.discord.webhook.send.WebhookMessageBuilder
 import io.ktor.client.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.socialmedia.TwitterWebhook
 import me.melijn.melijnbot.database.socialmedia.TwitterWrapper
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.services.Service
 import me.melijn.melijnbot.internals.threading.RunnableTask
-import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.getArrayN
+import me.melijn.melijnbot.internals.utils.getObjectN
+import me.melijn.melijnbot.internals.utils.remove
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
@@ -26,11 +34,12 @@ class TwitterService(
     val httpClient: HttpClient,
     private val twitterToken: String,
     private val twitterWrapper: TwitterWrapper,
-    val shardManager: ShardManager
+    val shardManager: ShardManager,
+    private val podInfo: PodInfo
 ) : Service("Twitter", 5, 1, TimeUnit.MINUTES) {
 
     override val service: RunnableTask = RunnableTask {
-        val twitterWebhooks = twitterWrapper.getAll()
+        val twitterWebhooks = twitterWrapper.getAll(podInfo)
         val size = twitterWebhooks.size.toDouble()
         val delay = TimeUnit.MILLISECONDS.convert(floor(period / size).toLong(), unit)
 
@@ -55,38 +64,31 @@ class TwitterService(
 
     private suspend fun postNewTweets(twitterWebhook: TwitterWebhook, tweets: Tweets) {
         if (tweets.tweetList.isEmpty()) return
-        val body = DataObject.empty()
         val selfUser = shardManager.shards.first().selfUser
+        val builder = WebhookClientBuilder(twitterWebhook.webhookUrl.replace("discord.com/api", "discord.com/api/v8"))
 
-        body["username"] = selfUser.name
-        body["avatar_url"] = selfUser.effectiveAvatarUrl
+        builder.setThreadFactory { job ->
+            val thread = Thread(job)
+            thread.name = "Hello"
+            thread.isDaemon = true
+            thread
+        }
+        builder.setWait(true)
+        val client: JDAWebhookClient = builder.buildJDA()
 
+        val mb = WebhookMessageBuilder()
+            .setUsername(selfUser.name)
+            .setAvatarUrl(selfUser.effectiveAvatarUrl)
+
+        var all = 0
         for (tweet in tweets.tweetList.sortedBy { it.createdAt.toEpochSecond(ZoneOffset.UTC) }) {
             if (twitterWebhook.excludedTweetTypes.contains(tweet.type)) continue
-            val embed = DataObject.empty()
+            val eb = WebhookEmbedBuilder()
+                .setColor(0x1A91DA)
+                .setDescription("Hello World")
+                .setTimestamp(tweet.createdAt.atOffset(ZoneOffset.UTC))
+
             val url = "https://twitter.com/${twitterWebhook.handle}/status/${tweet.id}"
-            embed["type"] = "rich"
-            embed["color"] = 0x1A91DA
-
-
-            var content = tweet.content
-            if (content.takeLastWhile { it != ' ' }.contains("https://t.co/", true)
-            ) { // Remove appended tweet urls
-                content = content.dropLastWhile { it != ' ' }
-            }
-            content = StringEscapeUtils.unescapeHtml4(content)
-
-            for (mention in tweet.mentions.sortedBy { it.end }.reversed()) {
-                val p1 = content.substring(0, mention.start)
-                val p2 = content.substring(mention.end, content.length)
-                content = p1 + "[@" + mention.handle + "](https://twitter.com/${mention.handle})" + p2
-            }
-
-            embed["description"] = content
-            if (tweet.media.isNotEmpty()) {
-                embed["image"] = DataObject.empty().put("url", tweet.media.first().url)
-            }
-
             val title = when (tweet.type) {
                 TweetInfo.TweetType.POST -> "${tweets.author.name} posted:"
                 TweetInfo.TweetType.REPLY -> "${tweets.author.name} replied:"
@@ -94,31 +96,45 @@ class TwitterService(
                 TweetInfo.TweetType.RETWEET -> "${tweets.author.name} retweeted:"
                 TweetInfo.TweetType.QUOTED -> "${tweets.author.name} quoted:"
             }
+            eb.setAuthor(WebhookEmbed.EmbedAuthor(title, tweets.author.avatarUrl, url))
 
-            val author = DataObject.empty()
-            author["name"] = title
-            author["url"] = url
-            author["icon_url"] = tweets.author.avatarUrl
-            embed["author"] = author
-            embed["timestamp"] = tweet.createdAt.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
-            val embeds = DataArray.empty()
-            embeds.add(embed)
-            body["embeds"] = embeds
+            var content = tweet.content
+            if (content.takeLastWhile {
+                    it != ' '
+                }.contains("https://t.co/", true)
+            ) content = content.dropLastWhile { it != ' ' } // Remove appended tweet urls
+
+            val orderedMentions = tweet.mentions.sortedBy { it.end }.reversed()
+            for ((start, end, handle) in orderedMentions) {
+                val p1 = content.substring(0, start)
+                val p2 = content.substring(end, content.length)
+                content = p1 + "[@" + handle + "](https://twitter.com/${handle})" + p2
+            }
+
+            content = StringEscapeUtils.unescapeHtml4(content)
+            eb.setDescription(content)
+            if (tweet.media.isNotEmpty()) {
+                eb.setImageUrl(tweet.media.first().url)
+            }
+
+            mb.addEmbeds(eb.build())
 
             try {
-                httpClient.post<HttpResponse>(twitterWebhook.webhookUrl) {
-                    this.body = body.toString()
-                    header("content-type", "application/json")
-                }
+                client.send(mb.build()).await()
             } catch (t: Throwable) {
                 t.printStackTrace()
-                return
+                all++
+                delay(100)
             }
+        }
+        if (all == tweets.tweetList.size) {
+            twitterWebhook.enabled = false
         }
     }
 
-    val twitterDotCoRegex = "https://t\\.co/(?:[a-zA-Z0-9]+)".toRegex()
+    private val twitterDotCoRegex = "https://t\\.co/[a-zA-Z0-9]+".toRegex()
     private suspend fun fetchNewTweets(twitterWebhook: TwitterWebhook): Tweets? {
+        logger.debug("Twitter fetch for: ${twitterWebhook.handle} (id=${twitterWebhook.twitterUserId})")
         val patternFormatRFC3339 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
         val lastTweetTime = OffsetDateTime.ofInstant(
             Instant.ofEpochMilli(twitterWebhook.lastTweetTime), ZoneOffset.UTC
@@ -136,18 +152,13 @@ class TwitterService(
                 "expansions",
                 "author_id,entities.mentions.username,attachments.media_keys,referenced_tweets.id"
             )
+            val excludedTweetTypes = twitterWebhook.excludedTweetTypes
             when {
-                twitterWebhook.excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) && twitterWebhook.excludedTweetTypes.contains(
+                excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) && excludedTweetTypes.contains(
                     TweetInfo.TweetType.RETWEET
-                ) -> {
-                    parameter("exclude", "replies,retweets")
-                }
-                twitterWebhook.excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) -> {
-                    parameter("exclude", "replies")
-                }
-                twitterWebhook.excludedTweetTypes.contains(TweetInfo.TweetType.RETWEET) -> {
-                    parameter("exclude", "retweets")
-                }
+                ) -> parameter("exclude", "replies,retweets")
+                excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) -> parameter("exclude", "replies")
+                excludedTweetTypes.contains(TweetInfo.TweetType.RETWEET) -> parameter("exclude", "retweets")
             }
             parameter("tweet.fields", "created_at")
             parameter("media.fields", "preview_image_url,type,url")
@@ -156,6 +167,9 @@ class TwitterService(
             parameter("end_time", currentTime)
             header("Authorization", "Bearer $twitterToken")
         })
+        if (!content.hasKey("meta")) {
+            return null
+        }
         val metaInfo = content.getObject("meta")
         val arrSize = metaInfo.getInt("result_count")
 

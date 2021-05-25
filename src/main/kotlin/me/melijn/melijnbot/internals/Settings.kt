@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.utils.data.DataArray
 data class Settings(
     val botInfo: BotInfo,
     val restServer: RestServer,
+    val helperBot: HelperBot,
     val api: Api,
     val proxy: Proxy,
     val environment: Environment,
@@ -26,7 +27,9 @@ data class Settings(
         val id: Long,
         val shardCount: Int,
         val embedColor: Int,
+        val podCount: Int,
         val exceptionChannel: Long,
+        val hostPattern: String,
         val developerIds: LongArray
     )
 
@@ -88,17 +91,11 @@ data class Settings(
 
     data class Token(
         var discord: String,
-        var topDotGG: String,
         var weebSh: String,
-        var botsOnDiscordXYZ: String,
-        var botlistSpace: String,
-        var discordBotListCom: String,
-        var discordBotsGG: String,
-        var botsForDiscordCom: String,
-        var discordBoats: String,
         var randomCatApi: String,
         var kSoftApi: String,
-        var osu: String
+        var osu: String,
+        var hot: String
     )
 
     data class Database(
@@ -127,13 +124,18 @@ data class Settings(
         val streakExpireHours: Int
     )
 
+    data class HelperBot(
+        val host: String,
+        val token: String
+    )
+
     companion object {
         private val dotenv = dotenv {
             this.filename = System.getenv("ENV_FILE") ?: ".env"
             this.ignoreIfMissing = true
         }
 
-        fun get(path: String): String = dotenv[path.toUpperCase().replace(".", "_")]
+        fun get(path: String): String = dotenv[path.uppercase().replace(".", "_")]
             ?: throw IllegalStateException("missing env value: $path")
 
         fun getLong(path: String): Long = get(path).toLong()
@@ -161,12 +163,18 @@ data class Settings(
                     getLong("botinfo.id"),
                     getInt("botinfo.shardCount"),
                     getInt("botinfo.embedColor"),
+                    getInt("botinfo.podCount"),
                     getLong("botinfo.exceptionsChannelId"),
+                    get("botinfo.hostPattern"),
                     get("botinfo.developerIds").split(",").map { it.toLong() }.toLongArray()
                 ),
                 RestServer(
                     getInt("restserver.port"),
                     get("restserver.token")
+                ),
+                HelperBot(
+                    get("helperbot.host"),
+                    get("helperbot.token")
                 ),
                 Api(
                     Api.Jikan(
@@ -205,17 +213,11 @@ data class Settings(
                 ),
                 Token(
                     get("token.discord"),
-                    get("token.topDotGG"),
                     get("token.weebSh"),
-                    get("token.botsOnDiscordXYZ"),
-                    get("token.botListSpace"),
-                    get("token.discordBotListCom"),
-                    get("token.discordBotsGG"),
-                    get("token.botsForDiscordCom"),
-                    get("token.discordBoats"),
                     get("token.randomCatApi"),
                     get("token.kSoftApi"),
-                    get("token.osuApi")
+                    get("token.osuApi"),
+                    get("token.hot")
                 ),
                 Database(
                     get("database.database"),

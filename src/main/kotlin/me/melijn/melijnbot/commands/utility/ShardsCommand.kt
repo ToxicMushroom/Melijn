@@ -14,12 +14,12 @@ import javax.swing.text.NumberFormatter
 
 val bigNumberFormatter = NumberFormatter(NumberFormat.getInstance(Locale.UK))
 
-class ShardsCommand : AbstractCommand("command.shards") {
+class ShardsCommand : AbstractCommand("command.cluster") {
 
     init {
         id = 11
-        name = "shards"
-        aliases = arrayOf("shardList", "listShards")
+        name = "cluster"
+        aliases = arrayOf("shardList", "shards")
         commandCategory = CommandCategory.UTILITY
     }
 

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.internals.utils
 
 object OSValidator {
 
-    private val OS = System.getProperty("os.name").toLowerCase()
+    private val OS = System.getProperty("os.name").lowercase()
 
 //    private val isWindows: Boolean
 //        get() = OS.contains("win")

@@ -74,7 +74,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                     for (part in parts) {
                         if (part.isBlank()) continue
                         val type = try {
-                            UserType.valueOf(part.toUpperCase())
+                            UserType.valueOf(part.uppercase())
                         } catch (t: Throwable) {
                             sendRsp(context, "`%type%` is not a valid UserType".withSafeVarInCodeblock("type", arg))
                             return
@@ -275,7 +275,9 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 var content = "```INI\n# [index] - [group] - [getAllRoles] - [userTypes] - [enabled]"
 
                 for ((index, roleInfo) in list.withIndex()) {
-                    val userTypesArg = UserType.setFromInt(roleInfo.forUserTypes).joinToString(",") { "${it.toUCC()}" }
+                    val userTypesArg = UserType.setFromInt(roleInfo.forUserTypes).joinToString(",") {
+                        it.toUCC()
+                    }
                     content += "\n${index + 1} - [${roleInfo.groupName}] - ${roleInfo.getAllRoles} - [$userTypesArg] - ${roleInfo.isEnabled}"
                 }
 
@@ -374,25 +376,26 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
 
             val group = getJoinRoleGroupByArgNMessage(context, 0) ?: return
 
-            val jrInfo = context.daoManager.joinRoleWrapper.getJRI(context.guildId)
+            val wrapper = context.daoManager.joinRoleWrapper
+            val jrInfo = wrapper.getJRI(context.guildId)
             val map = jrInfo.dataMap.toMutableMap()
-            val ls = map[group.groupName]?.toMutableList()
-            if (ls == null) {
+            val roles = map[group.groupName]?.toMutableList()
+            if (roles == null) {
                 val msg = context.getTranslation("$root.emptygroup")
                     .withVariable("group", group.groupName)
                 sendRsp(context, msg)
                 return
             }
-            val index = getIntegerFromArgNMessage(context, 1, 1, ls.size) ?: return
-            val entry = ls[index - 1]
-            ls.removeAt(index - 1)
-            if (ls.isNotEmpty()) {
-                map[group.groupName] = ls
+            val index = getIntegerFromArgNMessage(context, 1, 1, roles.size) ?: return
+            val entry = roles[index - 1]
+            roles.removeAt(index - 1)
+            if (roles.isNotEmpty()) {
+                map[group.groupName] = roles
             } else {
                 map.remove(group.groupName)
             }
             jrInfo.dataMap = map
-            context.daoManager.joinRoleWrapper.put(context.guildId, jrInfo)
+            wrapper.put(context.guildId, jrInfo)
 
             val role = entry.roleId?.let { context.guild.getRoleById(it) }
             val extra = if (entry.roleId == null) "null" else "role"

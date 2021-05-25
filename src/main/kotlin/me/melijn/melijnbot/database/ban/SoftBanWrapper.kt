@@ -10,7 +10,7 @@ import kotlin.math.min
 
 class SoftBanWrapper(private val softBanDao: SoftBanDao) {
 
-    suspend fun addSoftBan(softBan: SoftBan) {
+    fun addSoftBan(softBan: SoftBan) {
         softBanDao.addSoftBan(softBan)
     }
 

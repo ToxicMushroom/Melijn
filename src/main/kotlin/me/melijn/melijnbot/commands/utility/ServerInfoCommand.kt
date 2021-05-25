@@ -32,23 +32,23 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
         val yes = context.getTranslation("yes")
         val no = context.getTranslation("no")
 
-        val title1 = context.getTranslation("$root.response1.field1.title")
-        val title2 = context.getTranslation("$root.response1.field2.title")
-        val title3 = context.getTranslation("$root.response1.field3.title")
+        val response = "$root.response1"
+        val title1 = context.getTranslation("$response.field1.title")
+        val title2 = context.getTranslation("$response.field2.title")
+        val title3 = context.getTranslation("$response.field3.title")
 
-
-        val value1 = replaceFieldVar(context.getTranslation("$root.response1.field1.value"), guild, isSupporter, yes, no)
-        val value2 = replaceFieldVar(context.getTranslation("$root.response1.field2.value"), guild, isSupporter, yes, no)
-        val value31 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part1"), guild, isSupporter, yes, no)
-        val value32 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part2"), guild, isSupporter, yes, no)
-        val value33 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part3"), guild, isSupporter, yes, no)
-        val value34 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part4"), guild, isSupporter, yes, no)
+        val value1 = replaceFieldVar1(context, guild, "$response.field1.value", isSupporter, yes, no)
+        val value2 = replaceFieldVar2(context, guild, "$response.field2.value")
+        val value31 = context.getTranslation("$response.field3.value.part1")
+        val value32 = context.getTranslation("$response.field3.value.part2")
+        val value33 = context.getTranslation("$response.field3.value.part3")
+        val value34 = context.getTranslation("$response.field3.value.part4")
 
         var value3 = ""
-        if (guild.iconUrl != null) value3 += replaceFieldVar(value31, guild, isSupporter, yes, no)
-        if (guild.bannerUrl != null) value3 += replaceFieldVar(value32, guild, isSupporter, yes, no)
-        if (guild.splashUrl != null) value3 += replaceFieldVar(value33, guild, isSupporter, yes, no)
-        if (guild.vanityUrl != null) value3 += replaceFieldVar(value34, guild, isSupporter, yes, no)
+        if (guild.iconUrl != null) value3 += value31.withVariable("iconUrl", sizedUrl(guild.iconUrl))
+        if (guild.bannerUrl != null) value3 += value32.withVariable("iconUrl", sizedUrl(guild.bannerUrl))
+        if (guild.splashUrl != null) value3 += value33.withVariable("iconUrl", sizedUrl(guild.splashUrl))
+        if (guild.vanityUrl != null) value3 += value34.withVariable("iconUrl", sizedUrl(guild.vanityUrl))
         if (value3.isEmpty()) value3 = "/"
 
         val eb = Embedder(context)
@@ -69,40 +69,46 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
         sendEmbedRsp(context, eb.build())
     }
 
-    private suspend fun replaceFieldVar(
-        string: String,
+    private suspend fun replaceFieldVar1(
+        context: ICommandContext,
         guild: Guild,
+        path: String,
         isSupporter: Boolean,
         yes: String,
         no: String
+    ): String {
+        return context.getTranslation(path)
+            .withSafeVariable("serverName", guild.name)
+            .withVariable("serverId", guild.id)
+            .withVariable("creationDate", guild.timeCreated.asLongLongGMTString())
+            .withVariable("region", guild.region.toUCC())
+            .withVariable("isVip", if (guild.region.isVip) yes else no)
+            .withVariable("supportsMelijn", if (isSupporter) yes else no)
+            .withSafeVariable("owner", guild.retrieveOwner().awaitOrNull()?.asTag ?: "NONE")
+            .withVariable("verificationLevel", guild.verificationLevel.toUCC())
+            .withVariable("mfa", guild.requiredMFALevel.toUCC())
+    }
+
+    private suspend fun replaceFieldVar2(
+        context: ICommandContext,
+        guild: Guild,
+        path: String
     ): String {
         val botCount = guild.memberCache
             .stream()
             .filter { member -> member.user.isBot }
             .count()
 
-        return string
-            .withSafeVariable("serverName", guild.name)
-            .withVariable("serverId", guild.id)
-            .withVariable("iconUrl", (if (guild.iconUrl != null) "${guild.iconUrl}?size=2048" else "").toString())
-            .withVariable("bannerUrl", (if (guild.bannerUrl != null) "${guild.bannerUrl}?size=2048" else "").toString())
-            .withVariable("splashUrl", (if (guild.splashUrl != null) "${guild.splashUrl}?size=2048" else "").toString())
-            .withVariable("vanityUrl", (if (guild.vanityUrl != null) "${guild.vanityUrl}?size=2048" else "").toString())
-            .withVariable("creationDate", guild.timeCreated.asLongLongGMTString())
-            .withVariable("region", guild.region.toUCC())
-            .withVariable("isVip", if (guild.region.isVip) yes else no)
-            .withVariable("supportsMelijn", if (isSupporter) yes else no)
+        return context.getTranslation(path)
+            .withVariable("memberCount", guild.memberCount.toString())
+            .withVariable("userCount", (guild.memberCount - botCount).toString())
+            .withVariable("botCount", botCount.toString())
             .withVariable("boostCount", guild.boostCount.toString())
             .withVariable("boostTier", guild.boostTier.key.toString())
-            .withVariable("memberCount", guild.memberCount.toString())
             .withVariable("roleCount", guild.roleCache.size().toString())
             .withVariable("textChannelCount", guild.textChannelCache.size().toString())
             .withVariable("voiceChannelCount", guild.voiceChannelCache.size().toString())
             .withVariable("categoryCount", guild.categoryCache.size().toString())
-            .withSafeVariable("owner", guild.retrieveOwner().awaitOrNull()?.asTag ?: "NONE")
-            .withVariable("verificationLevel", guild.verificationLevel.toUCC())
-            .withVariable("botCount", botCount.toString())
-            .withVariable("userCount", (guild.memberCount - botCount).toString())
             .withVariable(
                 "botPercent",
                 (((botCount.toDouble() / guild.memberCount) * 10000).roundToLong() / 100.0).toString()
@@ -111,6 +117,7 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
                 "userPercent",
                 ((((guild.memberCount - botCount.toDouble()) / guild.memberCount) * 10000).roundToLong() / 100.0).toString()
             )
-            .withVariable("mfa", guild.requiredMFALevel.toUCC())
     }
+
+    private fun sizedUrl(iconUrl: String?) = iconUrl?.let { "${it}?size=2048" } ?: ""
 }

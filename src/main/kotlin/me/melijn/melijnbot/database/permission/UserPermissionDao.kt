@@ -29,12 +29,19 @@ class UserPermissionDao(driverManager: DriverManager) : CacheDBDao(driverManager
     }
 
     fun set(guildId: Long, userId: Long, permission: String, permState: PermState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?",
-            guildId, userId, permission, permState.toString(), permState.toString())
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?",
+            guildId, userId, permission, permState.toString(), permState.toString()
+        )
     }
 
     fun delete(guildId: Long, userId: Long, permission: String) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND userId = ? AND permission = ?", guildId, userId, permission)
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE guildId = ? AND userId = ? AND permission = ?",
+            guildId,
+            userId,
+            permission
+        )
     }
 
     fun delete(guildId: Long, userId: Long) {
@@ -42,10 +49,10 @@ class UserPermissionDao(driverManager: DriverManager) : CacheDBDao(driverManager
     }
 
     suspend fun getMap(guildId: Long, userId: Long): Map<String, PermState> = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table WHERE userId = ? AND guildId = ?", { resultset ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE userId = ? AND guildId = ?", { rs ->
             val map = HashMap<String, PermState>()
-            while (resultset.next()) {
-                map[resultset.getString("permission")] = PermState.valueOf(resultset.getString("state"))
+            while (rs.next()) {
+                map[rs.getString("permission").lowercase()] = PermState.valueOf(rs.getString("state"))
             }
             it.resume(map)
         }, userId, guildId)
@@ -53,31 +60,33 @@ class UserPermissionDao(driverManager: DriverManager) : CacheDBDao(driverManager
 
     fun bulkPut(guildId: Long, userId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->
-            connection.prepareStatement("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?").use { statement ->
-                statement.setLong(1, guildId)
-                statement.setLong(2, userId)
-                statement.setString(4, state.toString())
-                statement.setString(5, state.toString())
-                for (perm in permissions) {
-                    statement.setString(3, perm)
-                    statement.addBatch()
+            connection.prepareStatement("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?")
+                .use { statement ->
+                    statement.setLong(1, guildId)
+                    statement.setLong(2, userId)
+                    statement.setString(4, state.toString())
+                    statement.setString(5, state.toString())
+                    for (perm in permissions) {
+                        statement.setString(3, perm)
+                        statement.addBatch()
+                    }
+                    statement.executeBatch()
                 }
-                statement.executeBatch()
-            }
         }
     }
 
     fun bulkDelete(guildId: Long, userId: Long, permissions: List<String>) {
         driverManager.getUsableConnection { connection ->
-            connection.prepareStatement("DELETE FROM $table WHERE guildId =? AND userId = ? AND permission = ?").use { statement ->
-                statement.setLong(1, guildId)
-                statement.setLong(2, userId)
-                for (perm in permissions) {
-                    statement.setString(3, perm)
-                    statement.addBatch()
+            connection.prepareStatement("DELETE FROM $table WHERE guildId =? AND userId = ? AND permission = ?")
+                .use { statement ->
+                    statement.setLong(1, guildId)
+                    statement.setLong(2, userId)
+                    for (perm in permissions) {
+                        statement.setString(3, perm)
+                        statement.addBatch()
+                    }
+                    statement.executeBatch()
                 }
-                statement.executeBatch()
-            }
         }
     }
 }

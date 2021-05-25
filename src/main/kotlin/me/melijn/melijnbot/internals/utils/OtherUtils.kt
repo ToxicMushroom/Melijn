@@ -12,8 +12,6 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Month
@@ -23,19 +21,19 @@ import java.util.regex.Pattern
 
 
 val linuxUptimePattern: Pattern = Pattern.compile(
-    "(?:([0-9]+)(?:\\.[0-9]+)?) (?:[0-9]+(?:\\.[0-9]+)?)" // 11105353.49 239988480.98
+    "([0-9]+)(?:\\.[0-9]+)? [0-9]+(?:\\.[0-9]+)?" // 11105353.49 239988480.98
 )
 
 // Thx xavin
-val linuxRamPattern: Pattern = Pattern.compile("Mem(?:.*):\\s+([0-9]+) kB")
+val linuxRamPattern: Pattern = Pattern.compile("Mem.*:\\s+([0-9]+) kB")
 
 fun getSystemUptime(): Long {
     return try {
         var uptime: Long = -1
-        val os = System.getProperty("os.name").toLowerCase()
+        val os = System.getProperty("os.name").lowercase()
         if (os.contains("win")) {
             uptime = getWindowsUptime()
-        } else if (os.contains("mac") || os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+        } else if (os.contains("web_binariesaa/mac") || os.contains("nix") || os.contains("nux") || os.contains("aix")) {
             uptime = getUnixUptime()
         }
         uptime
@@ -45,33 +43,26 @@ fun getSystemUptime(): Long {
 }
 
 fun Calendar.isLeapYear(): Boolean {
-    val cal = this
-    return cal.getActualMaximum(Calendar.DAY_OF_YEAR) > 365
+    return this.getActualMaximum(Calendar.DAY_OF_YEAR) > 365
 }
-
-
-// EPIC CODE, DO NOT TOUCH
-//fun <K, V> loadingCacheFrom(function: (K) -> CompletableFuture<V>): CacheLoader<K, CompletableFuture<V>> {
-//    return CacheLoader.from { k ->
-//        if (k == null) throw IllegalArgumentException("BRO CRINGE")
-//        function.invoke(k)
-//    }
-//}
 
 fun getUnixUptime(): Long {
     val uptimeProc = Runtime.getRuntime().exec("cat /proc/uptime") // Parse time to groups if possible
-    val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
-    val line = `in`.readLine() ?: return -1
-    val matcher = linuxUptimePattern.matcher(line)
+    uptimeProc.inputStream.use { ins ->
+        ins.bufferedReader().use { br ->
+            val line = br.readLine() ?: return -1
+            val matcher = linuxUptimePattern.matcher(line)
 
-    if (!matcher.find()) return -1 // Extract ints out of groups
-    return matcher.group(1).toLong()
+            if (!matcher.find()) return -1 // Extract ints out of groups
+            return matcher.group(1).toLong()
+        }
+    }
 }
 
 fun getTotalMBUnixRam(): Long {
     val uptimeProc = Runtime.getRuntime().exec("cat /proc/meminfo")
-    uptimeProc.inputStream.use { `is` ->
-        `is`.bufferedReader().use { br ->
+    uptimeProc.inputStream.use { ins ->
+        ins.bufferedReader().use { br ->
             val total = br.readLine() ?: return -1
             val matcher = linuxRamPattern.matcher(total)
 
@@ -84,8 +75,8 @@ fun getTotalMBUnixRam(): Long {
 
 fun getUsedMBUnixRam(): Long {
     val uptimeProc = Runtime.getRuntime().exec("cat /proc/meminfo")
-    uptimeProc.inputStream.use { `is` ->
-        `is`.bufferedReader().use { br ->
+    uptimeProc.inputStream.use { ins ->
+        ins.bufferedReader().use { br ->
             val total = br.readLine() ?: return -1
             br.readLine() ?: return -1
             val available = br.readLine() ?: return -1
@@ -103,8 +94,8 @@ fun getUsedMBUnixRam(): Long {
 
 fun getWindowsUptime(): Long {
     val uptimeProc = Runtime.getRuntime().exec("net stats workstation")
-    uptimeProc.inputStream.use { `is` ->
-        `is`.bufferedReader().use { br ->
+    uptimeProc.inputStream.use { ins ->
+        ins.bufferedReader().use { br ->
             for (line in br.readLines()) {
                 if (line.startsWith("Statistieken vanaf")) {
                     val format = SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss") //Dutch windows version
@@ -125,9 +116,9 @@ fun getWindowsUptime(): Long {
 }
 
 fun Color.toHex(): String {
-    val redHex = Integer.toHexString(red).toUpperCase().padStart(2, '0')
-    val greenHex = Integer.toHexString(green).toUpperCase().padStart(2, '0')
-    val blueHex = Integer.toHexString(blue).toUpperCase().padStart(2, '0')
+    val redHex = Integer.toHexString(red).uppercase().padStart(2, '0')
+    val greenHex = Integer.toHexString(green).uppercase().padStart(2, '0')
+    val blueHex = Integer.toHexString(blue).uppercase().padStart(2, '0')
     return "#$redHex$greenHex$blueHex"
 }
 
@@ -184,12 +175,11 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: ICommandContex
     }
 }
 
-val ccTagPattern = Pattern.compile("cc\\.(\\d+)")
+val ccTagPattern = Regex("cc\\.(\\d+)")
 suspend fun getCommandIdsFromArgNMessage(context: ICommandContext, index: Int): Set<String>? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val category: CommandCategory? = enumValueOrNull(arg)
-    val matcher = ccTagPattern.matcher(arg)
 
     val commands = if (category == null) {
         if (arg == "*") {
@@ -205,7 +195,7 @@ suspend fun getCommandIdsFromArgNMessage(context: ICommandContext, index: Int): 
 
     commands.removeIf { id -> id == "16" || id == "0" }
 
-    if (matcher.matches()) {
+    if (ccTagPattern.matches(arg)) {
         commands.add(arg)
     }
 
@@ -465,11 +455,11 @@ fun Enum<*>.toUCSC(): String {
 //lowerCamelCase
 fun Enum<*>.toLCC(): String {
     val uCC = this.toUCC()
-    return uCC[0].toLowerCase() + uCC.substring(1)
+    return uCC[0].lowercase() + uCC.substring(1)
 }
 
 //lowerCase
-fun Enum<*>.toLC(): String = this.toString().toLowerCase()
+fun Enum<*>.toLC(): String = this.toString().lowercase()
 
 
 val numberRegex = "-?\\d+".toRegex()
@@ -529,4 +519,29 @@ fun DataObject.getObjectN(key: String): DataObject? {
 }
 fun DataObject.getArrayN(key: String): DataArray? {
     return if (this.hasKey(key)) getArray(key) else null
+}
+
+suspend fun <K, V> Map<K, V>.sum(function: suspend (Map.Entry<K, V>) -> Int): Int {
+    var count = 0
+    for (entry in this) {
+        count += function(entry)
+    }
+    return count
+}
+
+suspend fun <K, V> Map<K, V>.first(function: suspend (Map.Entry<K, V>) -> Boolean): Map.Entry<K, V> {
+    for (entry in this) {
+        if (function(entry)) return entry
+    }
+    throw IllegalStateException("Map#first failed to return, predicate was false for all of the entries")
+}
+
+suspend fun <T> ICommandContext.optional(index: Int, default: T, func: suspend (Int) -> T): T {
+    return if (this.args.size > index) func(index)
+    else default
+}
+
+operator fun Boolean.plus(i: Int): Int {
+    return if (this) i + 1
+    else i
 }

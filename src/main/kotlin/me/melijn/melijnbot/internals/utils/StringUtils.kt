@@ -4,7 +4,6 @@ import com.wrapper.spotify.Base64
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import java.nio.ByteBuffer
-import java.util.*
 import kotlin.math.pow
 
 val SPACE_PATTERN = Regex("\\s+")
@@ -258,29 +257,29 @@ fun String.escapeDiscordInvites(): String {
 
 // IC == In CodeBlock
 fun String.withSafeVarInCodeblock(toReplace: String, obj: Any, escapeInvites: Boolean = false): String {
-    val replacedResult = this.replace(
+    return this.replace(
         "%$toReplace%",
-        obj.toString().escapeCodeblockMarkdown()
+        obj.toString().escapeCodeblockMarkdown().run {
+            if (escapeInvites) this.escapeDiscordInvites()
+            else this
+        }
     )
-    return if (escapeInvites) {
-        replacedResult.escapeDiscordInvites()
-    } else {
-        replacedResult
-    }
 }
 
 fun String.withSafeVariable(toReplace: String, obj: Any): String {
     return this.replace(
         "%$toReplace%",
-        obj.toString().escapeMarkdown()
-    ).escapeDiscordInvites()
+        obj.toString()
+            .escapeMarkdown()
+            .escapeDiscordInvites()
+    )
 }
 
 fun String.toUpperWordCase(): String {
     var previous = ' '
     var newString = ""
     this.toCharArray().forEach { c: Char ->
-        newString += if (previous == ' ') c.toUpperCase() else c.toLowerCase()
+        newString += if (previous == ' ') c.uppercase() else c.lowercase()
         previous = c
     }
     return newString
@@ -301,6 +300,7 @@ fun Int.toHexString(size: Int = 6): String {
 fun String.isInside(vararg stringList: String, ignoreCase: Boolean): Boolean {
     return stringList.any { it.equals(this, ignoreCase) }
 }
+
 fun String.isInside(stringList: Collection<String>, ignoreCase: Boolean): Boolean {
     return stringList.any { it.equals(this, ignoreCase) }
 }

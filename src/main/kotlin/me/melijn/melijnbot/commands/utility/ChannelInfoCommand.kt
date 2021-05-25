@@ -52,10 +52,12 @@ class ChannelInfoCommand : AbstractCommand("command.channelinfo") {
                 .setTitle("VoiceChannel Info")
                 .setDescription(
                     "**Name** ${voice.name}\n" +
+                        "**ID** ${voice.id}\n" +
                         "**Creation Time** ${voice.timeCreated.asEpochMillisToDateTime(context.getTimeZoneId())}\n" +
                         "**Position** ${voice.position}\n" +
                         "**UserLimit** ${voice.userLimit}\n" +
                         "**Connected Users** ${voice.members.size}\n" +
+                        "**Mention** <#${voice.idLong}>\n" +
                         "**Link** [click](https://discord.com/channels/${voice.guild.id}/${voice.id})\n" +
                         "**Can Melijn Speak** ${selfMember.hasPermission(voice, Permission.VOICE_SPEAK)}\n" +
                         "**Can Melijn Connect** ${selfMember.hasPermission(voice, Permission.VOICE_CONNECT)}"

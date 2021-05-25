@@ -1,41 +1,46 @@
 package me.melijn.melijnbot.internals.web
 
-
 import com.apollographql.apollo.ApolloClient
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
+import io.ktor.client.features.*
 import io.ktor.client.features.json.*
 import me.melijn.melijnbot.internals.Settings
-import me.melijn.melijnbot.internals.web.bins.BinApis
-import me.melijn.melijnbot.internals.web.booru.BooruApi
-import me.melijn.melijnbot.internals.web.botlist.BotListApi
-import me.melijn.melijnbot.internals.web.kitsu.KitsuApi
-import me.melijn.melijnbot.internals.web.nsfw.Rule34Api
-import me.melijn.melijnbot.internals.web.osu.OsuApi
-import me.melijn.melijnbot.internals.web.spotify.MySpotifyApi
-import me.melijn.melijnbot.internals.web.weebsh.WeebApi
+import me.melijn.melijnbot.internals.web.apis.*
 import okhttp3.OkHttpClient
 import java.net.InetSocketAddress
 import java.net.Proxy
 
-
 class WebManager(val settings: Settings) {
 
-    val httpClient = HttpClient(OkHttp) {
+    val objectMapper: ObjectMapper = jacksonObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
+    val commonClientConfig: HttpClientConfig<OkHttpConfig>.() -> Unit = {
         expectSuccess = false
         install(JsonFeature) {
-            serializer = JacksonSerializer()
+            serializer = JacksonSerializer(objectMapper)
+        }
+        install(UserAgent) {
+            agent = "Melijn / 2.0.8 Discord bot"
         }
     }
+
+    val httpClient = HttpClient(OkHttp, commonClientConfig)
     val proxiedHttpClient = HttpClient(OkHttp) {
-        expectSuccess = false
+        commonClientConfig(this)
         this.engine {
-            val cb = OkHttpClient.Builder()
-            val client = cb.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress(settings.proxy.host, settings.proxy.port)))
+            val clientBuilder = OkHttpClient.Builder()
+            val proxy = Proxy(Proxy.Type.HTTP, InetSocketAddress(settings.proxy.host, settings.proxy.port))
+            val client = clientBuilder.proxy(proxy)
                 .build()
             this.preconfigured = client
         }
     }
+
     val aniListApolloClient: ApolloClient = ApolloClient.builder()
         .serverUrl("https://graphql.anilist.co")
         .okHttpClient(OkHttpClient())
@@ -45,11 +50,9 @@ class WebManager(val settings: Settings) {
 
 
     val rule34Api: Rule34Api = Rule34Api(httpClient)
+    val imageApi: ImageApi = ImageApi(httpClient, proxiedHttpClient)
     val booruApi: BooruApi = BooruApi(httpClient)
-    val binApis: BinApis = BinApis(httpClient)
-    val kitsuApi: KitsuApi = KitsuApi(httpClient)
     val osuApi: OsuApi = OsuApi(proxiedHttpClient, settings.tokens.osu)
-    val botListApi: BotListApi = BotListApi(httpClient, settings)
     val weebApi: WeebApi = WeebApi(httpClient, settings)
 
     init {

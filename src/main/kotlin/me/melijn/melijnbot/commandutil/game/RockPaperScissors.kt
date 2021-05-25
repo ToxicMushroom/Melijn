@@ -11,12 +11,10 @@ import net.dv8tion.jda.api.JDA
 
 object RockPaperScissors {
 
-    suspend fun checkForContinue(jda: JDA, daoManager: DaoManager, iter: MutableListIterator<RockPaperScissorsGame>) {
-        val rps = iter.next()
+    suspend fun checkForContinue(jda: JDA, daoManager: DaoManager, rps: RockPaperScissorsGame): Boolean {
         val choice1 = rps.choice1
         val choice2 = rps.choice2
-        if (choice1 == null || choice2 == null) return
-        iter.remove()
+        if (choice1 == null || choice2 == null) return false
 
         val userId1 = rps.user1
         val user1 = jda.retrieveUserById(userId1).awaitOrNull()
@@ -36,13 +34,13 @@ object RockPaperScissors {
                     lang1,
                     "message.rps.user.tie"
                 )
-                    .withVariable("user", user2?.asTag ?: return)
+                    .withVariable("user", user2?.asTag ?: return true)
                     .withVariable("bet", rps.bet)
                 msg2 = i18n.getTranslation(
                     lang2,
                     "message.rps.user.tie"
                 )
-                    .withVariable("user", user1?.asTag ?: return)
+                    .withVariable("user", user1?.asTag ?: return true)
                     .withVariable("bet", rps.bet)
 
                 daoManager.balanceWrapper.addBalance(userId1, rps.bet)
@@ -53,13 +51,13 @@ object RockPaperScissors {
                     lang1,
                     "message.rps.user.won"
                 )
-                    .withVariable("user", user2?.asTag ?: return)
+                    .withVariable("user", user2?.asTag ?: return true)
                     .withVariable("bet", rps.bet)
                 msg2 = i18n.getTranslation(
                     lang2,
                     "message.rps.user.lost"
                 )
-                    .withVariable("user", user1?.asTag ?: return)
+                    .withVariable("user", user1?.asTag ?: return true)
                     .withVariable("bet", rps.bet)
 
                 daoManager.balanceWrapper.addBalance(userId1, rps.bet * 2)
@@ -69,13 +67,13 @@ object RockPaperScissors {
                     lang1,
                     "message.rps.user.lost"
                 )
-                    .withVariable("user", user2?.asTag ?: return)
+                    .withVariable("user", user2?.asTag ?: return true)
                     .withVariable("bet", rps.bet)
                 msg2 = i18n.getTranslation(
                     lang2,
                     "message.rps.user.won"
                 )
-                    .withVariable("user", user1?.asTag ?: return)
+                    .withVariable("user", user1?.asTag ?: return true)
                     .withVariable("bet", rps.bet)
 
                 daoManager.balanceWrapper.addBalance(userId2, rps.bet * 2)
@@ -84,5 +82,6 @@ object RockPaperScissors {
 
         dm1?.sendMessage(msg1)?.queue()
         dm2?.sendMessage(msg2)?.queue()
+        return true
     }
 }

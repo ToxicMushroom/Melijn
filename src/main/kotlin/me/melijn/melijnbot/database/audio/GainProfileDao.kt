@@ -45,6 +45,13 @@ class GainProfileDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         )
     }
 
+    suspend fun getCount(id: Long): Int = suspendCoroutine{
+        driverManager.executeQuery("SELECT COUNT(*) FROM $table WHERE id = ?", {rs ->
+            if (rs.next()) it.resume(rs.getInt(1))
+            else it.resume(0)
+        }, id)
+    }
+
 }
 
 data class GainProfile(

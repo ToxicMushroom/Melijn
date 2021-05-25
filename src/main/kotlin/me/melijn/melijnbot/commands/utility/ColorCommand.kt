@@ -6,9 +6,10 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.ImageUtils
 import me.melijn.melijnbot.internals.utils.getColorFromArgNMessage
-import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.toHex
+import net.dv8tion.jda.api.Permission
+import java.awt.Color
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
@@ -17,6 +18,7 @@ class ColorCommand : AbstractCommand("command.color") {
     init {
         id = 132
         name = "color"
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
         commandCategory = CommandCategory.UTILITY
     }
 
@@ -30,21 +32,27 @@ class ColorCommand : AbstractCommand("command.color") {
         val hexTitle = context.getTranslation("$root.eb.hex.title")
         val rgbTitle = context.getTranslation("$root.eb.rgb.title")
         val decTitle = context.getTranslation("$root.eb.dec.title")
+        val hsbTitle = context.getTranslation("$root.eb.hsb.title")
+
+        val hsbArr = Color.RGBtoHSB(color.red, color.green, color.blue, FloatArray(3))
+        val hsbFormat = "(${(hsbArr[0] * 360).toInt()}, ${(hsbArr[1] * 100).toInt()}%, ${(hsbArr[2] * 100).toInt()}%)"
 
         val eb = Embedder(context)
             .setColor(color)
             .addField(hexTitle, color.toHex(), true)
             .addField(rgbTitle, "(${color.red}, ${color.green}, ${color.blue})", true)
             .addField(decTitle, color.rgb.toString(), true)
+            .addField(hsbTitle, hsbFormat, true)
             .setThumbnail("attachment://file.png")
 
 
         val bais = ByteArrayOutputStream()
         bais.use {
-            ImageIO.write(ImageUtils.createPlane(64,color.rgb), "png", it)
+            ImageIO.write(ImageUtils.createPlane(64, color.rgb), "png", it)
         }
 
-        context.channel.sendMessage(eb.build()).addFile(bais.toByteArray(), "file.png").queue()
-
+        context.channel.sendMessage(eb.build())
+            .addFile(bais.toByteArray(), "file.png")
+            .queue()
     }
 }

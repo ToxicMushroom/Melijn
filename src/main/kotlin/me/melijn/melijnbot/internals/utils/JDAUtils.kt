@@ -1,5 +1,9 @@
 package me.melijn.melijnbot.internals.utils
 
+import me.melijn.melijnbot.database.ban.BotBannedWrapper.Companion.isBotBanned
+import me.melijn.melijnbot.database.locking.EntityType
+import me.melijn.melijnbot.database.statesync.LiteEmote
+import me.melijn.melijnbot.database.statesync.toLite
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
@@ -128,13 +132,14 @@ fun getUserByArgsN(context: ICommandContext, index: Int): User? {//With null
 }
 
 fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String, message: Message? = null): User? {
+    if (arg.isBlank()) return null
     return if (DISCORD_ID.matches(arg)) {
         shardManager.getUserById(arg)
     } else if (USER_MENTION.matches(arg)) {
         val id = (USER_MENTION.find(arg) ?: return null).groupValues[1]
         message?.mentionedUsers?.firstOrNull { it.id == id } ?: shardManager.getUserById(id)
     } else if (guild != null && FULL_USER_REF.matches(arg)) {
-        shardManager.getUserByTag(arg)
+        getUserByTag(shardManager, arg)
     } else if (guild != null && guild.getMembersByName(arg, true).isNotEmpty()) {
         guild.getMembersByName(arg, true)[0].user
     } else if (guild != null && guild.getMembersByNickname(arg, true).isNotEmpty()) {
@@ -150,14 +155,23 @@ fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String, messa
     } else null
 }
 
+fun getUserByTag(shardManager: ShardManager, arg: String): User? {
+    val discriminator = arg.takeLast(4)
+    val name = arg.dropLast(5)
+    return shardManager.userCache.firstOrNull { user ->
+        user.discriminator == discriminator &&
+                user.name == name
+    }
+}
+
 suspend fun retrieveUserByArgsN(context: ICommandContext, index: Int): User? {
     val user1: User? = getUserByArgsN(context, index)
     return when {
         user1 != null -> user1
         context.args.size > index -> {
             val arg = context.args[index]
-
-            when {
+            if (arg.isBlank()) null
+            else when {
                 DISCORD_ID.matches(arg) -> {
                     context.shardManager.retrieveUserById(arg).awaitOrNull()
                 }
@@ -166,7 +180,12 @@ suspend fun retrieveUserByArgsN(context: ICommandContext, index: Int): User? {
                     context.message.mentionedUsers.firstOrNull { it.id == id }
                         ?: context.shardManager.retrieveUserById(id).awaitOrNull()
                 }
-                else -> context.guildN?.retrieveMembersByPrefix(arg, 1)?.awaitOrNull()?.firstOrNull()?.user
+                else -> context.guildN?.retrieveMembersByPrefix(arg, 1)?.awaitOrNull()?.run {
+                    this.firstOrNull { it.effectiveName.length == arg.length }?.let {
+                        return@run it.user
+                    }
+                    this.minByOrNull { it.effectiveName.length }?.user
+                }
             }
         }
         else -> null
@@ -174,6 +193,7 @@ suspend fun retrieveUserByArgsN(context: ICommandContext, index: Int): User? {
 }
 
 suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? {
+    if (arg.isBlank()) return null
     val shardManager = guild.jda.shardManager ?: return null
     val user1: User? = getUserByArgsN(shardManager, guild, arg)
     if (user1 != null) {
@@ -359,8 +379,8 @@ suspend fun getStringFromArgsNMessage(
         if (arg.contains(char, ignoreCase)) {
             val msg = context.getTranslation("message.string.cantcontaincharfailed")
                 .withSafeVariable("arg", arg)
-                .withVariable("chars", cantContainChars)
-                .withVariable("char", char)
+                .withSafeVariable("chars", cantContainChars.joinToString("") { "$it"})
+                .withVariable("char", "$char")
                 .withVariable("ignorecase", ignoreCase)
             sendRsp(context, msg)
             return null
@@ -385,7 +405,7 @@ suspend fun getEmotejiByArgsNMessage(
     context: ICommandContext,
     index: Int,
     sameGuildAsContext: Boolean = false
-): Pair<Emote?, String?>? {
+): Pair<LiteEmote?, String?>? {
     if (argSizeCheckFailed(context, index)) return null
     val emoteji = getEmotejiByArgsN(context, index, sameGuildAsContext)
     if (emoteji == null) {
@@ -402,7 +422,7 @@ suspend fun getEmotejiByArgsN(
     context: ICommandContext,
     index: Int,
     sameGuildAsContext: Boolean = false
-): Pair<Emote?, String?>? {
+): Pair<LiteEmote?, String?>? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val emoji = if (SupportedDiscordEmoji.helpMe.contains(arg)) {
@@ -412,7 +432,7 @@ suspend fun getEmotejiByArgsN(
     }
 
     val emote = if (emoji == null) {
-        getEmoteByArgsN(context, index, sameGuildAsContext)
+        getEmoteByArgsN(context, index, sameGuildAsContext)?.toLite()
     } else null
 
     if (emoji == null && emote == null) {
@@ -453,10 +473,10 @@ suspend fun getEmoteByArgsN(context: ICommandContext, index: Int, sameGuildAsCon
         emotes = context.guildN?.getEmotesByName(arg, true)
         if (emotes != null && emotes.isNotEmpty() && emote == null) emote = emotes[0]
 
-        emotes = context.shardManager.getEmotesByName(arg, false)
+        emotes = context.guildN?.getEmotesByName(arg, false) ?: emptyList()
         if (emotes.isNotEmpty() && emote == null) emote = emotes[0]
 
-        emotes = context.shardManager.getEmotesByName(arg, true)
+        emotes = context.guildN?.getEmotesByName(arg, true) ?: emptyList()
         if (emotes.isNotEmpty() && emote == null) emote = emotes[0]
 
     }
@@ -468,33 +488,40 @@ suspend fun getEmoteByArgsN(context: ICommandContext, index: Int, sameGuildAsCon
     }
 }
 
-val hexColorRegex = Regex("(?:0x)?#?([a-f]|\\d){6}", RegexOption.IGNORE_CASE)
-val rgbColorRegex = Regex("\\s*\\d+,\\s*\\d+,\\s*\\d+")
+val hexColorRegex = Regex("(?:0x)?#?((?:[a-f]|\\d){6});?", RegexOption.IGNORE_CASE)
+val rgbColorRegex = Regex("(?:rgb\\()?\\s*(\\d+),\\s*(\\d+),\\s*(\\d+)\\)?;?", RegexOption.IGNORE_CASE)
+val hsbColorRegex = Regex("(?:hsb\\()?(\\d+),\\s*(\\d+)%?,\\s*(\\d+)%?\\)?;?", RegexOption.IGNORE_CASE)
 
 suspend fun getColorFromArgNMessage(context: ICommandContext, index: Int): Color? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val color: Color? = when {
         hexColorRegex.matches(arg) -> {
-            if (arg.startsWith("#")) Color.decode(arg)
-            else if(arg.startsWith("0x")) Color.decode("#" + arg.drop(2))
-            else Color.decode("#$arg")
+            hexColorRegex.find(arg)?.groupValues?.get(1)?.let {
+                Color.decode("#$it")
+            }
         }
-        rgbColorRegex.matches(arg) -> {
-            val parts = arg.split(",")
-            val r = parts[0]
-                .trim()
-                .toIntOrNull()
-            val g = parts[1]
-                .trim()
-                .toIntOrNull()
-            val b = parts[2]
-                .trim()
-                .toIntOrNull()
 
-            if (r == null || g == null || b == null) null
-            else {
-                Color(r, g, b)
+        rgbColorRegex.matches(arg) -> {
+            rgbColorRegex.find(arg)?.groupValues?.let {
+                val r = it[1].toIntOrNull()
+                val g = it[2].toIntOrNull()
+                val b = it[3].toIntOrNull()
+                if (r == null || g == null || b == null) null
+                else try {
+                    Color(r, g, b)
+                } catch (t: Throwable) {
+                    null
+                }
+            }
+        }
+        hsbColorRegex.matches(arg) -> {
+            hsbColorRegex.find(arg)?.groupValues?.let {
+                val h = it[1].toIntOrNull()?.div(360.0f)
+                val s = it[2].toIntOrNull()?.div(100.0f)
+                val l = it[3].toIntOrNull()?.div(100.0f)
+                if (h == null || s == null || l == null) null
+                else Color.getHSBColor(h, s, l)
             }
         }
         arg.isNumber() -> {
@@ -547,7 +574,7 @@ fun getChannelByArgsN(
 
     } else channel
 
-    if (sameGuildAsContext && !context.guild.textChannels.contains(channel)) return null
+    if (sameGuildAsContext && !context.guild.channels.contains(channel)) return null
     return channel
 }
 
@@ -557,13 +584,13 @@ suspend fun getChannelByArgsNMessage(
     sameGuildAsContext: Boolean = true
 ): GuildChannel? {
     if (argSizeCheckFailed(context, index)) return null
-    val textChannel = getChannelByArgsN(context, index, sameGuildAsContext)
-    if (textChannel == null) {
+    val channel = getChannelByArgsN(context, index, sameGuildAsContext)
+    if (channel == null) {
         val msg = context.getTranslation(MESSAGE_UNKNOWN_CHANNEL)
             .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
-    return textChannel
+    return channel
 }
 
 
@@ -607,8 +634,6 @@ suspend fun getCategoryByArgsNMessage(
     }
     return category
 }
-
-
 
 
 fun getTextChannelByArgsN(
@@ -707,6 +732,7 @@ suspend fun retrieveMemberByArgsNMessage(
     interactable: Boolean = false,
     botAllowed: Boolean = true
 ): Member? {
+    if (!context.isFromGuild) throw IllegalStateException("Trying to get members in dms")
     if (argSizeCheckFailed(context, index)) return null
     val user = retrieveUserByArgsN(context, index)
     val member =
@@ -861,7 +887,10 @@ fun getTimespanFromArgNMessage(context: ICommandContext, beginIndex: Int): Pair<
 fun listeningMembers(vc: VoiceChannel, alwaysListeningUser: Long = -1L): Int {
     return vc.members.count { member ->
         // isDeafened checks both guild and self deafened (no worries)
-        !member.user.isBot && (member.voiceState?.isDeafened == false) && (member.idLong != alwaysListeningUser)
+        !member.user.isBot &&
+            (member.voiceState?.isDeafened == false) &&
+            (member.idLong != alwaysListeningUser) &&
+            !isBotBanned(EntityType.USER, member.idLong)
     }
 }
 

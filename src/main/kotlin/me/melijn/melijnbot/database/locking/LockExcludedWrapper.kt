@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.locking
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
 
-class LockExcludedWrapper(val lockExcludedDao: LockExcludedDao) {
+class LockExcludedWrapper(private val lockExcludedDao: LockExcludedDao) {
 
     suspend fun getExcluded(guildId: Long, entityType: EntityType): List<Long> {
         val cached = lockExcludedDao.getValueFromCache<List<Long>>("$guildId:$entityType", NORMAL_CACHE)
@@ -40,8 +40,9 @@ enum class EntityType(val id: Byte) {
     USER(2),
     EMOTE(3),
     TEXT_CHANNEL(4),
-    PRIV_CHANNEL(5),
-    CATEGORY(6);
+    VOICE_CHANNEL(5),
+    PRIV_CHANNEL(6),
+    CATEGORY(7);
 
     companion object {
         fun from(id: Byte): EntityType? {

@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.entities.VoiceChannel
 
 const val UNKNOWN_ID_CAUSE = "unknownid"
 const val CANNOT_INTERACT_CAUSE = "cannotinteract"
+const val CANNOT_ASSIGN_CAUSE = "cannotassign"
 private const val NO_PERM_CAUSE = "nopermission"
 
 suspend fun Guild.getAndVerifyLogChannelByType(
@@ -172,7 +173,8 @@ suspend fun Guild.getAndVerifyRoleById(
     daoManager: DaoManager,
     roleType: RoleType,
     roleId: Long,
-    shouldBeInteractable: Boolean = false
+    shouldBeInteractable: Boolean = false,
+    canAssignRole: Boolean = false
 ): Role? {
     val role = getRoleById(roleId)
     var shouldRemove = false
@@ -184,6 +186,10 @@ suspend fun Guild.getAndVerifyRoleById(
         shouldRemove = true
     } else if (shouldBeInteractable && !selfMember.canInteract(role)) {
         cause = CANNOT_INTERACT_CAUSE
+        shouldRemove = true
+    } else if (canAssignRole && !selfMember.hasPermission(Permission.MANAGE_ROLES)) {
+        cause = NO_PERM_CAUSE
+        causeArg = Permission.MANAGE_ROLES.name
         shouldRemove = true
     }
 

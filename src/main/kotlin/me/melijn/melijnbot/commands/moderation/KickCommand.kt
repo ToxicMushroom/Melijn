@@ -17,6 +17,7 @@ import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import java.awt.Color
 import java.time.ZoneId
@@ -27,6 +28,7 @@ class KickCommand : AbstractCommand("command.kick") {
         id = 30
         name = "kick"
         commandCategory = CommandCategory.MODERATION
+        discordChannelPermissions = arrayOf(Permission.KICK_MEMBERS)
     }
 
     override suspend fun execute(context: ICommandContext) {
@@ -181,7 +183,7 @@ fun getKickMessage(
 
     val author = i18n.getTranslation(language, "message.punishment.kick.author")
         .withSafeVariable(PLACEHOLDER_USER, kickAuthor.asTag)
-        .withVariable("spaces", " ".repeat(45).substring(0, 45 - kickAuthor.name.length) + "\u200B")
+        .withVariable("spaces", getAtLeastNCodePointsAfterName(kickAuthor) + "\u200B")
 
     return EmbedBuilder()
         .setAuthor(author, null, kickAuthor.effectiveAvatarUrl)

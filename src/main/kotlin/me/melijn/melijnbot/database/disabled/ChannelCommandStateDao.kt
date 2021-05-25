@@ -34,7 +34,7 @@ class ChannelCommandStateDao(driverManager: DriverManager) : CacheDBDao(driverMa
         }, channelId, commandId)
     }
 
-    suspend fun insert(guildId: Long, channelId: Long, commandId: String, state: ChannelCommandState) {
+    fun insert(guildId: Long, channelId: Long, commandId: String, state: ChannelCommandState) {
         driverManager.executeUpdate(
             "INSERT INTO $table (guildId, channelId, commandId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
             guildId, channelId, commandId, state.toString()

@@ -170,7 +170,7 @@ fun getWarnMessage(
 
     val author = i18n.getTranslation(language, "message.punishment.warn.author")
         .withSafeVariable(PLACEHOLDER_USER, warnAuthor.asTag)
-        .withVariable("spaces", " ".repeat(45).substring(0, 45 - warnAuthor.name.length) + "\u200B")
+        .withVariable("spaces", getAtLeastNCodePointsAfterName(warnAuthor) + "\u200B")
 
     return EmbedBuilder()
         .setAuthor(author, null, warnAuthor.effectiveAvatarUrl)

@@ -24,7 +24,6 @@ object TaskManager {
     val coroutineScope = CoroutineScope(dispatcher)
 
     fun async(block: suspend CoroutineScope.() -> Unit): Job {
-
         return coroutineScope.launch {
             Task {
                 block.invoke(this)
@@ -41,9 +40,7 @@ object TaskManager {
     }
 
     fun <T> taskValueAsync(block: suspend CoroutineScope.() -> T): Deferred<T> = coroutineScope.async {
-        DeferredTask {
-            block.invoke(this)
-        }.run()
+        DeferredTask { block.invoke(this) }.run()
     }
 
     fun <T> taskValueNAsync(block: suspend CoroutineScope.() -> T?): Deferred<T?> = coroutineScope.async {
@@ -51,6 +48,7 @@ object TaskManager {
             block.invoke(this)
         }.run()
     }
+
     fun <T> evalTaskValueNAsync(block: suspend CoroutineScope.() -> T?): Deferred<T?> = coroutineScope.async {
         EvalDeferredNTask {
             block.invoke(this)
@@ -103,7 +101,7 @@ object TaskManager {
         }.run()
     }
 
-    inline fun asyncAfter(afterMillis: Long, crossinline func: suspend () -> Unit) {
-        scheduledExecutorService.schedule(RunnableTask { func() }, afterMillis, TimeUnit.MILLISECONDS)
+    inline fun asyncAfter(afterMillis: Long, crossinline func: suspend () -> Unit): ScheduledFuture<*> {
+        return scheduledExecutorService.schedule(RunnableTask { func() }, afterMillis, TimeUnit.MILLISECONDS)
     }
 }

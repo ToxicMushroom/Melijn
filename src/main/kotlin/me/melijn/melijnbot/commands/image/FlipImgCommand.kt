@@ -1,57 +1,50 @@
 package me.melijn.melijnbot.commands.image
 
+import com.sksamuel.scrimage.ImmutableImage
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
+import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.utils.ImageType
 import me.melijn.melijnbot.internals.utils.ImageUtils
+import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
 import net.dv8tion.jda.api.Permission
-import java.awt.image.BufferedImage
+import java.awt.Color
 
 class FlipImgCommand : AbstractCommand("command.flipimg") {
 
     init {
         id = 129
         name = "flipImg"
-        aliases = arrayOf("flipImage", "flipGif")
+        aliases = arrayOf("flipY", "flipGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.commandParts[1].equals("flipGif", true)) {
-            executeGif(context)
+        val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
+        val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
+        if (image.type == ImageType.GIF) {
+            flipGif(context, image)
         } else {
-            executeNormal(context)
+            flipNormal(context, image)
         }
     }
 
-    private suspend fun executeNormal(context: ICommandContext) {
-        ImageCommandUtil.executeNormalEffect(context, { image, _ ->
-            flipFrame(image)
-        })
-    }
-
-    private suspend fun executeGif(context: ICommandContext) {
-        ImageCommandUtil.executeGifEffect(context, { image, _ ->
-            flipFrame(image, true)
-        })
-    }
-
-    private fun flipFrame(image: BufferedImage, isGif: Boolean = false) {
-        for (y in 0 until image.height / 2) {
-            for (x in 0 until image.width) {
-                var topColor = image.getRGB(x, y)
-                var bottomColor = image.getRGB(x, image.height - y - 1)
-
-                if (isGif) {
-                    topColor = ImageUtils.suiteColorForGif(topColor)
-                    bottomColor = ImageUtils.suiteColorForGif(bottomColor)
-                }
-
-                image.setRGB(x, y, bottomColor)
-                image.setRGB(x, image.height - y - 1, topColor)
-            }
+    private val modification: (img: ImmutableImage) -> Unit = { img ->
+        val og = img.copy()
+        img.mapInPlace {
+            val pixel = og.pixel(it.x, img.height - 1 - it.y)
+            Color(pixel.argb, true)
         }
+    }
+
+    private suspend fun flipNormal(context: ICommandContext, image: ParsedImageByteArray) {
+        ImageCommandUtil.applyImmutableImgModification(context, image, modification)
+    }
+
+    private suspend fun flipGif(context: ICommandContext, image: ParsedImageByteArray) {
+        ImageCommandUtil.applyGifImmutableFrameModification(context, image, modification)
     }
 }

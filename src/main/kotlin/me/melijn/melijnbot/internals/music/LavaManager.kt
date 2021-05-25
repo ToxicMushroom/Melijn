@@ -43,13 +43,10 @@ class LavaManager(
         } else {
             jdaLavaLink.getLink(channel.guild.idLong, groupId).connect(channel)
         }
-
-        musicPlayerManager.getGuildMusicPlayer(channel.guild)
     }
 
     /**
      * @param context            This will be used to send replies
-     * @param guild              This will be used to check permissions
      * @param channel This is the voice channel you want to join
      * @return returns true on success and false when failed
      */
@@ -87,23 +84,20 @@ class LavaManager(
     }
 
     // run with VOICE_SAFE pls
-    suspend fun closeConnection(guildId: Long) {
+    suspend fun closeConnection(guildId: Long, removeMusicPlayer: Boolean = true) {
         closeConnectionLite(guildId)
 
-        if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
-            MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
-            MusicPlayerManager.guildMusicPlayers.remove(guildId)
-            //logger.info("removed guildmusicplayer for $guildId")
+        if (removeMusicPlayer && MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
+            MusicPlayerManager.guildMusicPlayers.remove(guildId)?.removeTrackManagerListener()
         }
     }
 
 
-    suspend fun closeConnectionLite(guildId: Long) {
+    private suspend fun closeConnectionLite(guildId: Long) {
         val guild = MelijnBot.shardManager.getGuildById(guildId)
 
         if (jdaLavaLink == null) {
             guild?.audioManager?.closeAudioConnection()
-
         } else {
             jdaLavaLink.getExistingLink(guildId)?.destroy()
             logger.info(

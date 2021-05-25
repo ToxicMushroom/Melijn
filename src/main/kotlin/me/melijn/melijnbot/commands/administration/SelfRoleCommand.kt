@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.database.role.SelfRoleGroup
+import me.melijn.melijnbot.database.statesync.getEmote
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -12,10 +13,13 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.internal.entities.EmoteImpl
+import net.dv8tion.jda.internal.entities.GuildImpl
 
 // const val UNKNOWN_SELFROLEMODE_PATH = "message.unknown.selfrolemode"
 
@@ -33,12 +37,83 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             ClearArg(root),
             ListArg(root),
             GroupArg(root),
+            AddReactionsToMessage(root),
             SetGetAllRolesArg(root),
             SetNameArg(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
+    class AddReactionsToMessage(parent: String) : AbstractCommand("$parent.addreactionstomessage") {
+
+        init {
+            name = "addReactionsToMessage"
+            aliases = arrayOf("artm")
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            if (argSizeCheckFailed(context, 2)) return
+
+            val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+            val channel = getTextChannelByArgsNMessage(context, 1) ?: return
+            val messageId = getLongFromArgNMessage(context, 2) ?: return
+            val message = channel.retrieveMessageById(messageId).awaitOrNull()
+            if (message == null) {
+                sendRsp(context, "**$messageId** doesn't exist")
+                return
+            }
+
+            val appendMessageId = (if (context.args.size > 3) {
+                getBooleanFromArgNMessage(context, 3) ?: return
+            } else false) && (!group.messageIds.contains(message.idLong) || group.channelId != channel.idLong)
+
+            val selfRoles = context.daoManager.selfRoleWrapper.getMap(context.guildId)[group.groupName]
+
+            if (selfRoles == null || selfRoles.isEmpty) {
+                val msg = context.getTranslation("$root.noselfroles.forgroup")
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
+                return
+            }
+            val emotejiList = mutableListOf<String>()
+            val size = selfRoles.length()
+            for (i in 0 until size) {
+                val dataEntry = selfRoles.getArray(i)
+                val emoteji = dataEntry.getString(0)
+                emotejiList.add(emoteji)
+            }
+            if (appendMessageId) {
+                val ids = group.messageIds.toMutableList()
+                ids.addIfNotPresent(message.idLong)
+                group.messageIds = ids
+                group.channelId = channel.idLong
+                context.daoManager.selfRoleGroupWrapper.insertOrUpdate(context.guildId, group)
+            }
+
+            val externalEmotes = containsExternalEmotes(context, emotejiList)
+            if (externalEmotes && notEnoughPermissionsAndMessage(context, channel, Permission.MESSAGE_EXT_EMOJI)) return
+
+            SendGroupAutoArg.addEmotejisToMsg(emotejiList, message, context)
+            val msg = "Added **${emotejiList.size}** emotejis to the message in ${channel.asTag}".run {
+                if (appendMessageId) {
+                    this + "\nAlso added ${message.idLong} to the messageIds in `${group.groupName.escapeCodeblockMarkdown()}`"
+                } else this
+            }
+            sendRsp(context, msg)
+        }
+
+        companion object {
+            fun containsExternalEmotes(
+                context: ICommandContext,
+                emotejiList: MutableList<String>
+            ) = emotejiList.any {
+                if (it.isPositiveNumber()) {
+                    val emote = context.guild.getEmoteById(it)
+                    emote == null
+                } else false
+            }
+        }
+    }
 
     override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
@@ -52,10 +127,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 2) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 1)) return
 
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
 
@@ -130,11 +202,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 2) {
-                sendSyntax(context)
-                return
-            }
-
+            if (argSizeCheckFailed(context, 1)) return
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
 
             val pair = getEmotejiByArgsNMessage(context, 1) ?: return
@@ -196,11 +264,35 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             aliases = arrayOf("sg", "sga")
         }
 
-        override suspend fun execute(context: ICommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
+        companion object {
+            suspend fun addEmotejisToMsg(
+                emotejisForMsg: List<String>,
+                msg: Message,
+                context: ICommandContext
+            ) {
+                for (emoteji in emotejisForMsg) {
+                    val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
+                    if (isEmoji) {
+                        msg.addReaction(emoteji).queue()
+                    } else if (emoteji.isPositiveNumber()) {
+                        val emote = context.guild.getEmoteById(emoteji)
+                            ?: context.shardManager.getEmoteById(emoteji)
+                            ?: context.daoManager.emoteCache.getEmote(emoteji.toLong())?.run {
+                                val guildImpl = context.shardManager.guilds.first { it.idLong != msg.guild.idLong } as GuildImpl
+                                EmoteImpl(emoteji.toLong(), guildImpl)
+                                    .setName(this.name)
+                                    .setAnimated(this.isAnimated)
+                                    .setAvailable(this.isAvailable)
+                                    .setManaged(this.isManaged)
+                            }
+                        emote?.let { msg.addReaction(it).queue() }
+                    }
+                }
             }
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            if (argSizeCheckFailed(context, 0)) return
 
             val wrapper = context.daoManager.selfRoleGroupWrapper
             val wrapper2 = context.daoManager.selfRoleWrapper
@@ -215,12 +307,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
 
-            val channel = if (context.args.size < 2) {
-                context.textChannel
-
-            } else {
-                getTextChannelByArgsNMessage(context, 1)
-            } ?: return
+            val channel = if (context.args.size > 1) {
+                getTextChannelByArgsNMessage(context, 1) ?: return
+            } else context.textChannel
 
             if (notEnoughPermissionsAndMessage(
                     context,
@@ -228,11 +317,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     Permission.MESSAGE_WRITE,
                     Permission.MESSAGE_EMBED_LINKS,
                     Permission.MESSAGE_READ,
-                    Permission.MESSAGE_ADD_REACTION
+                    Permission.MESSAGE_ADD_REACTION,
+                    Permission.MESSAGE_HISTORY
                 )
-            ) {
-                return
-            }
+            ) return
+
 
             val bodyFormat = group.pattern ?: context.getTranslation("$root.bodyformat")
 
@@ -256,44 +345,42 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 roleMention = roleMention.removeSuffix(", ")
 
                 val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
+                val emotejiValue = when {
+                    isEmoji -> emoteji
+                    emoteji.isPositiveNumber() -> getEmote(context, emoteji.toLong())?.asMention
+                    else -> null
+                } ?: "error"
+                val body = bodyFormat
+                    .withVariable("name", name)
+                    .withVariable("role", roleMention)
+                    .withVariable("roleMention", roleMention) // legacy support
+                    .withVariable("enter", "\n")
+                    .withVariable("emoteji", emotejiValue)
 
-                entries.add(
-                    bodyFormat
-                        .withVariable("name", name)
-                        .withVariable("role", roleMention)
-                        .withVariable("roleMention", roleMention) // legacy support
-                        .withVariable("enter", "\n")
-                        .withVariable(
-                            "emoteji",
-                            if (isEmoji) {
-                                emoteji
-                            } else {
-                                val emote = context.guild.getEmoteById(emoteji)
-                                    ?: context.shardManager.getEmoteById(emoteji)
-                                emote?.asMention ?: "error"
-                            }
-                        )
-                )
-
+                entries.add(body)
             }
 
+            val external = AddReactionsToMessage.containsExternalEmotes(context, emotejiList)
+            if (external && notEnoughPermissionsAndMessage(context, channel, Permission.MESSAGE_EXT_EMOJI)) return
             var alreadyUsedEmotesAmount = 0
             val messages = mutableListOf<Long>()
+            val totalLength = entries.sumOf { it.length }
+            val embedDisabledWrapper = context.daoManager.embedDisabledWrapper
 
-            val totalLength = entries.sumBy { it.length }
+            val titleFormat = context.getTranslation("$root.titleformat.part")
             if (entries.size > 20 || totalLength > MessageEmbed.TEXT_MAX_LENGTH) {
-                val titleFormat = context.getTranslation("$root.titleformat.part")
                 val body = StringBuilder()
                 var part = 1
                 for ((index, entry) in entries.withIndex()) {
                     if (body.length + entry.length > MessageEmbed.TEXT_MAX_LENGTH) {
-                        embedder.setTitle(
-                            titleFormat
-                                .withVariable("group", group.groupName)
-                                .withVariable("part", part++)
-                        )
-                        embedder.setDescription(body)
-                        val msg = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build()).firstOrNull()
+                        val title = titleFormat
+                            .withVariable("group", group.groupName)
+                            .withVariable("part", part++)
+                        val embed = embedder.setTitle(title)
+                            .setDescription(body)
+                            .build()
+
+                        val msg = sendEmbedAwaitEL(embedDisabledWrapper, channel, embed).firstOrNull()
                         if (msg != null) {
                             messages.add(msg.idLong)
                             val emotejisForMsg = emotejiList.subList(alreadyUsedEmotesAmount, index)
@@ -306,13 +393,14 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                 }
                 if (body.isNotBlank()) {
-                    embedder.setTitle(
-                        titleFormat
-                            .withVariable("group", group.groupName)
-                            .withVariable("part", part)
-                    )
-                    embedder.setDescription(body)
-                    val msg = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build()).firstOrNull()
+                    val title = titleFormat
+                        .withVariable("group", group.groupName)
+                        .withVariable("part", part)
+                    val embed = embedder.setTitle(title)
+                        .setDescription(body)
+                        .build()
+
+                    val msg = sendEmbedAwaitEL(embedDisabledWrapper, channel, embed).firstOrNull()
                     if (msg != null) {
                         messages.add(msg.idLong)
                         val emotejisForMsg = emotejiList.drop(alreadyUsedEmotesAmount)
@@ -320,12 +408,14 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     }
                 }
             } else {
-                val titleFormat = context.getTranslation("$root.titleformat")
-                embedder.setTitle(titleFormat.withVariable("group", group.groupName))
+                val title = context.getTranslation("$root.titleformat")
+                    .withVariable("group", group.groupName)
+                embedder.setTitle(title)
                 for (entry in entries) {
                     embedder.appendDescription(entry)
                 }
-                val msg = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build()).firstOrNull()
+
+                val msg = sendEmbedAwaitEL(embedDisabledWrapper, channel, embedder.build()).firstOrNull()
                 if (msg != null) {
                     messages.add(msg.idLong)
                     addEmotejisToMsg(emotejiList, msg, context)
@@ -344,23 +434,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
             sendRsp(context, msg)
         }
-
-        private fun addEmotejisToMsg(
-            emotejisForMsg: List<String>,
-            msg: Message,
-            context: ICommandContext
-        ) {
-            for (emoteji in emotejisForMsg) {
-                val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
-                if (isEmoji) {
-                    msg.addReaction(emoteji).queue()
-                } else {
-                    val emote = context.guild.getEmoteById(emoteji)
-                        ?: context.shardManager.getEmoteById(emoteji)
-                    emote?.let { msg.addReaction(it).queue() }
-                }
-            }
-        }
     }
 
     class GroupArg(parent: String) : AbstractCommand("$parent.group") {
@@ -375,11 +448,43 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 MessageIdsArg(root),     // Message Ids
                 SetChannel(root),
                 SetSelfRoleAbleArg(root),
+                SetRequirePermission(root),
                 SetEnabledArg(root),
                 SetLimitToOneRole(root),
                 SetPattern(root),
                 ChangeNameArg(root)
             )
+        }
+
+        class SetRequirePermission(parent: String) : AbstractCommand("$parent.setrequirepermission") {
+
+            init {
+                name = "setRequirePermission"
+                aliases = arrayOf("srp")
+            }
+
+            override suspend fun execute(context: ICommandContext) {
+                if (argSizeCheckFailed(context, 0)) return
+
+                val wrapper = context.daoManager.selfRoleGroupWrapper
+                val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+                if (context.args.size == 1) {
+                    val msg = context.getTranslation("$root.show." + group.limitToOneRole)
+                        .withVariable("group", group.groupName)
+                    sendRsp(context, msg)
+                    return
+                }
+
+                val bool = getBooleanFromArgNMessage(context, 1) ?: return
+                group.limitToOneRole = bool
+                wrapper.insertOrUpdate(context.guildId, group)
+
+                val msg = context.getTranslation("$root.set." + group.limitToOneRole)
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
+                return
+            }
+
         }
 
         class SetLimitToOneRole(parent: String) : AbstractCommand("$parent.setlimittoonerole") {
@@ -390,10 +495,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val wrapper = context.daoManager.selfRoleGroupWrapper
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
@@ -423,10 +525,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val wrapper = context.daoManager.selfRoleGroupWrapper
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
@@ -475,10 +574,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
@@ -541,10 +637,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: ICommandContext) {
-                    if (context.args.size < 2) {
-                        sendSyntax(context)
-                        return
-                    }
+                    if (argSizeCheckFailed(context, 1)) return
 
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                     val argument = getLongFromArgNMessage(context, 1, 1000000000000000) ?: return
@@ -569,16 +662,13 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: ICommandContext) {
-                    if (context.args.size < 2) {
-                        sendSyntax(context)
-                        return
-                    }
+                    if (argSizeCheckFailed(context, 1)) return
 
                     val wrapper = context.daoManager.selfRoleGroupWrapper
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                     val messageId = getLongFromArgNMessage(context, 1, 1000000000000000) ?: return
 
-                    group.messageIds = group.messageIds + messageId
+                    group.messageIds = group.messageIds - messageId
                     wrapper.insertOrUpdate(context.guildId, group)
 
                     val msg = context.getTranslation("$root.removed")
@@ -597,17 +687,15 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: ICommandContext) {
-                    if (context.args.size < 2) {
-                        sendSyntax(context)
-                        return
-                    }
+                    if (argSizeCheckFailed(context, 1)) return
 
                     val wrapper = context.daoManager.selfRoleGroupWrapper
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
-                    val index = getIntegerFromArgNMessage(context, 1, 1, group.messageIds.size)
+                    val inputIndex = getIntegerFromArgNMessage(context, 1, 1, group.messageIds.size)
                         ?: return
+                    val index = inputIndex - 1
 
-                    val messages = group.messageIds.toMutableList()
+                    val messages = group.messageIds.sorted().toMutableList()
                     val messageId = messages[index]
                     messages.removeAt(index)
 
@@ -616,7 +704,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                     val msg = context.getTranslation("$root.removed")
                         .withVariable("group", group.groupName)
-                        .withVariable("index", "$index")
+                        .withVariable("index", "$inputIndex")
                         .withVariable("messageId", "$messageId")
 
                     sendRsp(context, msg)
@@ -631,10 +719,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: ICommandContext) {
-                    if (context.args.isEmpty()) {
-                        sendSyntax(context)
-                        return
-                    }
+                    if (argSizeCheckFailed(context, 0)) return
 
                     val wrapper = context.daoManager.selfRoleGroupWrapper
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
@@ -658,10 +743,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: ICommandContext) {
-                    if (context.args.isEmpty()) {
-                        sendSyntax(context)
-                        return
-                    }
+                    if (argSizeCheckFailed(context, 0)) return
 
                     val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
 
@@ -677,7 +759,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     val content = StringBuilder("```INI\n[index] - [messageId]")
 
                     for ((index, id) in group.messageIds.sorted().withIndex()) {
-                        content.append("$index - [$id]")
+                        content.append("\n${index + 1} - [$id]")
                     }
 
                     content.append("```")
@@ -700,10 +782,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 if (context.args.size < 2) {
                     val msg = context.getTranslation("$root.show.${group.isEnabled}")
@@ -733,10 +812,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 if (context.args.size < 2) {
@@ -767,10 +843,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
@@ -784,14 +857,19 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     return
                 }
 
+                val selfRoleAble = if (context.args.size > 1) { getBooleanFromArgNMessage(context, 1) ?: return } else true
+                val limitToOneRole = if (context.args.size > 2) { getBooleanFromArgNMessage(context, 2) ?: return } else false
+                val requiresPermission = if (context.args.size > 2) { getBooleanFromArgNMessage(context, 3) ?: return } else false
+
                 val newSr = SelfRoleGroup(
                     name,
                     emptyList(),
                     channelId = -1,
                     isEnabled = true,
-                    isSelfRoleable = true,
+                    isSelfRoleable = selfRoleAble,
                     pattern = null,
-                    limitToOneRole = false
+                    limitToOneRole = limitToOneRole,
+                    requiresPermission = requiresPermission
                 )
                 wrapper.insertOrUpdate(context.guildId, newSr)
 
@@ -809,10 +887,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 0)) return
 
                 val selfRoleGroup = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
@@ -859,10 +934,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: ICommandContext) {
-                if (context.args.size < 2) {
-                    sendSyntax(context)
-                    return
-                }
+                if (argSizeCheckFailed(context, 1)) return
 
                 val selfRoleGroup1 = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 val name = getStringFromArgsNMessage(context, 1, 1, 64) ?: return
@@ -882,7 +954,14 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                 selfRoleGroup1.apply {
                     val newSr = SelfRoleGroup(
-                        name, messageIds, channelId, isEnabled, pattern, isSelfRoleable, limitToOneRole
+                        name,
+                        messageIds,
+                        channelId,
+                        isEnabled,
+                        pattern,
+                        isSelfRoleable,
+                        limitToOneRole,
+                        requiresPermission
                     )
                     wrapper.delete(context.guildId, groupName)
                     wrapper.insertOrUpdate(context.guildId, newSr)
@@ -910,40 +989,71 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 3) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 2)) return
 
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
 
-            val pair = getEmotejiByArgsNMessage(context, 1) ?: return
-            var rname: String? = null
-            val id = if (pair.first == null) {
-                pair.second?.let { rname = it }
-                pair.second
+            if (context.args.size == 3 || context.args.size == 4) {
+                val pair = getEmotejiByArgsNMessage(context, 1) ?: return
+                var rname: String? = null
+                val id = if (pair.first == null) {
+                    pair.second?.let { rname = it }
+                    pair.second
+                } else {
+                    pair.first?.name?.let { rname = it }
+                    pair.first?.id.toString()
+                } ?: return
+
+                val name = rname
+                require(name != null) { "what.." }
+
+                val role = getRoleByArgsNMessage(context, 2) ?: return
+                var chance = 100
+                val msg = if (context.args.size > 3) {
+                    chance = getIntegerFromArgNMessage(context, 3, 1) ?: return
+                    context.getTranslation("$root.success.chance")
+                        .withVariable("chance", "$chance")
+                } else {
+                    context.getTranslation("$root.success")
+                }.withVariable("group", group.groupName)
+                    .withVariable("emoteji", name)
+                    .withVariable(PLACEHOLDER_ROLE, role.name)
+
+                context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, chance)
+                sendRsp(context, msg)
             } else {
-                pair.first?.name?.let { rname = it }
-                pair.first?.id
-            } ?: return
+                val manyMap = context.fullArg.splitIETEL("\n").map { it.split(SPACE_PATTERN) }
+                var count = 1
+                for (entry in manyMap) {
+                    val entrySize = entry.size
+                    if (entrySize < 2) {
+                        sendSyntax(context)
+                        return
+                    }
 
-            val name = rname
-            require(name != null) { "what.." }
+                    val pair = getEmotejiByArgsNMessage(context, count++) ?: return
+                    var rname: String? = null
+                    val id = if (pair.first == null) {
+                        pair.second?.let { rname = it }
+                        pair.second
+                    } else {
+                        pair.first?.name?.let { rname = it }
+                        pair.first?.id.toString()
+                    } ?: return
 
-            val role = getRoleByArgsNMessage(context, 2) ?: return
-            var chance = 100
-            val msg = if (context.args.size > 3) {
-                chance = getIntegerFromArgNMessage(context, 3, 1) ?: return
-                context.getTranslation("$root.success.chance")
-                    .withVariable("chance", "$chance")
-            } else {
-                context.getTranslation("$root.success")
-            }.withVariable("group", group.groupName)
-                .withVariable("emoteji", name)
-                .withVariable(PLACEHOLDER_ROLE, role.name)
+                    val name = rname
+                    require(name != null) { "what.." }
 
-            context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, chance)
-            sendRsp(context, msg)
+                    val role = getRoleByArgsNMessage(context, count++) ?: return
+                    var chance = 100
+                    if (entry.size > 2 || (count == 3 && entry.size > 3)) {
+                        chance = getIntegerFromArgNMessage(context, 3, count++) ?: return
+                    }
+
+                    context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, chance)
+                }
+                sendRsp(context, "Added selfroles in bulk")
+            }
         }
     }
 
@@ -955,18 +1065,15 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 0)) return
 
-            val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+            val groupName = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
             val selfRoleWrapper = context.daoManager.selfRoleWrapper
-            val rows = selfRoleWrapper.clear(context.guildId, group.groupName)
+            val rows = selfRoleWrapper.clear(context.guildId, groupName)
 
             val msg = context.getTranslation("$root.cleared")
                 .withVariable("rows", rows)
-                .withSafeVariable("group", group.groupName)
+                .withSafeVariable("group", groupName)
             sendRsp(context, msg)
         }
     }
@@ -979,10 +1086,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 2) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 1)) return
 
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
             val pair = getEmotejiByArgsN(context, 1) ?: return
@@ -1007,7 +1111,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val emoteji = if (pair.first == null) {
                 pair.second
             } else {
-                pair.first?.id
+                pair.first?.id.toString()
             } ?: return
 
             val emoteName = if (pair.first == null) {
@@ -1065,10 +1169,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.size < 2) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 1)) return
 
             val selfRoleWrapper = context.daoManager.selfRoleWrapper
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
@@ -1113,7 +1214,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val wrapper = context.daoManager.selfRoleWrapper
             val map = wrapper.getMap(context.guildId)
 
-
             val msg = if (map.isNotEmpty()) {
                 val title = context.getTranslation("$root.title")
                 val content =
@@ -1152,7 +1252,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             } else {
                 context.getTranslation("$root.empty")
             }
-            sendRsp(context, msg)
+            sendRspCodeBlock(context, msg, "INI")
         }
     }
 }

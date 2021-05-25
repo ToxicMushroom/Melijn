@@ -84,13 +84,13 @@ class HistoryCommand : AbstractCommand("command.history") {
         if (msg.isBlank()) {
             val or = context.getTranslation("or")
             var readableList = types.subList(0, types.size - 1).joinToString(", ", transform = { type ->
-                type.name.toLowerCase()
+                type.name.lowercase()
             })
 
             if (readableList.isBlank()) {
-                readableList = types.last().name.toLowerCase()
+                readableList = types.last().name.lowercase()
             } else {
-                readableList += " $or " + types.last().name.toLowerCase()
+                readableList += " $or " + types.last().name.lowercase()
             }
 
             val noHistory = context.getTranslation("$root.nohistory")

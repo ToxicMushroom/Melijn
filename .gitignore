@@ -21,3 +21,5 @@ out/
 
 .env
 *.*env
+.env_backup
+environment/docker-compose.yml

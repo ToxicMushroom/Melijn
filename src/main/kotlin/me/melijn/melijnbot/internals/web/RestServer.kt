@@ -1,7 +1,10 @@
 package me.melijn.melijnbot.internals.web
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.*
+import io.ktor.features.*
 import io.ktor.http.*
+import io.ktor.jackson.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
@@ -9,8 +12,13 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.awaitOrNull
+import me.melijn.melijnbot.internals.utils.message.sendPrivateMessageExtra
 import me.melijn.melijnbot.internals.web.rest.codes.VerificationCodeResponseHandler
+import me.melijn.melijnbot.internals.web.rest.commands.CommandMapResponseHandler
 import me.melijn.melijnbot.internals.web.rest.commands.FullCommandsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.convert.UpgradeGuildsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.info.GetGuildResponseHandler
@@ -25,11 +33,14 @@ import me.melijn.melijnbot.internals.web.rest.settings.logging.PostLoggingSettin
 import me.melijn.melijnbot.internals.web.rest.settings.starboard.GetStarboardSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.settings.starboard.PostStarboardSettingsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.shutdown.ShutdownResponseHandler
+import me.melijn.melijnbot.internals.web.rest.stats.EventStatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.PublicStatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.StatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.voted.VotedResponseHandler
+import me.melijn.melijnbot.objectMapper
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
+import net.dv8tion.jda.internal.entities.UserImpl
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -37,13 +48,26 @@ import java.util.concurrent.TimeUnit
 
 class RestServer(container: Container) {
 
-
     private val jsonType = ContentType.parse("Application/JSON")
 
-    val logger = LoggerFactory.getLogger(RestServer::class.java)
+    private val logger = LoggerFactory.getLogger(RestServer::class.java)
 
     private val server: NettyApplicationEngine = embeddedServer(Netty, container.settings.restServer.port) {
+        install(ContentNegotiation) {
+            jackson()
+        }
+
         routing {
+            get("/podinfo") {
+                call.respondText(ContentType.Application.Json) {
+                    objectMapper.createObjectNode()
+                        .put("podId", PodInfo.podId)
+                        .put("podCount", PodInfo.podCount)
+                        .put("shardCount", PodInfo.shardCount)
+                        .toString()
+                }
+            }
+
             post("/dblvote") {
                 call.respondText { "pogu" }
                 logger.info("Go dblvote vote:\n" + call.receiveText())
@@ -55,7 +79,14 @@ class RestServer(container: Container) {
                 }
             }
 
-
+            get("/events") {
+                try {
+                    EventStatsResponseHandler.handleEventStatsResponse(RequestContext(call, container))
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                    call.respondText { t.message + "\n" + t.stackTraceToString() }
+                }
+            }
             get("/stats") {
                 try {
                     StatsResponseHandler.handleStatsResponse(RequestContext(call, container))
@@ -113,12 +144,45 @@ class RestServer(container: Container) {
                 FullCommandsResponseHandler.handleFullCommandsResponse(RequestContext(call, container))
             }
 
+            get("/commandMap") {
+                CommandMapResponseHandler.handleCommandMapResponse(RequestContext(call, container))
+            }
+
             get("/timezones") {
                 call.respondText(DataArray.fromCollection(TimeZone.getAvailableIDs().toList()).toString(), jsonType)
             }
 
             post("/voted") {
                 VotedResponseHandler.handleVotedResponse(RequestContext(call, container))
+            }
+
+            post("/senddm/{userId}/{extra}") {
+                try {
+                    val id = call.parameters["userId"] ?: run {
+                        call.respond(false)
+                        return@post
+                    }
+                    val extra = call.parameters["extra"] ?: run {
+                        call.respond(false)
+                        return@post
+                    }
+
+                    val content = call.receiveText()
+                    val embedEditor = objectMapper.readValue<EmbedEditor>(content)
+
+                    val user = MelijnBot.shardManager.retrieveUserById(id).awaitOrNull() as UserImpl?
+                    if (user == null) {
+                        call.respond(false)
+                        return@post
+                    }
+
+                    val result: Boolean = sendPrivateMessageExtra(user, embedEditor, extra)
+                    call.respond(result)
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                    call.respond(false)
+                    return@post
+                }
             }
 
             post("/unverified/guilds") {

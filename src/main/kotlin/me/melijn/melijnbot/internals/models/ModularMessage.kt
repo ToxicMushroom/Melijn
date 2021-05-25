@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.internals.utils.escapeCodeblockMarkdown
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
@@ -22,6 +23,13 @@ data class ModularMessage(
     var attachments: Map<String, String> = emptyMap(), // url -> name
     var extra: Map<String, String> = emptyMap()
 ) {
+
+    fun isEmpty(): Boolean {
+        val tempEmbed = embed
+        return messageContent == null &&
+            attachments.isEmpty() &&
+            (tempEmbed == null || tempEmbed.isEmpty || !tempEmbed.isSendable)
+    }
 
     @JsonValue
     fun toJSON(): String {
@@ -89,30 +97,56 @@ data class ModularMessage(
         }
     }
 
-    suspend fun mapAllStringFields(function: suspend (s: String?) -> String?): ModularMessage {
+    suspend fun mapAllStringFieldsSafe(
+        infoAppend: String? = null,
+        function: suspend (s: String?) -> String?
+    ): ModularMessage {
+        return try {
+            mapAllStringFields(function).run {
+                if (this.isEmpty()) this.messageContent = "empty message"
+                this
+            }
+        } catch (t: UserFriendlyException) {
+            var msg = t.getUserFriendlyMessage()
+            if (infoAppend != null) msg += infoAppend
+            ModularMessage(msg)
+        }
+    }
+
+    private suspend fun mapAllStringFields(function: suspend (s: String?) -> String?): ModularMessage {
         val mappedModularMsg = ModularMessage()
         mappedModularMsg.messageContent = this.messageContent?.let { function(it) }
-
         this.embed?.let { embed ->
             val mappedEmbed = EmbedBuilder()
             embed.title?.let {
-                mappedEmbed.setTitle(function(it), function(embed.url))
+                val url = function(embed.url)
+                EmbedEditor.urlCheck("Title Url", url)
+                mappedEmbed.setTitle(function(it), url)
             }
             embed.description?.let {
                 mappedEmbed.setDescription(function(it))
             }
             embed.author?.let {
-                mappedEmbed.setAuthor(function(it.name), function(it.url), function(it.iconUrl))
+                val iconUrl = function(it.iconUrl)
+                val url = function(it.url)
+                EmbedEditor.urlCheck("Author IconUrl", iconUrl)
+                EmbedEditor.urlCheck("Author Url", url)
+                mappedEmbed.setAuthor(function(it.name), url, iconUrl)
             }
             embed.footer?.let {
-                mappedEmbed.setFooter(function(it.text), function(it.iconUrl))
+                val iconUrl = function(it.iconUrl)
+                EmbedEditor.urlCheck("Footer IconUrl", iconUrl)
+                mappedEmbed.setFooter(function(it.text), iconUrl)
             }
             embed.image?.let {
-                val function1 = function(it.url)
-                mappedEmbed.setImage(function1)
+                val image = function(it.url)
+                EmbedEditor.urlCheck("Image", image)
+                mappedEmbed.setImage(image)
             }
             embed.thumbnail?.let {
-                mappedEmbed.setThumbnail(function(it.url))
+                val thumbnail = function(it.url)
+                EmbedEditor.urlCheck("Thumbnail", thumbnail)
+                mappedEmbed.setThumbnail(thumbnail)
             }
             embed.fields.forEach { field ->
                 val name = function(field.name)
@@ -195,4 +229,33 @@ data class ModularMessage(
             return fromJSON(p.text)
         }
     }
+}
+
+class InvalidUrlVariableException(
+    val field: String, val invalidValue: String
+) : UserFriendlyException("$field was assigned the invalid value/variable $invalidValue") {
+
+    override fun getUserFriendlyMessage(): String {
+        return "You have a non valid variable or url in the **${field}** field:\n" +
+            "```${invalidValue.escapeCodeblockMarkdown()}```"
+    }
+}
+
+class TooLongUrlVariableException(
+    val field: String,
+    val invalidValue: String,
+    val maxLength: Int
+) : UserFriendlyException(
+    "$field was assigned the too long value/variable $invalidValue\n" +
+        "Max-Length=$maxLength | Current-Length=${invalidValue.length}"
+) {
+    override fun getUserFriendlyMessage(): String {
+        return "You have a too long variable or url in the **${field}** field:\n" +
+            "```${invalidValue.escapeCodeblockMarkdown()}```\n" +
+            "Max-Length=${maxLength} | Current-Length=${invalidValue.length}\n"
+    }
+}
+
+abstract class UserFriendlyException(message: String?) : Exception(message) {
+    abstract fun getUserFriendlyMessage(): String
 }

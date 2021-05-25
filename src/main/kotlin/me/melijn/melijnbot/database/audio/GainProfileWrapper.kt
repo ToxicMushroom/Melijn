@@ -33,4 +33,8 @@ class GainProfileWrapper(private val gainProfileDao: GainProfileDao) {
         gainProfileDao.delete(guildId, profileName)
         gainProfileDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
+
+    suspend fun getProfileCount(id: Long): Int {
+        return gainProfileDao.getCount(id)
+    }
 }

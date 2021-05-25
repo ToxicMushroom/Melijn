@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 class RolesService(
     private val roleWrapper: TempRoleWrapper,
     private val shardManager: ShardManager
-) : Service("Roles", 1000, 5500, TimeUnit.MILLISECONDS) {
+) : Service("Roles", 2, 5, TimeUnit.SECONDS) {
 
     override val service = RunnableTask {
         val theObjects = roleWrapper.getObjects()

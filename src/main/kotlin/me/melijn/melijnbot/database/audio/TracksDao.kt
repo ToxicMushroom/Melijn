@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.audio
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.internals.models.PodInfo
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -22,16 +23,29 @@ class TracksDao(driverManager: DriverManager) : Dao(driverManager) {
         )
     }
 
-    suspend fun getMap(): Map<Long, Map<Int, Pair<String, String>>> = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table", { rs ->
+    suspend fun getMap(podInfo: PodInfo): Map<Long, Map<Int, Pair<String, String>>> = suspendCoroutine {
+        val clause = podInfo.shardList.joinToString(", ") { "?" }
+        val query = "SELECT * FROM $table WHERE ((guildId >> 22) % ${podInfo.shardCount}) IN ($clause)"
+
+        driverManager.executeQuery(query, { rs ->
             val guildTracksMap = mutableMapOf<Long, Map<Int, Pair<String, String>>>()
             while (rs.next()) {
                 val guildId = rs.getLong("guildId")
+                val position = rs.getInt("position")
                 val trackMap = guildTracksMap.getOrDefault(guildId, emptyMap()).toMutableMap()
-                trackMap[rs.getInt("position")] = Pair(rs.getString("track"), rs.getString("trackData"))
+                trackMap[position] = rs.getString("track") to rs.getString("trackData")
                 guildTracksMap[guildId] = trackMap
             }
             it.resume(guildTracksMap)
-        })
+        }, *podInfo.shardList.toTypedArray())
+    }
+
+    fun clear(podInfo: PodInfo) {
+        val clause = podInfo.shardList.joinToString(", ") { "?" }
+
+        driverManager.executeUpdate(
+            "DELETE FROM $table WHERE ((guildId >> 22) % ${podInfo.shardCount}) IN ($clause)",
+            *podInfo.shardList.toTypedArray()
+        )
     }
 }

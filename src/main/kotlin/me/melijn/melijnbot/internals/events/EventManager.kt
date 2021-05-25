@@ -6,12 +6,12 @@ import me.melijn.melijnbot.internals.events.eventlisteners.*
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import net.dv8tion.jda.api.events.GenericEvent
+import net.dv8tion.jda.api.events.RawGatewayEvent
 import net.dv8tion.jda.api.events.guild.GenericGuildEvent
 import net.dv8tion.jda.api.events.message.guild.GenericGuildMessageEvent
 import net.dv8tion.jda.api.events.message.priv.GenericPrivateMessageEvent
 import net.dv8tion.jda.api.hooks.IEventManager
 import java.util.*
-import kotlin.collections.ArrayList
 
 class EventManager(val container: Container) : IEventManager {
 
@@ -73,6 +73,10 @@ class EventManager(val container: Container) : IEventManager {
 
     override fun handle(event: GenericEvent) {
         if (container.shuttingDown) return
+        if (event is RawGatewayEvent) {
+            eventCountMap[event.type] = eventCountMap.getOrDefault(event.type, 0) + 1
+            return
+        }
         TaskManager.async {
             try {
                 for (eventListener in eventListeners) {
@@ -87,8 +91,6 @@ class EventManager(val container: Container) : IEventManager {
                 }
             }
         }
-
-        eventCountMap[event.javaClass.simpleName] = eventCountMap.getOrDefault(event.javaClass.simpleName, 0) + 1
     }
 
     override fun getRegisteredListeners(): MutableList<Any> {

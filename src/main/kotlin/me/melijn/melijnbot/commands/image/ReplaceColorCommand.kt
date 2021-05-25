@@ -1,118 +1,58 @@
 package me.melijn.melijnbot.commands.image
 
+import com.sksamuel.scrimage.ImmutableImage
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
+import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
-import me.melijn.melijnbot.internals.utils.ImageUtils
-import me.melijn.melijnbot.internals.utils.getColorFromArgNMessage
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
+import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
-import java.awt.image.BufferedImage
 
 class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
 
     init {
         id = 173
         name = "replaceColor"
-        aliases = arrayOf("rc", "replaceColorGif", "rcGif")
+        aliases = arrayOf("replaceColorGif", "repc")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         runConditions = arrayOf(RunCondition.VOTED)
         commandCategory = CommandCategory.IMAGE
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.commandParts[1].equals("replaceColorGif", true) || context.commandParts[1].equals("rcGif", true)) {
-            executeGif(context)
+        val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
+        val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
+        val offset = image.usedArgument + 0
+
+        val color = getColorFromArgNMessage(context, offset) ?: return
+        var target = getColorFromArgNMessage(context, offset + 1) ?: return
+        val srcAlpha = context.optional(offset + 2, 255) { getIntegerFromArgNMessage(context, it, -1, 255) } ?: return
+        val alpha = context.optional(offset + 3, 255) { getIntegerFromArgNMessage(context, it, 0, 255) } ?: return
+        target = Color(target.red, target.green, target.blue, alpha)
+
+        if (image.type == ImageType.GIF) {
+            ImageCommandUtil.applyGifImmutableFrameModification(context, image, modification(color, srcAlpha, target))
         } else {
-            executeNormal(context)
+            ImageCommandUtil.applyImmutableImgModification(context, image, modification(color, srcAlpha, target))
         }
     }
 
-    private suspend fun executeNormal(context: ICommandContext) {
-        ImageCommandUtil.executeNormalEffect(context, effect = { image, argData ->
-            val sourceColor = argData.getInt("color1")
-            val newColor = Color(argData.getInt("color2"))
-            val alpha1 = argData.getInt("alpha1")
-            val alpha2 = argData.getInt("alpha2")
-
-            ImageUtils.recolorPixelSingleOffset(image, 0) { ints: IntArray ->
-                if ((alpha1 == -1 || ints[3] == alpha1) && (255 shl 24 or (ints[2] shl 16) or (ints[1] shl 8) or ints[0]) == sourceColor) {
-                    val newAlpha = if (alpha2 == -1) ints[3] else alpha2
-                    val c2 = newAlpha shl 24 or (newColor.red shl 16) or (newColor.green shl 8) or newColor.blue
-                    intArrayOf(c2 and 0xff, c2 shr 8 and 0xff, c2 shr 16 and 0xff, c2 shr 24 and 0xff)
-                } else {
-                    ints
+    private val modification: (src: Color, srcAlpha: Int, target: Color) -> ((img: ImmutableImage) -> Unit) =
+        { src, srcAlpha, target ->
+            { img ->
+                img.mapInPlace {
+                    if (
+                        it.red() == src.red &&
+                        it.green() == src.green &&
+                        it.blue() == src.blue &&
+                        (srcAlpha == -1 || src.alpha == srcAlpha)
+                    ) {
+                        target
+                    } else Color(it.argb, true)
                 }
             }
-        }, argDataParser = argParser@{ argInt: Int, argData: DataObject, _: DataObject ->
-            val sourceColor = getColorFromArgNMessage(context, argInt) ?: return@argParser false
-            val newColor = getColorFromArgNMessage(context, argInt + 1) ?: return@argParser false
-
-            val alpha1 = getIntegerFromArgN(context, argInt + 2) ?: -1
-            val alpha2 = getIntegerFromArgN(context, argInt + 3) ?: -1
-
-            argData.put("color1", sourceColor.rgb)
-            argData.put("color2", newColor.rgb)
-            argData.put("alpha1", alpha1)
-            argData.put("alpha2", alpha2)
-            return@argParser true
-
-        }, imgDataParser = { _: BufferedImage, _: DataObject ->
-
-        })
-    }
-
-    private suspend fun executeGif(context: ICommandContext) {
-        ImageCommandUtil.executeGifEffect(context, effect = { image, argData ->
-            val sourceColor = argData.getInt("color1")
-            val newColor = Color(argData.getInt("color2"))
-            val alpha1 = argData.getInt("alpha1")
-            val alpha2 = argData.getInt("alpha2")
-
-            ImageUtils.recolorPixelSingleOffset(image, 0) { ints: IntArray ->
-                if ((alpha1 == -1 || ints[3] == alpha1) && (255 shl 24 or (ints[2] shl 16) or (ints[1] shl 8) or ints[0]) == sourceColor) {
-                    val newAlpha = if (alpha2 == -1) ints[3] else alpha2
-
-                    val c2 = newAlpha shl 24 or (newColor.red shl 16) or (newColor.green shl 8) or newColor.blue
-                    val newColor1 = ImageUtils.suiteColorForGif(c2)
-                    intArrayOf(
-                        newColor1 and 0xff,
-                        newColor1 shr 8 and 0xff,
-                        newColor1 shr 16 and 0xff,
-                        newColor1 shr 24 and 0xff
-                    )
-
-                } else {
-                    val c2 = ints[3] shl 24 or (ints[2] shl 16) or (ints[1] shl 8) or ints[0]
-                    val newColor1 = ImageUtils.suiteColorForGif(c2)
-                    intArrayOf(
-                        newColor1 and 0xff,
-                        newColor1 shr 8 and 0xff,
-                        newColor1 shr 16 and 0xff,
-                        newColor1 shr 24 and 0xff
-                    )
-                }
-            }
-
-        }, argDataParser = argParser@{ argInt: Int, argData: DataObject, _: DataObject ->
-            val sourceColor = getColorFromArgNMessage(context, argInt) ?: return@argParser false
-            val newColor = getColorFromArgNMessage(context, argInt + 1) ?: return@argParser false
-
-            val alpha1 = getIntegerFromArgN(context, argInt + 2) ?: -1
-            val alpha2 = getIntegerFromArgN(context, argInt + 3) ?: -1
-
-            argData.put("color1", sourceColor.rgb)
-            argData.put("color2", newColor.rgb)
-            argData.put("alpha1", alpha1)
-            argData.put("alpha2", alpha2)
-            return@argParser true
-
-        }, imgDataParser = { _: BufferedImage, _: DataObject ->
-
-        }, argumentAmount = 1)
-    }
+        }
 }

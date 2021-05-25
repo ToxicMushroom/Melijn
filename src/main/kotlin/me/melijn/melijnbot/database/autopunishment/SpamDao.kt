@@ -29,7 +29,7 @@ class SpamDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, spamGroupName, type.toString())
     }
 
-    suspend fun remove(guildId: Long, spamGroupName: String, type: SpamType) {
+    fun remove(guildId: Long, spamGroupName: String, type: SpamType) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND spamGroupName = ? AND type = ?",
             guildId, spamGroupName, type.toString())
     }

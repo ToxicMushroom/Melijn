@@ -3,10 +3,12 @@ package me.melijn.melijnbot
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory
 import kotlinx.coroutines.runBlocking
 import me.melijn.llklient.io.jda.JDALavalink
+import me.melijn.melijnbot.enums.Environment
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.events.EventManager
+import me.melijn.melijnbot.internals.jda.MelijnSessionController
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.web.RestServer
 import net.dv8tion.jda.api.GatewayEncoding
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
@@ -17,30 +19,41 @@ import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import net.dv8tion.jda.internal.requests.restaction.MessageActionImpl
 import org.slf4j.LoggerFactory
+import java.net.InetAddress
 import java.net.URI
 import java.util.*
+import kotlin.system.exitProcess
 
 
-class MelijnBot {
+object MelijnBot {
 
     private val logger = LoggerFactory.getLogger(MelijnBot::class.java)
-
-    companion object {
-        lateinit var instance: MelijnBot
-        lateinit var shardManager: ShardManager
-        lateinit var eventManager: EventManager
-    }
+    var shardManager: ShardManager
+    var eventManager: EventManager
+    var hostName: String = "localhost-0"
 
     init {
-        instance = this
         Locale.setDefault(Locale.ENGLISH)
         System.setProperty(
             kotlinx.coroutines.DEBUG_PROPERTY_NAME,
             kotlinx.coroutines.DEBUG_PROPERTY_VALUE_ON
         )
         MessageActionImpl.setDefaultMentions(emptyList())
-
         val container = Container()
+        val settings = container.settings.botInfo
+        val podCount = settings.podCount
+        val shardCount = settings.shardCount
+        val podId = fetchPodIdFromHostname(
+            podCount,
+            container.settings.environment == Environment.PRODUCTION
+        )
+        PodInfo.init(podCount, shardCount, podId)
+
+        logger.info("Starting $shardCount shards in $podCount pods")
+
+        container.podInfo = PodInfo
+        logger.info("Shards: {}-{}", PodInfo.minShardId, PodInfo.maxShardId)
+        logger.info("Launching shardManager with {} shards!", PodInfo.shardsPerPod)
 
         val nodeMap = mutableMapOf<String, Array<Settings.Lavalink.LLNode>>()
         nodeMap["normal"] = container.settings.lavalink.verified_nodes
@@ -50,9 +63,11 @@ class MelijnBot {
 
         logger.info("Connecting to lavalink")
         val jdaLavaLink = runBlocking {
-            TaskManager.taskValueAsync {
+            try {
                 generateJdaLinkFromNodes(container, nodeMap)
-            }.await()
+            } catch (t: Throwable) {
+                null
+            }
         }
 
         container.initLava(jdaLavaLink)
@@ -69,14 +84,18 @@ class MelijnBot {
                 GatewayIntent.GUILD_MEMBERS,
                 GatewayIntent.GUILD_MESSAGES,
                 GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                GatewayIntent.GUILD_VOICE_STATES
+                GatewayIntent.GUILD_VOICE_STATES,
             )
-            .setShardsTotal(container.settings.botInfo.shardCount)
+            .setRawEventsEnabled(true)
+            .setShardsTotal(shardCount)
+            .setShards(PodInfo.minShardId, PodInfo.maxShardId)
             .setToken(container.settings.tokens.discord)
             .setActivity(Activity.playing("Starting.."))
             .setStatus(OnlineStatus.IDLE)
             .setAutoReconnect(true)
-            .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY)
+            .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY, CacheFlag.ONLINE_STATUS)
+            .setSessionController(MelijnSessionController(container.daoManager.rateLimitWrapper))
+            .setBulkDeleteSplittingEnabled(false)
             .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }
             .setGatewayEncoding(GatewayEncoding.ETF)
@@ -90,6 +109,7 @@ class MelijnBot {
         eventManager.start()
         shardManager = defaultShardManagerBuilder.build()
 
+
         container.startTime = System.currentTimeMillis()
 
         logger.info("Starting services..")
@@ -99,12 +119,28 @@ class MelijnBot {
 
         TaskManager.async {
             logger.info("Starting rest-server..")
-
-            val restServer = RestServer(container)
-            restServer.start()
-
-            container.restServer = restServer
+            container.restServer.start()
             logger.info("Started rest-server")
+        }
+        TaskManager.async {
+            logger.info("Starting probe-server..")
+            container.probeServer.start()
+            logger.info("Started probe-server")
+        }
+    }
+
+    private fun fetchPodIdFromHostname(podCount: Int, dynamic: Boolean) = try {
+        if (dynamic) hostName = InetAddress.getLocalHost().hostName
+        logger.info("[hostName] {}", hostName)
+
+        if (podCount == 1) 0
+        else hostName.split("-").last().toInt()
+    } catch (t: Throwable) {
+        logger.warn("Cannot parse podId from hostname", t)
+        if (podCount == 1) 0
+        else {
+            Thread.sleep(1000)
+            exitProcess(404)
         }
     }
 
@@ -137,5 +173,5 @@ class MelijnBot {
 }
 
 fun main() {
-    MelijnBot()
+    MelijnBot
 }

@@ -123,9 +123,9 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
                 if (cmd != null) {
                     content += "\n$index - [${cmd.name}] - ${entry.value}"
                 } else {
-                    val matcher = ccTagPattern.matcher(entry.key)
-                    if (matcher.find()) {
-                        content += "\n$index - CustomCommand - [${matcher.group(1)}] - ${entry.value}"
+                    val matcher = ccTagPattern.find(entry.key)
+                    matcher?.groupValues?.get(1)?.let {
+                        content += "\n$index - CustomCommand - [${it}] - ${entry.value}"
                     }
                 }
             }

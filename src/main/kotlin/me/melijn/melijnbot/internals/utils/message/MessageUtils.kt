@@ -1,19 +1,25 @@
 package me.melijn.melijnbot.internals.utils.message
 
 import io.ktor.client.*
+import io.ktor.client.request.*
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.models.EmbedEditor
 import me.melijn.melijnbot.internals.models.ModularMessage
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.objectMapper
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.internal.entities.DataMessage
+import net.dv8tion.jda.internal.entities.UserImpl
 
 suspend fun sendSyntax(context: ICommandContext, translationPath: String = context.commandOrder.last().syntax) {
     val syntax = context.getTranslation("message.command.usage")
@@ -40,6 +46,48 @@ fun escapeForLog(string: String): String {
         .trim()
 }
 
+// Returns successState
+suspend fun sendOnShard0(
+    context: ICommandContext,
+    user: User,
+    editor: EmbedEditor,
+    extra: String
+): Boolean {
+    return try {
+        if (PodInfo.podId == 0) {
+            sendPrivateMessageExtra(user as UserImpl, editor, extra)
+        } else {
+            val hostPattern = context.container.settings.botInfo.hostPattern
+            val url = hostPattern.replace("{podId}", 0) + "/senddm/${user.idLong}/$extra"
+            val editorJson = objectMapper.writeValueAsString(editor)
+            val res = objectMapper.readValue(
+                context.webManager.httpClient.post<String>(url) {
+                    body = editorJson
+                }, Boolean::class.java
+            )
+            res
+        }
+    } catch (t: Throwable) {
+        t.sendInGuild(context)
+        t.printStackTrace()
+        false
+    }
+}
+
+suspend fun sendPrivateMessageExtra(
+    user: UserImpl,
+    embedEditor: EmbedEditor,
+    extra: String
+): Boolean {
+    return user.openPrivateChannel().awaitOrNull()?.sendMessage(embedEditor.build())?.awaitOrNull()?.run {
+        if (extra == "RPS") {
+            this.addReaction(RockPaperScissorsGame.RPS.ROCK.unicode).queue() // rock 🪨
+            this.addReaction(RockPaperScissorsGame.RPS.PAPER.unicode).queue() // paper 📰
+            this.addReaction(RockPaperScissorsGame.RPS.SCISSORS.unicode).queue() // scissors ✂
+        }
+        true
+    } ?: false
+}
 
 fun sendMsg(context: ICommandContext, msg: String) {
     if (context.isFromGuild) {

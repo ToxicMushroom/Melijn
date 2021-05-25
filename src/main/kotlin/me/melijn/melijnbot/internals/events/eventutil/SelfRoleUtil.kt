@@ -2,6 +2,7 @@ package me.melijn.melijnbot.internals.events.eventutil
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.utils.awaitOrNull
@@ -35,9 +36,6 @@ object SelfRoleUtil {
         if (!selfMember.hasPermission(Permission.MANAGE_ROLES)) return null
         /* END INIT */
 
-        //val channelId = daoManager.channelWrapper.channelCache.get(Pair(guildId, ChannelType.SELFROLE)).await()
-        //if (channelId != channel.idLong) return null
-
         val emoteji = if (reaction.reactionEmote.isEmote) {
             reaction.reactionEmote.emote.id
         } else {
@@ -68,6 +66,17 @@ object SelfRoleUtil {
 
                 val emotejiEntry = dataEntry.getString(0)
                 if (emotejiEntry != emoteji) continue
+
+
+                val hasPermission = hasPermission(
+                    container,
+                    member,
+                    event.channel,
+                    "rr.${groupName.lowercase()}.$emoteji",
+                    null,
+                    group.requiresPermission
+                )
+                if (!hasPermission) continue
 
                 val roleDataArr = dataEntry.getArray(2)
 

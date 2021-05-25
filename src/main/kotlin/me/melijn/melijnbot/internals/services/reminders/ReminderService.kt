@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.LogUtils
 import java.util.concurrent.TimeUnit
 
-class ReminderService(val daoManager: DaoManager) : Service("Reminder", 10, 0, TimeUnit.SECONDS) {
+class ReminderService(val daoManager: DaoManager) : Service("Reminder", 10, 10, TimeUnit.SECONDS) {
 
     override val service: RunnableTask = RunnableTask {
         val millis = System.currentTimeMillis()

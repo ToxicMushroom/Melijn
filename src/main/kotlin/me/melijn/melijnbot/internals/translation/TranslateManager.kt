@@ -19,7 +19,7 @@ class TranslateManager {
     }
 
     fun getTranslation(language: String, path: String, logMissing: Boolean = true): String {
-        val bundle = when (language.toUpperCase()) {
+        val bundle = when (language.uppercase()) {
             DEFAULT_LANGUAGE -> defaultResourceBundle
             else -> defaultResourceBundle
         }
@@ -34,7 +34,7 @@ class TranslateManager {
     }
 
     fun getTranslationN(language: String, path: String, logMissing: Boolean = true): String? {
-        val bundle = when (language.toUpperCase()) {
+        val bundle = when (language.uppercase()) {
             DEFAULT_LANGUAGE -> defaultResourceBundle
             else -> defaultResourceBundle
         }

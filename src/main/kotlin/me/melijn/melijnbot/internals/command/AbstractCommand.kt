@@ -4,6 +4,8 @@ import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.internals.command.AbstractCommand.Companion.comparator
+import me.melijn.melijnbot.internals.models.CommandUsageInfo
+import me.melijn.melijnbot.internals.threading.SafeList
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
 import me.melijn.melijnbot.internals.utils.addIfNotPresent
@@ -11,11 +13,12 @@ import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.GuildChannel
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
-import kotlin.collections.ArrayList
 
 const val PLACEHOLDER_PREFIX = "prefix"
 
@@ -35,14 +38,13 @@ abstract class AbstractCommand(val root: String) {
     var discordPermissions: Array<Permission> = arrayOf()
     var runConditions: Array<RunCondition> = arrayOf()
     var children: Array<AbstractCommand> = arrayOf()
-    var permissionRequired: Boolean = false
-    //var args: Array<CommandArg> = arrayOf() cannot put extra information after global definitions with this
 
     init {
         description = "$root.description"
     }
 
     companion object {
+        val commandUsageList = SafeList<CommandUsageInfo>()
         val comparator: (o1: String, o2: String) -> Int = { o1, o2 ->
             val s = o2.count { it == '.' }.compareTo(o1.count { it == '.' })
             if (s == 0) 1
@@ -119,7 +121,7 @@ abstract class AbstractCommand(val root: String) {
             }
         }
 
-        val permission = context.commandOrder.joinToString(".", transform = { command -> command.name.toLowerCase() })
+        val permission = context.commandOrder.joinToString(".", transform = { command -> command.name.lowercase() })
         if (hasPermission(context, permission)) {
             context.initArgs()
             if (context.isFromGuild) {
@@ -185,7 +187,7 @@ abstract class AbstractCommand(val root: String) {
                                 Permission.MESSAGE_MANAGE
                             )
                         ) return@async
-                        message.delete().queue(null, { context.container.botDeletedMessageIds.remove(message.idLong) })
+                        message.delete().queue(null) { context.container.botDeletedMessageIds.remove(message.idLong) }
                     }
                 }
                 val second = System.currentTimeMillis()
@@ -197,7 +199,16 @@ abstract class AbstractCommand(val root: String) {
                 )
                 t.sendInGuild(context)
             }
-            context.daoManager.commandUsageWrapper.addUse(context.commandOrder[0].id)
+            val commandId = context.commandOrder[0].id
+            commandUsageList.add(
+                CommandUsageInfo(
+                    context.guildN?.idLong ?: context.authorId,
+                    context.authorId,
+                    commandId,
+                    System.currentTimeMillis()
+                )
+            )
+            context.daoManager.commandUsageWrapper.addUse(commandId)
         } else {
             sendMissingPermissionMessage(context, permission)
         }
@@ -250,46 +261,54 @@ fun getStateFromMap(
     cPermState: PermState
 ): PermState {
     var nPermState = cPermState
+    var level = 0
     for ((rolePerm, state) in permMap) {
-        val getSuitableResult = when (state) {
-            PermState.ALLOW -> PermState.ALLOW
-            PermState.DENY -> if (nPermState == PermState.DEFAULT) PermState.DENY else nPermState
-            else -> nPermState
+        if (state == PermState.DEFAULT) continue
+
+        val pair = getStateFromEntry(rolePerm, lPermission, state, commands) ?: continue
+        if (pair.second > level) {
+            nPermState = pair.first
+            level = pair.second
         }
-        if (rolePerm.last() == '*' && (lPermission.length > rolePerm.length || lPermission.length == rolePerm.length - 2)) { // rolePerm.* and rolePerm.something > 9
-            if (rolePerm == "*") {
-                nPermState = getSuitableResult
-                break
-            } else {
-                val begin = rolePerm.dropLast(2)
-                if (lPermission.startsWith(begin, true)) {
-                    nPermState = getSuitableResult
-                    break
-                }
-            }
+    }
+    return nPermState
+}
+
+private fun getStateFromEntry(
+    rolePerm: String,
+    lPermission: String,
+    state: PermState,
+    commands: Set<AbstractCommand>
+): Pair<PermState, Int>? {
+    if (rolePerm.last() == '*' && (lPermission.length > rolePerm.length || lPermission.length == rolePerm.length - 2)) { // rolePerm.* and rolePerm.something > 9
+        if (rolePerm == "*") {
+            return state to 1
         } else {
-            if (lPermission == rolePerm) {
-                nPermState = getSuitableResult
-                break
-            } else {
-                val category = try {
-                    CommandCategory.valueOf(rolePerm.toUpperCase())
-                } catch (t: Throwable) {
-                    null
-                }
-                if (category != null) {
-                    if (commands.firstOrNull { cmd ->
-                            val permPart = lPermission.takeWhile { it != '.' }
-                            permPart.equals(cmd.name, true)
-                        }?.commandCategory == category) {
-                        nPermState = getSuitableResult
-                        break
-                    }
+            val begin = rolePerm.dropLast(2)
+            if (lPermission.startsWith(begin, true)) {
+                return state to 3
+            }
+        }
+    } else {
+        if (lPermission == rolePerm) {
+            return state to 4
+        } else {
+            val category = try {
+                CommandCategory.valueOf(rolePerm.uppercase())
+            } catch (t: Throwable) {
+                null
+            }
+            if (category != null) {
+                if (commands.firstOrNull { cmd ->
+                        val permPart = lPermission.takeWhile { it != '.' }
+                        permPart.equals(cmd.name, true)
+                    }?.commandCategory == category) {
+                    return state to 2
                 }
             }
         }
     }
-    return nPermState
+    return null
 }
 
 
@@ -297,23 +316,26 @@ suspend fun hasPermission(context: ICommandContext, permission: String, required
     val commandOrder = context.commandOrder
     val rootCommand = commandOrder.first()
     val lowestCommand = commandOrder.last()
+    val explicit = RunCondition.EXPLICIT_MELIJN_PERMISSION
     return hasPermission(
         context.container,
         context.message,
         permission,
         rootCommand.commandCategory,
-        required ?: (rootCommand.permissionRequired || lowestCommand.permissionRequired)
+        required ?: (rootCommand.runConditions.contains(explicit) ||
+            lowestCommand.runConditions.contains(explicit))
     )
 }
 
+
 suspend fun hasPermission(
     container: Container,
-    message: Message,
+    member: Member,
+    channel: GuildChannel,
     permission: String,
     category: CommandCategory? = null,
     required: Boolean = false
 ): Boolean {
-    val member = message.member ?: return true
     if (member.isOwner || member.hasPermission(Permission.ADMINISTRATOR)) return true
     val guild = member.guild
     val guildId = guild.idLong
@@ -321,14 +343,15 @@ suspend fun hasPermission(
 
     // Gives me better ability to help
     if (container.settings.botInfo.developerIds.contains(authorId)) return true
+
     val commands = container.commandSet
     val daoManager = container.daoManager
-    val channelId = message.channel.idLong
+    val channelId = channel.idLong
 
     val userMap = daoManager.userPermissionWrapper.getPermMap(guildId, authorId).toSortedMap(comparator)
     val channelUserMap = daoManager.channelUserPermissionWrapper.getPermMap(channelId, authorId).toSortedMap(comparator)
 
-    val lPermission = permission.toLowerCase()
+    val lPermission = permission.lowercase()
 
     // permission checking for user specific channel overrides (these override all)
     val channelUserState = getStateFromMap(channelUserMap, lPermission, commands, PermState.DEFAULT)
@@ -373,4 +396,15 @@ suspend fun hasPermission(
     } else {
         roleResult != PermState.DENY
     }
+}
+
+suspend fun hasPermission(
+    container: Container,
+    message: Message,
+    permission: String,
+    category: CommandCategory? = null,
+    required: Boolean = false
+): Boolean {
+    val member = message.member ?: return true
+    return hasPermission(container, member, message.textChannel, permission, category, required)
 }

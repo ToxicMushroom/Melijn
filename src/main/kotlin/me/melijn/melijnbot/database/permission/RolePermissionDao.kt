@@ -29,8 +29,10 @@ class RolePermissionDao(driverManager: DriverManager) : CacheDBDao(driverManager
     }
 
     fun set(guildId: Long, roleId: Long, permission: String, permState: PermState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?",
-            guildId, roleId, permission, permState.toString(), permState.toString())
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?",
+            guildId, roleId, permission, permState.toString(), permState.toString()
+        )
     }
 
     fun delete(roleId: Long, permission: String) {
@@ -45,7 +47,7 @@ class RolePermissionDao(driverManager: DriverManager) : CacheDBDao(driverManager
         driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ?", { resultset ->
             val map = HashMap<String, PermState>()
             while (resultset.next()) {
-                map[resultset.getString("permission")] = PermState.valueOf(resultset.getString("state"))
+                map[resultset.getString("permission").lowercase()] = PermState.valueOf(resultset.getString("state"))
             }
             it.resume(map)
         }, roleId)
@@ -53,7 +55,9 @@ class RolePermissionDao(driverManager: DriverManager) : CacheDBDao(driverManager
 
     fun bulkPut(guildId: Long, roleId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->
-            connection.prepareStatement("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?").use { statement ->
+            connection.prepareStatement(
+                "INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?"
+            ).use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, roleId)
                 statement.setString(4, state.toString())

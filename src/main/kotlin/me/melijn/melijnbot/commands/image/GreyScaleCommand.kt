@@ -1,10 +1,15 @@
 package me.melijn.melijnbot.commands.image
 
+import com.sksamuel.scrimage.ImmutableImage
+import com.sksamuel.scrimage.filter.GrayscaleFilter
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
+import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.utils.ImageType
 import me.melijn.melijnbot.internals.utils.ImageUtils
+import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
 import net.dv8tion.jda.api.Permission
 
 class GreyScaleCommand : AbstractCommand("command.greyscale") {
@@ -12,34 +17,30 @@ class GreyScaleCommand : AbstractCommand("command.greyscale") {
     init {
         id = 128
         name = "greyscale"
-        aliases = arrayOf("greyScaleGif")
+        aliases = arrayOf("greyScaleGif", "grayscale")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.commandParts[1].equals("greyscaleGif", true)) {
-            executeGif(context)
+        val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
+        val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
+        if (image.type == ImageType.GIF) {
+            greyscaleGif(context, image)
         } else {
-            executeNormal(context)
+            greyscaleNormal(context, image)
         }
     }
 
-    private suspend fun executeNormal(context: ICommandContext) {
-        ImageCommandUtil.executeNormalRecolorSingleOffset(context) { ints ->
-            val value = ImageUtils.getBrightness(ints[0], ints[1], ints[2])
-            intArrayOf(value, value, value, ints[3])
-        }
+    private val modification: (img: ImmutableImage) -> Unit = { img ->
+        GrayscaleFilter().apply(img)
     }
 
-    private suspend fun executeGif(context: ICommandContext) {
-        ImageCommandUtil.executeGifRecolorSingleOffset(context, { ints ->
-            var value = ImageUtils.getBrightness(ints[0], ints[1], ints[2])
-            if (value == 255) {
-                value = 254
-            }
-            if (ints[3] < 128) intArrayOf(255, 255, 255, 255)
-            else intArrayOf(value, value, value, 255)
-        }, false)
+    private suspend fun greyscaleNormal(context: ICommandContext, image: ParsedImageByteArray) {
+        ImageCommandUtil.applyImmutableImgModification(context, image, modification)
+    }
+
+    private suspend fun greyscaleGif(context: ICommandContext, image: ParsedImageByteArray) {
+        ImageCommandUtil.applyGifImmutableFrameModification(context, image, modification)
     }
 }

@@ -4,10 +4,7 @@ import me.melijn.melijnbot.database.alias.AliasDao
 import me.melijn.melijnbot.database.alias.AliasWrapper
 import me.melijn.melijnbot.database.audio.*
 import me.melijn.melijnbot.database.autopunishment.*
-import me.melijn.melijnbot.database.ban.BanDao
-import me.melijn.melijnbot.database.ban.BanWrapper
-import me.melijn.melijnbot.database.ban.SoftBanDao
-import me.melijn.melijnbot.database.ban.SoftBanWrapper
+import me.melijn.melijnbot.database.ban.*
 import me.melijn.melijnbot.database.birthday.BirthdayDao
 import me.melijn.melijnbot.database.birthday.BirthdayHistoryDao
 import me.melijn.melijnbot.database.birthday.BirthdayHistoryWrapper
@@ -28,8 +25,7 @@ import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
 import me.melijn.melijnbot.database.filter.FilterGroupWrapper
 import me.melijn.melijnbot.database.filter.FilterWrapper
-import me.melijn.melijnbot.database.games.OsuDao
-import me.melijn.melijnbot.database.games.OsuWrapper
+import me.melijn.melijnbot.database.games.*
 import me.melijn.melijnbot.database.join.AutoRemoveInactiveJoinMessageDao
 import me.melijn.melijnbot.database.join.AutoRemoveInactiveJoinMessageWrapper
 import me.melijn.melijnbot.database.join.InactiveJMDao
@@ -56,6 +52,7 @@ import me.melijn.melijnbot.database.prefix.GuildPrefixDao
 import me.melijn.melijnbot.database.prefix.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
+import me.melijn.melijnbot.database.ratelimit.RatelimitWrapper
 import me.melijn.melijnbot.database.reminder.ReminderDao
 import me.melijn.melijnbot.database.reminder.ReminderWrapper
 import me.melijn.melijnbot.database.rep.RepDao
@@ -72,6 +69,7 @@ import me.melijn.melijnbot.database.starboard.StarboardMessageDao
 import me.melijn.melijnbot.database.starboard.StarboardMessageWrapper
 import me.melijn.melijnbot.database.starboard.StarboardSettingsDao
 import me.melijn.melijnbot.database.starboard.StarboardSettingsWrapper
+import me.melijn.melijnbot.database.statesync.EmoteCacheDao
 import me.melijn.melijnbot.database.supporter.SupporterDao
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.time.TimeZoneDao
@@ -100,12 +98,13 @@ const val LARGE_CACHE = 200L
 const val NORMAL_CACHE_SIZE = 100L
 const val SMALL_CACHE = 50L
 
-class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
+class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, secretKey: String) {
 
     companion object {
         val afterTableFunctions = mutableListOf<() -> Unit>()
     }
 
+    val emoteCache: EmoteCacheDao
     val tracksWrapper: TracksWrapper
     val playlistWrapper: PlaylistWrapper
     val songCacheWrapper: SongCacheWrapper
@@ -165,11 +164,14 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val kickWrapper: KickWrapper
     val warnWrapper: WarnWrapper
     val softBanWrapper: SoftBanWrapper
+    val botBannedWrapper: BotBannedWrapper
 
     val messageHistoryWrapper: MessageHistoryWrapper
     val linkedMessageWrapper: LinkedMessageWrapper
     val messageWrapper: MessageWrapper
     val forceRoleWrapper: ForceRoleWrapper
+    val channelRoleWrapper: ChannelRoleWrapper
+    val userChannelRoleWrapper: UserChannelRoleWrapper
 
     val verificationPasswordWrapper: VerificationPasswordWrapper
     val verificationEmotejiWrapper: VerificationEmotejiWrapper
@@ -198,6 +200,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val voteReminderWrapper: VoteReminderWrapper
     val reminderWrapper: ReminderWrapper
 
+    val rpsWrapper: RPSWrapper
+    val tttWrapper: TTTWrapper
+
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
     val repWrapper: RepWrapper
@@ -216,6 +221,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val autoRemoveInactiveJoinMessageWrapper: AutoRemoveInactiveJoinMessageWrapper
     val inactiveJMWrapper: InactiveJMWrapper
 
+    val rateLimitWrapper: RatelimitWrapper
+
     var driverManager: DriverManager
 
     init {
@@ -226,6 +233,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
             connectorVersion = driverManager.getConnectorVersion()
         }
 
+        emoteCache = EmoteCacheDao(driverManager)
         tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
         playlistWrapper = PlaylistWrapper(PlaylistDao(driverManager))
         songCacheWrapper = SongCacheWrapper(SongCacheDao(driverManager))
@@ -286,11 +294,14 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         kickWrapper = KickWrapper(KickDao(driverManager))
         warnWrapper = WarnWrapper(WarnDao(driverManager))
         softBanWrapper = SoftBanWrapper(SoftBanDao(driverManager))
+        botBannedWrapper = BotBannedWrapper(BotBannedDao(driverManager))
 
-        messageHistoryWrapper = MessageHistoryWrapper(MessageHistoryDao(driverManager))
+        messageHistoryWrapper = MessageHistoryWrapper(MessageHistoryDao(driverManager, secretKey))
         linkedMessageWrapper = LinkedMessageWrapper(LinkedMessageDao(driverManager))
         messageWrapper = MessageWrapper(MessageDao(driverManager))
         forceRoleWrapper = ForceRoleWrapper(ForceRoleDao(driverManager))
+        channelRoleWrapper = ChannelRoleWrapper(ChannelRoleDao(driverManager))
+        userChannelRoleWrapper = UserChannelRoleWrapper(UserChannelRoleDao(driverManager))
 
         verificationPasswordWrapper = VerificationPasswordWrapper(VerificationPasswordDao(driverManager))
         verificationEmotejiWrapper = VerificationEmotejiWrapper(VerificationEmotejiDao(driverManager))
@@ -314,10 +325,12 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         botLogStateWrapper = BotLogStateWrapper(BotLogStateDao(driverManager))
         removeResponseWrapper = RemoveResponseWrapper(RemoveResponsesDao(driverManager))
         removeInvokeWrapper = RemoveInvokeWrapper(RemoveInvokeDao(driverManager))
-        voteReminderStatesWrapper =
-            VoteReminderStatesWrapper(me.melijn.melijnbot.database.settings.VoteReminderStatesDao(driverManager))
+        voteReminderStatesWrapper = VoteReminderStatesWrapper(VoteReminderStatesDao(driverManager))
         voteReminderWrapper = VoteReminderWrapper(VoteReminderDao(driverManager))
         reminderWrapper = ReminderWrapper(ReminderDao(driverManager))
+
+        rpsWrapper = RPSWrapper(RPSDao(driverManager))
+        tttWrapper = TTTWrapper(TTTDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         balanceWrapper = BalanceWrapper(BalanceDao(driverManager))
@@ -336,6 +349,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
         autoRemoveInactiveJoinMessageWrapper = AutoRemoveInactiveJoinMessageWrapper(AutoRemoveInactiveJoinMessageDao(driverManager))
         inactiveJMWrapper = InactiveJMWrapper(InactiveJMDao(driverManager))
+
+        rateLimitWrapper = RatelimitWrapper(driverManager)
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {

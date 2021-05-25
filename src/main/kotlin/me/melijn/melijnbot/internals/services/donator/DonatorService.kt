@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 class DonatorService(
     val container: Container,
     val shardManager: ShardManager
-) : Service("Donator", 2, 2, TimeUnit.MINUTES) {
+) : Service("Donator", 5, 2, TimeUnit.SECONDS) {
 
     override val service = RunnableTask {
         val wrapper = container.daoManager.supporterWrapper

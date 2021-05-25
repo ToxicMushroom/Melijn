@@ -1,5 +1,8 @@
 package me.melijn.melijnbot.commands.utility
 
+import me.melijn.melijnbot.database.statesync.LiteEmote
+import me.melijn.melijnbot.database.statesync.getEmote
+import me.melijn.melijnbot.database.statesync.toLite
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -7,7 +10,6 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import net.dv8tion.jda.api.entities.Emote
 
 class EmoteCommand : AbstractCommand("command.emote") {
 
@@ -28,19 +30,20 @@ class EmoteCommand : AbstractCommand("command.emote") {
         val trans2 = context.getTranslation("$root.response1.part2")
         val transExtra = context.getTranslation("$root.response1.extra")
 
-        var emote: Emote? = getEmoteByArgsN(context, 0, false)
+        var emote: LiteEmote? = getEmoteByArgsN(context, 0, false)?.toLite()
         val arg = context.args[0]
 
         if (emote == null && EMOTE_MENTION.matches(arg)) {
             val result = (EMOTE_MENTION.find(arg) ?: return).groupValues
-            emote = context.shardManager.getEmoteById(result[2])
+            val emoteId = result[2].toLongOrNull() ?: return
+            emote = getEmote(context, emoteId)
 
             if (emote == null) {
                 val animated = arg.startsWith("<a")
                 val msg = replaceMissingEmoteVars(
                     trans1 + trans2,
                     context,
-                    result[2],
+                    emoteId,
                     result[1],
                     animated
                 )
@@ -49,7 +52,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
                 return
             }
         } else if (arg.isPositiveNumber()) {
-            emote = context.shardManager.getEmoteById(arg)
+            emote = context.shardManager.getEmoteById(arg)?.toLite()
         }
 
         if (emote != null) {
@@ -72,7 +75,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
     private suspend fun replaceMissingEmoteVars(
         string: String,
         context: ICommandContext,
-        id: String,
+        id: Long,
         name: String,
         animated: Boolean
     ): String = string
@@ -82,8 +85,9 @@ class EmoteCommand : AbstractCommand("command.emote") {
         .withVariable("url", "https://cdn.discordapp.com/emojis/$id." + (if (animated) "gif" else "png") + "?size=2048")
 
 
-    private suspend fun replaceEmoteVars(string: String, context: ICommandContext, emote: Emote): String =
+    private suspend fun replaceEmoteVars(string: String, context: ICommandContext, emote: LiteEmote): String =
         replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
-            .withVariable("creationTime", emote.timeCreated.asEpochMillisToDate(context.getTimeZoneId()))
+            .withVariable("creationTime", snowflakeToEpochMillis(emote.id).asEpochMillisToDateTimeMillis(context.getTimeZoneId()))
 
 }
+

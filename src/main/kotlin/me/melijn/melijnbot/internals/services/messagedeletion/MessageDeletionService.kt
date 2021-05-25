@@ -33,9 +33,7 @@ class MessageDeletionService(val shardManager: ShardManager) : Service("MessageD
                 val guildLeft = shardManager.shards.all {
                     it.status == JDA.Status.CONNECTED && it.unavailableGuilds.isEmpty()
                 }
-                if (guildLeft) {
-                    iterator.remove()
-                }
+                if (guildLeft) iterator.remove()
                 continue
             } else {
                 val iterator2 = textMap.iterator()

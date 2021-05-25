@@ -40,7 +40,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
     }
 
     private suspend fun setEmbedStateState(context: ICommandContext) {
-        val state: Boolean? = boolFromStateArg(context.args[0].toLowerCase())
+        val state: Boolean? = boolFromStateArg(context.args[0].lowercase())
         if (state == null) {
             sendSyntax(context)
             return

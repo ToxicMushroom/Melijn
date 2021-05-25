@@ -18,7 +18,7 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey, uniqueKey)
     }
 
-    suspend fun add(kick: Kick) {
+    fun add(kick: Kick) {
         kick.apply {
             driverManager.executeUpdate(
                 "INSERT INTO $table (kickId, guildId, kickedId, kickAuthorId, kickReason, kickMoment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
@@ -81,14 +81,14 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
         }, kickId)
     }
 
-    suspend fun clear(guildId: Long, kickedId: Long) {
+    fun clear(guildId: Long, kickedId: Long) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guildId = ? AND kickedId = ?",
             guildId, kickedId
         )
     }
 
-    suspend fun remove(kick: Kick) {
+    fun remove(kick: Kick) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guildId = ? AND kickedId = ? AND kickId = ?",
             kick.guildId, kick.kickedId, kick.kickId

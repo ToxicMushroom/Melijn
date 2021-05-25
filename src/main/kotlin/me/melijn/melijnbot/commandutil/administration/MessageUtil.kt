@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.commandutil.administration
 
 import me.melijn.melijnbot.database.NORMAL_CACHE
-import me.melijn.melijnbot.database.message.LinkedMessageWrapper
-import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
@@ -11,6 +9,7 @@ import me.melijn.melijnbot.internals.jagtag.UrlJagTagParser
 import me.melijn.melijnbot.internals.jagtag.UrlParserArgs
 import me.melijn.melijnbot.internals.models.EmbedEditor
 import me.melijn.melijnbot.internals.models.ModularMessage
+import me.melijn.melijnbot.internals.models.UserFriendlyException
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.internals.utils.*
@@ -25,20 +24,6 @@ import net.dv8tion.jda.api.utils.data.DataObject
 import java.time.Instant
 
 object MessageUtil {
-
-    fun removeMessageIfEmpty(
-        guildId: Long,
-        type: MessageType,
-        message: ModularMessage,
-        messageWrapper: LinkedMessageWrapper
-    ): Boolean {
-        return if (messageWrapper.shouldRemove(message)) {
-            messageWrapper.removeMessage(guildId, type)
-            true
-        } else {
-            false
-        }
-    }
 
     suspend fun setMessage(context: ICommandContext, property: ModularMessageProperty) {
         val guildId = context.guildId
@@ -292,15 +277,14 @@ object MessageUtil {
 
         modularMessage.attachments = attachments.toMap()
 
-        val msg =
-            if (file == null) {
-                context.getTranslation("message.attachments.remove.notanattachment")
-                    .withVariable("prefix", context.usedPrefix)
-            } else {
-                context.getTranslation("message.attachments.remove.success")
-                    .withVariable("file", file)
-            }.withVariable(PLACEHOLDER_ARG, context.args[0])
-                .withVariable(PLACEHOLDER_TYPE, msgName)
+        val msg = if (file == null) {
+            context.getTranslation("message.attachments.remove.notanattachment")
+                .withVariable("prefix", context.usedPrefix)
+        } else {
+            context.getTranslation("message.attachments.remove.success")
+                .withVariable("file", file)
+        }.withVariable(PLACEHOLDER_ARG, context.args[0])
+            .withVariable(PLACEHOLDER_TYPE, msgName)
 
         sendRsp(context, msg)
     }
@@ -322,7 +306,7 @@ object MessageUtil {
     ) {
         val entries = modularMessage.attachments.entries.withIndex().sortedBy { it.index }
         val index = getIntegerFromArgNMessage(context, 0, 1, entries.size) ?: return
-        val (url, name) = entries.first { it.index == index }.value
+        val (url, name) = entries.first { it.index == (index-1) }.value
         val attachments = modularMessage.attachments.toMutableMap()
         attachments.remove(url)
         modularMessage.attachments = attachments.toMap()
@@ -638,10 +622,10 @@ object MessageUtil {
 
         val msg = if (arg.equals("null", true)) {
             eb.setFooter(null, footerIconUrl)
-            context.getTranslation("message.embed.image.unset")
+            context.getTranslation("message.embed.footer.unset")
         } else {
             eb.setFooter(arg, footerIconUrl)
-            context.getTranslation("message.embed.image.set")
+            context.getTranslation("message.embed.footer.set")
                 .withVariable(PLACEHOLDER_ARG, arg)
         }.withVariable(PLACEHOLDER_TYPE, msgName)
 
@@ -863,14 +847,22 @@ object MessageUtil {
         val guildId = context.guildId
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
-        val message = replaceUrlVariables(context.member, modularMessage).toMessage()
-        if (message == null && modularMessage.attachments.isEmpty()) {
-            val msg2 = context.getTranslation("message.view.isempty")
-                .withVariable("msgName", msgName)
-            sendRsp(context, msg2)
+        val message = try {
+            val msg = replaceUrlVariablesInPreview(context.member, modularMessage).toMessage()
+            if (msg == null && modularMessage.attachments.isEmpty()) {
+                val msg2 = context.getTranslation("message.view.isempty")
+                    .withVariable("msgName", msgName)
+                sendRsp(context, msg2)
+                return
+            }
+            msg
+        } catch (t: Throwable) {
+            when (t) {
+                is UserFriendlyException -> sendRsp(context, t.getUserFriendlyMessage())
+                else -> throw t
+            }
             return
         }
-
 
         val httpClient = context.webManager.proxiedHttpClient
         val channel = context.textChannel
@@ -886,12 +878,12 @@ object MessageUtil {
         }
     }
 
-    suspend fun replaceUrlVariables(
+    private suspend fun replaceUrlVariablesInPreview(
         member: Member,
         modularMessage: ModularMessage
     ): ModularMessage {
         val args = UrlParserArgs(member.guild, member.user)
-        return modularMessage.mapAllStringFields {
+        return modularMessage.mapAllStringFieldsSafe() {
             if (it != null) {
                 UrlJagTagParser.parseJagTag(args, it)
             } else {
@@ -915,17 +907,17 @@ object MessageUtil {
         msgName: String,
         pingable: Boolean
     ) {
-        val muteableMap = message.extra.toMutableMap()
+        val mutableMap = message.extra.toMutableMap()
         if (pingable) {
-            muteableMap["isPingable"] = ""
+            mutableMap["isPingable"] = ""
         } else {
-            muteableMap.remove("isPingable")
+            mutableMap.remove("isPingable")
         }
 
-        message.extra = muteableMap
+        message.extra = mutableMap
 
         val msg = context.getTranslation("message.pingable.set.$pingable")
-            .withVariable("msgName", msgName)
+            .withVariable(PLACEHOLDER_TYPE, msgName)
         sendRsp(context, msg)
     }
 
@@ -937,7 +929,7 @@ object MessageUtil {
         val isPingable = message.extra.containsKey("isPingable")
 
         val msg = context.getTranslation("message.pingable.show.$isPingable")
-            .withVariable("msgName", msgName)
+            .withVariable(PLACEHOLDER_TYPE, msgName)
         sendRsp(context, msg)
     }
 }

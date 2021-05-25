@@ -18,20 +18,6 @@ val simpleDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yy
 val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd O")
 val purgeTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("kk:mm:ss")
 
-object TimeUtils {
-
-}
-
-/** interprets the long as millis duration string **/
-//fun Long.getAsDurationString(): String {
-//    return getDurationString(this)
-//}
-
-//fun Long.asEpochMillisToDateTime(): String {
-//    val offsetDateTime = Instant.ofEpochMilli(this).atOffset(ZoneOffset.UTC)
-//    return offsetDateTime.asLongLongGMTString()
-//}
-
 suspend fun getZoneId(daoManager: DaoManager, guildId: Long? = null, userId: Long? = null): ZoneId {
 
     val guildTimezone = guildId?.let {
@@ -51,13 +37,6 @@ suspend fun getZoneId(daoManager: DaoManager, guildId: Long? = null, userId: Lon
     }
 
     return userTimezone ?: guildTimezone ?: ZoneId.of("GMT")
-}
-
-fun manualSupporterTimeZone(zoneId: String): ZoneId? {
-    return when (zoneId) {
-        "EST" -> ZoneId.of("GMT-5")
-        else -> null
-    }
 }
 
 suspend fun Long.asEpochMillisToDateTime(daoManager: DaoManager?, guildId: Long? = null, userId: Long? = null): String {
@@ -171,7 +150,7 @@ fun getDurationString(milliseconds: Double): String {
     return sb.toString()
 }
 
-val holyPattern = Pattern.compile("(\\d+)([a-zA-Z]+)")
+private val holyPattern = Pattern.compile("(\\d+)([a-zA-Z]+)")
 suspend fun getDurationByArgsNMessage(
     context: ICommandContext,
     leftBound: Int,
@@ -219,7 +198,7 @@ suspend fun getDurationByArgsNMessage(
         }
 
         val typeNorm = matcher.group(2)
-        val type = typeNorm.toLowerCase()
+        val type = typeNorm.lowercase()
         val multiplier = when {
             ("M" == typeNorm || arrayOf("month", "months").contains(type)) -> 30 * 24 * 60 * 60
             arrayOf("s", "second", "seconds").contains(type) -> 1

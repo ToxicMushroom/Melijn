@@ -20,12 +20,34 @@ class TwitterCommand : AbstractCommand("command.twitter") {
         id = 244
         name = "twitter"
         children = arrayOf(
+            SetEnabledArg(root),
             SetupWebhookArg(root),
             ExcludedTweetTypes(root),
             ListArg(root),
             RemoveAtArg(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
+    }
+
+    class SetEnabledArg(parent: String) : AbstractCommand("$parent.setenabled") {
+
+        init {
+            name = "setEnabled"
+            cooldown = 10_000
+            aliases = arrayOf("se")
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            val webhook = getTwitterWebhookByArgsNMessage(context, 0) ?: return
+            val state = getBooleanFromArgNMessage(context, 1) ?: return
+            webhook.enabled = state
+            context.daoManager.twitterWrapper.store(webhook)
+
+            sendRsp(context, "Set the webhook state for **%t%** to **%e%**"
+                .withSafeVariable("t", webhook.handle)
+                .withSafeVariable("e", webhook.enabled)
+            )
+        }
     }
 
     companion object {
@@ -161,9 +183,9 @@ class TwitterCommand : AbstractCommand("command.twitter") {
                 return
             }
 
-            var msg = "Tracked Twitter Users```INI\n[index] - [@user] - [twitterId]\n"
+            var msg = "Tracked Twitter Users```INI\n[index] - [@user] - [twitterId] - [enabled]\n"
             for ((index, webHook) in list.withIndex().sortedBy { it.value.handle }) {
-                msg += "${index + 1}. - [" + webHook.handle + "] - " + webHook.twitterUserId + "\n"
+                msg += "${index + 1}. - [${webHook.handle}] - ${webHook.twitterUserId} - ${webHook.enabled}\n"
             }
             msg += "```"
             sendRsp(context, msg)
@@ -203,7 +225,7 @@ class TwitterCommand : AbstractCommand("command.twitter") {
             }, {
                 var response = it.message.contentRaw
                 if (!response.startsWith("@")) response = "@$response"
-                val res = context.webManager.httpClient.post<String>("https://tweeterid.com/ajax.php") {
+                val res = context.webManager.proxiedHttpClient.post<String>("https://tweeterid.com/ajax.php") {
                     body = FormDataContent(Parameters.build {
                         append("input", response)
                     })
@@ -222,8 +244,15 @@ class TwitterCommand : AbstractCommand("command.twitter") {
 
                 context.container.eventWaiter.waitFor(GuildMessageReceivedEvent::class.java, { event2 ->
                     event2.channel.idLong == context.channelId && event2.author.idLong == context.authorId
-                }, { event2 ->
+                }, fish@{ event2 ->
                     val response2 = event2.message.contentRaw
+                    if (!response2.matches(URL_PATTERN)) {
+                        sendRsp(
+                            context,
+                            "That is not a valid [webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) url. You can start over and provide a valid one."
+                        )
+                        return@fish
+                    }
 
                     eb.setDescription(
                         "Okay, I'm now tracking $response for new tweets and will resend them to your webhook."

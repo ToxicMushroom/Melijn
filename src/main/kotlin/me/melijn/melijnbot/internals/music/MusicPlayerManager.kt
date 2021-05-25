@@ -28,7 +28,6 @@ class MusicPlayerManager(
         audioPlayerManager.frameBufferDuration = 1000
         AudioSourceManagers.registerRemoteSources(audioPlayerManager)
         AudioSourceManagers.registerLocalSource(audioPlayerManager)
-
     }
 
     fun getLPPlayer(): AudioPlayer {
@@ -41,7 +40,7 @@ class MusicPlayerManager(
             val newMusicPlayer = GuildMusicPlayer(daoManager, lavaManager, guild.idLong, "normal")
 
             guildMusicPlayers[guild.idLong] = newMusicPlayer
-            logger.debug("new player for ${guild.id}")
+            logger.info("new player for ${guild.id}")
 
             if (!lavaManager.lavalinkEnabled) {
                 guild.audioManager.sendingHandler = newMusicPlayer.getSendHandler()

@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
 import io.ktor.client.*
-import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.role.JoinRoleInfo
 import me.melijn.melijnbot.database.role.UserType
@@ -55,9 +54,8 @@ object JoinLeaveUtil {
         val linkedMessageWrapper = daoManager.linkedMessageWrapper
         val msgName = linkedMessageWrapper.getMessage(guildId, messageType) ?: return
         var modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
-        if (MessageUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, linkedMessageWrapper)) return
 
-        modularMessage = replaceVariablesInWelcomeMessage(guild, user, modularMessage)
+        modularMessage = replaceVariablesInWelcomeMessage(guild, user, modularMessage, messageType, msgName)
 
         val message: Message? = modularMessage.toMessage()
         if (message?.embeds?.isNotEmpty() == true) {
@@ -115,14 +113,12 @@ object JoinLeaveUtil {
     private suspend fun replaceVariablesInWelcomeMessage(
         guild: Guild,
         user: User,
-        modularMessage: ModularMessage
+        modularMessage: ModularMessage,
+        msgType: MessageType,
+        msgName: String
     ): ModularMessage {
-        return modularMessage.mapAllStringFields {
-            if (it != null) {
-                WelcomeJagTagParser.parseJagTag(guild, user, it)
-            } else {
-                null
-            }
+        return modularMessage.mapAllStringFieldsSafe("${msgType.text}(msgName=$msgName)") {
+            it?.let { WelcomeJagTagParser.parseJagTag(guild, user, it) }
         }
     }
 

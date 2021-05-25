@@ -3,7 +3,6 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.games.PokerCommand
-import me.melijn.melijnbot.commands.games.RockPaperScissorsCommand
 import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
@@ -12,6 +11,7 @@ import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.SelfRoleUtil
 import me.melijn.melijnbot.internals.music.DONATE_QUEUE_LIMIT
+import me.melijn.melijnbot.internals.music.MusicPlayerManager
 import me.melijn.melijnbot.internals.music.QUEUE_LIMIT
 import me.melijn.melijnbot.internals.music.TrackUserData
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -37,7 +37,9 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
     override suspend fun onEvent(event: GenericEvent) {
         if (event is GuildMessageReactionAddEvent) onGuildMessageReactionAdd(event)
-        if (event is PrivateMessageReactionAddEvent) onPrivateMessageReactionAdd(event)
+        if (event is PrivateMessageReactionAddEvent) {
+            onPrivateMessageReactionAdd(event)
+        }
     }
 
     private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = TaskManager.async(event.channel) {
@@ -47,32 +49,20 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
 
     private suspend fun handleRPSReaction(event: PrivateMessageReactionAddEvent) {
-        val author = event.jda.retrieveUserById(event.userIdLong).awaitOrNull() ?: return
+        val author = event.channel.user
+        if (event.userIdLong != author.idLong) return
 
-        val rps1 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user1 == author.idLong && it.choice1 == null }
-        if (rps1 != null) {
-            RockPaperScissorsCommand.activeGames.remove(rps1)
+        val rpsWrapper = container.daoManager.rpsWrapper
+        val game = rpsWrapper.getGame(author.idLong) ?: return
+        val choice = RockPaperScissorsGame.RPS.fromEmote(event.reactionEmote.emoji)
 
-            rps1.choice1 = try {
-                RockPaperScissorsGame.RPS.fromEmote(event.reactionEmote.emoji)
-            } catch (t: Throwable) {
-                null
-            }
-            RockPaperScissorsCommand.activeGames.add(rps1)
-            return
+        if (game.user1 == author.idLong) {
+            game.choice1 = choice
+        } else {
+            game.choice2 = choice
         }
 
-        val rps2 = RockPaperScissorsCommand.activeGames.firstOrNull { it.user2 == author.idLong && it.choice2 == null }
-        if (rps2 != null) {
-            RockPaperScissorsCommand.activeGames.remove(rps2)
-
-            rps2.choice2 = try {
-                RockPaperScissorsGame.RPS.fromEmote(event.reactionEmote.emoji)
-            } catch (t: Throwable) {
-                null
-            }
-            RockPaperScissorsCommand.activeGames.add(rps2)
-        }
+        rpsWrapper.addGame(game)
     }
 
     // TODO fix duplicate code in this file
@@ -392,11 +382,11 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
     private suspend fun searchMenuHandler(event: GuildMessageReactionAddEvent) {
         if (event.reactionEmote.isEmote || event.user.isBot) return
         val guild = event.guild
-        val guildPlayer = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(guild)
+        val guildPlayer = MusicPlayerManager.guildMusicPlayers[guild.idLong] ?: return
         val menus = guildPlayer.searchMenus
-        val menu = menus.getOrElse(event.messageIdLong, {
+        val menu = menus.getOrElse(event.messageIdLong) {
             return
-        })
+        }
 
         val tracks = menu.audioTracks
 

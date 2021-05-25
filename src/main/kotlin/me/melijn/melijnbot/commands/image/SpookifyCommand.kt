@@ -1,10 +1,12 @@
 package me.melijn.melijnbot.commands.image
 
+import com.sksamuel.scrimage.ImmutableImage
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
+import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.utils.ImageUtils
+import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
 
 class SpookifyCommand : AbstractCommand("command.spookify") {
@@ -18,22 +20,20 @@ class SpookifyCommand : AbstractCommand("command.spookify") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.commandParts[1].equals("spookifyGif", true)) {
-            executeGif(context)
+        val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
+        val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
+        val argOffset = image.usedArgument + 0
+        val offset = context.optional(argOffset, 128) { getIntegerFromArgNMessage(context, it, -256, 256) } ?: return
+        if (image.type == ImageType.GIF) {
+            ImageCommandUtil.applyGifImmutableFrameModification(context, image, modification(offset))
         } else {
-            executeNormal(context)
+            ImageCommandUtil.applyImmutableImgModification(context, image, modification(offset))
         }
     }
 
-    private suspend fun executeNormal(context: ICommandContext) {
-        ImageCommandUtil.executeNormalRecolorSingleOffset(context) { ints ->
-            ImageUtils.getSpookyForPixel(ints[0], ints[1], ints[2], ints[3], ints[4])
+    private val modification: (offset: Int) -> ((img: ImmutableImage) -> Unit) = { offset ->
+        { img ->
+            img.mapInPlace { ImageUtils.getSpookyForPixel(it, offset, false) }
         }
-    }
-
-    private suspend fun executeGif(context: ICommandContext) {
-        ImageCommandUtil.executeGifRecolorSingleOffset(context, { ints ->
-            ImageUtils.getSpookyForPixel(ints[0], ints[1], ints[2], ints[3], ints[4], true)
-        }, false)
     }
 }

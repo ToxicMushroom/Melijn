@@ -1,16 +1,15 @@
 package me.melijn.melijnbot.commands.image
 
+import com.sksamuel.scrimage.ImmutableImage
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
+import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
-import me.melijn.melijnbot.internals.utils.ImageUtils
-import me.melijn.melijnbot.internals.utils.getColorFromArgNMessage
+import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
-import java.awt.image.BufferedImage
 
 class GlobalRecolorCommand : AbstractCommand("command.globalrecolor") {
 
@@ -24,61 +23,30 @@ class GlobalRecolorCommand : AbstractCommand("command.globalrecolor") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.commandParts[1].equals("globalRecolorGif", true)) {
-            executeGif(context)
+        val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
+        val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
+        val offset = image.usedArgument + 0
+        val color = getColorFromArgNMessage(context, offset) ?: return
+        if (image.type == ImageType.GIF) {
+            greyscaleGif(context, image, color)
         } else {
-            executeNormal(context)
+            greyscaleNormal(context, image, color)
         }
     }
 
-    private suspend fun executeNormal(context: ICommandContext) {
-        ImageCommandUtil.executeNormalEffect(context, effect = { image, argData ->
-            val chosenColor = Color(argData.getInt("color"))
-            ImageUtils.recolorPixelSingleOffset(image, 0) { ints: IntArray ->
-                val c2 = ints[3] shl 24 or (chosenColor.red shl 16) or (chosenColor.green shl 8) or chosenColor.blue
-                intArrayOf(c2 and 0xff, c2 shr 8 and 0xff, c2 shr 16 and 0xff, c2 shr 24 and 0xff)
+    private val modification: (color: Color) -> ((img: ImmutableImage) -> Unit) = { color ->
+        { img ->
+            img.mapInPlace {
+                Color(color.red, color.green, color.blue, it.alpha())
             }
-
-        }, argDataParser = { argInt: Int, argData: DataObject, _: DataObject ->
-            val offset = getColorFromArgNMessage(context, argInt)
-            if (offset == null) {
-                false
-            } else {
-                argData.put("color", offset.rgb)
-                true
-            }
-
-        }, imgDataParser = { _: BufferedImage, _: DataObject ->
-
-        })
+        }
     }
 
-    private suspend fun executeGif(context: ICommandContext) {
-        ImageCommandUtil.executeGifEffect(context, effect = { image, argData ->
-            val chosenColor = Color(argData.getInt("color"))
-            ImageUtils.recolorPixelSingleOffset(image, 0) { ints: IntArray ->
-                val c2 = ints[3] shl 24 or (chosenColor.red shl 16) or (chosenColor.green shl 8) or chosenColor.blue
-                val newColor = ImageUtils.suiteColorForGif(c2)
+    private suspend fun greyscaleNormal(context: ICommandContext, image: ParsedImageByteArray, color: Color) {
+        ImageCommandUtil.applyImmutableImgModification(context, image, modification(color))
+    }
 
-                intArrayOf(
-                    newColor and 0xff,
-                    newColor shr 8 and 0xff,
-                    newColor shr 16 and 0xff,
-                    newColor shr 24 and 0xff
-                )
-            }
-
-        }, argDataParser = { argInt: Int, argData: DataObject, _: DataObject ->
-            val offset = getColorFromArgNMessage(context, argInt)
-            if (offset == null) {
-                false
-            } else {
-                argData.put("color", offset.rgb)
-                true
-            }
-
-        }, imgDataParser = { _: BufferedImage, _: DataObject ->
-
-        }, argumentAmount = 1)
+    private suspend fun greyscaleGif(context: ICommandContext, image: ParsedImageByteArray, color: Color) {
+        ImageCommandUtil.applyGifImmutableFrameModification(context, image,  modification(color))
     }
 }

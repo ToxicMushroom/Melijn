@@ -4,13 +4,17 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
-import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.threading.SafeList
-import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.utils.getLongFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendMsg
+import me.melijn.melijnbot.internals.utils.message.sendOnShard0
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.retrieveMemberByArgsNMessage
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.internal.entities.UserImpl
 
 class TicTacToeCommand : AbstractCommand("command.tictactoe") {
 
@@ -23,8 +27,6 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
     }
 
     companion object {
-        val activeGames: SafeList<TicTacToeGame> = SafeList()
-
         private const val fieldTemplate = "```" +
             "    ╭───┬───┬───╮\n" +
             "    │ 1 │ 2 │ 3 │\n" +
@@ -83,10 +85,10 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
         ).withVariable("user2", user.asMention)
         sendMsg(context, msg2)
 
-        val channel1 = context.author.openPrivateChannel().awaitOrNull()
-        val channel2 = user.openPrivateChannel().awaitOrNull()
+        val user1 = context.author as UserImpl
+        val user2 = user as UserImpl
 
-        context.container.eventWaiter.waitFor(MessageReceivedEvent::class.java, { event ->
+        context.container.eventWaiter.waitFor(GuildMessageReceivedEvent::class.java, { event ->
             user.idLong == event.author.idLong &&
                 event.channel.idLong == context.channelId
         }, { event ->
@@ -121,14 +123,16 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
                     user.idLong,
                     bet,
                     Array(9) { TicTacToeGame.TTTState.EMPTY },
+                    System.currentTimeMillis(),
                     System.currentTimeMillis()
                 )
+
                 val title = "TicTacToe"
                 val description = context.getTranslation(
                     "$root.dmmenu.description"
-                ).withVariable("gameField", renderGame(game.game))
+                ).withVariable("gameField", renderGame(game.gameState))
 
-                val optionMenu = Embedder(context)
+                val optionMenu = EmbedEditor()
                     .setTitle(title)
                     .setDescription(description)
 
@@ -136,8 +140,8 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
                 val defaultDisabledDMsMessage = context.getTranslation("message.dmsdisabledfix")
 
                 optionMenu.setFooter("You are " + TicTacToeGame.TTTState.O.representation + " | Please wait for your opponent.")
-                val msgMenu1 = channel1?.sendMessage(optionMenu.build())?.awaitOrNull()
-                if (msgMenu1 == null) {
+                val success = sendOnShard0(context, user1, optionMenu, "TTT")
+                if (!success) {
                     val msg = defaultDisabledDMsMessage.withVariable("user", context.author.asMention)
                     sendMsg(context, msg)
                     balanceWrapper.addBalance(context.authorId, bet)
@@ -146,10 +150,8 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
                 }
 
                 optionMenu.setFooter("You are " + TicTacToeGame.TTTState.X.representation + " | It's your turn.")
-                val msgMenu2 = channel2?.sendMessage(optionMenu.build())?.awaitOrNull()
-                if (msgMenu2 == null) {
-                    msgMenu1.delete().queue()
-
+                val success2 = sendOnShard0(context, user2, optionMenu, "TTT")
+                if (!success2) {
                     val msg = defaultDisabledDMsMessage.withVariable("user", user.asMention)
                     sendMsg(context, msg)
                     balanceWrapper.addBalance(context.authorId, bet)
@@ -158,13 +160,11 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
                 }
 
                 if (activeGame(context, context.author, user)) {
-                    msgMenu1.delete().queue()
-                    msgMenu2.delete().queue()
                     balanceWrapper.addBalance(context.authorId, bet)
                     balanceWrapper.addBalance(user.idLong, bet)
                     return@waitFor
                 }
-                activeGames.add(game)
+                context.daoManager.tttWrapper.addGame(game)
 
                 val msg = if (bet > 0) {
                     context.getTranslation(
@@ -195,29 +195,20 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
         }, 60)
     }
 
-    suspend fun activeGame(context: ICommandContext, user1: User, user2: User): Boolean {
-        return when {
-            activeGames.any {
-                it.user1 == user1.idLong || it.user2 == user1.idLong
-            } -> {
-                val msg = context.getTranslation(
-                    "$root.user1.ingame",
-
-                    )
-                sendMsg(context, msg)
-                true
+    private suspend fun activeGame(context: ICommandContext, user1: User, user2: User): Boolean {
+        val rpsWrapper = context.daoManager.tttWrapper
+        when {
+            rpsWrapper.getGame(user1.idLong) != null -> {
+                val msg = context.getTranslation("$root.user1.ingame")
+                sendRsp(context, msg)
             }
-            activeGames.any {
-                it.user1 == user2.idLong || it.user2 == user2.idLong
-            } -> {
-                val msg = context.getTranslation(
-                    "$root.user2.ingame",
-                ).withVariable("user", user2.asTag)
-                sendMsg(context, msg)
-                true
+            rpsWrapper.getGame(user2.idLong) != null -> {
+                val msg = context.getTranslation("$root.user2.ingame")
+                sendRsp(context, msg)
             }
-            else -> false
+            else -> return false
         }
+        return true
     }
 }
 
@@ -225,7 +216,8 @@ data class TicTacToeGame(
     val user1: Long,
     val user2: Long,
     val bet: Long,
-    var game: Array<TTTState>,
+    var gameState: Array<TTTState>,
+    var lastUpdate: Long,
     var startTime: Long
 ) {
     enum class TTTState(val representation: String) {

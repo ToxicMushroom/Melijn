@@ -9,7 +9,7 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsN
 import me.melijn.melijnbot.internals.utils.withVariable
-import me.melijn.melijnbot.internals.web.weebsh.WeebApi
+import me.melijn.melijnbot.internals.web.apis.WeebApi
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
 
@@ -91,9 +91,14 @@ object AnimeCommandUtil {
         if (context.isFromGuild) {
             val authorMember = context.guild.retrieveMember(author).awaitOrNull() ?: return
             val targetMember = target?.let { context.guild.retrieveMember(it).awaitOrNull() }
-            executeAbs(context, type, apiOrder, authorMember.effectiveName, targetMember?.effectiveName ?: target?.name ?: "")
+            executeAbs(
+                context,
+                type,
+                authorMember.effectiveName,
+                targetMember?.effectiveName ?: target?.name ?: ""
+            )
         } else {
-            executeAbs(context, type, apiOrder, author.name, target?.name ?: "")
+            executeAbs(context, type, author.name, target?.name ?: "")
         }
     }
 
@@ -105,7 +110,7 @@ object AnimeCommandUtil {
         target: User?
     ) {
         val targetMember = target?.let { context.guild.retrieveMember(it).awaitOrNull() }
-        executeAbs(context, type, apiOrder, author.asMention, targetMember?.effectiveName ?: target?.name ?: "")
+        executeAbs(context, type, author.asMention, targetMember?.effectiveName ?: target?.name ?: "")
     }
 
     private suspend fun executeAbs(
@@ -116,19 +121,19 @@ object AnimeCommandUtil {
         target: Role
     ) {
         val authorMember = context.guild.retrieveMember(author).awaitOrNull() ?: return
-        executeAbs(context, type, apiOrder, authorMember.effectiveName, target.asMention)
+        executeAbs(context, type, authorMember.effectiveName, target.asMention)
     }
 
 
     private suspend fun executeAbs(
         context: ICommandContext, type: String, apiOrder: Array<WeebApi.Type>, author: Role, target: Role
     ) {
-        executeAbs(context, type, apiOrder, author.asMention, target.asMention)
+        executeAbs(context, type, author.asMention, target.asMention)
     }
 
     private suspend fun executeAbs(
-        context: ICommandContext, type: String, apiOrder: Array<WeebApi.Type>,
-        author: String, target: String
+        context: ICommandContext, type: String, author: String,
+        target: String
     ) {
         val path = context.commandOrder.last().root + if (target.isEmpty()) {
             ".eb.description.solo"
@@ -142,16 +147,16 @@ object AnimeCommandUtil {
 
         val eb = Embedder(context)
             .setDescription(title)
-            .setImage(context.webManager.weebApi.getUrl(type, false, apiOrder))
+            .setImage(context.webManager.weebApi.getUrlRandom(type, false))
         sendEmbedRsp(context, eb.build())
     }
 
     suspend fun executeShow(context: ICommandContext, type: String, nsfw: Boolean = false) {
         val eb = Embedder(context)
         if (nsfw && context.isFromGuild && context.textChannel.isNSFW) {
-            eb.setImage(context.webManager.weebApi.getUrl(type, nsfw))
+            eb.setImage(context.webManager.weebApi.getUrlRandom(type, nsfw))
         } else {
-            eb.setImage(context.webManager.weebApi.getUrl(type))
+            eb.setImage(context.webManager.weebApi.getUrlRandom(type))
         }
         sendEmbedRsp(context, eb.build())
     }

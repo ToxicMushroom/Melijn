@@ -241,7 +241,7 @@ fun getUnmuteMessage(
 
     val author = i18n.getTranslation(language, "message.punishment.unmute.author")
         .withSafeVariable(PLACEHOLDER_USER, unmuteAuthor.asTag)
-        .withSafeVariable("spaces", " ".repeat(45).substring(0, 45 - unmuteAuthor.name.length) + "\u200B")
+        .withSafeVariable("spaces", getAtLeastNCodePointsAfterName(unmuteAuthor) + "\u200B")
 
     return EmbedBuilder()
         .setAuthor(author, null, unmuteAuthor.effectiveAvatarUrl)

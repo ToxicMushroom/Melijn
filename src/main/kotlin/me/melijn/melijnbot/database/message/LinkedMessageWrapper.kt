@@ -3,8 +3,6 @@ package me.melijn.melijnbot.database.message
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.enums.MessageType
-import me.melijn.melijnbot.internals.models.ModularMessage
-import net.dv8tion.jda.api.entities.MessageEmbed
 
 class LinkedMessageWrapper(private val linkedMessageDao: LinkedMessageDao) {
 
@@ -34,23 +32,6 @@ class LinkedMessageWrapper(private val linkedMessageDao: LinkedMessageDao) {
         linkedMessageDao.set(guildId, type, msgName)
         linkedMessageDao.setCacheEntry("$type:$guildId", msgName, NORMAL_CACHE)
     }
-
-    fun shouldRemove(message: ModularMessage): Boolean {
-        val content = message.messageContent
-        val embed = message.embed
-        val attachments = message.attachments
-
-        return content == null &&
-            attachments.isEmpty() &&
-            (embed == null || embed.isEmpty || !embed.isSendable)
-    }
-
-    private fun validateEmbedOrNull(embed: MessageEmbed): MessageEmbed? =
-        if (embed.isEmpty || !embed.isSendable) {
-            null
-        } else {
-            embed
-        }
 
     fun setMessages(guildId: Long, messageTypes: List<MessageType>, msgName: String) {
         for (type in messageTypes) {

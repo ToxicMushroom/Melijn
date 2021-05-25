@@ -5,7 +5,9 @@ import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.administration.ScriptsCommand
 import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.database.ban.BotBannedWrapper.Companion.isBotBanned
 import me.melijn.melijnbot.database.command.CustomCommand
+import me.melijn.melijnbot.database.locking.EntityType
 import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.scripts.Script
 import me.melijn.melijnbot.enums.ChannelCommandState
@@ -39,9 +41,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
     init {
         commandList.forEach { command ->
-            commandMap[command.name.toLowerCase()] = command
+            commandMap[command.name.lowercase()] = command
             for (alias in command.aliases) {
-                commandMap[alias.toLowerCase()] = command
+                commandMap[alias.lowercase()] = command
             }
         }
         container.commandMap = commandList.map { it.id to it }.toMap()
@@ -72,8 +74,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             )
         ) return
 
+        if (isBotBanned(EntityType.USER, event.author.idLong)) return
+        if (event.isFromGuild && isBotBanned(EntityType.GUILD, event.guild.idLong)) return
         val prefixes = getPrefixes(event)
-
 
         val ccsWithPrefix = mutableListOf<CustomCommand>()
         val ccsWithoutPrefix = mutableListOf<CustomCommand>()
@@ -126,7 +129,14 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             // CC Finder
             findCustomCommands(ccsWithPrefix, commandParts, true, spaceMap, ccsWithPrefixMatches)
 
-            var command = commandMap[commandParts[1].toLowerCase()]
+            // If the command is disabled we will act like it doesn't exist.
+            // This way aliases can take over on disabled commands
+            var command = commandMap[commandParts[1].lowercase()]?.let {
+                if (event.isFromGuild && commandIsDisabled(container.daoManager, it.id.toString(), message)) null
+                else it
+            }
+
+
             val aliasesMap = mutableMapOf<String, List<String>>()
             var searchedAliases = false
             if (command == null) {
@@ -342,7 +352,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
 
             val rootInvoke = invoke.takeWhile { it != ' ' }
-            var command = commandMap[rootInvoke.toLowerCase()]
+            var command = commandMap[rootInvoke.lowercase()]
             val aliasesMap = mutableMapOf<String, List<String>>()
             val spaceMap = mutableMapOf<String, Int>()
             var searchedAliases = false
@@ -393,7 +403,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 spaceMap,
                 aliasesMap,
                 searchedAliases,
-                contentRaw = ">" + invoke + filledArgs.joinToString(" ", " ")
+                contentRaw = ">" + invoke + filledArgs.joinToString("\" \"", " \"", "\"")
+
             )
             finalCommand.run(scriptCmd)
             delay(1000)
@@ -508,7 +519,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         val ccArgs = CCJagTagParserArgs(member, rawArg, cc)
 
-        return modularMessage.mapAllStringFields {
+        return modularMessage.mapAllStringFieldsSafe("CustomCommand(id=${cc.id}, msgName=${cc.msgName})") {
             if (it != null) {
                 CCJagTagParser.parseJagTag(ccArgs, it)
             } else {
@@ -699,40 +710,38 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             var bool = false
             var cooldownResult = 0L
 
-            if (!daoManager.commandChannelCoolDownWrapper.executions.contains(Pair(guildId, userId))) {
-                val commandChannelCooldowns = commandChannelCoolDownWrapper.getMap(channelId)
-                if (commandChannelCooldowns.containsKey(id)) {
+            val commandChannelCooldowns = commandChannelCoolDownWrapper.getMap(channelId)
+            if (commandChannelCooldowns.containsKey(id)) {
 
-                    //init lastExecutionChannel
-                    daoManager.commandChannelCoolDownWrapper.executions[Pair(channelId, userId)]
-                        ?.filter { entry -> entry.key == id }
-                        ?.forEach { entry ->
-                            if (entry.value > lastExecutionChannel) lastExecutionChannel = entry.value
-                        }
-
-                    val cooldown = commandChannelCooldowns[id] ?: 0L
-
-                    if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
-                        cooldownResult = cooldown
-                        bool = true
+                //init lastExecutionChannel
+                daoManager.commandChannelCoolDownWrapper.executions[Pair(channelId, userId)]
+                    ?.filter { entry -> entry.key == id }
+                    ?.forEach { entry ->
+                        if (entry.value > lastExecutionChannel) lastExecutionChannel = entry.value
                     }
+
+                val cooldown = commandChannelCooldowns[id] ?: 0L
+
+                if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
+                    cooldownResult = cooldown
+                    bool = true
                 }
-                val commandCooldowns = commandCooldownWrapper.getMap(guildId)
-                if (commandCooldowns.containsKey(id)) {
+            }
+            val commandCooldowns = commandCooldownWrapper.getMap(guildId)
+            if (commandCooldowns.containsKey(id)) {
 
-                    //init lastExecution
-                    daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
-                        ?.filter { entry -> entry.key == id }
-                        ?.forEach { entry ->
-                            if (entry.value > lastExecution) lastExecution = entry.value
-                        }
-
-                    val cooldown = commandCooldowns[id] ?: 0L
-
-                    if (System.currentTimeMillis() - cooldown < lastExecution) {
-                        if (cooldownResult < cooldown) cooldownResult = cooldown
-                        bool = true
+                //init lastExecution
+                daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
+                    ?.filter { entry -> entry.key == id }
+                    ?.forEach { entry ->
+                        if (entry.value > lastExecution) lastExecution = entry.value
                     }
+
+                val cooldown = commandCooldowns[id] ?: 0L
+
+                if (System.currentTimeMillis() - cooldown < lastExecution) {
+                    if (cooldownResult < cooldown) cooldownResult = cooldown
+                    bool = true
                 }
             }
 

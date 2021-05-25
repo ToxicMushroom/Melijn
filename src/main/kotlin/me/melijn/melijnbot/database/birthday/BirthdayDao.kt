@@ -49,14 +49,14 @@ class BirthdayDao(driverManager: DriverManager) : Dao(driverManager) {
         }, userId)
     }
 
-    suspend fun set(userId: Long, birthday: Int, birthyear: Int) {
+    fun set(userId: Long, birthday: Int, birthyear: Int) {
         driverManager.executeUpdate(
             "INSERT INTO $table (userId, birthday, birthyear) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET birthday = ?, birthyear = ?",
             userId, birthday, birthyear, birthday, birthyear
         )
     }
 
-    suspend fun remove(userId: Long) {
+    fun remove(userId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?", userId)
     }
 

@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.commands.utility.snowflakeToEpochMillis
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.events.AbstractListener
@@ -22,11 +23,14 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
+import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.awt.Color
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.ConcurrentHashMap
 import java.util.stream.Collectors
@@ -42,12 +46,185 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     }
 
     override suspend fun onEvent(event: GenericEvent) {
+        if (event is MessageBulkDeleteEvent) {
+            TaskManager.async(event.channel) {
+                val purged = onGuildBulkDelete(event)
+                if (!purged) removePurgeIds(event)
+            }
+        }
         if (event is GuildMessageDeleteEvent) {
             TaskManager.async(event.channel) {
                 onGuildMessageDelete(event)
                 removePurgeIdMaybe(event)
             }
         }
+    }
+
+    /**
+     * @returns if it checked that it was a melijn purge and deleted all the message Ids
+     */
+    private suspend fun onGuildBulkDelete(event: MessageBulkDeleteEvent): Boolean {
+        val guild = event.guild
+        val guildId = event.guild.idLong
+        val daoManager = container.daoManager
+        val logChannelWrapper = daoManager.logChannelWrapper
+        if (!guild.selfMember.hasPermission(Permission.VIEW_AUDIT_LOGS)) return false
+
+        val bdId = logChannelWrapper.getChannelId(guildId, LogChannelType.BULK_DELETED_MESSAGE)
+        if (bdId == -1L) return false
+
+        val bdLogChannel =
+            guild.getAndVerifyLogChannelById(daoManager, LogChannelType.BULK_DELETED_MESSAGE, bdId) ?: return false
+
+        val messageIds = event.messageIds.map { it.toLong() }
+        val msgs = container.daoManager.messageHistoryWrapper.getMessagesByIds(messageIds)
+
+        val msgDeleteTime = OffsetDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
+
+        when {
+            container.purgedIds.keys.containsAll(messageIds) -> {
+                for (msg in msgs) {
+                    container.purgedIds.remove(msg.messageId)
+                }
+                return true
+            }
+            container.botDeletedMessageIds.containsAll(messageIds) -> {
+                postBulkDeletedByOtherLog(bdLogChannel, msgs, event, guild.selfMember)
+                for (msg in msgs) {
+                    container.botDeletedMessageIds.remove(msg.messageId)
+                }
+                return true
+            }
+            else -> {
+                val list = guild.retrieveAuditLogs()
+                    .type(ActionType.MESSAGE_BULK_DELETE)
+                    .limit(50)
+                    .await()
+                val filtered = list.stream()
+                    .filter {
+                        it.getOption<String>(AuditLogOption.CHANNEL)?.toLong() == event.channel.idLong
+                                && it.timeCreated.until(msgDeleteTime, ChronoUnit.MINUTES) <= 5
+                    }
+                    .collect(Collectors.toList())
+
+                val entry = when {
+                    filtered.size > 1 -> {
+                        filtered.sortBy { logEntry ->
+                            logEntry.timeCreated
+                        }
+
+                        filtered.asReversed()[0]
+                    }
+                    filtered.size == 1 -> filtered[0]
+                    else -> null
+                }
+
+                if (entry != null) {
+                    val user = entry.user ?: return true
+                    val member = guild.retrieveMember(user).awaitOrNull() ?: return true
+
+                    postBulkDeletedByOtherLog(bdLogChannel, msgs, event, member)
+                } else {
+                    postBulkDeletedByOtherLog(bdLogChannel, msgs, event, null)
+                }
+                return true
+            }
+        }
+    }
+
+    private suspend fun postBulkDeletedByOtherLog(
+        sdmLogChannel: TextChannel?,
+        msgs: List<DaoMessage>,
+        event: MessageBulkDeleteEvent,
+        member: Member?
+    ) {
+        if (sdmLogChannel == null) return
+        val shardManager = event.jda.shardManager ?: return
+
+        val guild = event.guild
+        val daoManager = container.daoManager
+
+        val botLogState = daoManager.botLogStateWrapper.shouldLog(guild.idLong)
+        val zoneId = getZoneId(daoManager, guild.idLong)
+
+        val channel: TextChannel = event.channel
+
+        val sb = StringBuilder()
+        var groupDay = 0
+
+        for (msg in msgs.sortedBy { it.messageId }) {
+            val sentTime = snowflakeToEpochMillis(msg.messageId)
+            val offsetDateTime = OffsetDateTime.ofInstant(Instant.ofEpochMilli(sentTime), ZoneOffset.UTC)
+            val day = offsetDateTime.dayOfMonth
+            val author = shardManager.retrieveUserById(msg.authorId).awaitOrNull()
+            if (!botLogState && author?.isBot == true) continue
+
+            if (day != groupDay) {
+                groupDay = day
+                sb
+                    .append("\n\n*")
+                    .append(offsetDateTime.asEpochMillisToDate(zoneId))
+                    .append("*")
+            }
+
+            sb.append("\n`")
+                .append(offsetDateTime.asEpochMillisToTimeInvis(zoneId))
+                .append("` **")
+                .append(author?.name ?: "deleted")
+                .append(" • ")
+                .append(msg.authorId)
+
+
+            sb.append(":** ")
+                .append(MarkdownSanitizer.escape(escapeForLog(msg.content)))
+                .append(MarkdownSanitizer.escape(escapeForLog(msg.embed.take(2000))))
+                .append(MarkdownSanitizer.escape(escapeForLog(msg.attachments.joinToString("\n"))))
+        }
+
+        val language = getLanguage(daoManager, -1, guild.idLong)
+        val title = i18n.getTranslation(language, "listener.message.bulkdelete.log.title")
+            .withSafeVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+            .withVariable("amount", "${msgs.size}")
+
+        val description = i18n.getTranslation(language, "listener.message.bulkdelete.log.description")
+            .withVariable("content", sb.toString())
+            .withVariable("messageDeleterId", member?.user?.id ?: "no audit log")
+            .withVariable("deletedTime", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+
+        val ebs = mutableListOf<EmbedBuilder>()
+        val embedBuilder = EmbedBuilder()
+            .setTitle(title)
+            .setColor(Color(0x000001))
+
+        if (description.length > MessageEmbed.TEXT_MAX_LENGTH) {
+            val parts = StringUtils.splitMessage(description, maxLength = MessageEmbed.TEXT_MAX_LENGTH)
+            embedBuilder.setDescription(parts[0])
+            ebs.add(embedBuilder)
+            for (part in parts.subList(1, parts.size)) {
+                val embedBuilder2 = EmbedBuilder()
+                embedBuilder2.setColor(Color(0x000001))
+                embedBuilder2.setDescription(part)
+                ebs.add(embedBuilder2)
+            }
+        } else {
+            embedBuilder.setDescription(description)
+            ebs.add(embedBuilder)
+        }
+
+        for ((index, eb) in ebs.withIndex()) {
+            if (index == ebs.size - 1) {
+                val footer = i18n.getTranslation(language, "listener.message.bulkdelete.log.footer")
+                    .withSafeVariable(PLACEHOLDER_USER, member?.user?.asTag ?: "no audit log")
+                eb.setFooter(footer, member?.user?.effectiveAvatarUrl)
+            }
+
+            sendEmbed(daoManager.embedDisabledWrapper, sdmLogChannel, eb.build())
+        }
+    }
+
+
+    private fun removePurgeIds(event: MessageBulkDeleteEvent) {
+        for (id in event.messageIds) container.purgedIds.remove(id.toLong())
     }
 
     private fun removePurgeIdMaybe(event: GuildMessageDeleteEvent) {
@@ -117,8 +294,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
                 val filtered = list.stream()
                     .filter {
                         it.getOption<String>(AuditLogOption.CHANNEL)?.toLong() == msg.textChannelId &&
-                            it.targetIdLong == msg.authorId &&
-                            it.timeCreated.until(msgDeleteTime, ChronoUnit.MINUTES) <= 5
+                                it.targetIdLong == msg.authorId &&
+                                it.timeCreated.until(msgDeleteTime, ChronoUnit.MINUTES) <= 5
                     }
                     .collect(Collectors.toList())
 
@@ -148,8 +325,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
     private suspend fun snipeLogLimitReached(snipeMap: Map<DaoMessage, Long>, guildId: Long): Boolean {
         return snipeMap.size >= SNIPE_LIMIT &&
-            (!container.daoManager.supporterWrapper.getGuilds()
-                .contains(guildId) || snipeMap.size >= PREMIUM_SNIPE_LIMIT)
+                (!container.daoManager.supporterWrapper.getGuilds()
+                    .contains(guildId) || snipeMap.size >= PREMIUM_SNIPE_LIMIT)
     }
 
     private suspend fun logBots(textChannel: TextChannel): Boolean {
@@ -245,20 +422,27 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         messageAuthor: User,
         messageDeleterId: Long
     ): List<EmbedBuilder> {
-
         val daoManager = container.daoManager
         val zoneId = getZoneId(daoManager, event.guild.idLong)
         val channel = event.guild.getTextChannelById(msg.textChannelId)
-
 
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.deletion.log.title")
             .withVariable(PLACEHOLDER_CHANNEL, channel?.asTag ?: "<#${msg.textChannelId}>")
 
         val extra = if (msg.authorId == messageDeleterId) ".self" else ""
+        val embedValue = if (msg.embed.isNotBlank()) {
+            "\nEmbed: ${escapeForLog(msg.embed)}"
+        } else ""
+
+        val attachmentsValue =  if (msg.attachments.isNotEmpty()) {
+            "\nAttachments: ${escapeForLog(msg.attachments.joinToString("\n"))}"
+        } else ""
         val description = i18n.getTranslation(language, "listener.message.deletion.log${extra}.description")
             .withVariable("messageAuthor", messageAuthor.asTag)
             .withVariable("messageContent", escapeForLog(msg.content))
+            .withVariable("embed", embedValue)
+            .withVariable("attachments", attachmentsValue)
             .withVariable("messageAuthorId", msg.authorId.toString())
             .withVariable("messageDeleterId", messageDeleterId.toString())
             .withVariable("sentTime", msg.moment.asEpochMillisToDateTime(zoneId))

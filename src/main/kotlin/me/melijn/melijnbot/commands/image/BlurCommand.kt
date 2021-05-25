@@ -1,16 +1,15 @@
 package me.melijn.melijnbot.commands.image
 
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
-import me.melijn.melijnbot.commandutil.image.ImageCommandUtil.defaultOffsetArgParser
+import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
-import me.melijn.melijnbot.internals.utils.ImageUtils
+import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.utils.data.DataObject
+import thirdparty.jhlabs.image.BoxBlurFilter
 import java.awt.image.BufferedImage
-import java.lang.Integer.max
 
 class BlurCommand : AbstractCommand("command.blur") {
 
@@ -25,42 +24,21 @@ class BlurCommand : AbstractCommand("command.blur") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.commandParts[1].equals("blurGif", true)) {
-            executeGif(context)
+        val acceptTypes = setOf(ImageType.PNG, ImageType.GIF)
+        val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
+        val offset = image.usedArgument + 0
+        val intensity = context.optional(offset, 1) { getIntegerFromArgNMessage(context, it, 1, 10) } ?: return
+        if (image.type == ImageType.GIF) {
+            ImageCommandUtil.applyGifBufferFrameModification(context, image, modifications(intensity))
         } else {
-            executeNormal(context)
+            ImageCommandUtil.applyBufferedImgModification(context, image, modifications(intensity))
         }
     }
 
-    private suspend fun executeNormal(context: ICommandContext) {
-        ImageCommandUtil.executeNormalEffect(context, effect = { image, argData ->
-            ImageUtils.blur(image, argData.getInt("offset"))
-
-        }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
-            context.initCooldown()
-            defaultOffsetArgParser(context, argInt, argData, imgData)
-
-        }, imgDataParser = { img: BufferedImage, imgData: DataObject ->
-            imgData.put("lower", 1)
-            imgData.put("higher", max(img.height, img.width))
-            imgData.put("defaultOffset", max(max(img.width, img.height) / 75, 1))
-
-        })
-    }
-
-    private suspend fun executeGif(context: ICommandContext) {
-        ImageCommandUtil.executeGifEffect(context, effect = { image, argData ->
-            ImageUtils.blur(image, argData.getInt("offset"), true)
-
-        }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
-            context.initCooldown()
-            defaultOffsetArgParser(context, argInt, argData, imgData)
-
-        }, imgDataParser = { img: BufferedImage, imgData: DataObject ->
-            imgData.put("lower", 1)
-            imgData.put("higher", max(img.height, img.width))
-            imgData.put("defaultOffset", max(max(img.width, img.height) / 75, 1))
-
-        }, argumentAmount = 1, debug = false)
+    val modifications: (intensity: Int) -> ((src: BufferedImage, dst: BufferedImage) -> Unit) = { intensity ->
+        { src, dst ->
+            val res = ((src.width + src.height) / 100).toFloat() * intensity
+            BoxBlurFilter(res, res, 1).filter(src, dst)
+        }
     }
 }
