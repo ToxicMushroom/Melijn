@@ -94,7 +94,7 @@ object ImageUtils {
                 val emoteType = if (arg.startsWith("<a")) ImageType.GIF else ImageType.PNG
                 val emoteId = EMOTE_MENTION.find(arg)?.groupValues?.get(2)
                 val url = changeUrlToFitTypes(
-                    "https://cdn.discordapp.com/emojis/$emoteId.$emoteType",
+                    "https://cdn.discordapp.com/emojis/$emoteId.${emoteType.toString().lowercase()}",
                     acceptTypes
                 ) + discordSize.getParam()
                 val type = getFormatNMessage(context, url, acceptTypes) ?: return null
