@@ -10,7 +10,7 @@ plugins {
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
 group = "me.melijn.melijnbot"
-version = "2.0.8"
+version = "2.1.0"
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_15
