@@ -150,6 +150,7 @@ tasks {
     }
 
     shadowJar {
+        mergeServiceFiles()
         archiveFileName.set("melijn.jar")
     }
 }
