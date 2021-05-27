@@ -171,24 +171,19 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, message: Message) {
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
 
-    var action = if (message.contentRaw.isNotBlank()) {
-        channel.sendMessage(message.contentRaw)
-    } else {
-        null
-    }
-
-    for (embed in message.embeds) {
-        if (action == null) action = channel.sendMessage(embed)
-        else action.embed(embed)
-    }
-
     TaskManager.async(channel) {
-        val msg = action?.awaitOrNull() ?: return@async
+        val msg = channel.sendMessage(message).awaitOrNull() ?: return@async
 
         handleRspDelete(daoManager, msg)
     }
 }
+fun sendRsp(channel: PrivateChannel, daoManager: DaoManager, message: Message) {
+    TaskManager.async(channel) {
+        val msg = channel.sendMessage(message).awaitOrNull() ?: return@async
 
+        handleRspDelete(daoManager, msg)
+    }
+}
 suspend fun sendMsgAwaitN(privateChannel: PrivateChannel, httpClient: HttpClient, msg: ModularMessage): Message? {
     val message: Message? = msg.toMessage()
     return when {

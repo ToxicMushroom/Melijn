@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.runBlocking
+import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -16,6 +17,12 @@ import me.melijn.melijnbot.internals.utils.message.getSyntax
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.MessageBuilder
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.interactions.ActionRow
+import net.dv8tion.jda.api.interactions.button.Button
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.regex.Pattern
@@ -197,7 +204,12 @@ class HelpCommand : AbstractCommand("command.help") {
                 .setDescription(description)
                 .setFooter("@${context.selfUser.asTag} is always a valid prefix")
 
-            sendEmbedRsp(context, embedder.build())
+            val messageBuilder= MessageBuilder()
+                .setEmbed(embedder.build())
+                .setActionRows(ActionRow.of(
+                    Button.primary("help_list","command list")
+                ))
+            sendRsp(context, messageBuilder.build())
             return
         }
         val commandList = context.commandList
@@ -297,6 +309,8 @@ class HelpCommand : AbstractCommand("command.help") {
         sendEmbedRsp(context, embedder.build())
     }
 
+
+
     //Converts ("ping", "pong", "dunste") into a list of (PingCommand, PongArg, DunsteArg) if the args are matching an existing parent child sequence
     private fun getCorrectChildElseParent(
         context: ICommandContext,
@@ -326,49 +340,66 @@ class HelpCommand : AbstractCommand("command.help") {
             aliases = arrayOf("ls")
         }
 
+        companion object{
+             suspend fun getHelpListMessage(
+                 container: Container,
+                 textChannel: TextChannel?,
+                 user: User,
+
+                 category: CommandCategory?
+            ): EmbedBuilder {
+                val root="command.help.list"
+                val commandList = container.commandSet
+                    .filter { cmd -> category == null || cmd.commandCategory == category }
+                    .sortedBy { cmd -> cmd.name }
+
+                val title = i18n.getTranslation("en","$root.title")
+
+                val categoryPathMap = mutableMapOf(
+                    Pair(CommandCategory.ADMINISTRATION, "$root.field2.title"),
+                    Pair(CommandCategory.ANIMAL, "$root.field6.title"),
+                    Pair(CommandCategory.ANIME, "$root.field7.title"),
+                    Pair(CommandCategory.ECONOMY, "$root.field8.title"),
+                    Pair(CommandCategory.GAME, "$root.field9.title"),
+                    Pair(CommandCategory.IMAGE, "$root.field5.title"),
+                    Pair(CommandCategory.MODERATION, "$root.field3.title"),
+                    Pair(CommandCategory.MUSIC, "$root.field4.title"),
+                    Pair(CommandCategory.UTILITY, "$root.field1.title")
+                )
+
+                if (textChannel!=null && textChannel.isNSFW) {
+                    categoryPathMap[CommandCategory.NSFW] = "$root.field10.title"
+                }
+                val categoryFiltered = categoryPathMap.filter { entry ->
+                    entry.key == category || category == null
+                }
+
+                val commandAmount = i18n.getTranslation("en","$root.footer")
+                    .withVariable("cmdCount", commandList.size.toString())
+
+                val eb = Embedder(container.daoManager,textChannel?.guild?.idLong?:-1,user.idLong)
+                    .setTitle(title, "https://melijn.com/commands")
+                    .setFooter(commandAmount, null)
+
+                categoryFiltered.toSortedMap { o1, o2 ->
+                    o1.toString().compareTo(o2.toString())
+                }.forEach { entry ->
+                    eb.addField(i18n.getTranslation("en",entry.value), commandListString(commandList, entry.key), false)
+                }
+                return eb
+            }
+        }
+
         override suspend fun execute(context: ICommandContext) {
             val category = getEnumFromArgN<CommandCategory>(context, 0)
 
-            val commandList = context.commandList
-                .filter { cmd -> category == null || cmd.commandCategory == category }
-                .sortedBy { cmd -> cmd.name }
-
-            val title = context.getTranslation("$root.title")
-
-            val categoryPathMap = mutableMapOf(
-                Pair(CommandCategory.ADMINISTRATION, "$root.field2.title"),
-                Pair(CommandCategory.ANIMAL, "$root.field6.title"),
-                Pair(CommandCategory.ANIME, "$root.field7.title"),
-                Pair(CommandCategory.ECONOMY, "$root.field8.title"),
-                Pair(CommandCategory.GAME, "$root.field9.title"),
-                Pair(CommandCategory.IMAGE, "$root.field5.title"),
-                Pair(CommandCategory.MODERATION, "$root.field3.title"),
-                Pair(CommandCategory.MUSIC, "$root.field4.title"),
-                Pair(CommandCategory.UTILITY, "$root.field1.title")
-            )
-
-            if (context.isFromGuild && context.textChannel.isNSFW) {
-                categoryPathMap[CommandCategory.NSFW] = "$root.field10.title"
-            }
-            val categoryFiltered = categoryPathMap.filter { entry ->
-                entry.key == category || category == null
-            }
-
-            val commandAmount = context.getTranslation("$root.footer")
-                .withVariable("cmdCount", commandList.size.toString())
-
-            val eb = Embedder(context)
-                .setTitle(title, "https://melijn.com/commands")
-                .setFooter(commandAmount, null)
-
-            categoryFiltered.toSortedMap { o1, o2 ->
-                o1.toString().compareTo(o2.toString())
-            }.forEach { entry ->
-                eb.addField(context.getTranslation(entry.value), commandListString(commandList, entry.key), false)
-            }
+            val textChannel = if (context.isFromGuild) context.message.textChannel else null
+            val eb = getHelpListMessage(context.container, textChannel,context.author, category)
 
             sendEmbedRsp(context, eb.build())
         }
+
+
     }
 }
 

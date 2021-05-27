@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.games.PokerCommand
 import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
+import me.melijn.melijnbot.commands.utility.HelpCommand
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.VerificationType
@@ -48,6 +49,16 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
     private fun onButtonClick(event: ButtonClickEvent) = TaskManager.async(event.channel) {
         searchMenuHandler(event)
+        commandListHandler(event)
+    }
+
+    private suspend fun commandListHandler(event: ButtonClickEvent) {
+        val textChannel = if (event.isFromGuild) event.textChannel else null
+        event.deferReply(true)
+            .addEmbeds(
+                HelpCommand.ListArg.getHelpListMessage(container, textChannel, event.user,null).build()
+            )
+            .queue()
     }
 
     private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = TaskManager.async(event.channel) {

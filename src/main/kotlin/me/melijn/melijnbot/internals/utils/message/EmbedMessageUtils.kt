@@ -48,7 +48,14 @@ suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, textChannel: TextChannel
         sendEmbedAsResponseAwaitEL(textChannel, daoManager, embed)
     }
 }
+fun sendRsp(context: ICommandContext, msg: Message) {
+    if (context.isFromGuild) {
+        sendRsp(context.textChannel, context.daoManager, msg)
+    } else {
+        sendRsp(context.privateChannel,context.daoManager, msg)
+    }
 
+}
 fun sendEmbed(context: ICommandContext, embed: MessageEmbed) {
     if (context.isFromGuild) {
         sendEmbed(context.daoManager.embedDisabledWrapper, context.textChannel, embed)
