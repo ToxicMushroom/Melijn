@@ -9,6 +9,7 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.StringUtils
+import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.withVariable
 import me.melijn.melijnbot.internals.web.apis.ImageApi
@@ -314,17 +315,7 @@ suspend fun sendRspAwaitN(channel: TextChannel, daoManager: DaoManager, msg: Mes
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
 
-    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
-    for (embed in msg.embeds) {
-        if (action == null) action = channel.sendMessage(embed)
-        else action.embed(embed)
-    }
-
-    if (msg is DataMessage) {
-        action?.allowedMentions(msg.allowedMentions)
-    }
-
-    val message = action?.awaitOrNull() ?: return null
+    val message = channel.sendMessage(msg).await() ?: return null
     TaskManager.async(channel) {
         handleRspDelete(daoManager, message)
     }

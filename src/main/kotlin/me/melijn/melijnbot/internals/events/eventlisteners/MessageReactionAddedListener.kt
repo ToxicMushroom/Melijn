@@ -27,6 +27,7 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
 import net.dv8tion.jda.api.events.message.priv.react.PrivateMessageReactionAddEvent
 import java.awt.Color
@@ -40,6 +41,13 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         if (event is PrivateMessageReactionAddEvent) {
             onPrivateMessageReactionAdd(event)
         }
+        if (event is ButtonClickEvent) {
+            onButtonClick(event)
+        }
+    }
+
+    private fun onButtonClick(event: ButtonClickEvent) = TaskManager.async(event.channel) {
+        searchMenuHandler(event)
     }
 
     private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = TaskManager.async(event.channel) {
@@ -153,7 +161,6 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             selfRoleHandler(event)
             postReactionAddedLog(event)
             verificationHandler(event)
-            searchMenuHandler(event)
             paginationHandler(event)
             pokerHandler(event)
             starboardHandler(event)
@@ -379,9 +386,9 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         }
     }
 
-    private suspend fun searchMenuHandler(event: GuildMessageReactionAddEvent) {
-        if (event.reactionEmote.isEmote || event.user.isBot) return
-        val guild = event.guild
+    private suspend fun searchMenuHandler(event: ButtonClickEvent) {
+        if (event.user.isBot) return
+        val guild = event.guild ?: return
         val guildPlayer = MusicPlayerManager.guildMusicPlayers[guild.idLong] ?: return
         val menus = guildPlayer.searchMenus
         val menu = menus.getOrElse(event.messageIdLong) {
@@ -392,18 +399,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         if (event.user.idLong != (tracks.first().userData as TrackUserData).userId) return
 
-        val track: AudioTrack? = when (event.reactionEmote.emoji) {
-            "1⃣" -> tracks.getOrElse(0) { return }
-            "2⃣" -> tracks.getOrElse(1) { return }
-            "3⃣" -> tracks.getOrElse(2) { return }
-            "4⃣" -> tracks.getOrElse(3) { return }
-            "5⃣" -> tracks.getOrElse(4) { return }
-            "❌" -> null
+        val track: AudioTrack? = when (event.componentId) {
+            "1" -> tracks.getOrElse(0) { return }
+            "2" -> tracks.getOrElse(1) { return }
+            "3" -> tracks.getOrElse(2) { return }
+            "4" -> tracks.getOrElse(3) { return }
+            "5" -> tracks.getOrElse(4) { return }
+            "cancel" -> null
             else -> return
         }
 
         guildPlayer.searchMenus.remove(event.messageIdLong)
-        val message = event.channel.retrieveMessageById(event.messageIdLong).await() ?: return
         val language = getLanguage(container.daoManager, event.user.idLong, guild.idLong)
         when {
             track == null -> {
@@ -412,10 +418,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong)
                     .setTitle(title)
                     .setDescription(desc)
-                message.editMessage(eb.build()).queue()
+                event.editMessage(MessageBuilder().setEmbed(eb.build()).build()).queue()
             }
             guildPlayer.safeQueueSilent(container.daoManager, track, menu.nextPosition) -> {
-                event.guild.selfMember.voiceState?.channel?.let {
+                guild.selfMember.voiceState?.channel?.let {
                     LogUtils.addMusicPlayerNewTrack(container.daoManager, container.lavaManager, it, event.user, track)
                 }
 
@@ -431,14 +437,13 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong)
                 eb.setTitle(title)
                 eb.setDescription(description)
-                message.editMessage(eb.build()).queue()
-
+                event.editMessage(MessageBuilder().setEmbed(eb.build()).build()).queue()
             }
             else -> {
                 val msg = i18n.getTranslation(language, "message.music.queuelimit")
                     .withVariable("amount", QUEUE_LIMIT.toString())
                     .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
-                message.editMessage(msg).queue()
+                event.editMessage(MessageBuilder().setContent(msg).build()).queue()
             }
         }
     }

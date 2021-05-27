@@ -3,9 +3,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("application")
-    id("com.apollographql.apollo") version "2.5.6"
+    id("com.apollographql.apollo") version "2.5.7"
     id("com.github.johnrengelman.shadow") version "7.0.0"
-    kotlin("jvm") version "1.5.0"
+    kotlin("jvm") version "1.5.10"
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
@@ -40,22 +40,26 @@ repositories {
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://duncte123.jfrog.io/artifactory/maven")
     maven("https://nexus.melijn.com/repository/maven-public/")
+    maven("https://nexus.melijn.com/repository/jitpack/") // pooppack mirror
     maven("https://nexus.melijn.com/repository/jcenter-mirror/")
     mavenLocal()
 }
 
 val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
 val ktor = "1.5.4"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
-val apollo = "2.5.6" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
+val apollo = "2.5.7" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.5.0" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-val kotlin = "1.5.0"
+val kotlin = "1.5.10"
 val scrimage = "4.2.0.92-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.2.1_265") {
+    implementation("com.github.dv8fromtheworld:jda:f9578019ce5c7a5446cfdf1cf14677a07e7c6a4c") {
         exclude("opus-java")
     }
+//    implementation("net.dv8tion:JDA:4.2.1_265") {
+//
+//    }
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
     implementation("club.minnced:discord-webhooks:0.5.7")
 
@@ -64,7 +68,7 @@ dependencies {
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://github.com/sedmelluq/lavaplayer
-    implementation("com.sedmelluq:lavaplayer:1.3.76")
+    implementation("com.sedmelluq:lavaplayer:1.3.77")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fllklient%2FLavalink-Klient
     implementation("me.melijn.llklient:Lavalink-Klient:2.2.0")
@@ -133,7 +137,7 @@ dependencies {
     implementation("com.apollographql.apollo:apollo-coroutines-support:$apollo")
 
     // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
-    implementation("io.lettuce:lettuce-core:6.1.1.RELEASE")
+    implementation("io.lettuce:lettuce-core:6.1.2.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")

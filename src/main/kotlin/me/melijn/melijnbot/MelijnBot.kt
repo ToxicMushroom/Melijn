@@ -13,11 +13,11 @@ import net.dv8tion.jda.api.GatewayEncoding
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.requests.restaction.MessageAction
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.cache.CacheFlag
-import net.dv8tion.jda.internal.requests.restaction.MessageActionImpl
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import java.net.URI
@@ -38,7 +38,7 @@ object MelijnBot {
             kotlinx.coroutines.DEBUG_PROPERTY_NAME,
             kotlinx.coroutines.DEBUG_PROPERTY_VALUE_ON
         )
-        MessageActionImpl.setDefaultMentions(emptyList())
+        MessageAction.setDefaultMentions(emptyList())
         val container = Container()
         val settings = container.settings.botInfo
         val podCount = settings.podCount

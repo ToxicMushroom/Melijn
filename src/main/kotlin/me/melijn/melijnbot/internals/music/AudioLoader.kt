@@ -19,10 +19,14 @@ import me.melijn.melijnbot.internals.translation.SC_SELECTOR
 import me.melijn.melijnbot.internals.translation.YT_SELECTOR
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.*
+import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.VoiceChannel
+import net.dv8tion.jda.api.interactions.ActionRow
+import net.dv8tion.jda.api.interactions.Component
+import net.dv8tion.jda.api.interactions.button.Button
+import net.dv8tion.jda.api.interactions.button.ButtonStyle
 import java.lang.Integer.min
 
 const val QUEUE_LIMIT = 500
@@ -483,20 +487,45 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
 
         TaskManager.async(context) {
-            val msg = sendMessageSearchMenu(context, tracks).last()
-            guildMusicPlayer.searchMenus[msg.idLong] = TracksForQueue(tracks, nextPos)
+            val mb = getSearchMenuMessageBuilder(context, tracks)
 
-            if (tracks.size > 0) msg.addReaction("\u0031\u20E3").queue()
-            if (tracks.size > 1) msg.addReaction("\u0032\u20E3").queue()
-            if (tracks.size > 2) msg.addReaction("\u0033\u20E3").queue()
-            if (tracks.size > 3) msg.addReaction("\u0034\u20E3").queue()
-            if (tracks.size > 4) msg.addReaction("\u0035\u20E3").queue()
-            if (tracks.size > 5) msg.addReaction("\u0036\u20E3").queue()
-            msg.addReaction("\u274C").queue()
+            val buttons = mutableListOf<Button>()
+            val style = ButtonStyle.SECONDARY
+            if (tracks.size > 0) buttons.add(Button.of(style, "1", "1"))
+            if (tracks.size > 1) buttons.add(Button.of(style, "2", "2"))
+            if (tracks.size > 2) buttons.add(Button.of(style, "3", "3"))
+            if (tracks.size > 3) buttons.add(Button.of(style, "4", "4"))
+            if (tracks.size > 4) buttons.add(Button.of(style, "5", "5"))
+            buttons.add(Button.danger("cancel", "Cancel"))
+            val rows = componentListToRows(buttons)
+            mb.setActionRows(rows)
+
+            sendRspAwaitN(context.textChannel, context.daoManager, mb.build())?.let {
+                guildMusicPlayer.searchMenus[it.idLong] = TracksForQueue(tracks, nextPos)
+            }
         }
     }
 
-    private suspend fun sendMessageSearchMenu(context: ICommandContext, tracks: List<AudioTrack>): List<Message> {
+    private fun <T : Component> componentListToRows(components: List<T>): List<ActionRow> {
+        val list = mutableListOf<ActionRow>()
+        val rowItems = mutableListOf<Component>()
+
+        for (i in components.indices) {
+            if (i % 5 == 0 && i > 0) {
+                list.add(ActionRow.of(rowItems))
+                rowItems.clear()
+            }
+            rowItems.add(components[i])
+        }
+        if (rowItems.isNotEmpty()) list.add(ActionRow.of(rowItems))
+        return list
+    }
+
+
+    private suspend fun getSearchMenuMessageBuilder(
+        context: ICommandContext,
+        tracks: List<AudioTrack>
+    ): MessageBuilder {
         val title = context.getTranslation("$root.searchmenu")
         var menu = ""
         for ((index, track) in tracks.withIndex()) {
@@ -506,7 +535,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val eb = Embedder(context)
             .setTitle(title)
             .setDescription(menu)
-        return sendEmbedRspAwaitEL(context, eb.build())
+        return MessageBuilder().setEmbed(eb.build())
     }
 
     suspend fun loadNewTrack(
