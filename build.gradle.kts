@@ -123,7 +123,7 @@ dependencies {
     implementation("com.github.zh79325:open-gif:1.0.4")
     implementation("com.sksamuel.scrimage:scrimage-core:$scrimage")
     implementation("com.sksamuel.scrimage:scrimage-filters:$scrimage")
-//    implementation("com.sksamuel.scrimage:scrimage-webp:$scrimage")
+    implementation("com.sksamuel.scrimage:scrimage-webp:$scrimage")
     implementation("com.sksamuel.scrimage:scrimage-formats-extra:$scrimage")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fjikankt
@@ -154,6 +154,7 @@ tasks {
     }
 
     shadowJar {
+        mergeServiceFiles()
         archiveFileName.set("melijn.jar")
     }
 }
