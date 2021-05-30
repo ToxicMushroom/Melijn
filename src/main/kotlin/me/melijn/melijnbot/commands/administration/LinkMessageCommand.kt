@@ -22,7 +22,6 @@ class LinkMessageCommand : AbstractCommand("command.linkmessage") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
@@ -72,7 +71,6 @@ class LinkMessageCommand : AbstractCommand("command.linkmessage") {
 
         sendRsp(context, msg)
     }
-
 
     private suspend fun linkMessage(context: ICommandContext, messageType: MessageType) {
         if (context.args.size < 2) {

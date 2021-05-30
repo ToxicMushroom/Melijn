@@ -138,7 +138,6 @@ object JoinLeaveUtil {
             else if (!isBot && !acceptedTypes.contains(UserType.USER)) continue
             if (group.getAllRoles) {
 
-
                 for ((roleId) in list) {
                     val role = roleId?.let { guild.getRoleById(it) } ?: continue
                     if (guild.selfMember.canInteract(role)) {

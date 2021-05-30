@@ -162,7 +162,6 @@ class SoftBanCommand : AbstractCommand("command.softban") {
     }
 }
 
-
 fun getSoftBanMessage(
     language: String,
     zoneId: ZoneId,

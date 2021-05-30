@@ -101,7 +101,6 @@ class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
                     .setTitle(title)
                     .setDescription(description)
 
-
                 val defaultDisabledDMsMessage = context.getTranslation("message.dmsdisabledfix")
 
                 val success1 = sendOnShard0(context, user1, optionMenu, "RPS")

@@ -9,7 +9,6 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
 
-
 class OldBlurpleCommand : AbstractCommand("command.oldblurple") {
 
     init {

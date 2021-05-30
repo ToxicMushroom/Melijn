@@ -41,7 +41,6 @@ private suspend fun getGuildLanguageOrDefault(daoManager: DaoManager, guildId: L
     }
 }
 
-
 private suspend fun getUserLanguageOrDefault(daoManager: DaoManager, userId: Long): String {
     val userLanguage = getUserLanguage(daoManager, userId)
     return if (userLanguage.isBlank()) {
@@ -50,7 +49,6 @@ private suspend fun getUserLanguageOrDefault(daoManager: DaoManager, userId: Lon
         userLanguage
     }
 }
-
 
 private suspend fun getUserLanguage(daoManager: DaoManager, userId: Long): String {
     return daoManager.userLanguageWrapper.getLanguage(userId)

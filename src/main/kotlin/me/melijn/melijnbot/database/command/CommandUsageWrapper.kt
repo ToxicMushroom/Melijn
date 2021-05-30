@@ -9,7 +9,6 @@ import kotlin.math.max
 
 class CommandUsageWrapper(private val commandUsageDao: CommandUsageDao) {
 
-
     suspend fun addUse(commandId: Int) {
         commandUsageDao.addUse(commandId)
     }

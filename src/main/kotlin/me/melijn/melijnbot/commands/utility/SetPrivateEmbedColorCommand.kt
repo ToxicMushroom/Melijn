@@ -48,4 +48,3 @@ class SetPrivateEmbedColorCommand : AbstractCommand("command.setprivateembedcolo
     }
 }
 
-

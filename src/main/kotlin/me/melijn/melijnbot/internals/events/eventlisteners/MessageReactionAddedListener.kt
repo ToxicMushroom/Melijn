@@ -66,7 +66,6 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         handleRPSReaction(event)
     }
 
-
     private suspend fun handleRPSReaction(event: PrivateMessageReactionAddEvent) {
         val author = event.channel.user
         if (event.userIdLong != author.idLong) return
@@ -518,7 +517,6 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         val botLogState = dao.botLogStateWrapper.shouldLog(event.guild.idLong)
         if (!botLogState && event.member.user.isBot) return
-
 
         val zoneId = getZoneId(dao, event.guild.idLong)
 

@@ -26,7 +26,6 @@ val objectMapper = jacksonObjectMapper()
 
 class Container {
 
-
     var voteReq: Boolean = true
     var logToDiscord: Boolean = true
     lateinit var podInfo: PodInfo
@@ -34,7 +33,6 @@ class Container {
     //millis, info
     val paginationMap = mutableMapOf<Long, PaginationInfo>()
     val modularPaginationMap = mutableMapOf<Long, ModularPaginationInfo>()
-
 
     val eventWaiter by lazy { EventWaiter() }
 
@@ -77,7 +75,6 @@ class Container {
 
     //messageId
     val botDeletedMessageIds = mutableSetOf<Long>()
-
 
     private val logger: Logger = LoggerFactory.getLogger(Container::class.java)
 

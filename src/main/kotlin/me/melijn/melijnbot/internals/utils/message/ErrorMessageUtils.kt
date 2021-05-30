@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.nio.ByteBuffer
 import java.util.*
 
-
 fun Throwable.sendInGuild(
     context: ICommandContext,
     thread: Thread = Thread.currentThread(),

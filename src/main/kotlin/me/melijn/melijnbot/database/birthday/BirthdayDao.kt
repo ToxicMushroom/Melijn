@@ -60,7 +60,6 @@ class BirthdayDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?", userId)
     }
 
-
 }
 
 data class BirthdayInfo(

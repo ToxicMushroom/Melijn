@@ -67,7 +67,6 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         var reason = context.getRawArgPart(2)
         if (reason.isBlank()) reason = "/"
 
-
         reason = reason.trim()
 
         val roleWrapper = context.daoManager.roleWrapper
@@ -162,7 +161,6 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         )
 
         val targetMember = guild.retrieveMember(targetUser).awaitOrNull()
-
 
         if (targetMember == null) {
             death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)

@@ -21,7 +21,6 @@ object UrlJagTagParser {
             .put("user", args.user)
             .put("guild", args.guild)
 
-
         val parsed = parser.parse(input)
         parser.clear()
         return parsed

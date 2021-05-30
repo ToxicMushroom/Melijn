@@ -42,7 +42,6 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, warnedId, warnMoment)
     }
 
-
     suspend fun getWarns(guildId: Long, warnedId: Long): List<Warn> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND warnedId = ?", { rs ->
             val kicks = mutableListOf<Warn>()

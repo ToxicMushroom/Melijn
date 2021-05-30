@@ -155,7 +155,6 @@ class MuteCommand : AbstractCommand("command.mute") {
             mutingMessage != null
         )
 
-
         val targetMember = guild.retrieveMember(targetUser).awaitOrNull() ?: return
 
         val msg = try {
@@ -169,7 +168,6 @@ class MuteCommand : AbstractCommand("command.mute") {
 
             val logChannel = guild.getAndVerifyLogChannelByType(context.daoManager, LogChannelType.PERMANENT_MUTE)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
-
 
             context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)

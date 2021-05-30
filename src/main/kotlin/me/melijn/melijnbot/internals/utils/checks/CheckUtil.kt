@@ -124,7 +124,6 @@ suspend fun Guild.getAndVerifyMusicChannel(
     val voiceChannel = getVoiceChannelById(channelId)
     val selfMember = this.selfMember
 
-
     var shouldRemove = false
     if (channelId != -1L && voiceChannel == null) {
         shouldRemove = true

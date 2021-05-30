@@ -28,7 +28,6 @@ import javax.imageio.metadata.IIOMetadataNode
 import javax.imageio.stream.ImageInputStream
 import javax.imageio.stream.ImageOutputStream
 
-
 class BonkCommand : AbstractCommand("command.bonk") {
 
     init {
@@ -61,7 +60,6 @@ class BonkCommand : AbstractCommand("command.bonk") {
         val delay = getLongFromArgN(context, 1, 20) ?: 200
         val loops = if (getBooleanFromArgN(context, 2) == false) 1 else 0
 
-
         val image1 = BonkCommand::class.java.getResourceAsStream("/bonk1.png").use { ImageIO.read(it) }
         val image2 = BonkCommand::class.java.getResourceAsStream("/bonk2.png").use { ImageIO.read(it) }
 
@@ -72,7 +70,6 @@ class BonkCommand : AbstractCommand("command.bonk") {
 
         graphics1.dispose()
         graphics2.dispose()
-
 
         ByteArrayOutputStream().use { baos ->
             ImageIO.createImageOutputStream(baos).use { ios ->
@@ -95,7 +92,6 @@ class BonkCommand : AbstractCommand("command.bonk") {
 }
 
 class GifSequenceReader(inputStream: ImageInputStream) {
-
 
     private val reader = ImageIO.getImageReadersBySuffix("gif").next()
     val frameCount: Int by lazy { reader.getNumImages(true) }

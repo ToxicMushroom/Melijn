@@ -60,7 +60,6 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         sendRsp(context, msg)
     }
 
-
     private suspend fun setChannel(context: ICommandContext, logChannelType: LogChannelType) {
         if (context.args.size < 2) {
             sendSyntax(context)
@@ -128,7 +127,6 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         } else {
             val channel = getTextChannelByArgsNMessage(context, 1) ?: return
             daoWrapper.setChannels(context.guildId, logChannelTypes, channel.idLong)
-
 
             context.getTranslation("$root.set.multiple")
                 .withVariable("channelCount", logChannelTypes.size.toString())

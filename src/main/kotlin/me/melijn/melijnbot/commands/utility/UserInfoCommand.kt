@@ -74,7 +74,6 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
         .withVariable("voiceStatus", getVoiceStatus(member))
         .withVariable("canMelijnInteract", if (member.guild.selfMember.canInteract(member)) yes else no)
 
-
     private fun getVoiceStatus(member: Member): String {
         if (member.voiceState == null) return "disconnected"
         if (member.voiceState?.channel == null) return "disconnected"

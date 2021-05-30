@@ -5,7 +5,6 @@ import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class SelfRoleModeWrapper(private val selfRoleModeDao: SelfRoleModeDao) {
 
-
     suspend fun getMap(guildId: Long): SelfRoleMode {
         val result = selfRoleModeDao.getCacheEntry(guildId, HIGHER_CACHE)?.let { SelfRoleMode.valueOf(it) }
 

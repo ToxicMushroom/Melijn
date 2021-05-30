@@ -50,7 +50,6 @@ enum class ImageType {
     PNG, JPG, GIF, TIFF
 }
 
-
 object ImageUtils {
 
     fun createPlane(side: Int, color: Int): BufferedImage {
@@ -60,7 +59,6 @@ object ImageUtils {
         graphics2D.fillRect(0, 0, bufferedImage.width, bufferedImage.height)
         return bufferedImage
     }
-
 
     suspend fun getImageBytesNMessage(
         context: ICommandContext,
@@ -245,7 +243,6 @@ object ImageUtils {
                 if (isZip) {
                     val zipBytes = downloadBytesNMessage(context, url1, doChecks = true, proxy = true) ?: return null
                     extractByteArraysFromZip(zipBytes, namedImgList)
-
 
                 } else {
                     val bytes = downloadBytesNMessage(context, url1, doChecks = true, proxy = true) ?: return null

@@ -116,7 +116,6 @@ class PlayCommand : AbstractCommand("command.play") {
             aliases = arrayOf("youtube")
         }
 
-
         override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
@@ -149,7 +148,6 @@ class PlayCommand : AbstractCommand("command.play") {
             name = "sc"
             aliases = arrayOf("soundcloud")
         }
-
 
         override suspend fun execute(context: ICommandContext) {
             if (context.args.isEmpty()) {
@@ -199,7 +197,6 @@ class PlayCommand : AbstractCommand("command.play") {
             } else {
                 NextSongPosition.BOTTOM
             }
-
 
             val tracks = context.message.attachments.map { attachment -> attachment.url }
 

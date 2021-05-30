@@ -151,7 +151,6 @@ object RunConditionUtil {
         return false
     }
 
-
     fun checkPlayingTrackNotNull(container: Container, message: Message): Boolean {
         val trackManager = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(message.guild).guildTrackManager
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack

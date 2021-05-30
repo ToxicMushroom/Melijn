@@ -6,7 +6,6 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
-
 class UnicodeCommand : AbstractCommand("command.unicode") {
 
     init {

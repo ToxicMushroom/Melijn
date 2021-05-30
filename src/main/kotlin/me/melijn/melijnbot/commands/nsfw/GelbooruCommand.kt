@@ -19,7 +19,6 @@ class GelbooruCommand : AbstractCommand("command.gelbooru") {
         cooldown = 1000
     }
 
-
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)

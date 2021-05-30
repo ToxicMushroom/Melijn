@@ -42,7 +42,6 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, kickedId, kickMoment)
     }
 
-
     suspend fun getKicks(guildId: Long, kickedId: Long): List<Kick> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND kickedId = ?", { rs ->
             val kicks = mutableListOf<Kick>()

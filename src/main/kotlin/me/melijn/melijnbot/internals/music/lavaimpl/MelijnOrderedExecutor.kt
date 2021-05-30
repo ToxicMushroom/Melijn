@@ -5,14 +5,12 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import java.util.concurrent.*
 
-
 /**
  * Wrapper for executor services which ensures that tasks with the same key are processed in order.
  */
 class MelijnOrderedExecutor(delegateService: ExecutorService) {
     private val states: ConcurrentMap<Any, BlockingQueue<suspend () -> Unit>?>
     val coroutineScope = CoroutineScope(delegateService.asCoroutineDispatcher())
-
 
     /**
      * @param orderingKey Key for the ordering channel

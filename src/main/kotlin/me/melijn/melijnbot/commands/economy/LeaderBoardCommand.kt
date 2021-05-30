@@ -50,7 +50,6 @@ class LeaderBoardCommand : AbstractCommand("command.leaderboard") {
             wrapper.getPosition(context.authorId)
         } else null
 
-
         val last = pos?.second == -1L
         if (pos != null && pos.second < 1 + (10 * page) && !last) {
             tableBuilder.addRow(
@@ -77,7 +76,6 @@ class LeaderBoardCommand : AbstractCommand("command.leaderboard") {
                 Cell(context.author.asTag)
             )
         }
-
 
         val msgs = tableBuilder.build(true)
 

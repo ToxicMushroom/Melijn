@@ -11,7 +11,6 @@ import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 import kotlin.random.Random
 
-
 class SlotsCommand : AbstractCommand("command.slots") {
 
     init {
@@ -54,11 +53,9 @@ class SlotsCommand : AbstractCommand("command.slots") {
         context.initCooldown()
         balanceWrapper.removeBalance(context.authorId, amount)
 
-
         val slot1 = prizeMap[Random.nextInt(prizeMap.size)] ?: throw IllegalArgumentException("slot1 error")
         val slot2 = prizeMap[Random.nextInt(prizeMap.size)] ?: throw IllegalArgumentException("slot2 error")
         val slot3 = prizeMap[Random.nextInt(prizeMap.size)] ?: throw IllegalArgumentException("slot3 error")
-
 
         val spinningWord = context.getTranslation("word.spinning").uppercase()
         val stripe = "**------------------**"
@@ -75,14 +72,12 @@ class SlotsCommand : AbstractCommand("command.slots") {
                     .withVariable("slot3", slotEmoteMention)
             )
 
-
         val msg = try {
             sendEmbedAwaitEL(context, eb.build()).last()
         } catch (t: Throwable) {
             balanceWrapper.addBalance(context.authorId, amount)
             return
         }
-
 
         delay(1_000)
         eb.setDescription(
@@ -93,7 +88,6 @@ class SlotsCommand : AbstractCommand("command.slots") {
         )
         msg.editMessage(eb.build()).queue()
 
-
         delay(1_000)
         eb.setDescription(
             spinningMsg
@@ -102,7 +96,6 @@ class SlotsCommand : AbstractCommand("command.slots") {
                 .withVariable("slot3", slotEmoteMention)
         )
         msg.editMessage(eb.build()).queue()
-
 
         delay(1_000)
 

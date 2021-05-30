@@ -15,7 +15,6 @@ import javax.imageio.ImageIO
 
 object ImageCommandUtil {
 
-
     suspend fun applyBufferedImgModification(
         context: ICommandContext,
         image: ParsedImageByteArray,
@@ -25,7 +24,6 @@ object ImageCommandUtil {
         val src = immutableImg.awt()
         val dst = immutableImg.copy().awt()
         modifications(src, dst)
-
 
         val bytes = ImmutableImage.wrapAwt(dst).bytes(PngWriter(3))
         sendFile(context, bytes, "png")

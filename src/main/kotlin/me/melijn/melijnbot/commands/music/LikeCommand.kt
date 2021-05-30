@@ -40,7 +40,6 @@ class LikeCommand : AbstractCommand("command.like") {
             return
         }
 
-
         val tracksMap = getLikesPlaylist(context)
         if (tracksMap != null && tracksLimitReachedAndMessage(context, tracksMap.size)) {
             return

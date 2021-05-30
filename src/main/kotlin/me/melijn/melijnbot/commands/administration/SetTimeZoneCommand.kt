@@ -56,7 +56,6 @@ class SetTimeZoneCommand : AbstractCommand("command.settimezone") {
             }, MESSAGE_UNKNOWN_TIMEZONE) ?: return
         }
 
-
         val dao = context.daoManager.timeZoneWrapper
         if (zone == null) {
             dao.removeTimeZone(context.guildId)

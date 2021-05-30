@@ -36,7 +36,6 @@ object StringUtils {
                 val previousIndex = triple.second
                 val mostRightIndex = triple.third
 
-
                 val lastEvenIndex = if (amount % 2 == 0) {
                     mostRightIndex
                 } else {
@@ -65,7 +64,6 @@ object StringUtils {
                         ""
                     }
             )
-
 
             msg = msg.substring(index)
         }
@@ -217,7 +215,6 @@ fun String.removePrefix(prefix: CharSequence, ignoreCase: Boolean = false): Stri
     }
     return this
 }
-
 
 fun String.splitIETEL(delimiter: String): List<String> {
     val res = this.split(delimiter)

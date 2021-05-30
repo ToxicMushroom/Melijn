@@ -11,7 +11,6 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import kotlin.math.floor
 
-
 class VoteSkipCommand : AbstractCommand("command.voteskip") {
 
     init {
@@ -40,7 +39,6 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
             val title = context.getTranslation("$root.progress.title")
                 .withVariable("votesRequired", "$requiredVotes")
                 .withVariable("votes", "${guildMusicPlayer.votedUsers.size}")
-
 
             val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
             val cTrack = iPlayer.playingTrack ?: return

@@ -27,7 +27,6 @@ class PunishmentGroupDao(driverManager: DriverManager) : CacheDBDao(driverManage
         )
     }
 
-
     fun setEnabledTypes(guildId: Long, punishGroup: String, enabledTypes: String) {
         driverManager.executeUpdate(
             "INSERT INTO $table (guildId, punishGroup, expireTime, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET enabledTypes = ?",

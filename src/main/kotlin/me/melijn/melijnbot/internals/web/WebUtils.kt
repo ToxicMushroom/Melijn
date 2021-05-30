@@ -28,7 +28,6 @@ object WebUtils {
                     })
             } else ""
 
-
         return try {
             httpClient.get<String>(fullUrlWithParams) {
                 headers {

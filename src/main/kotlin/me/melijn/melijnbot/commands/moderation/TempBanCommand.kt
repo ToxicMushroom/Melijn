@@ -132,8 +132,6 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             banningMessage != null
         )
 
-
-
         try {
             guild.ban(targetUser, deldays)
                 .reason("(tempBan) ${context.author.asTag}: " + ban.reason)

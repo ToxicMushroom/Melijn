@@ -5,7 +5,6 @@ import me.melijn.melijnbot.internals.models.Cell
 import kotlin.math.ceil
 import kotlin.math.floor
 
-
 class TableBuilder {
 
     private val headerRow = mutableListOf<Cell>()
@@ -24,7 +23,6 @@ class TableBuilder {
     var footerBottomSeperator = ""
     var rowPrefix = ""
     var rowSuffix = ""
-
 
     fun addSplit(character: String = footerTopSeperator) {
         extraSplit[valueRows.size] = character
@@ -88,12 +86,10 @@ class TableBuilder {
             "A footer row cannot have more values then the header (you can make empty header slots)"
         }
 
-
         var maxRowWidth = columnWidth.size * 3 - 2
         for (i in columnWidth.values) {
             maxRowWidth += i
         }
-
 
         var sb = StringBuilder()
         val toReturn = ArrayList<String>()
@@ -176,7 +172,6 @@ class TableBuilder {
             .append(rowSuffix)
             .append("\n")
     }
-
 
     private fun addHeaderSplicer(sb: StringBuilder) {
         addSplicer(sb, headerSeperator, headerRow)

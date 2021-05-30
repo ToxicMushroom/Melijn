@@ -14,7 +14,6 @@ import me.melijn.melijnbot.internals.utils.toHexString
 import me.melijn.melijnbot.internals.utils.toUCSC
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
-
 class SettingsCommand : AbstractCommand("command.settings") {
 
     init {
@@ -107,8 +106,6 @@ class SettingsCommand : AbstractCommand("command.settings") {
             "\n**PrivateEmbedColor: **" + (if (pec == 0) "unset" else pec.toHexString()) +
             "\n**Language: **" + daoManager.guildLanguageWrapper.getLanguage(guildId) +
             "\n**PrivateLanguage: **" + stringToString(daoManager.userLanguageWrapper.getLanguage(context.authorId)) + "**"
-
-
 
         if (description.length > 2048) {
             val parts = StringUtils.splitMessage(description).toMutableList()

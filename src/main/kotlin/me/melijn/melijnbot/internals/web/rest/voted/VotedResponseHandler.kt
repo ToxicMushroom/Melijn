@@ -69,7 +69,6 @@ object VotedResponseHandler {
             Pair(oldUserVote.votes + 1, oldStreak + 1)
         }
 
-
         val speedMultiplier = max(
             0.0,
             ((maxMillisToKeepStreak - millisSinceVoteReset).toDouble() / maxMillisToKeepStreak.toDouble())

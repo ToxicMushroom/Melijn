@@ -50,12 +50,10 @@ class BorderedTableBuilder(private val split: Boolean) {
             "A footer row cannot have more values then the header (you can make empty header slots)"
         }
 
-
         var maxRowWidth = columnWidth.size * 3 - 2
         for (i in columnWidth.values) {
             maxRowWidth += i
         }
-
 
         var sb = StringBuilder()
         val toReturn = ArrayList<String>()
@@ -110,7 +108,6 @@ class BorderedTableBuilder(private val split: Boolean) {
         }
         sb.append("\n")
     }
-
 
     //╠════╬════╣
     private fun addSplicer(sb: StringBuilder) {

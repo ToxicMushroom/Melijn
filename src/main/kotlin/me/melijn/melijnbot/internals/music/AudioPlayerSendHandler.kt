@@ -6,7 +6,6 @@ import me.melijn.llklient.player.LavaplayerPlayerWrapper
 import net.dv8tion.jda.api.audio.AudioSendHandler
 import java.nio.ByteBuffer
 
-
 class AudioPlayerSendHandler(iPlayer: IPlayer) : AudioSendHandler {
 
     private val audioPlayer = iPlayer as LavaplayerPlayerWrapper

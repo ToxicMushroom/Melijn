@@ -10,7 +10,6 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.entities.MessageEmbed
 
-
 class Rule34Command : AbstractCommand("command.rule34") {
 
     init {

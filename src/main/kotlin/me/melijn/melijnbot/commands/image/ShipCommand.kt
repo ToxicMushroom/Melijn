@@ -73,7 +73,6 @@ class ShipCommand : AbstractCommand("command.ship") {
             graphics.drawLine(502, 528, (502 + ex).toInt(), (528 - ey).toInt())
             graphics.drawLine(498, 528, (498 + ex).toInt(), (528 - ey).toInt())
 
-
             val font = graphics.font.deriveFont(30f)
             graphics.font = font
             graphics.color = Color(0x222222)

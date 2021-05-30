@@ -18,7 +18,6 @@ import java.text.DecimalFormat
 import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.ThreadPoolExecutor
 
-
 class StatsCommand : AbstractCommand("command.stats") {
 
     init {
@@ -28,11 +27,10 @@ class StatsCommand : AbstractCommand("command.stats") {
         commandCategory = CommandCategory.UTILITY
     }
 
-
     override suspend fun execute(context: ICommandContext) {
         val bean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
         val (totalMem, usedMem, totalJVMMem, usedJVMMem) = JvmUsage.current(bean)
-        
+
         val shardManager = context.shardManager
         val voiceChannels = VoiceUtil.getConnectedChannelsAmount(shardManager)
         val voiceChannelsNotEmpty = VoiceUtil.getConnectedChannelsAmount(shardManager, true)
@@ -47,7 +45,6 @@ class StatsCommand : AbstractCommand("command.stats") {
 
         val threadPoolExecutor = TaskManager.executorService as ForkJoinPool
         val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
-
 
         val title1 = context.getTranslation("$root.response.field1.title")
         val title2 = context.getTranslation("$root.response.field2.title")
@@ -124,12 +121,10 @@ class StatsCommand : AbstractCommand("command.stats") {
         .withVariable("queuedTracks", "$queuedTracks")
         .withVariable("musicPlayers", "$musicPlayers")
 
-
     private fun replaceValue2Vars(value: String, coreCount: Int, ramUsage: String, uptime: String): String = value
         .withVariable("coreCount", coreCount.toString())
         .withVariable("ramUsage", ramUsage)
         .withVariable("systemUptime", uptime)
-
 
     private fun replaceValue3Vars(value: String, cpuUsage: String, ramUsage: String, threadCount: String): String =
         value

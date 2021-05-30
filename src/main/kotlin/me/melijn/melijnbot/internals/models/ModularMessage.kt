@@ -16,7 +16,6 @@ import net.dv8tion.jda.internal.JDAImpl
 import java.time.Instant
 import java.util.*
 
-
 data class ModularMessage(
     var messageContent: String? = null,
     var embed: MessageEmbed? = null,
@@ -67,7 +66,6 @@ data class ModularMessage(
     fun toMessage(): Message? {
         var membed = embed
         if (messageContent == null && (membed == null || membed.isEmpty || !membed.isSendable)) return null
-
 
         // Timestamp handler
         if (membed != null && extra.containsKey("currentTimestamp")) {
@@ -221,7 +219,6 @@ data class ModularMessage(
             }
         }
     }
-
 
     class ModularMessageDeserializer : StdDeserializer<ModularMessage>(ModularMessage::class.java) {
 

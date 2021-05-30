@@ -7,7 +7,6 @@ import me.melijn.melijnbot.internals.utils.addIfNotPresent
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-
 class ChannelRoleDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "channel_roles"

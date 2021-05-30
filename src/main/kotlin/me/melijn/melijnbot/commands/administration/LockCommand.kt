@@ -231,7 +231,6 @@ class LockCommand : AbstractCommand("command.lock") {
         }
     }
 
-
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
@@ -300,7 +299,6 @@ class LockCommand : AbstractCommand("command.lock") {
         }
     }
 
-
     private suspend fun lockMany(context: ICommandContext, list: List<GuildChannel>) {
         for (channel in list) {
             if (notEnoughPermissionsAndMessage(
@@ -344,7 +342,6 @@ class LockCommand : AbstractCommand("command.lock") {
             .withVariable("voice", locked.filterIsInstance<VoiceChannel>().size)
             .withVariable("voiceOverrides", voiceOverrides)
             .withVariable("voicePermChanges", voicePermChanges)
-
 
         val eb = Embedder(context)
             .setDescription(msg)
@@ -390,7 +387,6 @@ class LockCommand : AbstractCommand("command.lock") {
             else -> throw IllegalStateException("unknown channeltype")
         }
 
-
         // Save role overrides
         val pubRole = context.guild.publicRole
         val overrideMap = mutableMapOf<Long, Pair<Long, Long>>()
@@ -418,7 +414,6 @@ class LockCommand : AbstractCommand("command.lock") {
             }
         }
 
-
         val discordChannelOverridesWrapper = context.daoManager.discordChannelOverridesWrapper
         if (discordChannelOverridesWrapper.getAll(context.guildId, channel.idLong).isNotEmpty()) {
             return Triple(0, 0, UnlockCommand.LockStatus.ALREADY_LOCKED)
@@ -442,7 +437,6 @@ class LockCommand : AbstractCommand("command.lock") {
             permsChangedCounter++
             melijnManager.reason("(lock) " + context.author.asTag).queue()
         }
-
 
         for ((id, flags) in overrideMap) {
             val role = context.guild.getRoleById(id) ?: continue
@@ -470,7 +464,6 @@ class LockCommand : AbstractCommand("command.lock") {
                 manager.reason("(lock) " + context.author.asTag).queue()
             }
         }
-
 
         val status = if (overrideCounter != 0) {
             UnlockCommand.LockStatus.SUCCESS

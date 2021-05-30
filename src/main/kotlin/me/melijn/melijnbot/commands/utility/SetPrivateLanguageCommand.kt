@@ -56,7 +56,6 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
             getEnumFromArgNMessage<Language>(context, 0, MESSAGE_UNKNOWN_LANGUAGE) ?: return
         }
 
-
         val dao = context.daoManager.userLanguageWrapper
         if (language == null) {
             dao.removeLanguage(context.authorId)

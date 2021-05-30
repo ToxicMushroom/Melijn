@@ -3,7 +3,6 @@ package me.melijn.melijnbot.database
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.internals.Settings
 
-
 class TestDaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
     companion object {

@@ -144,7 +144,6 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             } else {
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
 
-
                 val stateMap = daoManager.channelCommandStateWrapper.getMap(channel.idLong)
                 val ids = stateMap.keys
                 val commandMap = HashMap<String, String>()

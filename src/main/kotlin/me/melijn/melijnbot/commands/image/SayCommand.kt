@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.Permission
 import java.awt.Color
 import javax.imageio.ImageIO
 
-
 class SayCommand : AbstractCommand("command.say") {
 
     init {

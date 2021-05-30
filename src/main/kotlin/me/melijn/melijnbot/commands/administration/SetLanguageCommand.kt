@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-
 import me.melijn.melijnbot.enums.Language
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -22,7 +21,6 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
-
 
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {

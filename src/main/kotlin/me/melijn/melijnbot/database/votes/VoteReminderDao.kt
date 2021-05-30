@@ -78,7 +78,6 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
         }, userId)
     }
 
-
 }
 
 data class VoteReminder(

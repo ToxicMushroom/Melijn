@@ -25,7 +25,6 @@ class ForwardCommand : AbstractCommand("command.forward") {
         val trackDuration = track?.duration ?: throw IllegalArgumentException("angry check failed")
         var trackPosition = iPlayer.trackPosition
 
-
         val msg = if (context.args.isEmpty()) {
             sendSyntax(context)
             return

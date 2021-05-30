@@ -72,7 +72,6 @@ object PostStarboardSettingsResponseHandler {
                     excludedChannelIds.add(id)
             }
 
-
             jobs.add(TaskManager.async {
                 daoManager.starboardSettingsWrapper.setStarboardSettings(
                     guild.idLong,

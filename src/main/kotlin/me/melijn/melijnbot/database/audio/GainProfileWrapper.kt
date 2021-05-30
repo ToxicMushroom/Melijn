@@ -7,7 +7,6 @@ import me.melijn.melijnbot.objectMapper
 
 class GainProfileWrapper(private val gainProfileDao: GainProfileDao) {
 
-
     suspend fun getGainProfile(id: Long): Map<String, GainProfile> {
         val cached = gainProfileDao.getCacheEntry(id, HIGHER_CACHE)?.let {
             objectMapper.readValue<Map<String, GainProfile>>(it)

@@ -14,7 +14,6 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 const val UNKNOWN_POINTSTRIGGERTTYPE_PATH: String = "message.unknown.pointstriggertype"
 
-
 class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
     init {

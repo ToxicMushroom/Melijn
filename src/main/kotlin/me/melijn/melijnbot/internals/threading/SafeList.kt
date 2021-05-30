@@ -55,7 +55,6 @@ class SafeList<E> {
         }
     }
 
-
     suspend fun remove(element: E) {
         lock.withLock {
             list.remove(element)

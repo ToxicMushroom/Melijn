@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.moderation
 
-
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.SpecialPermission
@@ -72,7 +71,6 @@ class MassBanCommand : AbstractCommand("command.massban") {
             users[user] = member
         }
 
-
         var reason = context.getRawArgPart(1 + offset)
 
         if (reason.isBlank()) reason = "/"
@@ -95,7 +93,6 @@ class MassBanCommand : AbstractCommand("command.massban") {
                 ban.banId = activeBan.banId
                 ban.startTime = activeBan.startTime
             }
-
 
             val privateChannel = if (users.size < 11 && member != null) {
                 targetUser.openPrivateChannel().awaitOrNull()
@@ -197,7 +194,6 @@ class MassBanCommand : AbstractCommand("command.massban") {
             .withVariable("startTime", (ban.startTime.asEpochMillisToDateTime(zoneId)))
             .withVariable("endTime", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
             .withVariable("banId", ban.banId)
-
 
         val extraDesc: String = if (!received || isBot) {
             i18n.getTranslation(

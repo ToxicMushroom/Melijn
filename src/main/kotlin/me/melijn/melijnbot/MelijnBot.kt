@@ -24,7 +24,6 @@ import java.net.URI
 import java.util.*
 import kotlin.system.exitProcess
 
-
 object MelijnBot {
 
     private val logger = LoggerFactory.getLogger(MelijnBot::class.java)
@@ -108,7 +107,6 @@ object MelijnBot {
 
         eventManager.start()
         shardManager = defaultShardManagerBuilder.build()
-
 
         container.startTime = System.currentTimeMillis()
 

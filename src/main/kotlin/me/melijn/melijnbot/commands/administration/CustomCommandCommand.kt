@@ -39,7 +39,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-
     class CopyArg(parent: String) : AbstractCommand("$parent.copy") {
 
         init {
@@ -275,7 +274,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             selectionMap[guildId to context.authorId] = id
 
-
             val msg = context.getTranslation("$root.selected")
                 .withVariable("id", cc.id.toString())
                 .withVariable("ccName", cc.name)
@@ -283,7 +281,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         }
     }
-
 
     class AliasesArg(parent: String) : AbstractCommand("$parent.aliases") {
 
@@ -501,7 +498,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val ccSelected = getSelectedCCNMessage(context) ?: return
             val state = getBooleanFromArgNMessage(context, 0) ?: return
             ccSelected.prefix = state
-
 
             context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 

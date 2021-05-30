@@ -151,7 +151,6 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
                 return
             }
 
-
             val wrapper = context.daoManager.gainProfileWrapper
             val map = wrapper.getGainProfile(idParser(context))
 
@@ -228,7 +227,6 @@ abstract class AbstractGainProfileCommand(root: String, val idParser: (ICommandC
             ) return
 
             wrapper.add(idParser(context), name, bands)
-
 
             val msg = context.getTranslation("$root.added")
                 .withSafeVariable(PLACEHOLDER_ARG, name)

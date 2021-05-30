@@ -211,14 +211,12 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
                 return
             }
 
-
             var content = "```INI\n[role] - [users]"
             for ((roleId, users) in reverseMap) {
                 val role = context.guild.getRoleById(roleId)
                 content += "\n[${role?.name}] - $users"
             }
             content += "```"
-
 
             val msg = context.getTranslation("$root.title") + content
             sendRspCodeBlock(context, msg, "INI", true)

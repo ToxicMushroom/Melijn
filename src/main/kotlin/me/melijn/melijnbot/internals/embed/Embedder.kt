@@ -32,5 +32,4 @@ class Embedder(daoManager: DaoManager, guildId: Long, userId: Long) : EmbedBuild
         setColor(color)
     }
 
-
 }

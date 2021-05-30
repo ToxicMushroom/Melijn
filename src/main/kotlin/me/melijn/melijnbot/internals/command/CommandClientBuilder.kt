@@ -20,7 +20,6 @@ import me.melijn.melijnbot.commands.utility.*
 import me.melijn.melijnbot.internals.threading.TaskManager
 import org.slf4j.LoggerFactory
 
-
 class CommandClientBuilder(private val container: Container) {
 
     private val logger = LoggerFactory.getLogger(this::class.java.name)

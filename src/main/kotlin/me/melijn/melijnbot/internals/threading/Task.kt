@@ -4,7 +4,6 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import net.dv8tion.jda.api.entities.*
 
-
 class Task(private val func: suspend () -> Unit) : KTRunnable {
 
     override suspend fun run() {
@@ -29,7 +28,6 @@ class DeferredNTask<T>(private val func: suspend () -> T?) : DeferredNKTRunnable
         }
     }
 }
-
 
 class EvalDeferredNTask<T>(private val func: suspend () -> T?) : DeferredNKTRunnable<T> {
 

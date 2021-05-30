@@ -50,7 +50,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         container.commandSet = commandList
     }
 
-
     override suspend fun onEvent(event: GenericEvent) {
         if (event is MessageReceivedEvent) {
             if (event.author.isBot) return
@@ -101,7 +100,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         var commandPartsGlobal: List<String> = emptyList()
         val spaceMap = mutableMapOf<String, Int>()
 
-
         for (prefix in prefixes) {
             if (!message.contentRaw.startsWith(prefix, true)) continue
 
@@ -125,7 +123,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             if (commandParts.size < 2) return // if only a prefix is found -> abort
             commandPartsGlobal = commandParts
 
-
             // CC Finder
             findCustomCommands(ccsWithPrefix, commandParts, true, spaceMap, ccsWithPrefixMatches)
 
@@ -135,7 +132,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 if (event.isFromGuild && commandIsDisabled(container.daoManager, it.id.toString(), message)) null
                 else it
             }
-
 
             val aliasesMap = mutableMapOf<String, List<String>>()
             var searchedAliases = false
@@ -507,7 +503,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
     }
 
-
     private suspend fun replaceVariablesInCCMessage(
         member: Member,
         rawArg: String,
@@ -546,7 +541,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         throw IllegalArgumentException("random int ($winner) out of range of ccs")
     }
 
-
     private suspend fun getPrefixes(event: MessageReceivedEvent): List<String> {
         val prefixes = if (event.isFromGuild) {
             guildPrefixWrapper.getPrefixes(event.guild.idLong).toMutableList()
@@ -561,7 +555,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         //registering private prefixes
         prefixes.addAll(userPrefixWrapper.getPrefixes(event.author.idLong))
-
 
         //mentioning the bot will always work
         val tags = melijnMentions
@@ -581,7 +574,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         return prefixes.toList()
     }
-
 
     companion object {
 
@@ -690,7 +682,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             return false
         }
 
-
         private suspend fun commandIsOnCooldown(
             daoManager: DaoManager,
             id: String,
@@ -703,7 +694,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             val commandCooldownWrapper = daoManager.commandCooldownWrapper
             val commandChannelCoolDownWrapper = daoManager.commandChannelCoolDownWrapper
-
 
             var lastExecution = 0L // millis for last guild execution
             var lastExecutionChannel = 0L // millis for last channel execution
@@ -766,7 +756,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
             return bool
         }
-
 
         private suspend fun commandIsDisabled(
             daoManager: DaoManager,

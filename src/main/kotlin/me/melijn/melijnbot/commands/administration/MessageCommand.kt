@@ -75,7 +75,6 @@ class MessageCommand : AbstractCommand("command.message") {
             }
         }
 
-
         override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
@@ -219,7 +218,6 @@ class MessageCommand : AbstractCommand("command.message") {
                 }
             }
 
-
             inner class AuthorArg(parent: String) : AbstractCommand("$parent.author") {
 
                 init {
@@ -265,7 +263,6 @@ class MessageCommand : AbstractCommand("command.message") {
                 }
             }
 
-
             inner class ThumbnailArg(parent: String) : AbstractCommand("$parent.thumbnail") {
 
                 init {
@@ -297,7 +294,6 @@ class MessageCommand : AbstractCommand("command.message") {
                     }
                 }
             }
-
 
             inner class FieldArg(parent: String) : AbstractCommand("$parent.field") {
 
@@ -430,7 +426,6 @@ class MessageCommand : AbstractCommand("command.message") {
                 }
             }
 
-
             inner class DescriptionArg(parent: String) :
                 AbstractCommand("$parent.description") {
 
@@ -504,7 +499,6 @@ class MessageCommand : AbstractCommand("command.message") {
                     MessageUtil.clearEmbed(context)
                 }
             }
-
 
             inner class TimeStampArg(parent: String) : AbstractCommand("$parent.timestamp") {
 

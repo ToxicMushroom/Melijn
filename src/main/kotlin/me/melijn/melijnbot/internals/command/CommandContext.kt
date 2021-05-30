@@ -48,10 +48,8 @@ class CommandContext(
     override val channel: MessageChannel = message.channel
     override val channelId: Long = channel.idLong
 
-
     override val webManager: WebManager = container.webManager
     override val usedPrefix: String = getNicerUsedPrefix()
-
 
     private fun getNicerUsedPrefix(): String {
         val prefix = commandParts[0]
@@ -131,7 +129,6 @@ class CommandContext(
             fullArg += c
         }
 
-
         val newCoolArgs = mutableListOf<String>()
 
         var lastIndex = 0
@@ -164,10 +161,8 @@ class CommandContext(
             emptyList()
         }
 
-
         logger = LoggerFactory.getLogger(commandOrder.first().javaClass.name)
     }
-
 
     override  fun reply(something: Any) {
         require(!(isFromGuild && !selfMember.hasPermission(textChannel, Permission.MESSAGE_WRITE))) {
@@ -185,7 +180,6 @@ class CommandContext(
 
     override suspend fun getLanguage(): String = me.melijn.melijnbot.internals.translation.getLanguage(this)
 
-
     //Gets part of the rawarg by using regex and args
     override  fun getRawArgPart(beginIndex: Int, endIndex: Int): String {
         if (beginIndex > args.size) return ""
@@ -193,7 +187,6 @@ class CommandContext(
         for (i in 0 until beginIndex) {
             newString = newString.removeFirst(args[i]).trim()
         }
-
 
         if (endIndex != -1 && endIndex < args.size) {
             for (i in endIndex until args.size) {
@@ -220,7 +213,6 @@ class CommandContext(
 
         return userTimezone ?: guildTimezone ?: ZoneId.of("GMT")
     }
-
 
     override fun getGuildMusicPlayer() = musicPlayerManager.getGuildMusicPlayer(guild)
     override fun initCooldown() {

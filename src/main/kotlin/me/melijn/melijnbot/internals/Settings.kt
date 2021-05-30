@@ -5,7 +5,6 @@ import me.melijn.melijnbot.enums.Environment
 import me.melijn.melijnbot.internals.utils.splitIETEL
 import net.dv8tion.jda.api.utils.data.DataArray
 
-
 data class Settings(
     val botInfo: BotInfo,
     val restServer: RestServer,
@@ -79,7 +78,6 @@ data class Settings(
         val port: Int
     )
 
-
     data class Lavalink(
         var http_nodes: Array<LLNode>,
         var verified_nodes: Array<LLNode>,
@@ -105,7 +103,6 @@ data class Settings(
         var host: String,
         var port: Int
     )
-
 
     data class Redis(
         val host: String,

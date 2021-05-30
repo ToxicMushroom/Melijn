@@ -24,7 +24,6 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
-
 suspend fun sendRsp(context: ICommandContext, image: BufferedImage, extension: String) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
@@ -33,7 +32,6 @@ suspend fun sendRsp(context: ICommandContext, image: BufferedImage, extension: S
         sendMsg(context, image, extension)
     }
 }
-
 
 suspend fun sendRsp(
     textChannel: TextChannel,
@@ -83,7 +81,6 @@ suspend fun sendMsg(textChannel: TextChannel, image: BufferedImage, extension: S
         textChannel.sendFile(baos.toByteArray(), "finished.$extension").queue()
     }
 }
-
 
 suspend fun sendFileRsp(context: ICommandContext, msg: String, bytes: ByteArray, extension: String) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
@@ -175,7 +172,6 @@ suspend fun sendFile(context: ICommandContext, bytes: ByteArray, extension: Stri
         sendFile(context.getLanguage(), context.privateChannel, bytes, extension)
     }
 }
-
 
 fun sendFile(language: String, privateChannel: PrivateChannel, bytes: ByteArray, extension: String) {
     if (privateChannel.jda.selfUser.allowedFileSize < (bytes.size)) {
@@ -281,7 +277,6 @@ private suspend fun msgWithAttachmentsAction(
     }
     return action
 }
-
 
 suspend fun sendAttachmentsRspAwaitN(
     textChannel: TextChannel,

@@ -56,7 +56,6 @@ object DiscordMethods {
             if (user.isBot) "true" else "false"
         }),
 
-
         //{isUser:userId|userTag}
         Method("isUser", { "true" }, { env: Environment, input: Array<String> ->
             val guild: Guild = env.getReifiedX("guild")

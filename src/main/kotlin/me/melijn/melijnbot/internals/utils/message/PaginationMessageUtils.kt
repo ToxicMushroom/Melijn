@@ -75,7 +75,6 @@ suspend fun sendPaginationModularMsg(context: ICommandContext, msgList: List<Mod
     }
 }
 
-
 suspend fun registerPaginationModularMessage(
     textChannel: TextChannel,
     authorId: Long,

@@ -50,7 +50,6 @@ class TopVotersCommand : AbstractCommand("command.topvoters") {
             wrapper.getPosition(context.authorId)
         } else null
 
-
         val last = pos?.second == -1L
         if (pos != null && pos.second < 1 + (10 * page) && !last) {
             tableBuilder.addRow(
@@ -78,7 +77,6 @@ class TopVotersCommand : AbstractCommand("command.topvoters") {
                 Cell(context.author.asTag)
             )
         }
-
 
         val msgs = tableBuilder.build(true)
 

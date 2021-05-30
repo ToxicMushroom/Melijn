@@ -45,7 +45,6 @@ class MessageWrapper(private val messageDao: MessageDao) {
         }
     }
 
-
     fun removeMessage(guildId: Long, msgName: String) {
         messageDao.remove(guildId, msgName)
         messageDao.setCacheEntry("$msgName:$guildId", "", NORMAL_CACHE)

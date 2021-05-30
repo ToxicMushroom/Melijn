@@ -52,7 +52,6 @@ object PostGeneralSettingsResponseHandler {
             val jobs = mutableListOf<Job>()
             val daoManager = context.daoManager
 
-
             val prefixArray = settings.getArray("prefixes")
             val prefixes = mutableListOf<String>()
 
@@ -67,10 +66,8 @@ object PostGeneralSettingsResponseHandler {
 
             daoManager.guildPrefixWrapper.setPrefixes(guildId, prefixes)
 
-
             val allowSpacedPrefix = settings.getBoolean("allowSpacePrefix")
             daoManager.allowSpacedPrefixWrapper.setGuildState(guildId, allowSpacedPrefix)
-
 
             val color = Color.decode(settings.getString("embedColor"))
             if (context.container.settings.botInfo.embedColor != color.rgb) {
@@ -78,7 +75,6 @@ object PostGeneralSettingsResponseHandler {
             } else {
                 daoManager.embedColorWrapper.removeColor(guildId)
             }
-
 
             val timeZone = settings.getString("timeZone")
             if (TimeZone.getAvailableIDs().toList().contains(timeZone)) {
@@ -90,10 +86,8 @@ object PostGeneralSettingsResponseHandler {
                 }
             }
 
-
             val embedsDisabled = settings.getBoolean("embedsDisabled")
             daoManager.embedDisabledWrapper.setDisabled(guildId, embedsDisabled)
-
 
             jobs.joinAll()
 

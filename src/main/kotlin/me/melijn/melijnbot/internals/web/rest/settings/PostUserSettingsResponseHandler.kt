@@ -36,7 +36,6 @@ object PostUserSettingsResponseHandler {
                 }
                 daoManager.userPrefixWrapper.setPrefixes(userId, prefixes)
 
-
                 val color = Color.decode(settings.getString("embedColor"))
                 if (context.container.settings.botInfo.embedColor != color.rgb) {
                     daoManager.userEmbedColorWrapper.setColor(userId, color.rgb)

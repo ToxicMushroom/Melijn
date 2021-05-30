@@ -20,7 +20,6 @@ class VoteReminderWrapper(private val voteReminderDao: VoteReminderDao) {
         return map
     }
 
-
     fun removeReminder(userId: Long, flag: Int) {
         voteReminderDao.removeReminder(userId, flag)
     }

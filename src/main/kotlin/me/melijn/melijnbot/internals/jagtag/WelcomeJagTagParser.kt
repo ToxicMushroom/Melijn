@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import java.util.function.Supplier
 
-
 val WELCOME_PARSER_SUPPLIER: Supplier<Parser> = Supplier {
     JagTag().newDefaultBuilder()
         .addMethods(DiscordMethods.getMethods())

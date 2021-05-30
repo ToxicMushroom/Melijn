@@ -71,7 +71,6 @@ class EmoteCommand : AbstractCommand("command.emote") {
         }
     }
 
-
     private suspend fun replaceMissingEmoteVars(
         string: String,
         context: ICommandContext,
@@ -83,7 +82,6 @@ class EmoteCommand : AbstractCommand("command.emote") {
         .withSafeVariable("name", name)
         .withVariable("isAnimated", context.getTranslation(if (animated) "yes" else "no"))
         .withVariable("url", "https://cdn.discordapp.com/emojis/$id." + (if (animated) "gif" else "png") + "?size=2048")
-
 
     private suspend fun replaceEmoteVars(string: String, context: ICommandContext, emote: LiteEmote): String =
         replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)

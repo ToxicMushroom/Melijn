@@ -66,7 +66,6 @@ class SPlayCommand : AbstractCommand("command.splay") {
             aliases = arrayOf("youtube")
         }
 
-
         override suspend fun execute(context: ICommandContext) {
             val member = context.member
             val senderVoiceChannel = member.voiceState?.channel
@@ -101,7 +100,6 @@ class SPlayCommand : AbstractCommand("command.splay") {
             name = "sc"
             aliases = arrayOf("soundcloud")
         }
-
 
         override suspend fun execute(context: ICommandContext) {
             val member = context.member

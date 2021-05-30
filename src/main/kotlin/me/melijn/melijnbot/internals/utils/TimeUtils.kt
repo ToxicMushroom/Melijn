@@ -79,7 +79,6 @@ suspend fun OffsetDateTime.asEpochMillisToDateTime(
     return offsetDateTime.asLongLongGMTString()
 }
 
-
 fun Long.asEpochMillisToDateTime(zoneId: ZoneId): String {
     val offsetDateTime = Instant.ofEpochMilli(this).atZone(zoneId)
     return offsetDateTime.asLongLongGMTString()
@@ -112,7 +111,6 @@ fun ZonedDateTime.asLongLongGMTString(): String = this.format(dateTimeFormatter)
 fun ZonedDateTime.asLongDateGMTString(): String = this.format(dateFormatter)
 fun ZonedDateTime.asAsLongTimeAndInvisOffset(): String = this.format(purgeTimeFormatter)
 
-
 fun getDurationString(milliseconds: Long): String {
     return getDurationString(milliseconds.toDouble())
 }
@@ -126,7 +124,6 @@ fun getDurationString(milliseconds: Double): String {
     if (milliseconds < 0.0) {
         return "infinite"
     }
-
 
     var millis = milliseconds.toLong()
     val days = TimeUnit.MILLISECONDS.toDays(millis)
@@ -160,7 +157,6 @@ suspend fun getDurationByArgsNMessage(
     val corruptTimeStamps = timeStamps.subList(leftBound, rightBound).toMutableList()
     val holyTimeStamps = mutableListOf<String>()
     var totalTime = 0L
-
 
     //merge numbed with their right neighbour so the number type is present along with the number itself
     for ((index, corruptTimeStamp) in corruptTimeStamps.withIndex()) {
