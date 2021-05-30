@@ -147,7 +147,6 @@ class UnlockCommand : AbstractCommand("command.unlock") {
             .withVariable("voiceOverrides", voiceOverrides)
             .withVariable("voicePermChanges", voicePermChanges)
 
-
         val eb = Embedder(context)
             .setDescription(msg)
         sendEmbedRsp(context, eb.build())

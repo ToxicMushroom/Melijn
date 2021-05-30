@@ -3,7 +3,6 @@ package me.melijn.melijnbot.database.birthday
 import me.melijn.melijnbot.internals.utils.isLeapYear
 import java.util.*
 
-
 class BirthdayWrapper(private val birthdayDao: BirthdayDao) {
 
     //userId -> birthDayInfo (Year, birthDay, time, timeZoneId)

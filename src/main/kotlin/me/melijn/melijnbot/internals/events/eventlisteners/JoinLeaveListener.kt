@@ -77,7 +77,6 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
                             .awaitOrNull()
                     } else null
 
-
                     if (auditKick == null) {
                         JoinLeaveUtil.postWelcomeMessage(
                             daoManager,

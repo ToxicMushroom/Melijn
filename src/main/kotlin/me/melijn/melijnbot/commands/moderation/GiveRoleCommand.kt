@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.moderation
 
-
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -20,7 +19,6 @@ class GiveRoleCommand : AbstractCommand("command.giverole") {
         commandCategory = CommandCategory.MODERATION
         discordPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
-
 
     override suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {
@@ -42,7 +40,6 @@ class GiveRoleCommand : AbstractCommand("command.giverole") {
             return
         }
 
-
         if (member.roles.any { memberRole: Role ->
                 memberRole.idLong == role.idLong
             }
@@ -53,7 +50,6 @@ class GiveRoleCommand : AbstractCommand("command.giverole") {
             return
         }
 
-
         context.guild.addRoleToMember(member, role).reason("(giveRole) ${context.author.asTag}").awaitOrNull()
         val msg = context.getTranslation("$root.gave")
             .withSafeVariable("user", member.asTag)
@@ -61,7 +57,4 @@ class GiveRoleCommand : AbstractCommand("command.giverole") {
         sendRsp(context, msg)
     }
 }
-
-
-
 

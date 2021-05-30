@@ -63,7 +63,6 @@ dependencies {
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
     implementation("club.minnced:discord-webhooks:0.5.7")
 
-
     // https://github.com/sedmelluq/jda-nas
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
@@ -104,12 +103,10 @@ dependencies {
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation("ch.qos.logback:logback-classic:1.2.3")
 
-
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     implementation("com.fasterxml.jackson.core:jackson-core:$jackson")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jackson")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jackson")
-
 
     // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
     implementation("io.ktor:ktor:$ktor")
@@ -117,7 +114,6 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktor")
     implementation("io.ktor:ktor-jackson:$ktor")
     implementation("io.ktor:ktor-client-jackson:$ktor")
-
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fgifdecoder
     implementation("com.github.zh79325:open-gif:1.0.4")

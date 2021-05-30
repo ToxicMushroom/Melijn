@@ -200,7 +200,6 @@ class HistoryCommand : AbstractCommand("command.history") {
                 unorderedMap.putAll(softbanMap)
             }
 
-
             if (unorderedMap.isEmpty()) {
                 sendRsp(context, "No punishment found for `$id`")
                 return

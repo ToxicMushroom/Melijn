@@ -30,7 +30,6 @@ abstract class Dao(val driverManager: DriverManager) {
 abstract class CacheDao(val driverManager: DriverManager) {
     abstract val cacheName: String
 
-
     fun setCacheEntry(key: Any, value: Any, ttl: Int? = null, timeUnit: TimeUnit = TimeUnit.MINUTES) {
         if (value is String || value is Int || value is Long || value is Double || value is Byte || value is Short ||
             value is Short || value is Enum<*>
@@ -51,7 +50,6 @@ abstract class CacheDao(val driverManager: DriverManager) {
     suspend fun getLongFromCache(key: Any, ttlM: Int? = null): Long? = getCacheEntry(key, ttlM)?.toLongOrNull()
     suspend fun getDoubleFromCache(key: Any, ttlM: Int? = null): Double? = getCacheEntry(key, ttlM)?.toDoubleOrNull()
     suspend fun getFloatFromCache(key: Any, ttlM: Int? = null): Float? = getCacheEntry(key, ttlM)?.toFloatOrNull()
-
 
     suspend inline fun <reified K> getValueFromCache(key: Any, ttlM: Int? = null): K? {
         return getCacheEntry(key, ttlM)?.let { objectMapper.readValue<K>(it) }
@@ -64,7 +62,6 @@ abstract class CacheDao(val driverManager: DriverManager) {
 abstract class CacheDBDao(driverManager: DriverManager) : Dao(driverManager) {
     abstract val cacheName: String
 
-
     fun setCacheEntry(key: Any, value: Any, ttl: Int? = null, timeUnit: TimeUnit = TimeUnit.MINUTES) {
         if (value is String || value is Int || value is Long || value is Double || value is Byte || value is Short ||
             value is Short || value is Enum<*>
@@ -85,7 +82,6 @@ abstract class CacheDBDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun getLongFromCache(key: Any, ttlM: Int? = null): Long? = getCacheEntry(key, ttlM)?.toLongOrNull()
     suspend fun getDoubleFromCache(key: Any, ttlM: Int? = null): Double? = getCacheEntry(key, ttlM)?.toDoubleOrNull()
     suspend fun getFloatFromCache(key: Any, ttlM: Int? = null): Float? = getCacheEntry(key, ttlM)?.toFloatOrNull()
-
 
     suspend inline fun <reified K> getValueFromCache(key: Any, ttlM: Int? = null): K? {
         return getCacheEntry(key, ttlM)?.let { objectMapper.readValue<K>(it) }

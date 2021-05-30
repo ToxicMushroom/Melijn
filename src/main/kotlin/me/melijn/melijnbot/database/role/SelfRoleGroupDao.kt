@@ -42,7 +42,6 @@ class SelfRoleGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager)
         }, guildId)
     }
 
-
     fun set(
         guildId: Long,
         groupName: String,

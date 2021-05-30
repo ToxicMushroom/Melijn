@@ -11,11 +11,9 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.GuildChannel
 import net.dv8tion.jda.api.entities.TextChannel
 
-
 suspend fun sendMissingPermissionMessage(context: ICommandContext, permission: String) {
     sendMissingPermissionMessage(context.textChannel, context.daoManager, context.getLanguage(), permission)
 }
-
 
 fun sendMissingPermissionMessage(tc: TextChannel, daoManager: DaoManager, language: String, permission: String) {
     val msg = i18n.getTranslation(language, "message.botpermission.missing")

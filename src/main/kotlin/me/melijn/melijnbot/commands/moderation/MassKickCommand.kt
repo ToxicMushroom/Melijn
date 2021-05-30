@@ -119,7 +119,6 @@ class MassKickCommand : AbstractCommand("command.masskick") {
         sendRsp(context, msg)
     }
 
-
     private suspend fun continueKicking(
         context: ICommandContext,
         targetMember: Member,
@@ -199,7 +198,6 @@ class MassKickCommand : AbstractCommand("command.masskick") {
             .withSafeVariable(PLACEHOLDER_USER, kickAuthor.asTag)
             .withVariable("spaces", getAtLeastNCodePointsAfterName(kickAuthor) + "\u200B")
 
-
         val list = StringUtils.splitMessageWithCodeBlocks(description, lang = "LDIF")
             .withIndex()
             .map { (index, part) ->
@@ -209,7 +207,6 @@ class MassKickCommand : AbstractCommand("command.masskick") {
                 if (index == 0) eb.setAuthor(author, null, kickAuthor.effectiveAvatarUrl)
                 eb.build()
             }
-
 
         return list
     }

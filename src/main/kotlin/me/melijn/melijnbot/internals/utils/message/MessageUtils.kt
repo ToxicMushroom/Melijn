@@ -38,7 +38,6 @@ fun getSyntax(lang: String, translationPath: String): String {
     return "%prefix%" + i18n.getTranslation(lang, translationPath)
 }
 
-
 fun escapeForLog(string: String): String {
     return string
         .replace("`", "´")
@@ -111,7 +110,6 @@ suspend fun sendRsp(context: ICommandContext, msg: String) {
     }
 }
 
-
 fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
     require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
 
@@ -133,7 +131,6 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
         }
     }
 }
-
 
 suspend fun sendRsp(textChannel: MessageChannel, context: ICommandContext, msg: ModularMessage) {
     if (textChannel is TextChannel && canResponse(textChannel, context.daoManager.supporterWrapper)) {
@@ -307,7 +304,6 @@ suspend fun sendMsgAwaitEL(context: ICommandContext, msg: String): List<Message>
         sendMsgAwaitEL(context.privateChannel, msg)
     }
 }
-
 
 suspend fun sendMsgAwaitEL(channel: TextChannel, msg: String): List<Message> {
     require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }

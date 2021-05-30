@@ -175,5 +175,4 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
         }
     }
 
-
 }

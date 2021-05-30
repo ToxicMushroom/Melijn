@@ -6,7 +6,6 @@ import me.melijn.melijnbot.enums.RoleType
 
 class RoleWrapper(private val roleDao: RoleDao) {
 
-
     suspend fun getRoleId(guildId: Long, roleType: RoleType): Long {
         val result = roleDao.getCacheEntry("$roleType:$guildId", HIGHER_CACHE)?.toLong()
 

@@ -373,7 +373,6 @@ object PPUtils {
         val privZoneId = getZoneId(daoManager, guild.idLong, member.idLong)
         val lang = getLanguage(daoManager, member.idLong, guild.idLong)
 
-
         val warn = Warn(
             guild.idLong,
             member.idLong,

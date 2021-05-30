@@ -8,7 +8,6 @@ import me.melijn.melijnbot.objectMapper
 
 class ForceRoleWrapper(private val forceRoleDao: ForceRoleDao) {
 
-
     suspend fun getForceRoles(guildId: Long): Map<Long, List<Long>> {
         val result = forceRoleDao.getCacheEntry(guildId, HIGHER_CACHE)?.let {
             objectMapper.readValue<Map<Long, List<Long>>>(it)

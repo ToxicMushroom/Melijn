@@ -59,7 +59,6 @@ object GetGeneralSettingsResponseHandler {
         val jobs = mutableListOf<Job>()
         val settings = DataObject.empty()
 
-
         jobs.add(TaskManager.async {
             val prefixes = DataArray.fromCollection(daoManager.guildPrefixWrapper.getPrefixes(idLong))
             settings.put("prefixes", prefixes)

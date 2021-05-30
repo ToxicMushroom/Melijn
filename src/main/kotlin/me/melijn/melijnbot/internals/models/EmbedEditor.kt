@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package me.melijn.melijnbot.internals.models
 
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -132,7 +131,6 @@ class EmbedEditor() {
     @JsonProperty("fields")
     var fields = mutableListOf<Field>()
 
-
     /**
      * Resets this builder to default state.
      * <br></br>All parts will be either empty or null after this method has returned.
@@ -201,7 +199,6 @@ class EmbedEditor() {
         return length <= MessageEmbed.EMBED_MAX_LENGTH_BOT
     }
 
-
     /**
      * Sets the Title of the embed.
      * <br></br>Overload for [.setTitle] without URL parameter.
@@ -255,7 +252,6 @@ class EmbedEditor() {
         this.titleUrl = url
         return this
     }
-
 
     /**
      * Sets the Description of the embed. This is where the main chunk of text for an embed is typically placed.

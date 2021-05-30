@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
 
-
 suspend fun sendRspCodeBlock(context: ICommandContext, msg: String, lang: String, shouldPaginate: Boolean = false) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {

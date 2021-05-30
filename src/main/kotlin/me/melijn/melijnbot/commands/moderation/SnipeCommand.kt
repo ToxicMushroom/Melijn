@@ -39,7 +39,6 @@ class SnipeCommand : AbstractCommand("command.snipe") {
 
                 channelId = getTextChannelByArgsN(context, 1, true)?.idLong ?: return
 
-
             }
             else -> {
                 amount = 1
@@ -73,7 +72,6 @@ class SnipeCommand : AbstractCommand("command.snipe") {
                 .appendLine(key.content.escapeMarkdown())
         }
         sendRsp(context, sb.toString())
-
 
     }
 }

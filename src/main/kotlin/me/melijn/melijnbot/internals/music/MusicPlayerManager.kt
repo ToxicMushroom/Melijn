@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.entities.Guild
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
-
 class MusicPlayerManager(
     private val daoManager: DaoManager,
     private val lavaManager: LavaManager
@@ -21,7 +20,6 @@ class MusicPlayerManager(
     companion object {
         val guildMusicPlayers: ConcurrentHashMap<Long, GuildMusicPlayer> = ConcurrentHashMap()
     }
-
 
     init {
         audioPlayerManager.configuration.isFilterHotSwapEnabled = true

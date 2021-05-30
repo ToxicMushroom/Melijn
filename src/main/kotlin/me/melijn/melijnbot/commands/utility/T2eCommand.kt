@@ -93,5 +93,4 @@ class T2eCommand : AbstractCommand("command.t2e") {
         fun letter(input: String): String = ":$input:"
     }
 
-
 }

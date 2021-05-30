@@ -8,7 +8,6 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import kotlin.system.exitProcess
 
-
 class RestartCommand : AbstractCommand("command.restart") {
 
     init {

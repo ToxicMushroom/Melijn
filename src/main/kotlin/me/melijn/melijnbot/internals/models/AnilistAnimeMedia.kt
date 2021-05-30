@@ -17,7 +17,6 @@ data class AnilistDate(
     val day: Int?
 )
 
-
 data class AnilistCoverImage(
     val extraLarge: String?,
     val color: String?
@@ -37,7 +36,6 @@ data class AnilistAiringEpisode(
     val airingAt: Int,
     val episode: Int
 )
-
 
 data class AnilistMedia(
     val title: AnilistTitle?,

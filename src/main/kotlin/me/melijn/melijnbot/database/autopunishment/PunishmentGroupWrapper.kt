@@ -16,7 +16,6 @@ class PunishmentGroupWrapper(private val punishmentGroupDao: PunishmentGroupDao)
 
         if (cached != null) return cached
 
-
         val valuePairs = punishmentGroupDao.getAll(guildId)
         val list = mutableListOf<PunishGroup>()
         for ((group, valuePair) in valuePairs) {
@@ -75,7 +74,6 @@ class PunishmentGroupWrapper(private val punishmentGroupDao: PunishmentGroupDao)
         list.add(PunishGroup(group, 0,  emptyList(), mutableMapOf()))
         punishmentGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
-
 
     suspend fun setTriggerTypes(guildId: Long, group: String, types: List<PointsTriggerType>) {
         val string = types.joinToString(",") { type ->

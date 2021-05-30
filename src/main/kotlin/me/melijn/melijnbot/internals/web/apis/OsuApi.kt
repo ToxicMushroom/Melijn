@@ -5,7 +5,6 @@ import me.melijn.melijnbot.internals.translation.OSU_URL
 import net.dv8tion.jda.api.utils.data.DataArray
 import org.slf4j.LoggerFactory
 
-
 class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
     private val logger = LoggerFactory.getLogger(OsuApi::class.java)
 

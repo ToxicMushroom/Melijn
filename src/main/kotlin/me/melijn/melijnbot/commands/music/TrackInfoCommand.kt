@@ -57,7 +57,6 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
         if (trackManager.loopedTrack) timeUntilTime = Long.MAX_VALUE
         if (targetIndex == 0) timeUntilTime = 0
 
-
         val embedder = Embedder(context)
             .setTitle(title)
             .setDescription(desc)

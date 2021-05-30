@@ -45,7 +45,6 @@ fun computeBaseObject(): DataObject {
     return dataObject
 }
 
-
 fun getPlayersAndQueuedTracks(
     jda: JDA,
     players: Map<Long, GuildMusicPlayer>

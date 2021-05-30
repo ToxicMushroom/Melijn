@@ -39,7 +39,6 @@ class ReverseImageSearchCommand : AbstractCommand("command.reverseimagesearch") 
 
         val sauceResultInfo = SauceResultInfo(results.getObject(0).getObject("header").getString("similarity"))
 
-
         for (i in 0 until results.length()) {
             val result = results.getObject(i)
             val data = result.getObject("data")

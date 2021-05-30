@@ -48,7 +48,6 @@ class WebManager(val settings: Settings) {
 
     var spotifyApi: MySpotifyApi? = null
 
-
     val rule34Api: Rule34Api = Rule34Api(httpClient)
     val imageApi: ImageApi = ImageApi(httpClient, proxiedHttpClient)
     val booruApi: BooruApi = BooruApi(httpClient)

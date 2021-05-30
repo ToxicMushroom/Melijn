@@ -26,7 +26,6 @@ object FilterUtil {
             if (member.hasPermission(channel, Permission.MESSAGE_MANAGE)) return@async
             if (!guild.selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)) return@async
 
-
             val guildId = guild.idLong
             val channelId = channel.idLong
             val daoManager = container.daoManager

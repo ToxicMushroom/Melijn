@@ -5,7 +5,6 @@ import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class VerificationEmotejiWrapper(private val verificationEmotejiDao: VerificationEmotejiDao) {
 
-
     suspend fun getEmoteji(guildId: Long): String {
         val cached = verificationEmotejiDao.getCacheEntry(guildId, HIGHER_CACHE)
         if (cached != null) return cached

@@ -278,7 +278,6 @@ class HelpCommand : AbstractCommand("command.help") {
             }
         }
 
-
         cmdExamplesValue?.let {
             for (examplesPart in StringUtils.splitMessage(it, splitAtLeast = 750, maxLength = 1024)) {
                 embedder.addField(cmdExamples, examplesPart, false)
@@ -308,8 +307,6 @@ class HelpCommand : AbstractCommand("command.help") {
         embedder.setFooter("$cmdCategory: " + parent.commandCategory.toUCC())
         sendEmbedRsp(context, embedder.build())
     }
-
-
 
     //Converts ("ping", "pong", "dunste") into a list of (PingCommand, PongArg, DunsteArg) if the args are matching an existing parent child sequence
     private fun getCorrectChildElseParent(
@@ -398,7 +395,6 @@ class HelpCommand : AbstractCommand("command.help") {
 
             sendEmbedRsp(context, eb.build())
         }
-
 
     }
 }

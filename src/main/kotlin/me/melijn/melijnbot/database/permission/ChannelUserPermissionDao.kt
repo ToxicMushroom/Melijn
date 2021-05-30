@@ -40,7 +40,6 @@ class ChannelUserPermissionDao(driverManager: DriverManager) : CacheDBDao(driver
         )
     }
 
-
     fun delete(channelId: Long, userId: Long, permission: String) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE channelId = ? AND userId = ? AND permission = ?",
@@ -64,7 +63,6 @@ class ChannelUserPermissionDao(driverManager: DriverManager) : CacheDBDao(driver
             it.resume(map)
         }, userId, channelId)
     }
-
 
     fun bulkPut(guildId: Long, channelId: Long, userId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->

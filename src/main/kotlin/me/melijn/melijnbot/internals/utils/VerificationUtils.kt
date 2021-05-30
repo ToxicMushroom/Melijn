@@ -101,7 +101,6 @@ object VerificationUtils {
         LogUtils.sendFailedVerificationLog(dao, member)
     }
 
-
     private suspend fun hasHitThroughputLimit(daoManager: DaoManager, member: Member): Boolean {
         val guild = member.guild
         val max = daoManager.verificationUserFlowRateWrapper.getFlowRate(guild.idLong)
@@ -114,7 +113,6 @@ object VerificationUtils {
         }.size
         return lastHourJoinedMembersAmount >= max
     }
-
 
     suspend fun addUnverified(member: Member, httpClient: HttpClient, daoManager: DaoManager) {
         val guild = member.guild

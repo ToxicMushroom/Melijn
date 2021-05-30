@@ -23,7 +23,6 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
         .setToken(settings.tokens.weebSh)
         .build()
 
-
     suspend fun getUrlWaterfall(type: String, nsfw: Boolean = false, apiOrder: Array<Type> = emptyArray()): String {
         for (api in apiOrder + Type.values().filterNot { apiOrder.contains(it) }) {
             val url = when (api) {

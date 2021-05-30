@@ -41,7 +41,6 @@ class FlipXCommand : AbstractCommand("command.flipx") {
             return
         }
 
-
         val heads = context.getTranslation("command.flip.heads")
         val tails = context.getTranslation("command.flip.tails")
         when {

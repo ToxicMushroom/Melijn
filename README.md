@@ -32,7 +32,5 @@ Note. If required you can copy this environment folder anywhere your like, renam
 Be aware that this contains the login information to the local postgres storage which might hold user data collected from your discord server by melijn.
 You should never share your environment with others.
 
-
-
 ## License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FToxicMushroom%2FMelijn.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FToxicMushroom%2FMelijn?ref=badge_large)

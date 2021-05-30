@@ -43,7 +43,6 @@ class LogChannelDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         )
     }
 
-
     fun bulkPut(guildId: Long, logChannelTypes: List<LogChannelType>, channelId: Long) {
         driverManager.getUsableConnection { con ->
             con.prepareStatement("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET channelId = ?")

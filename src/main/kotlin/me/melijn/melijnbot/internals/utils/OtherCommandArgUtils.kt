@@ -7,7 +7,6 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import java.time.Instant
 import java.util.*
 
-
 // warning the scanned numbers are decreased by one
 suspend fun getIntegersFromArgsNMessage(context: ICommandContext, index: Int, start: Int, end: Int): IntArray? {
 
@@ -175,7 +174,6 @@ suspend fun getDateTimeFromArgNMessage(context: ICommandContext, index: Int): Lo
 
     return dateTime
 }
-
 
 fun getEpochMillisFromArgN(context: ICommandContext, index: Int): Long? {
     val arg = context.args[index]

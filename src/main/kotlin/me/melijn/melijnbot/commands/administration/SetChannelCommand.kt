@@ -61,7 +61,6 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
 
         val channelWrapper = context.daoManager.channelWrapper
 
-
         val msg = if (channel == null) {
             channelWrapper.removeChannel(context.guildId, type)
             context.getTranslation("$root.unset")

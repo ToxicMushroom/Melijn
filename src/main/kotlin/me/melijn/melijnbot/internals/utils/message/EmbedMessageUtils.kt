@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
 import java.time.format.DateTimeFormatter
 
-
 suspend fun sendEmbedRspAwaitEL(context: ICommandContext, embed: MessageEmbed): List<Message> {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     return if (premiumGuild) {
@@ -34,7 +33,6 @@ suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, textChannel: TextChannel
     return if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
         !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
     ) {
-
 
         val message = textChannel.sendMessage(embed).awaitOrNull()
             ?: return emptyList()
@@ -122,7 +120,6 @@ suspend fun sendEmbedAwaitEL(privateChannel: PrivateChannel, embed: MessageEmbed
     val msg = privateChannel.sendMessage(embed).awaitOrNull()
     return msg?.let { listOf(it) } ?: emptyList()
 }
-
 
 suspend fun sendEmbedAwaitEL(
     embedDisabledWrapper: EmbedDisabledWrapper,

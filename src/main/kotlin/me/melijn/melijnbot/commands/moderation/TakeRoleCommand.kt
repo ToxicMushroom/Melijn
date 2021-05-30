@@ -11,7 +11,6 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Role
 
-
 class TakeRoleCommand : AbstractCommand("command.takerole") {
 
     init {
@@ -20,7 +19,6 @@ class TakeRoleCommand : AbstractCommand("command.takerole") {
         commandCategory = CommandCategory.MODERATION
         discordPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
-
 
     override suspend fun execute(context: ICommandContext) {
         if (context.args.size < 2) {

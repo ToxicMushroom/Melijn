@@ -28,7 +28,6 @@ class InfoCommand : AbstractCommand("command.info") {
         val title3 = context.getTranslation("$root.field3.title")
         val value3 = replaceValueThreeVars(context.getTranslation("$root.field3.value"), context)
 
-
         val eb = Embedder(context)
             .setThumbnail(context.selfUser.effectiveAvatarUrl)
             .addField(title1, value1, false)

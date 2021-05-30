@@ -227,7 +227,6 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
 
                     wrapper.put(context.guildId, item)
 
-
                     val msg = context.getTranslation("$root.deldays")
                         .withVariable("name", item.name)
                         .withVariable("deldays", "$days")
@@ -277,7 +276,6 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             sendRsp(context, msg)
         }
     }
-
 
     class AddArg(parent: String) : AbstractCommand("$parent.add") {
 
@@ -333,7 +331,6 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                     punishment.punishmentType == punishmentType
                 }
             }
-
 
             var content = "```INI\n[name] - [type]\n  {[extra data]}\n"
             for ((name, punishmentType, d) in list.sortedBy { perm -> perm.punishmentType }) {

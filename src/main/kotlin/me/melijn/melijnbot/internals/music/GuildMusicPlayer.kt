@@ -8,7 +8,6 @@ import me.melijn.melijnbot.internals.utils.isPremiumGuild
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.withVariable
 
-
 class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val guildId: Long, groupId: String) {
 
     val guildTrackManager: GuildTrackManager = GuildTrackManager(

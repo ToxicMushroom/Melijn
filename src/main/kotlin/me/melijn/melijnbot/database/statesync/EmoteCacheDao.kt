@@ -64,4 +64,3 @@ suspend fun getEmote(shardManager: ShardManager, daoManager: DaoManager, emoteId
     )
 }
 
-

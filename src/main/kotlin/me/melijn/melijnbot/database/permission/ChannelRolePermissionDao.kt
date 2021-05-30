@@ -64,7 +64,6 @@ class ChannelRolePermissionDao(driverManager: DriverManager) : CacheDBDao(driver
         }, roleId, channelId)
     }
 
-
     fun bulkPut(guildId: Long, channelId: Long, roleId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->
             connection.prepareStatement("INSERT INTO $table (guildId, channelId, roleId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?")

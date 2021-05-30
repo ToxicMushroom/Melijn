@@ -64,7 +64,6 @@ class WarnCommand : AbstractCommand("command.warn") {
             reason = "/"
         }
 
-
         val warn = Warn(
             context.guildId,
             targetMember.idLong,
@@ -73,7 +72,6 @@ class WarnCommand : AbstractCommand("command.warn") {
         )
 
         val warning = context.getTranslation("message.warning")
-
 
         val privateChannel = targetMember.user.openPrivateChannel().awaitOrNull()
         val message: Message? = privateChannel?.let {

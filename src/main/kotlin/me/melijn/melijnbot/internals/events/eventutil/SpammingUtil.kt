@@ -20,7 +20,6 @@ object SpammingUtil {
         val possibleSpammer = spamList.firstOrNull { (userId) -> userId == member.idLong }
             ?: SpammingUser(member.idLong, cTime, 1)
 
-
         val shortLimit = 0.9 // messages per second for 4 seconds
         val medLimit = 0.75 // messages per second for 20 seconds
 
@@ -35,6 +34,5 @@ object SpammingUtil {
         }
 
     }
-
 
 }

@@ -42,7 +42,6 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         slowServices.add(MuteService(shardManager, daoManager, podInfo))
         slowServices.add(BirthdayService(shardManager, webManager.proxiedHttpClient, daoManager))
 
-
         // TODO: create microservice for proper ratelimits
         webManager.spotifyApi?.let { spotifyApi ->
             services.add(SpotifyService(spotifyApi))
@@ -76,7 +75,6 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
             services.add(RSPService(shardManager, daoManager))
             services.add(TTTService(shardManager, daoManager))
         }
-
 
         val shards = podInfo.shardList
         val melijnGuildId = 340081887265685504L

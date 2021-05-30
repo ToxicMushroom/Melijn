@@ -117,7 +117,6 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
                 balanceWrapper.removeBalance(context.authorId, bet)
                 balanceWrapper.removeBalance(user.idLong, bet)
 
-
                 val game = TicTacToeGame(
                     context.authorId,
                     user.idLong,
@@ -135,7 +134,6 @@ class TicTacToeCommand : AbstractCommand("command.tictactoe") {
                 val optionMenu = EmbedEditor()
                     .setTitle(title)
                     .setDescription(description)
-
 
                 val defaultDisabledDMsMessage = context.getTranslation("message.dmsdisabledfix")
 

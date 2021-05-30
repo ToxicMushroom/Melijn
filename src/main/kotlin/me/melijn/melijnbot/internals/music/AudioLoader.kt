@@ -39,7 +39,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     private val ytSearch = YTSearch()
     private val spotifyTrackDiff = 10_000
 
-
     suspend fun foundSingleTrack(
         context: ICommandContext,
         guildMusicPlayer: GuildMusicPlayer,
@@ -143,7 +142,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-
     private suspend fun sendMessageLoadFailed(context: ICommandContext, exception: Throwable) {
         val msg = context.getTranslation("$root.loadfailed")
             .withSafeVariable("cause", exception.message ?: "/")
@@ -156,7 +154,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             .withSafeVariable("source", input)
         sendRsp(context, msg)
     }
-
 
     suspend fun sendMessageAddedTrack(context: ICommandContext, audioTrack: AudioTrack) {
         val title = context.getTranslation("$root.addedtrack.title")
@@ -520,7 +517,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         if (rowItems.isNotEmpty()) list.add(ActionRow.of(rowItems))
         return list
     }
-
 
     private suspend fun getSearchMenuMessageBuilder(
         context: ICommandContext,

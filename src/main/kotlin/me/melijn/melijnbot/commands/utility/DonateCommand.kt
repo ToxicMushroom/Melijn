@@ -61,5 +61,4 @@ class DonateCommand : AbstractCommand("command.donate") {
         }
     }
 
-
 }

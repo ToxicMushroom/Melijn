@@ -24,7 +24,6 @@ object MemberInfoResponseHandler {
             return
         }
 
-
         val user = context.call.parameters["userId"]?.let { userId ->
             if (userId.isPositiveNumber()) shardManager.retrieveUserById(userId).awaitOrNull() else null
         }
@@ -40,7 +39,6 @@ object MemberInfoResponseHandler {
             )
             return
         }
-
 
         context.call.respondJson(
             DataObject.empty()

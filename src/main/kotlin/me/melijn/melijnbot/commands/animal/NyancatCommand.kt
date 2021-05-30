@@ -9,7 +9,6 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.web.WebManager
 import me.melijn.melijnbot.internals.web.WebUtils
 
-
 class NyancatCommand : AbstractCommand("command.nyancat") {
 
     init {
@@ -27,7 +26,6 @@ class NyancatCommand : AbstractCommand("command.nyancat") {
             .setImage(getRandomNyancatUrl(context.webManager, context.container.settings.api.imgHoard.token))
         sendEmbedRsp(context, eb.build())
     }
-
 
     private suspend fun getRandomNyancatUrl(webManager: WebManager, token: String): String {
         val reply = WebUtils.getJsonFromUrl(

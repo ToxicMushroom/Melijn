@@ -48,7 +48,6 @@ class DiscordChannelOverridesDao(driverManager: DriverManager) : CacheDBDao(driv
         }
     }
 
-
     fun remove(guildId: Long, channelId: Long) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guild_id = ? AND channel_id = ?",

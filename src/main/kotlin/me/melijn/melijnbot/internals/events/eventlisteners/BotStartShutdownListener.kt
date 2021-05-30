@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.events.StatusChangeEvent
 
 class BotStartShutdownListener(container: Container) : AbstractListener(container) {
 
-
     override suspend fun onEvent(event: GenericEvent) {
         if (event is StatusChangeEvent) {
             onStatusChange(event)

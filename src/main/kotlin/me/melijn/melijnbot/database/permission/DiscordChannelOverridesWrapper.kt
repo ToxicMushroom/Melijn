@@ -2,7 +2,6 @@ package me.melijn.melijnbot.database.permission
 
 class DiscordChannelOverridesWrapper(private val discordChannelOverridesDao: DiscordChannelOverridesDao) {
 
-
     fun put(guildId: Long, channelId: Long, id: Long, denied: Long, allowed: Long) {
         discordChannelOverridesDao.put(guildId, channelId, id, denied, allowed)
     }

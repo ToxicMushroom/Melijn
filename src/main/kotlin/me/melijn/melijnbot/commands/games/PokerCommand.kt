@@ -12,7 +12,6 @@ import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import kotlin.random.Random
 
-
 class PokerCommand : AbstractCommand("command.poker") {
 
     init {
@@ -60,7 +59,6 @@ class PokerCommand : AbstractCommand("command.poker") {
             }
 
             val eb = Embedder(context)
-
 
             var hand = ""
             for (i in 0 until 5) {
@@ -147,7 +145,6 @@ class PokerCommand : AbstractCommand("command.poker") {
                     .setDescription(finalCards.joinToString(", "))
                 sendEmbedRsp(context, ebb.build())
 
-
                 val pokerHand = findPokerHand(finalCards)
 
                 val bal = if (pokerHand != null) {
@@ -155,7 +152,6 @@ class PokerCommand : AbstractCommand("command.poker") {
                 } else {
                     balanceWrapper.getBalance(context.authorId)
                 }
-
 
                 if (pokerHand != null) {
 

@@ -5,7 +5,6 @@ import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class MusicChannelWrapper(private val musicChannelDao: MusicChannelDao) {
 
-
     suspend fun getChannel(guildId: Long): Long {
         val cached = musicChannelDao.getCacheEntry(guildId, HIGHER_CACHE)?.toLong()
         if (cached != null) return cached

@@ -18,7 +18,6 @@ const val PREMIUM_CMD_ALIASES_LIMIT = 10
 const val ALIASES_TOTAL_LIMIT_PATH = "premium.feature.aliases.total.limit"
 const val ALIASES_CMD_LIMIT_PATH = "premium.feature.aliases.cmd.limit"
 
-
 class AliasesCommand : AbstractCommand("command.aliases") {
 
     init {

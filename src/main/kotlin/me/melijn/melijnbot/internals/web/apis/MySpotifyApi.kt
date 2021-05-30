@@ -29,7 +29,6 @@ class MySpotifyApi(spotifySettings: Settings.Api.Spotify) {
         }
     }
 
-
     companion object {
         private val spotifyTrackUrl = Regex("https://open\\.spotify\\.com/track/(\\w+)(?:\\?\\S+)?")
         private val spotifyTrackUri = Regex("spotify:track:(\\w+)")
@@ -40,7 +39,6 @@ class MySpotifyApi(spotifySettings: Settings.Api.Spotify) {
         private val spotifyArtistUrl = Regex("https://open\\.spotify\\.com/artist/(\\w+)(?:\\?\\S+)?")
         private val spotifyArtistUri = Regex("spotify:artist:(\\w+)")
     }
-
 
     // TODO provide info about current queue size and size limit -> get the correct amount of spotify tracks
     // TODO return if all tracks were obtained from the playlist or not -> send message if not that the queue is now full
@@ -124,7 +122,6 @@ class MySpotifyApi(spotifySettings: Settings.Api.Spotify) {
                 }
             )
         }
-
 
         trackList(tracks.toTypedArray())
     }

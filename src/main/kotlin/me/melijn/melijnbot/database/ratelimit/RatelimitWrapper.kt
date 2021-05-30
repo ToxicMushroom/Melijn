@@ -10,7 +10,6 @@ class RatelimitWrapper(driverManager: DriverManager) : CacheDao(driverManager) {
         driverManager.setCacheEntry(cacheName, count.toString(), null)
     }
 
-
     suspend fun get(): Long? {
         return driverManager.getCacheEntry(cacheName)?.toLong()
     }

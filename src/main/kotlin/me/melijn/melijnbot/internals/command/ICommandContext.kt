@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.time.ZoneId
 
-
 interface ICommandContext {
 
     /**
@@ -29,7 +28,6 @@ interface ICommandContext {
      */
     val guildN: Guild?
 
-
     /**
      * Returns the [guildId][Long] for the guild
      *
@@ -37,7 +35,6 @@ interface ICommandContext {
      */
     val guildId: Long
         get() = guild.idLong
-
 
     /**
      * Returns the [message][net.dv8tion.jda.api.entities.Message] that triggered this event
@@ -54,7 +51,6 @@ interface ICommandContext {
     val messageId: Long
         get() = message.idLong
 
-
     /**
      * Returns the [author][net.dv8tion.jda.api.entities.User] of the message as user
      *
@@ -70,25 +66,21 @@ interface ICommandContext {
     val authorId: Long
         get() = author.idLong
 
-
     /**
      * @return the [author][net.dv8tion.jda.api.entities.Member] of the message as member
      */
     val member: Member
-
 
     /**
      * @return the current [jda][net.dv8tion.jda.api.JDA] instance
      */
     val jda: JDA
 
-
     /**
      * @return the current [net.dv8tion.jda.api.sharding.ShardManager] instance
      */
     val shardManager: ShardManager
         get() = this.jda.shardManager ?: throw IllegalArgumentException("Sharding is disabled!")
-
 
     /**
      * @return the [user][net.dv8tion.jda.api.entities.User] for the currently logged in account
@@ -108,13 +100,11 @@ interface ICommandContext {
     val selfMember: Member
         get() = this.guild.selfMember
 
-
     /**
      * @return the [Boolean] for where the message was sent
      */
     val isFromGuild: Boolean
         get() = this.guildN != null
-
 
     /**
      * @return the [textChannel][TextChannel] that the message for this event was send in

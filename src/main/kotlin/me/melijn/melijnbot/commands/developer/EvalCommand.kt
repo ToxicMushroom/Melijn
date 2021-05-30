@@ -47,8 +47,6 @@ class EvalCommand : AbstractCommand("command.eval") {
                 }
             }""".trimIndent()
 
-
-
         try {
             engine.eval(code)
             val se = engine as KotlinJsr223JvmLocalScriptEngine

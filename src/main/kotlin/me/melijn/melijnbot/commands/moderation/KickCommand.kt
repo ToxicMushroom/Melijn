@@ -70,7 +70,6 @@ class KickCommand : AbstractCommand("command.kick") {
             reason
         )
 
-
         val kicking = context.getTranslation("message.kicking")
         val privateChannel = targetMember.user.openPrivateChannel().awaitOrNull()
         val message: Message? = privateChannel?.let {

@@ -8,7 +8,6 @@ import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.JDA
 
-
 object RockPaperScissors {
 
     suspend fun checkForContinue(jda: JDA, daoManager: DaoManager, rps: RockPaperScissorsGame): Boolean {

@@ -8,7 +8,6 @@ import me.melijn.melijnbot.internals.utils.getEnumFromArgNMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.toLC
 
-
 const val MESSAGE_UNKNOWN_TRISTATE = "message.unknown.tristate"
 
 class SetPrivateAllowSpacedPrefixState : AbstractCommand("command.setprivateallowspacedprefixstate") {

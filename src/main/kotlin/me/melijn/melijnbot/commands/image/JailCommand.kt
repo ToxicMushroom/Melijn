@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.image
 
-
 import com.sksamuel.scrimage.ImmutableImage
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.enums.DiscordSize
@@ -13,7 +12,6 @@ import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
 import net.dv8tion.jda.api.Permission
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
-
 
 class JailCommand : AbstractCommand("command.jail") {
 

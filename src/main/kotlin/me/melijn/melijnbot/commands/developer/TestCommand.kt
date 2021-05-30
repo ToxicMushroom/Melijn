@@ -18,6 +18,5 @@ class TestCommand : AbstractCommand("command.test") {
 
     override suspend fun execute(context: ICommandContext) {
 
-
     }
 }

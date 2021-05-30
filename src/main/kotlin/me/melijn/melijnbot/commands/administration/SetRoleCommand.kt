@@ -56,7 +56,6 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
         sendRsp(context, msg)
     }
 
-
     private suspend fun setRole(context: ICommandContext, roleType: RoleType) {
         if (context.args.size < 2) {
             sendSyntax(context)

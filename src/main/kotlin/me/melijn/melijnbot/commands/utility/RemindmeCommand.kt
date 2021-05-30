@@ -112,7 +112,6 @@ class RemindmeCommand : AbstractCommand("command.remindme") {
         val reminderWrapper = context.daoManager.reminderWrapper
         val reminders = reminderWrapper.getRemindersOfUser(context.authorId)
 
-
         if (reminders.size > REMINDER_LIMIT && !isPremiumUser(context)) {
             val replaceMap = mapOf(
                 "limit" to "$REMINDER_LIMIT",

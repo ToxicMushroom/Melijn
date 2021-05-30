@@ -306,7 +306,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 return
             }
 
-
             val channel = if (context.args.size > 1) {
                 getTextChannelByArgsNMessage(context, 1) ?: return
             } else context.textChannel
@@ -321,7 +320,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     Permission.MESSAGE_HISTORY
                 )
             ) return
-
 
             val bodyFormat = group.pattern ?: context.getTranslation("$root.bodyformat")
 
@@ -727,7 +725,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     group.messageIds = emptyList()
                     wrapper.insertOrUpdate(context.guildId, group)
 
-
                     val msg = context.getTranslation("$root.cleared")
                         .withVariable("group", group.groupName)
 
@@ -940,7 +937,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 val name = getStringFromArgsNMessage(context, 1, 1, 64) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
 
-
                 val selfRoleGroup2 = getSelfRoleGroupByGroupNameN(context, name)
                 if (selfRoleGroup2 != null) {
                     val msg = context.getTranslation("$parent.exists")
@@ -974,12 +970,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
         }
 
-
         override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }
-
 
     class AddArg(parent: String) : AbstractCommand("$parent.add") {
 
@@ -1056,7 +1050,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
         }
     }
-
 
     class ClearArg(val parent: String) : AbstractCommand("$parent.clear") {
 
@@ -1150,7 +1143,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 selfRoleWrapper.remove(context.guildId, group.groupName, emoteji)
             }
 
-
             val msg = context.getTranslation("$root.success")
                 .withVariable("group", group.groupName)
                 .withVariable("emoteName", emoteName)
@@ -1159,7 +1151,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             sendRsp(context, msg)
         }
     }
-
 
     class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
 
@@ -1191,7 +1182,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             val roleString = rolesIds.joinToString(", ") { "<@&$it>" }
             selfRoleWrapper.remove(context.guildId, group.groupName, emoteji)
-
 
             val msg = context.getTranslation("$root.success")
                 .withVariable("group", group.groupName)
@@ -1228,7 +1218,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                         val emoteji = dataEntry.getString(0)
                         val name = dataEntry.getString(1)
                         val getAll = dataEntry.getBoolean(3)
-
 
                         val roleDataArr = dataEntry.getArray(2)
 

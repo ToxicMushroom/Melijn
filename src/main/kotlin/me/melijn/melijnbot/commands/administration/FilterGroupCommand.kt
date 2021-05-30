@@ -62,7 +62,6 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
     }
 
-
     class ChannelsArg(parent: String) : AbstractCommand("$parent.channels") {
 
         init {
@@ -281,7 +280,6 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             val title = context.getTranslation("$root.title")
             val enabled = context.getTranslation("enabled")
             val disabled = context.getTranslation("disabled")
-
 
             var content =
                 "```INI\n[name] - [points] - [state] - [mode] - [delete]\n  [\n    - channels\n  ]\n  [\n    - targets\n  ]\n"

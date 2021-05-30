@@ -31,7 +31,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
         sendSyntax(context)
     }
 
-
     class UserArg(parent: String) : AbstractCommand("$parent.user") {
 
         init {
@@ -392,7 +391,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable(PLACEHOLDER_ROLE, role.name)
                         .withVariable("permissionNode", permissionNode)
 
-
                     val wrapper = context.daoManager.channelRolePermissionWrapper
                     val map = wrapper.getPermMap(channel.idLong, role.idLong)
 
@@ -436,7 +434,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val role = getRoleByArgsNMessage(context, 1) ?: return
 
                     context.daoManager.channelRolePermissionWrapper.clear(channel.idLong, role.idLong)
-
 
                     val msg = context.getTranslation("$root.response1")
                         .withVariable(PLACEHOLDER_ROLE, role.name)
@@ -578,7 +575,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     context.daoManager.channelUserPermissionWrapper.clear(channel.idLong, user.idLong)
 
-
                     val msg = context.getTranslation("$root.response1")
                         .withVariable(PLACEHOLDER_USER, user.asTag)
                         .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
@@ -637,7 +633,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 daoWrapper1.setPermissions(context.guildId, user2.idLong, permissions)
 
-
                 val path = "$root.response1" + if (permissions.size > 1) {
                     ".multiple"
                 } else {
@@ -662,7 +657,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val daoWrapper2 = context.daoManager.userPermissionWrapper
                 daoWrapper2.setPermissions(context.guildId, user2.idLong, permissions)
 
-
                 val path = "$root.response1" + if (permissions.size > 1) {
                     ".multiple"
                 } else {
@@ -686,7 +680,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val daoWrapper2 = context.daoManager.userPermissionWrapper
                 daoWrapper2.setPermissions(context.guildId, user3.idLong, permissions)
-
 
                 val path = "$root.response1" + if (permissions.size > 1) {
                     ".multiple"
@@ -765,7 +758,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val daoWrapper2 = context.daoManager.rolePermissionWrapper
                 daoWrapper2.setPermissions(context.guildId, role2.idLong, permissions)
 
-
                 val path = "$root.response1" + if (permissions.size > 1) {
                     ".multiple"
                 } else {
@@ -775,7 +767,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .withVariable(PLACEHOLDER_USER, user1.asTag)
                     .withVariable(PLACEHOLDER_ROLE, role2.name)
                     .withVariable("permissionCount", permissions.size.toString())
-
 
                 sendRsp(context, msg)
             }
@@ -798,7 +789,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .withVariable("role1", role1.name)
                     .withVariable("role2", role2.name)
                     .withVariable("permissionCount", permissions.size.toString())
-
 
                 sendRsp(context, msg)
             }
@@ -825,7 +815,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .withVariable(PLACEHOLDER_ROLE, role3.name)
                     .withVariable("permissionCount", permissions.size.toString())
 
-
                 sendRsp(context, msg)
             }
 
@@ -850,7 +839,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .withVariable(PLACEHOLDER_CHANNEL, channel1.asTag)
                     .withVariable("role2", role3.name)
                     .withVariable("permissionCount", permissions.size.toString())
-
 
                 sendRsp(context, msg)
             }
@@ -914,7 +902,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable(PLACEHOLDER_ROLE, role3.name)
                         .withVariable("permissionCount", permissions.size.toString())
 
-
                     sendRsp(context, msg)
                 }
 
@@ -939,7 +926,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable(PLACEHOLDER_CHANNEL, channel2.asTag)
                         .withVariable("role2", role3.name)
                         .withVariable("permissionCount", permissions.size.toString())
-
 
                     sendRsp(context, msg)
                 }
@@ -968,7 +954,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable(PLACEHOLDER_ROLE, role4.name)
                         .withVariable("permissionCount", permissions.size.toString())
 
-
                     sendRsp(context, msg)
                 }
 
@@ -994,7 +979,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable("channel2", channel3.asTag)
                         .withVariable("role2", role4.name)
                         .withVariable("permissionCount", permissions.size.toString())
-
 
                     sendRsp(context, msg)
                 }
@@ -1047,7 +1031,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable("user2", user3.asTag)
                         .withVariable("permissionCount", permissions.size.toString())
 
-
                     sendRsp(context, msg)
                 }
 
@@ -1072,7 +1055,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable(PLACEHOLDER_CHANNEL, channel2.asTag)
                         .withVariable(PLACEHOLDER_USER, user3.asTag)
                         .withVariable("permissionCount", permissions.size.toString())
-
 
                     sendRsp(context, msg)
                 }
@@ -1100,7 +1082,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable("user2", user4.asTag)
                         .withVariable("permissionCount", permissions.size.toString())
 
-
                     sendRsp(context, msg)
                 }
 
@@ -1127,7 +1108,6 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable("channel2", channel3.asTag)
                         .withVariable(PLACEHOLDER_USER, user4.asTag)
                         .withVariable("permissionCount", permissions.size.toString())
-
 
                     sendRsp(context, msg)
                 }
@@ -1175,7 +1155,6 @@ fun nodeGrantsPerm(
         }
     }
 }
-
 
 /**
  * @param context ICommandContext

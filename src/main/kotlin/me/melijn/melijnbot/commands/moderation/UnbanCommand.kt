@@ -79,7 +79,6 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 val msgLc =
                     getUnbanMessage(language, zoneId, context.guild, targetUser, banAuthor, context.author, ban, true)
 
-
                 val privateChannel = if (context.guild.isMember(targetUser)) {
                     targetUser.openPrivateChannel().awaitOrNull()
                 } else {
@@ -93,7 +92,6 @@ class UnbanCommand : AbstractCommand("command.unban") {
                         continueUnbanning(context, targetUser, ban, banAuthor, null)
                     }
                 } ?: continueUnbanning(context, targetUser, ban, banAuthor, null)
-
 
             } catch (t: Throwable) {
                 //Sum ting wrong
@@ -135,7 +133,6 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNBAN)
         logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, lcMsg) }
-
 
         val success = context.getTranslation("$root.success")
             .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)

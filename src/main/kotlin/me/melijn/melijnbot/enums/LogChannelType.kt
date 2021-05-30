@@ -45,7 +45,6 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
     BOT("Bot", arrayOf("b", "blc")),
     PUNISHMENT_POINTS("PunishmentPoints", arrayOf("punishment", "punishments", "pp", "pplc"));
 
-
     //Messages
     companion object {
 

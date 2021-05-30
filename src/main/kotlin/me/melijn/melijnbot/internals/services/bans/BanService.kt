@@ -80,7 +80,6 @@ class BanService(
         val language = getLanguage(daoManager, -1, guild.idLong)
         val zoneId = getZoneId(daoManager, guild.idLong)
 
-
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNBAN) ?: return
 
 //        var success = false

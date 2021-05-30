@@ -197,7 +197,6 @@ class OsuCommand : AbstractCommand("command.osu") {
                 .addField("Accuracy", "`" + formatter.format(accuracy) + "%`", true)
             if (mods.isNotBlank()) eb.addField("Mods", mods, true)
 
-
             sendEmbedRsp(context, eb.build())
         }
     }
@@ -366,7 +365,6 @@ class OsuCommand : AbstractCommand("command.osu") {
             formatter.isGroupingUsed = true
             formatter.groupingSize = 3
 
-
             val eb = Embedder(context)
                 .setTitle(result.username, "https://osu.ppy.sh/users/${result.id}")
                 .addField("Games Played", formatter.format(result.plays), true)
@@ -389,7 +387,6 @@ class OsuCommand : AbstractCommand("command.osu") {
                 )
                 .setThumbnail("https://s.ppy.sh/a/${result.id}")
                 .setFooter("Joined: ${result.joinDate}")
-
 
             sendEmbedRsp(context, eb.build())
         }
