@@ -21,8 +21,8 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.interactions.ActionRow
-import net.dv8tion.jda.api.interactions.button.Button
+import net.dv8tion.jda.api.interactions.components.ActionRow
+import net.dv8tion.jda.api.interactions.components.Button
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.regex.Pattern

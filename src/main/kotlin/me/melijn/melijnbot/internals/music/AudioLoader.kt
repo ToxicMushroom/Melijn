@@ -23,10 +23,10 @@ import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.VoiceChannel
-import net.dv8tion.jda.api.interactions.ActionRow
-import net.dv8tion.jda.api.interactions.Component
-import net.dv8tion.jda.api.interactions.button.Button
-import net.dv8tion.jda.api.interactions.button.ButtonStyle
+import net.dv8tion.jda.api.interactions.components.ActionRow
+import net.dv8tion.jda.api.interactions.components.Button
+import net.dv8tion.jda.api.interactions.components.ButtonStyle
+import net.dv8tion.jda.api.interactions.components.Component
 import java.lang.Integer.min
 
 const val QUEUE_LIMIT = 500
