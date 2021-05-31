@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.join
 
 import me.melijn.melijnbot.database.CacheDao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.database.getValueFromCache
 import java.util.concurrent.TimeUnit
 
 class InactiveJMDao(driverManager: DriverManager) : CacheDao(driverManager) {

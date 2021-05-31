@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.locking
 
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.database.getValueFromCache
 
 class LockExcludedWrapper(private val lockExcludedDao: LockExcludedDao) {
 
