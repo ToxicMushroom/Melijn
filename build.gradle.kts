@@ -46,7 +46,7 @@ repositories {
 }
 
 val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-val ktor = "1.5.4"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
+val ktor = "1.6.0"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.7" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.5.0" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 val kotlin = "1.5.10"
@@ -54,7 +54,7 @@ val scrimage = "4.2.0.92-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("com.github.dv8fromtheworld:jda:f9578019ce5c7a5446cfdf1cf14677a07e7c6a4c") {
+    implementation("com.github.dv8fromtheworld:jda:1fdcaa54bfe88fb5b60c9c1e935f29875cbca21e") {
         exclude("opus-java")
     }
 //    implementation("net.dv8tion:JDA:4.2.1_265") {
