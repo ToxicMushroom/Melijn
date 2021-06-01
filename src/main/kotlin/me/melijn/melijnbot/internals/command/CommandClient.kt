@@ -248,7 +248,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
     }
 
-    private inline fun findCustomCommands(
+    private fun findCustomCommands(
         customCommands: List<CustomCommand>,
         cmdParts: List<String>,
         prefix: Boolean,

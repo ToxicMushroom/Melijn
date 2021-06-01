@@ -58,7 +58,9 @@ interface CacheUtil {
 }
 
 suspend inline fun <reified K> CacheUtil.getValueFromCache(key: Any, ttlM: Int? = null): K? {
-    return getCacheEntry(key, ttlM)?.let { objectMapper.readValue<K>(it) }
+    return getCacheEntry(key, ttlM)?.let {
+        objectMapper.readValue<K>(it)
+    }
 }
 
 abstract class CacheDao(override val driverManager: DriverManager) : CacheUtil
