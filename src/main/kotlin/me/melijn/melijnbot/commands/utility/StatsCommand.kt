@@ -53,7 +53,7 @@ class StatsCommand : AbstractCommand("command.stats") {
         val unReplaceField1 = context.getTranslation("$root.response.field1.value")
         val value1 = replaceValue1Vars(
             unReplaceField1,
-            shardManager.shardsTotal,
+            PodInfo.shardsPerPod,
             shardManager.userCache.size(),
             shardManager.guildCache.size(),
             voiceChannelsNotEmpty,
