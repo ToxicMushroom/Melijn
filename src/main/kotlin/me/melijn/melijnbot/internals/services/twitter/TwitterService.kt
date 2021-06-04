@@ -118,14 +118,13 @@ class TwitterService(
             }
 
             mb.addEmbeds(eb.build())
-
-            try {
-                client.send(mb.build()).await()
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                all++
-                delay(100)
-            }
+        }
+        try {
+            client.send(mb.build()).await()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            all++
+            delay(100)
         }
         if (all == tweets.tweetList.size) {
             twitterWebhook.enabled = false
