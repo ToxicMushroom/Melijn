@@ -58,6 +58,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
                 webManager.proxiedHttpClient,
                 container.settings.api.twitter.bearerToken,
                 daoManager.twitterWrapper,
+                daoManager.supporterWrapper,
                 shardManager,
                 podInfo
             )
