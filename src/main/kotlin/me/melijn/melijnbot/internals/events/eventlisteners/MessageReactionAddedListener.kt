@@ -199,7 +199,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val settings = starboardSettings.getStarboardSettings(event.guild.idLong)
             if (reactions >= settings.minStars) {
                 val starboardMessage =
-                    getSendableStarboardMessage(event, reactions, ogMessage.author, event.channel) ?: return
+                    getSendableStarboardMessage(event, reactions, ogMessage.author, event.channel, true) ?: return
                 val message = sbchannel.sendMessage(starboardMessage).await()
                 message.addReaction("⭐").queue()
                 starboardMessageWrapper.setStarboardInfo(
@@ -228,7 +228,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             if (newStarCount != msg.stars) {
                 val message = sbchannel.retrieveMessageById(msg.starboardMessageId).await()
                 val author = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull()
-                val newContent = getSendableStarboardMessage(event, newStarCount, author, ogChannel)
+                val newContent = getSendableStarboardMessage(event, newStarCount, author, ogChannel, false)
                 starboardMessageWrapper.setStarboardInfo(
                     event.guild.idLong,
                     msg.ogChannelId,
@@ -248,7 +248,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         event: GuildMessageReactionAddEvent,
         stars: Int,
         author: User?,
-        channel: TextChannel?
+        channel: TextChannel?,
+        new: Boolean
     ): Message? {
         val ogMessage = event.channel.retrieveMessageById(event.messageIdLong).await() ?: return null
 
@@ -273,7 +274,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         } else {
             eb.setDescription(ogMessage.contentRaw.replace("[", "\\["))
         }
-        eb.appendDescription("\n[`jump`](${ogMessage.jumpUrl})")
+        if (new || channel?.idLong == event.channel.idLong) eb.appendDescription("\n[`jump`](${ogMessage.jumpUrl})")
 
         for (attachment in ogMessage.attachments) {
             if (attachment.isImage) {
