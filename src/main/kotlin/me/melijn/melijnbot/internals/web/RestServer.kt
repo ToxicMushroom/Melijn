@@ -224,8 +224,8 @@ class RestServer(container: Container) {
             }
 
             get("/shutdown") {
-                ShutdownResponseHandler.handleShutdownResponse(RequestContext(call, container))
-                stop()
+                if (ShutdownResponseHandler.handleShutdownResponse(RequestContext(call, container)))
+                    stop()
             }
 
             //Has to be registered last to not override other paths
