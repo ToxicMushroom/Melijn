@@ -256,7 +256,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             container.daoManager, event.guild.idLong, author?.idLong
                 ?: -1
         )
-            .setAuthor(author?.asTag ?: "deleted_user#0000", ogMessage.jumpUrl, author?.effectiveAvatarUrl)
+            .setAuthor(author?.asTag ?: "deleted_user#0000", null, author?.effectiveAvatarUrl)
         if (ogMessage.embeds.size > 0) {
             val embed = ogMessage.embeds[0]
             eb.setTitle(embed.title, embed.url)
@@ -273,6 +273,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         } else {
             eb.setDescription(ogMessage.contentRaw.replace("[", "\\["))
         }
+        eb.appendDescription("\n[`jump`](${ogMessage.jumpUrl})")
 
         for (attachment in ogMessage.attachments) {
             if (attachment.isImage) {
