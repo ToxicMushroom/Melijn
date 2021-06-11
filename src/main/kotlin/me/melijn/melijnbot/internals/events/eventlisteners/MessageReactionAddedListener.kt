@@ -201,7 +201,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 val starboardMessage =
                     getSendableStarboardMessage(event, reactions, ogMessage.author, event.channel, true) ?: return
                 val message = sbchannel.sendMessage(starboardMessage).await()
-                message.addReaction("⭐").queue()
+                message.addReaction("⭐").await()
+                if (starboardMessageWrapper.getStarboardInfo(event.messageIdLong) != null) message.delete().reason("Fix race condition starboard").queue()
                 starboardMessageWrapper.setStarboardInfo(
                     event.guild.idLong, event.channel.idLong, ogMessage.author.idLong, event.messageIdLong,
                     message.idLong, reactions, false, System.currentTimeMillis()
