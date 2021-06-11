@@ -12,5 +12,6 @@ COPY --from=builder ./etc/melijn/build/libs/ .
 ENTRYPOINT java \
     -Xmx${RAM_LIMIT} \
     -Dkotlin.script.classpath="/opt/melijn/melijn.jar" \
+    --add-opens java.base/java.lang=ALL-UNNAMED \
     -jar \
     ./melijn.jar
