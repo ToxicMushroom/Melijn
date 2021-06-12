@@ -50,7 +50,7 @@ val ktor = "1.6.0"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-c
 val apollo = "2.5.8" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.5.0" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 val kotlin = "1.5.10"
-val scrimage = "4.2.0.92-SNAPSHOT"
+val scrimage = "4.2.0.94-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/

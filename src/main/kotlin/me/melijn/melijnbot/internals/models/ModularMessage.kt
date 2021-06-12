@@ -65,7 +65,7 @@ data class ModularMessage(
 
     fun toMessage(): Message? {
         var membed = embed
-        if (messageContent == null && (membed == null || membed.isEmpty || !membed.isSendable)) return null
+        if (messageContent == null && (membed == null || !membed.isSendable)) return null
 
         // Timestamp handler
         if (membed != null && extra.containsKey("currentTimestamp")) {
@@ -75,8 +75,10 @@ data class ModularMessage(
         }
 
         val mb = MessageBuilder()
-            .setEmbed(membed)
             .setContent(messageContent)
+        if (membed?.isSendable == false) {
+            mb.setEmbed(membed)
+        }
 
         // Timestamp handler
         if (extra.containsKey("isPingable")) {
