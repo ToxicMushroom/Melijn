@@ -66,7 +66,6 @@ class BanService(
 
             createAndSendUnbanMessage(guild, selfUser, bannedUser, banAuthor, newBan)
         }
-
     }
 
     //Sends unban message to tempban logchannel and the unbanned user
@@ -79,18 +78,7 @@ class BanService(
     ) {
         val language = getLanguage(daoManager, -1, guild.idLong)
         val zoneId = getZoneId(daoManager, guild.idLong)
-
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNBAN) ?: return
-
-//        var success = false
-//        if (!bannedUser.isBot) {
-//
-//            val privateChannel = bannedUser.openPrivateChannel().awaitOrNull()
-//            if (privateChannel != null) {
-//                sendEmbed(privateChannel, msg)
-//                success = true
-//            }
-//        }
 
         val msgLc = getUnbanMessage(
             language,
@@ -116,20 +104,8 @@ class BanService(
         cause: String
     ) {
         val language = getLanguage(daoManager, -1, guild.idLong)
-//        val zoneId = getZoneId(daoManager, guild.idLong)
         val privZoneId = getZoneId(daoManager, guild.idLong, bannedUser.idLong)
-//        val msg = getUnbanMessage(language, zoneId, guild, bannedUser, banAuthor, unbanAuthor, ban, failedCause = cause)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNBAN) ?: return
-
-//        var success = false
-//        if (!bannedUser.isBot) {
-//
-//            val privateChannel = bannedUser.openPrivateChannel().awaitOrNull()
-//            if (privateChannel != null) {
-//                sendEmbed(privateChannel, msg)
-//                success = true
-//            }
-//        }
 
         val msgLc = getUnbanMessage(
             language,

@@ -60,7 +60,7 @@ class SoftBanWrapper(private val softBanDao: SoftBanDao) {
         return map
     }
 
-    suspend fun clear(guildId: Long, softbannedId: Long) {
+    fun clear(guildId: Long, softbannedId: Long) {
         softBanDao.clear(guildId, softbannedId)
     }
 
@@ -68,7 +68,7 @@ class SoftBanWrapper(private val softBanDao: SoftBanDao) {
         return softBanDao.getSoftBans(guildId, softbannedId)
     }
 
-    suspend fun remove(softBan: SoftBan) {
+    fun remove(softBan: SoftBan) {
         softBanDao.remove(softBan)
     }
 }

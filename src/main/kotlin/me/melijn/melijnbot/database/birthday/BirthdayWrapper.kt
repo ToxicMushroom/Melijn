@@ -15,7 +15,7 @@ class BirthdayWrapper(private val birthdayDao: BirthdayDao) {
         return birthdayDao.getBirthdays(dayOfYear)
     }
 
-    suspend fun setBirthday(userId: Long, birthday: Int, birthyear: Int?) {
+    fun setBirthday(userId: Long, birthday: Int, birthyear: Int?) {
         birthdayDao.set(userId, birthday, birthyear ?: 0)
     }
 
@@ -23,7 +23,7 @@ class BirthdayWrapper(private val birthdayDao: BirthdayDao) {
         return birthdayDao.get(userId)
     }
 
-    suspend fun unsetBirthday(userId: Long) {
+    fun unsetBirthday(userId: Long) {
         birthdayDao.remove(userId)
     }
 }

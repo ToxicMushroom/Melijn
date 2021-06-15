@@ -107,7 +107,7 @@ class BanWrapper(private val banDao: BanDao) {
             .withVariable("active", "${ban.active}")
     }
 
-    suspend fun remove(ban: Ban) {
+    fun remove(ban: Ban) {
         banDao.remove(ban)
     }
 }

@@ -33,10 +33,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 0)) return
 
             val channel = getTextChannelByArgsNMessage(context, 0, true) ?: return
             val starboardSettingsWrapper = context.daoManager.starboardSettingsWrapper

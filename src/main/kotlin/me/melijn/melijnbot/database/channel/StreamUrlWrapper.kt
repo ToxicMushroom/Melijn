@@ -14,12 +14,12 @@ class StreamUrlWrapper(private val streamUrlDao: StreamUrlDao) {
         return result
     }
 
-    suspend fun setUrl(guildId: Long, url: String) {
+    fun setUrl(guildId: Long, url: String) {
         streamUrlDao.set(guildId, url)
         streamUrlDao.setCacheEntry(guildId, url, NORMAL_CACHE)
     }
 
-    suspend fun removeUrl(guildId: Long) {
+    fun removeUrl(guildId: Long) {
         streamUrlDao.remove(guildId)
         streamUrlDao.setCacheEntry(guildId, "", NORMAL_CACHE)
     }

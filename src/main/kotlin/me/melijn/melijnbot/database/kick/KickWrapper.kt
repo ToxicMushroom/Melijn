@@ -10,7 +10,7 @@ import kotlin.math.min
 
 class KickWrapper(private val kickDao: KickDao) {
 
-    suspend fun addKick(kick: Kick) {
+    fun addKick(kick: Kick) {
         kickDao.add(kick)
     }
 
@@ -59,7 +59,7 @@ class KickWrapper(private val kickDao: KickDao) {
             .withVariable("kickId", kick.kickId)
     }
 
-    suspend fun clear(guildId: Long, kickedId: Long) {
+    fun clear(guildId: Long, kickedId: Long) {
         kickDao.clear(guildId, kickedId)
     }
 
@@ -67,7 +67,7 @@ class KickWrapper(private val kickDao: KickDao) {
         return kickDao.getKicks(guildId, kickedId)
     }
 
-    suspend fun remove(kick: Kick) {
+    fun remove(kick: Kick) {
         kickDao.remove(kick)
     }
 }
