@@ -92,8 +92,12 @@ data class ModularMessage(
         return try {
             mb.build()
         } catch (t: IllegalStateException) { // Fixes: Cannot build a Message with no content
-            mb.setContent("This message had no content. (This is placeholder text for empty messages)")
+            if (!mb.isEmpty) {
+                t.printStackTrace()
+                mb.setContent("This message has errors, report this to my devs").build()
+            } else mb.setContent("This message had no content. (This is placeholder text for empty messages)")
                 .build()
+
         }
     }
 
