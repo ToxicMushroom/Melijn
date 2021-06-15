@@ -25,7 +25,6 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
@@ -188,8 +187,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             ChannelType.STARBOARD,
             Permission.MESSAGE_WRITE,
             Permission.MESSAGE_EMBED_LINKS
-        )
-            ?: return
+        ) ?: return
+
         val msg = starboardMessageWrapper.getStarboardInfo(event.messageIdLong)
         if (msg == null) {
             if (event.channel.isNSFW) return
@@ -199,7 +198,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val settings = starboardSettings.getStarboardSettings(event.guild.idLong)
             if (reactions >= settings.minStars) {
                 val starboardMessage =
-                    getSendableStarboardMessage(event, reactions, ogMessage.author, event.channel, true) ?: return
+                    getSendableStarboardMessage(event, reactions, ogMessage.author, ogMessage, event.channel.idLong, true)
                 val message = sbchannel.sendMessage(starboardMessage).await()
                 message.addReaction("⭐").await()
                 if (starboardMessageWrapper.getStarboardInfo(event.messageIdLong) != null) message.delete().reason("Fix race condition starboard").queue()
@@ -211,8 +210,11 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         } else {
             if (msg.deleted) return
-            val sbReactionUsers = sbchannel.retrieveReactionUsersById(msg.starboardMessageId, "⭐").awaitOrNull()
-                ?.filter { !it.isBot }?.map { it.idLong } ?: return
+            val sbReactionUsers = sbchannel.retrieveReactionUsersById(msg.starboardMessageId, "⭐")
+                .awaitOrNull()
+                ?.filter { !it.isBot }
+                ?.map { it.idLong } ?: return
+
             val partStars1 = sbReactionUsers.size
             val ogChannel = event.guild.getTextChannelById(msg.ogChannelId)
             val partStars2N = ogChannel
@@ -220,16 +222,13 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 ?.awaitOrNull()
                 ?.filter { !it.isBot && !sbReactionUsers.contains(it.idLong) }
                 ?.size
-            if (partStars2N == null) {
-                starboardMessageWrapper.updateChannel(msg.ogMessageId, 0)
-            }
 
             val partStars2 = partStars2N ?: 0
             val newStarCount = partStars1 + partStars2
             if (newStarCount != msg.stars) {
                 val message = sbchannel.retrieveMessageById(msg.starboardMessageId).await()
                 val author = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull()
-                val newContent = getSendableStarboardMessage(event, newStarCount, author, ogChannel, false)
+                val newContent = getSendableStarboardMessage(event, newStarCount, author, message, msg.ogChannelId, false)
                 starboardMessageWrapper.setStarboardInfo(
                     event.guild.idLong,
                     msg.ogChannelId,
@@ -240,27 +239,26 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                     msg.deleted,
                     msg.moment
                 )
-                newContent?.let { message.editMessage(it).queue() }
+                message.editMessage(newContent).queue()
             }
         }
     }
 
-    private suspend fun getSendableStarboardMessage(
+    private fun getSendableStarboardMessage(
         event: GuildMessageReactionAddEvent,
         stars: Int,
         author: User?,
-        channel: TextChannel?,
-        new: Boolean
-    ): Message? {
-        val ogMessage = event.channel.retrieveMessageById(event.messageIdLong).await() ?: return null
-
+        message: Message,
+        ogChannelId: Long,
+        append: Boolean
+    ): Message {
         val eb = Embedder(
             container.daoManager, event.guild.idLong, author?.idLong
                 ?: -1
-        )
-            .setAuthor(author?.asTag ?: "deleted_user#0000", null, author?.effectiveAvatarUrl)
-        if (ogMessage.embeds.size > 0) {
-            val embed = ogMessage.embeds[0]
+        ).setAuthor(author?.asTag ?: "deleted_user#0000", null, author?.effectiveAvatarUrl)
+
+        if (message.embeds.size > 0) {
+            val embed = message.embeds[0]
             eb.setTitle(embed.title, embed.url)
                 .setDescription(embed.description)
                 .setColor(embed.color)
@@ -273,18 +271,18 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 eb.addField(field.name, field.value, field.isInline)
             }
         } else {
-            eb.setDescription(ogMessage.contentRaw.replace("[", "\\["))
+            eb.setDescription(message.contentRaw.replace("[", "\\["))
         }
-        if (new || channel?.idLong == event.channel.idLong) eb.appendDescription("\n[`jump`](${ogMessage.jumpUrl})")
+        if (append) eb.appendDescription("\n[`jump`](${message.jumpUrl})")
 
-        for (attachment in ogMessage.attachments) {
+        for (attachment in message.attachments) {
             if (attachment.isImage) {
                 eb.setImage(attachment.url)
             }
         }
 
         val messageBuilder = MessageBuilder()
-            .setContent("`$stars⭐` message by ${author?.asMention ?: "`deleted_user#0000`"} in ${channel?.asMention ?: "`#deleted_channel`"}")
+            .setContent("`$stars⭐` message by ${author?.asMention ?: "`deleted_user#0000`"} in <#$ogChannelId>")
             .setEmbed(eb.build())
 
         return messageBuilder.build()
