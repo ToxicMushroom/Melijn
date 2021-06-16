@@ -76,7 +76,7 @@ data class ModularMessage(
 
         val mb = MessageBuilder()
             .setContent(messageContent)
-        if (membed?.isSendable == false) {
+        if (membed?.isSendable == true) {
             mb.setEmbed(membed)
         }
 
