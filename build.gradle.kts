@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("application")
-    id("com.apollographql.apollo") version "2.5.8"
+    id("com.apollographql.apollo") version "2.5.9"
     id("com.github.johnrengelman.shadow") version "7.0.0"
     kotlin("jvm") version "1.5.10"
 }
@@ -47,14 +47,14 @@ repositories {
 
 val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
 val ktor = "1.6.0"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
-val apollo = "2.5.8" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
+val apollo = "2.5.9" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.5.0" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 val kotlin = "1.5.10"
 val scrimage = "4.2.0.94-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_280") {
+    implementation("net.dv8tion:JDA:4.3.0_282") {
         exclude("opus-java")
     }
 
