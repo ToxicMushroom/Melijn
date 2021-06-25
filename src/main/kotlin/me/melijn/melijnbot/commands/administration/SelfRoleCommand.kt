@@ -377,7 +377,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 val body = StringBuilder()
                 var part = 1
                 for ((index, entry) in entries.withIndex()) {
-                    if (body.length + entry.length > MessageEmbed.TEXT_MAX_LENGTH || Math.floorDiv(index, 20) == 1) {
+                    if (body.length + entry.length > MessageEmbed.TEXT_MAX_LENGTH || (index + 1) % 20 == 0) {
                         val title = titleFormat
                             .withVariable("group", group.groupName)
                             .withVariable("part", part++)
