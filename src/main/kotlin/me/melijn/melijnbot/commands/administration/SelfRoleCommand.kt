@@ -60,8 +60,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
 
             val selfRoles = context.daoManager.selfRoleWrapper.getMap(context.guildId)[group.groupName]
-            val range = if (context.args.size > 3) {
-                getIntegersFromArgsNMessage(context, 3, 1, selfRoles?.length() ?: 1) ?: return
+            val range = if (context.args.size > 4) {
+                getIntegersFromArgsNMessage(context, 4, 1, selfRoles?.length() ?: 1) ?: return
             } else Array(selfRoles?.length() ?: 0) { i -> i + 1 }.toIntArray()
 
             val message = channel.retrieveMessageById(messageId).awaitOrNull()
