@@ -2,14 +2,14 @@ version: "3.9"
 # info: ports and volumes use host:container format
 services:
   melijn-redis:
-    image: redis:6.2.3
+    image: redis:6.2.4
     container_name: "melijn-redis"
     restart: always
     ports:
       - 6379:6379
     command: redis-server --requirepass replacethiswithasecurepassword # Replace the replacethiswithasecurepassword with a secure password
   melijn-postgres:
-    image: postgres:13-2
+    image: postgres:13.3
     container_name: "melijn-postgres"
     restart: always
     ports:
