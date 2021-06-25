@@ -57,6 +57,13 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
             val channel = getTextChannelByArgsNMessage(context, 1) ?: return
             val messageId = getLongFromArgNMessage(context, 2) ?: return
+
+
+            val selfRoles = context.daoManager.selfRoleWrapper.getMap(context.guildId)[group.groupName]
+            val range = if (context.args.size > 3) {
+                getIntegersFromArgsNMessage(context, 3, 1, selfRoles?.length() ?: 1) ?: return
+            } else Array(selfRoles?.length() ?: 0) { i -> i + 1 }.toIntArray()
+
             val message = channel.retrieveMessageById(messageId).awaitOrNull()
             if (message == null) {
                 sendRsp(context, "**$messageId** doesn't exist")
@@ -67,8 +74,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 getBooleanFromArgNMessage(context, 3) ?: return
             } else false) && (!group.messageIds.contains(message.idLong) || group.channelId != channel.idLong)
 
-            val selfRoles = context.daoManager.selfRoleWrapper.getMap(context.guildId)[group.groupName]
-
             if (selfRoles == null || selfRoles.isEmpty) {
                 val msg = context.getTranslation("$root.noselfroles.forgroup")
                     .withVariable("group", group.groupName)
@@ -78,6 +83,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val emotejiList = mutableListOf<String>()
             val size = selfRoles.length()
             for (i in 0 until size) {
+                if (!range.contains(i + 1)) continue
                 val dataEntry = selfRoles.getArray(i)
                 val emoteji = dataEntry.getString(0)
                 emotejiList.add(emoteji)
@@ -278,7 +284,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                         val emote = context.guild.getEmoteById(emoteji)
                             ?: context.shardManager.getEmoteById(emoteji)
                             ?: context.daoManager.emoteCache.getEmote(emoteji.toLong())?.run {
-                                val guildImpl = context.shardManager.guilds.first { it.idLong != msg.guild.idLong } as GuildImpl
+                                val guildImpl =
+                                    context.shardManager.guilds.first { it.idLong != msg.guild.idLong } as GuildImpl
                                 EmoteImpl(emoteji.toLong(), guildImpl)
                                     .setName(this.name)
                                     .setAnimated(this.isAnimated)
@@ -854,9 +861,15 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     return
                 }
 
-                val selfRoleAble = if (context.args.size > 1) { getBooleanFromArgNMessage(context, 1) ?: return } else true
-                val limitToOneRole = if (context.args.size > 2) { getBooleanFromArgNMessage(context, 2) ?: return } else false
-                val requiresPermission = if (context.args.size > 2) { getBooleanFromArgNMessage(context, 3) ?: return } else false
+                val selfRoleAble = if (context.args.size > 1) {
+                    getBooleanFromArgNMessage(context, 1) ?: return
+                } else true
+                val limitToOneRole = if (context.args.size > 2) {
+                    getBooleanFromArgNMessage(context, 2) ?: return
+                } else false
+                val requiresPermission = if (context.args.size > 2) {
+                    getBooleanFromArgNMessage(context, 3) ?: return
+                } else false
 
                 val newSr = SelfRoleGroup(
                     name,
