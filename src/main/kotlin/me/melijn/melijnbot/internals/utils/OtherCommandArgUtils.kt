@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import java.time.Instant
 import java.util.*
 
-// warning the scanned numbers are decreased by one
+/** warning the scanned numbers are decreased by one **/
 suspend fun getIntegersFromArgsNMessage(context: ICommandContext, index: Int, start: Int, end: Int): IntArray? {
 
     val args = context.getRawArgPart(index).remove(" ").split(",")

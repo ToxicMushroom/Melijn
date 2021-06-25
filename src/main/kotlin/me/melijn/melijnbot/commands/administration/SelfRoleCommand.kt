@@ -62,7 +62,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val selfRoles = context.daoManager.selfRoleWrapper.getMap(context.guildId)[group.groupName]
             val range = if (context.args.size > 4) {
                 getIntegersFromArgsNMessage(context, 4, 1, selfRoles?.length() ?: 1) ?: return
-            } else Array(selfRoles?.length() ?: 0) { i -> i + 1 }.toIntArray()
+            } else Array(selfRoles?.length() ?: 0) { i -> i }.toIntArray()
 
             val message = channel.retrieveMessageById(messageId).awaitOrNull()
             if (message == null) {
@@ -83,7 +83,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val emotejiList = mutableListOf<String>()
             val size = selfRoles.length()
             for (i in 0 until size) {
-                if (!range.contains(i + 1)) continue
+                if (!range.contains(i)) continue
                 val dataEntry = selfRoles.getArray(i)
                 val emoteji = dataEntry.getString(0)
                 emotejiList.add(emoteji)
