@@ -5,7 +5,7 @@ plugins {
     id("application")
     id("com.apollographql.apollo") version "2.5.9"
     id("com.github.johnrengelman.shadow") version "7.0.0"
-    kotlin("jvm") version "1.5.10"
+    kotlin("jvm") version "1.5.20"
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
@@ -49,12 +49,12 @@ val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jacks
 val ktor = "1.6.0"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.9" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.5.0" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-val kotlin = "1.5.10"
+val kotlin = "1.5.20"
 val scrimage = "4.2.0.94-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_282") {
+    implementation("net.dv8tion:JDA:4.3.0_283") {
         exclude("opus-java")
     }
 
@@ -65,7 +65,7 @@ dependencies {
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://github.com/sedmelluq/lavaplayer
-    implementation("com.sedmelluq:lavaplayer:1.3.77")
+    implementation("com.sedmelluq:lavaplayer:1.3.78-pre")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fllklient%2FLavalink-Klient
     implementation("me.melijn.llklient:Lavalink-Klient:2.2.0")
