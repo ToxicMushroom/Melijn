@@ -4,6 +4,7 @@ import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.toUCC
@@ -58,6 +59,7 @@ suspend fun Throwable.sendInGuildSuspend(
     val sb = StringBuilder()
 
     sb.append("**CaseID**: `").append(caseId).appendLine("`")
+    sb.append("**PodID**: `").appendLine(PodInfo.podId)
     if (guild != null) {
         sb.append("**Guild**: ").append(guild.name).append(" | ").appendLine(guild.id)
     }
