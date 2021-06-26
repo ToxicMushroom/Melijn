@@ -7,7 +7,6 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Role
 
@@ -15,16 +14,13 @@ class ToggleRoleCommand : AbstractCommand("command.togglerole") {
 
     init {
         name = "toggleRole"
-        aliases = arrayOf("tr")
+        aliases = arrayOf("toggler")
         commandCategory = CommandCategory.MODERATION
         discordPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.args.size < 2) {
-            sendSyntax(context)
-            return
-        }
+        if (argSizeCheckFailed(context, 1)) return
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
         val role = (getRoleByArgsNMessage(context, 1, true, canInteract = true)) ?: return
         val member = context.guild.retrieveMember(targetUser).awaitOrNull() ?: return
