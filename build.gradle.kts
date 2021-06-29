@@ -54,7 +54,7 @@ val scrimage = "4.2.0.94-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_286") {
+    implementation("net.dv8tion:JDA:4.3.0_288") {
         exclude("opus-java")
     }
 
@@ -65,10 +65,10 @@ dependencies {
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://github.com/sedmelluq/lavaplayer
-    implementation("com.sedmelluq:lavaplayer:1.3.78-pre2")
+    implementation("com.sedmelluq:lavaplayer:1.3.78")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fllklient%2FLavalink-Klient
-    implementation("me.melijn.llklient:Lavalink-Klient:2.2.0")
+    implementation("me.melijn.llklient:Lavalink-Klient:2.2.3")
 
     api(kotlin("script-util"))
     api(kotlin("compiler"))
