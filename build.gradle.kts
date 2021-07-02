@@ -46,7 +46,7 @@ repositories {
 }
 
 val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-val ktor = "1.6.0"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
+val ktor = "1.6.1"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.9" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.5.0" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 val kotlin = "1.5.20"
@@ -54,7 +54,7 @@ val scrimage = "4.2.0.94-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_288") {
+    implementation("net.dv8tion:JDA:4.3.0_289") {
         exclude("opus-java")
     }
 
@@ -84,7 +84,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:4.0.3")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.2.20")
+    implementation("org.postgresql:postgresql:42.2.22")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinX")
@@ -131,7 +131,7 @@ dependencies {
     implementation("com.apollographql.apollo:apollo-coroutines-support:$apollo")
 
     // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
-    implementation("io.lettuce:lettuce-core:6.1.2.RELEASE")
+    implementation("io.lettuce:lettuce-core:6.1.3.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
