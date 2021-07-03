@@ -429,12 +429,13 @@ class LockCommand : AbstractCommand("command.lock") {
         var modifiedMelijnOverride = false
         for (perm in denyList) {
             if ((melijnFlags.first and perm.rawValue) == 0L) { // if the permission to allow is not yet allowed
+                permsChangedCounter++
                 melijnManager.grant(perm)
                 modifiedMelijnOverride = true
             }
         }
         if (modifiedMelijnOverride) {
-            permsChangedCounter++
+            overrideCounter++
             melijnManager.reason("(lock) " + context.author.asTag).queue()
         }
 
