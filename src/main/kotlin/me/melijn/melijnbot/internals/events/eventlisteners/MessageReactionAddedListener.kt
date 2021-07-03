@@ -56,7 +56,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val textChannel = if (event.isFromGuild) event.textChannel else null
         event.deferReply(true)
             .addEmbeds(
-                HelpCommand.ListArg.getHelpListMessage(container, textChannel, event.user,null).build()
+                HelpCommand.ListArg.getHelpListMessage(container, textChannel, event.user, null).build()
             )
             .queue()
     }
@@ -183,7 +183,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         val starboardSettings = container.daoManager.starboardSettingsWrapper
         val starboardMessageWrapper = container.daoManager.starboardMessageWrapper
-        val sbchannel = event.guild.getAndVerifyChannelByType(
+        val sbChannel = event.guild.getAndVerifyChannelByType(
             container.daoManager,
             ChannelType.STARBOARD,
             Permission.MESSAGE_WRITE,
@@ -199,14 +199,25 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val settings = starboardSettings.getStarboardSettings(event.guild.idLong)
             if (reactions >= settings.minStars) {
                 val starboardMessage =
-                    getSendableStarboardMessage(event, reactions, ogMessage.author, ogMessage, event.channel.idLong, true)
-                val sendAction = sbchannel.sendMessage(starboardMessage)
+                    getSendableStarboardMessage(
+                        event,
+                        reactions,
+                        ogMessage.author,
+                        ogMessage,
+                        event.channel.idLong,
+                        true
+                    )
+                val sendAction = sbChannel.sendMessage(starboardMessage)
                 if (ogMessage.attachments.isNotEmpty()) {
-                    val attach = ogMessage.attachments.first()
-                    sendAction.addFile(attach.retrieveInputStream().await(), attach.fileName + "." + attach.fileExtension)
+                    ogMessage.attachments.firstOrNull { it.isVideo }?.let { video ->
+                        sendAction.addFile(
+                            video.retrieveInputStream().await(),
+                            video.fileName + "." + video.fileExtension
+                        )
+                    }
                 }
                 val message = sendAction.await()
-                if (ogMessage.guild.selfMember.hasPermission(sbchannel, Permission.MESSAGE_ADD_REACTION)) {
+                if (ogMessage.guild.selfMember.hasPermission(sbChannel, Permission.MESSAGE_ADD_REACTION)) {
                     message.addReaction("⭐").await()
                 }
                 if (starboardMessageWrapper.getStarboardInfo(event.messageIdLong) != null) {
@@ -220,7 +231,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         } else {
             if (msg.deleted) return
-            val sbReactionUsers = sbchannel.retrieveReactionUsersById(msg.starboardMessageId, "⭐")
+            val sbReactionUsers = sbChannel.retrieveReactionUsersById(msg.starboardMessageId, "⭐")
                 .awaitOrNull()
                 ?.filter { !it.isBot }
                 ?.map { it.idLong } ?: return
@@ -236,9 +247,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val partStars2 = partStars2N ?: 0
             val newStarCount = partStars1 + partStars2
             if (newStarCount != msg.stars) {
-                val message = sbchannel.retrieveMessageById(msg.starboardMessageId).await()
+                val message = sbChannel.retrieveMessageById(msg.starboardMessageId).await()
                 val author = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull()
-                val newContent = getSendableStarboardMessage(event, newStarCount, author, message, msg.ogChannelId, false)
+                val newContent =
+                    getSendableStarboardMessage(event, newStarCount, author, message, msg.ogChannelId, false)
                 starboardMessageWrapper.setStarboardInfo(
                     event.guild.idLong,
                     msg.ogChannelId,
@@ -293,7 +305,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         val messageBuilder = MessageBuilder()
             .setContent("`$stars⭐` message by ${author?.asMention ?: "`deleted_user#0000`"} in <#$ogChannelId>")
-            .setEmbed(eb.build())
+            .setEmbeds(eb.build())
 
         return messageBuilder.build()
     }
