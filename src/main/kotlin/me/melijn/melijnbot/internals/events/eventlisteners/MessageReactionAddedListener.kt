@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.games.PokerCommand
 import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
@@ -199,9 +200,18 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             if (reactions >= settings.minStars) {
                 val starboardMessage =
                     getSendableStarboardMessage(event, reactions, ogMessage.author, ogMessage, event.channel.idLong, true)
-                val message = sbchannel.sendMessage(starboardMessage).await()
-                message.addReaction("⭐").await()
-                if (starboardMessageWrapper.getStarboardInfo(event.messageIdLong) != null) message.delete().reason("Fix race condition starboard").queue()
+                val sendAction = sbchannel.sendMessage(starboardMessage)
+                if (ogMessage.attachments.isNotEmpty()) {
+                    val attach = ogMessage.attachments.first()
+                    sendAction.addFile(attach.retrieveInputStream().await(), attach.fileName + "." + attach.fileExtension)
+                }
+                val message = sendAction.await()
+                if (ogMessage.guild.selfMember.hasPermission(sbchannel, Permission.MESSAGE_ADD_REACTION)) {
+                    message.addReaction("⭐").await()
+                }
+                if (starboardMessageWrapper.getStarboardInfo(event.messageIdLong) != null) {
+                    message.delete().reason("Fix race condition starboard").queue()
+                }
                 starboardMessageWrapper.setStarboardInfo(
                     event.guild.idLong, event.channel.idLong, ogMessage.author.idLong, event.messageIdLong,
                     message.idLong, reactions, false, System.currentTimeMillis()
