@@ -54,7 +54,7 @@ class StarboardMessageDao(driverManager: DriverManager) : CacheDBDao(driverManag
 
     fun delete(messageId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE messageId = ? OR starboardMessageId = ?",
-            messageId)
+            messageId, messageId)
     }
 }
 
