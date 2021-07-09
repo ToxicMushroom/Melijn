@@ -40,9 +40,9 @@ repositories {
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://duncte123.jfrog.io/artifactory/maven")
     maven("https://nexus.melijn.com/repository/maven-public/")
-    maven("https://nexus.melijn.com/repository/jitpack/") // pooppack mirror
     maven("https://nexus.melijn.com/repository/jcenter-mirror/")
     mavenLocal()
+    maven("https://nexus.melijn.com/repository/jitpack/") // pooppack mirror
 }
 
 val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
