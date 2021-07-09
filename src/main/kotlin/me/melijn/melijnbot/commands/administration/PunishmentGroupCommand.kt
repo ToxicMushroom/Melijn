@@ -167,15 +167,25 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
         override suspend fun execute(context: ICommandContext) {
             val pg = getSelectedPGroup(context) ?: return
-            val expireMillis = (getDurationByArgsNMessage(context, 0, context.args.size) ?: return) * 1000
-            context.daoManager.autoPunishmentGroupWrapper.setExpireTime(context.guildId, pg.groupName, expireMillis)
+            val wrapper = context.daoManager.autoPunishmentGroupWrapper
+            if (context.args.isNotEmpty()) {
+                val expireMillis = (getDurationByArgsNMessage(context, 0, context.args.size) ?: return) * 1000
+                wrapper.setExpireTime(context.guildId, pg.groupName, expireMillis)
 
-            val msg = context.getTranslation("$root.set")
-                .withVariable("group", pg.groupName)
-                .withVariable("duration", getDurationString(expireMillis))
-            sendRsp(context, msg)
+                val msg = context.getTranslation("$root.set")
+                    .withVariable("group", pg.groupName)
+                    .withVariable("duration", getDurationString(expireMillis))
+                sendRsp(context, msg)
+            } else {
+                val time = wrapper.getList(context.guildId).first { it.groupName == pg.groupName }.expireTime
+
+                val msg = context.getTranslation("$root.get")
+                    .withVariable("group", pg.groupName)
+                    .withVariable("duration", getDurationString(time))
+                sendRsp(context, msg)
+            }
+
         }
-
     }
 
     class SetPPTriggerArg(parent: String) : AbstractCommand("$parent.setpunishmentpointtrigger") {

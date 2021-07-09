@@ -18,7 +18,7 @@ object SpammingUtil {
         val spamList = spamMap.getOrDefault(event.guild.idLong, emptyList()).toMutableList()
         val cTime = System.currentTimeMillis()
         val possibleSpammer = spamList.firstOrNull { (userId) -> userId == member.idLong }
-            ?: SpammingUser(member.idLong, cTime, 1)
+            ?: SpammingUser(member.idLong, cTime, 0)
 
         val shortLimit = 0.9 // messages per second for 4 seconds
         val medLimit = 0.75 // messages per second for 20 seconds
