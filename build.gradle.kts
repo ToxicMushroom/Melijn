@@ -54,7 +54,7 @@ val scrimage = "4.2.0.94-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_293") {
+    implementation("net.dv8tion:JDA:4.3.0_295") {
         exclude("opus-java")
     }
 
@@ -84,7 +84,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:4.0.3")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.2.22")
+    implementation("org.postgresql:postgresql:42.2.23")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinX")
