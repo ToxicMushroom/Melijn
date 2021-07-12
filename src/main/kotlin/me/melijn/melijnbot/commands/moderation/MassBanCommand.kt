@@ -40,13 +40,29 @@ class MassBanCommand : AbstractCommand("command.massban") {
         val deldays = 7
         var offset = 0
         val size = context.args.size
+        val failedRetrieves = mutableListOf<Int>() // arg indexes of failed arguments
         val users = mutableMapOf<User, Member?>()
         for (i in 0 until size) {
             if (context.args[i] == "-r") {
                 break
             }
             offset++
-            val user = retrieveUserByArgsNMessage(context, i) ?: return
+            val user = retrieveUserByArgsNMessage(context, i)
+            if (user == null) {
+                failedRetrieves.add(i)
+                if (failedRetrieves.size > 3 && failedRetrieves.size > users.size) {
+                    sendRsp(
+                        context,
+                        "Failed to retrieve: ```${
+                            failedRetrieves.joinToString(", ") { context.args[it] }.escapeCodeblockMarkdown()
+                        }```\n" +
+                            "Stopping massban because more then half of the checked users have failed to retrieve, please remove these users from the command and try again."
+                    )
+                    return
+                }
+
+                continue
+            }
 
             val member = context.guild.retrieveMember(user).awaitOrNull()
             if (member != null) {
@@ -103,9 +119,10 @@ class MassBanCommand : AbstractCommand("command.massban") {
                 sendMsgAwaitEL(it, banning)
             }?.firstOrNull()
 
-            if (continueBanning(context, targetUser, ban, activeBan, deldays, message)) success++
+            if (continueBanning(context, targetUser, ban, deldays, message)) success++
             else failed++
         }
+        failed += failedRetrieves.size
 
         val msg = context.getTranslation("$root.banned.${if (failed == 0) "success" else "ok"}")
             .withVariable("success", success)
@@ -121,11 +138,19 @@ class MassBanCommand : AbstractCommand("command.massban") {
         )
 
         val bannedMessageLc =
-            getMassBanMessage(context.getLanguage(), context.getTimeZoneId(), context.guild, users.keys, context.author, ban)
+            getMassBanMessage(
+                context.getLanguage(),
+                context.getTimeZoneId(),
+                context.guild,
+                users.keys,
+                context.author,
+                ban
+            )
         val doaManager = context.daoManager
         val logChannel = context.guild.getAndVerifyLogChannelByType(doaManager, LogChannelType.MASS_BAN)
         logChannel?.let {
-            sendEmbed(doaManager.embedDisabledWrapper, it, bannedMessageLc)
+            for (msg in bannedMessageLc)
+                sendEmbed(doaManager.embedDisabledWrapper, it, msg)
         }
         sendRsp(context, msg)
     }
@@ -134,7 +159,6 @@ class MassBanCommand : AbstractCommand("command.massban") {
         context: ICommandContext,
         targetUser: User,
         ban: Ban,
-        activeBan: Ban?,
         deldays: Int,
         banningMessage: Message? = null,
     ): Boolean {
@@ -150,7 +174,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
                 .reason("(massBan) " + context.author.asTag + ": " + ban.reason)
                 .async { daoManager.banWrapper.setBan(ban) }
 
-            banningMessage?.editMessage(
+            banningMessage?.editMessageEmbeds(
                 bannedMessageDm
             )?.override(true)?.queue()
             true
@@ -161,7 +185,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
         }
     }
 
-    fun getMassBanMessage(
+    private fun getMassBanMessage(
         language: String,
         zoneId: ZoneId,
         guild: Guild,
@@ -171,7 +195,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
         lc: Boolean = false,
         isBot: Boolean = false,
         received: Boolean = true
-    ): MessageEmbed {
+    ): List<MessageEmbed> {
         val banDuration = ban.endTime?.let { endTime ->
             getDurationString((endTime - ban.startTime))
         } ?: i18n.getTranslation(language, "infinite")
@@ -214,11 +238,21 @@ class MassBanCommand : AbstractCommand("command.massban") {
             .withVariable(PLACEHOLDER_USER, banAuthor.asTag)
             .withVariable("spaces", getAtLeastNCodePointsAfterName(banAuthor) + "\u200B")
 
-        return EmbedBuilder()
+        val hot = mutableListOf<MessageEmbed>()
+        val parts = StringUtils.splitMessageWithCodeBlocks(description, MessageEmbed.DESCRIPTION_MAX_LENGTH, 64, "LDIF")
+        val eb = EmbedBuilder()
             .setAuthor(author, null, banAuthor.effectiveAvatarUrl)
             .setColor(0xDA31FC)
-            .setDescription(description)
-            .build()
+        for ((index, part) in parts.withIndex()) {
+            if (index != 0) eb.setAuthor(null)
+            hot.add(
+                eb
+                    .setDescription(part)
+                    .build()
+            )
+        }
+
+        return hot
     }
 }
 
