@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.utils.message.sendFile
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import javax.imageio.ImageIO
 
 object ImageCommandUtil {
@@ -73,7 +74,12 @@ object ImageCommandUtil {
         message: String? = null,
         extension: String = "gif"
     ) {
-        val gif = GifDecoder.read(image.bytes)
+        val gif = try {
+            GifDecoder.read(image.bytes)
+        } catch (t: IOException) {
+            sendRsp(context, "Not a valid gif, (some tenor and giphy urls are actually mp4's)")
+            return
+        }
         val baos = ByteArrayOutputStream()
         ImageIO.createImageOutputStream(baos).use { ios ->
             GifSequenceWriter(ios, gif.repetitions).use { gifWriter ->
