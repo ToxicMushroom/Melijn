@@ -756,6 +756,12 @@ suspend fun notEnoughPermissionsAndMessage(
     context: ICommandContext,
     channel: GuildChannel,
     vararg perms: Permission
+): Boolean = notEnoughPermissionsAndMessage(context, channel, perms.toList())
+
+suspend fun notEnoughPermissionsAndMessage(
+    context: ICommandContext,
+    channel: GuildChannel,
+    perms: Collection<Permission>
 ): Boolean {
     val member = channel.guild.selfMember
     val result = notEnoughPermissions(member, channel, perms.toList())
@@ -782,6 +788,7 @@ suspend fun notEnoughPermissionsAndMessage(
     }
     return false
 }
+
 
 fun notEnoughPermissions(
     member: Member,
