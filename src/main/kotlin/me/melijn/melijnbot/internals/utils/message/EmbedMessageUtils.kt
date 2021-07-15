@@ -34,7 +34,7 @@ suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, textChannel: TextChannel
         !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
     ) {
 
-        val message = textChannel.sendMessage(embed).awaitOrNull()
+        val message = textChannel.sendMessageEmbeds(embed).awaitOrNull()
             ?: return emptyList()
 
         TaskManager.async(textChannel) {
@@ -46,14 +46,15 @@ suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, textChannel: TextChannel
         sendEmbedAsResponseAwaitEL(textChannel, daoManager, embed)
     }
 }
-fun sendRsp(context: ICommandContext, msg: Message) {
+
+suspend fun sendRsp(context: ICommandContext, msg: Message) {
     if (context.isFromGuild) {
         sendRsp(context.textChannel, context.daoManager, msg)
     } else {
-        sendRsp(context.privateChannel,context.daoManager, msg)
+        sendRsp(context.privateChannel, context.daoManager, msg)
     }
-
 }
+
 fun sendEmbed(context: ICommandContext, embed: MessageEmbed) {
     if (context.isFromGuild) {
         sendEmbed(context.daoManager.embedDisabledWrapper, context.textChannel, embed)
@@ -71,7 +72,7 @@ suspend fun sendEmbedRsp(context: ICommandContext, embed: MessageEmbed) {
     }
 }
 
-fun sendEmbedRsp(daoManager: DaoManager, textChannel: TextChannel, embed: MessageEmbed) {
+suspend fun sendEmbedRsp(daoManager: DaoManager, textChannel: TextChannel, embed: MessageEmbed) {
     val guild = textChannel.guild
     if (!textChannel.canTalk()) {
         throw IllegalArgumentException("No permission to talk in this channel")
@@ -79,21 +80,19 @@ fun sendEmbedRsp(daoManager: DaoManager, textChannel: TextChannel, embed: Messag
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
         !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
     ) {
-        TaskManager.async(textChannel) {
-            val message = try {
-                textChannel.sendMessage(embed).await()
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                return@async
-            }
-            val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
-            val seconds = timeMap[textChannel.idLong] ?: return@async
-
-            delay(seconds * 1000L)
-            Container.instance.botDeletedMessageIds.add(message.idLong)
-
-            message.delete().queue(null, { Container.instance.botDeletedMessageIds.remove(message.idLong) })
+        val message = try {
+            textChannel.sendMessageEmbeds(embed).await()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            return
         }
+        val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
+        val seconds = timeMap[textChannel.idLong] ?: return
+
+        delay(seconds * 1000L)
+        Container.instance.botDeletedMessageIds.add(message.idLong)
+
+        message.delete().queue(null) { Container.instance.botDeletedMessageIds.remove(message.idLong) }
 
     } else {
         sendEmbedAsMessageRsp(daoManager, textChannel, embed)
@@ -110,7 +109,7 @@ suspend fun sendEmbedAwaitEL(context: ICommandContext, embed: MessageEmbed): Lis
 
 fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed) {
     if (privateChannel.user.isBot) return
-    privateChannel.sendMessage(embed).queue(null, {})
+    privateChannel.sendMessageEmbeds(embed).queue(null) {}
 }
 
 suspend fun sendEmbedAwaitEL(privateChannel: PrivateChannel, embed: MessageEmbed): List<Message> {
@@ -135,7 +134,7 @@ suspend fun sendEmbedAwaitEL(
         !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
     ) {
 
-        val msg = textChannel.sendMessage(embed).awaitOrNull()
+        val msg = textChannel.sendMessageEmbeds(embed).awaitOrNull()
         msg?.let { listOf(it) } ?: emptyList()
 
     } else {
@@ -151,7 +150,7 @@ fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChann
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
         !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)
     ) {
-        textChannel.sendMessage(embed).queue()
+        textChannel.sendMessageEmbeds(embed).queue()
     } else {
         sendEmbedAsMessage(textChannel, embed)
     }

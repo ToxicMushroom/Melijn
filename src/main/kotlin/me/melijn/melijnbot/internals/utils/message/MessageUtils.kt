@@ -17,6 +17,8 @@ import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.objectMapper
 import net.dv8tion.jda.api.MessageBuilder
+import net.dv8tion.jda.api.MessageBuilder.SplitPolicy
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.internal.entities.DataMessage
 import net.dv8tion.jda.internal.entities.UserImpl
@@ -148,7 +150,7 @@ suspend fun sendRspOrMsg(textChannel: TextChannel, daoManager: DaoManager, msg: 
     }
 }
 
-fun sendRsp(channel: TextChannel, httpClient: HttpClient, daoManager: DaoManager, msg: ModularMessage) {
+suspend fun sendRsp(channel: TextChannel, httpClient: HttpClient, daoManager: DaoManager, msg: ModularMessage) {
     val message: Message? = msg.toMessage()
     when {
         message == null -> sendRspAttachments(daoManager, httpClient, channel, msg.attachments)
@@ -163,24 +165,44 @@ fun sendRsp(channel: TextChannel, httpClient: HttpClient, daoManager: DaoManager
     }
 }
 
-fun sendRsp(channel: TextChannel, daoManager: DaoManager, message: Message) {
+suspend fun sendRsp(channel: TextChannel, daoManager: DaoManager, message: Message) {
     require(channel.canTalk()) {
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
 
-    TaskManager.async(channel) {
-        val msg = channel.sendMessage(message).awaitOrNull() ?: return@async
+    if ((channel.guild.selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS) &&
+            !daoManager.embedDisabledWrapper.embedDisabledCache.contains(channel.guild.idLong)) ||
+        message.embeds.isEmpty()
+    ) {
+        val msg = try {
+            channel.sendMessage(message).await()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            return
+        }
 
         handleRspDelete(daoManager, msg)
-    }
-}
-fun sendRsp(channel: PrivateChannel, daoManager: DaoManager, message: Message) {
-    TaskManager.async(channel) {
-        val msg = channel.sendMessage(message).awaitOrNull() ?: return@async
+    } else {
+        val mb = MessageBuilder(message)
+            .setEmbeds(emptyList())
 
-        handleRspDelete(daoManager, msg)
+        val stringed = "\n" + message.embeds.joinToString("\n\n") { it.toMessage() }
+        mb.append(stringed)
+        val messages = mb.buildAll(
+            SplitPolicy { i: Int, b: MessageBuilder -> (i + Message.MAX_CONTENT_LENGTH).coerceAtMost(b.length()) }
+        )
+        for (noEmbedMsg in messages) {
+            sendRsp(channel, daoManager, noEmbedMsg)
+        }
     }
 }
+
+suspend fun sendRsp(channel: PrivateChannel, daoManager: DaoManager, message: Message) {
+    val msg = channel.sendMessage(message).awaitOrNull() ?: return
+
+    handleRspDelete(daoManager, msg)
+}
+
 suspend fun sendMsgAwaitN(privateChannel: PrivateChannel, httpClient: HttpClient, msg: ModularMessage): Message? {
     val message: Message? = msg.toMessage()
     return when {
@@ -478,7 +500,7 @@ suspend fun handleRspDelete(daoManager: DaoManager, msgList: MutableList<Message
 
     channel.deleteMessagesByIds(
         msgIds.map { it.toString() }
-    ).queue(null, { Container.instance.botDeletedMessageIds.removeAll(msgIds) })
+    ).queue(null) { Container.instance.botDeletedMessageIds.removeAll(msgIds) }
 
 }
 
@@ -490,5 +512,5 @@ suspend fun handleRspDelete(daoManager: DaoManager, message: Message) {
     delay(seconds * 1000L)
     Container.instance.botDeletedMessageIds.add(message.idLong)
 
-    message.delete().queue(null, { Container.instance.botDeletedMessageIds.remove(message.idLong) })
+    message.delete().queue(null) { Container.instance.botDeletedMessageIds.remove(message.idLong) }
 }

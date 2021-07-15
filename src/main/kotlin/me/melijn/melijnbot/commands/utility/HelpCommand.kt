@@ -205,7 +205,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 .setFooter("@${context.selfUser.asTag} is always a valid prefix")
 
             val messageBuilder= MessageBuilder()
-                .setEmbed(embedder.build())
+                .setEmbeds(embedder.build())
                 .setActionRows(ActionRow.of(
                     Button.primary("help_list","command list")
                 ))
@@ -338,7 +338,7 @@ class HelpCommand : AbstractCommand("command.help") {
         }
 
         companion object{
-             suspend fun getHelpListMessage(
+             fun getHelpListMessage(
                  container: Container,
                  textChannel: TextChannel?,
                  user: User,
