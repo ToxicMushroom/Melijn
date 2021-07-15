@@ -5,7 +5,7 @@ plugins {
     id("application")
     id("com.apollographql.apollo") version "2.5.9"
     id("com.github.johnrengelman.shadow") version "7.0.0"
-    kotlin("jvm") version "1.5.20"
+    kotlin("jvm") version "1.5.21"
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
@@ -48,13 +48,13 @@ repositories {
 val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
 val ktor = "1.6.1"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.9" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
-val kotlinX = "1.5.0" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-val kotlin = "1.5.20"
+val kotlinX = "1.5.1" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
+val kotlin = "1.5.21"
 val scrimage = "4.2.0.94-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_295") {
+    implementation("net.dv8tion:JDA:4.3.0_296") {
         exclude("opus-java")
     }
 
@@ -83,7 +83,7 @@ dependencies {
     implementation("me.melijn.jagtag:JagTag-Kotlin:2.1.5")
 
     // https://search.maven.org/artifact/com.zaxxer/HikariCP
-    implementation("com.zaxxer:HikariCP:4.0.3")
+    implementation("com.zaxxer:HikariCP:5.0.0")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation("org.postgresql:postgresql:42.2.23")
@@ -133,7 +133,7 @@ dependencies {
     implementation("com.apollographql.apollo:apollo-coroutines-support:$apollo")
 
     // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
-    implementation("io.lettuce:lettuce-core:6.1.3.RELEASE")
+    implementation("io.lettuce:lettuce-core:6.1.4.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
