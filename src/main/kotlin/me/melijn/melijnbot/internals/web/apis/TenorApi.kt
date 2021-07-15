@@ -13,7 +13,7 @@ class TenorApi(val httpClient: HttpClient, private val apiKey: String) {
 
     suspend fun getUrl(url: String, acceptTypes: Set<ImageType>): String? {
         val parsedTenorId = if (url.matches(VERYBAD_TENOR_GIF)) {
-            val resp = httpClient.get<HttpResponse>("https://tenor.com/bw7gZ.gif")
+            val resp = httpClient.get<HttpResponse>(url)
             val redirectedUrl = resp.request.url.toString()
             if (redirectedUrl != url) {
                 BAD_TENOR_GIF.find(redirectedUrl)?.groupValues?.get(1) ?: return null
