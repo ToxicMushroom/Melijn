@@ -1,6 +1,7 @@
 package me.melijn.melijnbot
 
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory
+import io.sentry.Sentry
 import kotlinx.coroutines.runBlocking
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.enums.Environment
@@ -9,6 +10,7 @@ import me.melijn.melijnbot.internals.events.EventManager
 import me.melijn.melijnbot.internals.jda.MelijnSessionController
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.utils.toLCC
 import net.dv8tion.jda.api.GatewayEncoding
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
@@ -30,6 +32,8 @@ object MelijnBot {
     var shardManager: ShardManager
     var eventManager: EventManager
     var hostName: String = "localhost-0"
+
+
 
     init {
         Locale.setDefault(Locale.ENGLISH)
@@ -53,6 +57,9 @@ object MelijnBot {
         container.podInfo = PodInfo
         logger.info("Shards: {}-{}", PodInfo.minShardId, PodInfo.maxShardId)
         logger.info("Launching shardManager with {} shards!", PodInfo.shardsPerPod)
+
+        // Exception catcher 9000
+        initSentry(container)
 
         val nodeMap = mutableMapOf<String, Array<Settings.Lavalink.LLNode>>()
         nodeMap["normal"] = container.settings.lavalink.verified_nodes
@@ -124,6 +131,18 @@ object MelijnBot {
             logger.info("Starting probe-server..")
             container.probeServer.start()
             logger.info("Started probe-server")
+        }
+    }
+
+    private fun initSentry(container: Container) {
+        Sentry.init { options ->
+            options.dsn = container.settings.sentry.url
+            options.environment =container.settings.environment.toLCC()
+                // Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
+                // We recommend adjusting this value in production.
+                options.tracesSampleRate = 1.0
+            // When first trying Sentry it's good to see what the SDK is doing:
+            options.setDebug(true)
         }
     }
 
