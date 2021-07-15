@@ -18,8 +18,13 @@ data class Settings(
     val redis: Redis,
     val emote: Emote,
     val economy: Economy,
-    val unLoggedThreads: Array<String>
+    val unLoggedThreads: Array<String>,
+    val sentry: Sentry
 ) {
+
+    data class Sentry(
+        val url: String
+    )
 
     data class BotInfo(
         val prefix: String,
@@ -93,7 +98,8 @@ data class Settings(
         var randomCatApi: String,
         var kSoftApi: String,
         var osu: String,
-        var hot: String
+        var hot: String,
+        val tenor: String
     )
 
     data class Database(
@@ -214,7 +220,8 @@ data class Settings(
                     get("token.randomCatApi"),
                     get("token.kSoftApi"),
                     get("token.osuApi"),
-                    get("token.hot")
+                    get("token.hot"),
+                    get("token.tenor"),
                 ),
                 Database(
                     get("database.database"),
@@ -237,7 +244,10 @@ data class Settings(
                     getFloat("economy.premiumMultiplier"),
                     getInt("economy.streakExpireHours")
                 ),
-                get("unloggedThreads").splitIETEL(",").toTypedArray()
+                get("unloggedThreads").splitIETEL(",").toTypedArray(),
+                Sentry(
+                    get("sentry.url")
+                )
             )
         }
 

@@ -12,6 +12,8 @@ import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.web.apis.BAD_TENOR_GIF
+import me.melijn.melijnbot.internals.web.apis.VERYBAD_TENOR_GIF
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import java.awt.Color
@@ -82,7 +84,7 @@ object ImageUtils {
             val arg = args[index]
             val user = retrieveUserByArgsN(context, index)
             if (user != null) {
-                val url = changeUrlToFitTypes(user.effectiveAvatarUrl, acceptTypes) + discordSize.getParam()
+                val url = changeUrlToFitTypes(context, user.effectiveAvatarUrl, acceptTypes) + discordSize.getParam()
                 val type = getFormatNMessage(context, url, acceptTypes) ?: return null
                 val img = downloadBytesNMessage(context, url) ?: return null
 
@@ -91,7 +93,7 @@ object ImageUtils {
             } else if (EMOTE_MENTION.matches(arg)) {
                 val emoteType = if (arg.startsWith("<a")) ImageType.GIF else ImageType.PNG
                 val emoteId = EMOTE_MENTION.find(arg)?.groupValues?.get(2)
-                val url = changeUrlToFitTypes(
+                val url = changeUrlToFitTypes(context,
                     "https://cdn.discordapp.com/emojis/$emoteId.${emoteType.toString().lowercase()}",
                     acceptTypes
                 ) + discordSize.getParam()
@@ -102,7 +104,7 @@ object ImageUtils {
 
             } else {
                 if (!isValidUrlMessage(context, arg)) return null
-                val url = changeUrlToFitTypes(arg, acceptTypes)
+                val url = changeUrlToFitTypes(context, arg, acceptTypes)
                 val type = getFormatNMessage(context, url, acceptTypes) ?: return null
                 val img = downloadBytesNMessage(context, url, proxy = true) ?: return null
 
@@ -110,7 +112,7 @@ object ImageUtils {
             }
         }
 
-        val url = changeUrlToFitTypes(context.author.effectiveAvatarUrl, acceptTypes) + discordSize.getParam()
+        val url = changeUrlToFitTypes(context, context.author.effectiveAvatarUrl, acceptTypes) + discordSize.getParam()
         val type = getFormatNMessage(context, url, acceptTypes) ?: return null
         val img = downloadBytesNMessage(context, url) ?: return null
 
@@ -120,7 +122,8 @@ object ImageUtils {
     private val typePattern = "\\.(?:${ImageType.values().joinToString("|") { it.toString() }})"
         .toRegex(RegexOption.IGNORE_CASE)
 
-    private fun changeUrlToFitTypes(url: String, acceptTypes: Set<ImageType>?): String {
+
+    private suspend fun changeUrlToFitTypes(context: ICommandContext, url: String, acceptTypes: Set<ImageType>?): String {
         if (acceptTypes == null || acceptTypes.isEmpty()) return url
         if (acceptTypes.contains(ImageType.GIF) && url.endsWith(".gif", true)) return url
         if (acceptTypes.any { url.endsWith(".$it", true) }) return url
@@ -134,11 +137,20 @@ object ImageUtils {
             }
         }
 
+        if (url.matches(BAD_TENOR_GIF) || url.matches(VERYBAD_TENOR_GIF)) {
+            val result = getTenorGifUrl(context, url, acceptTypes)
+            if (result != null) return result
+        }
+
         val bestType = acceptTypes.minByOrNull(importance) ?: throw StinkyException()
         return url.replace(typePattern, ".${bestType.toString().lowercase()}")
     }
 
-    suspend fun downloadBytesNMessage(
+    private suspend fun getTenorGifUrl(context: ICommandContext, url: String, acceptTypes: Set<ImageType>): String? {
+        return context.webManager.tenorApi.getUrl(url, acceptTypes)
+    }
+
+    private suspend fun downloadBytesNMessage(
         context: ICommandContext,
         url: String,
         doChecks: Boolean = true,
@@ -222,7 +234,7 @@ object ImageUtils {
                     val barr = downloadBytesNMessage(context, url, doChecks = true, proxy = true) ?: return null
                     extractByteArraysFromZip(barr, namedImgList)
                 } else {
-                    url = changeUrlToFitTypes(url, setOf(ImageType.PNG))
+                    url = changeUrlToFitTypes(context, url, setOf(ImageType.PNG))
                     val bytes = downloadBytesNMessage(context, url, doChecks = true, proxy = true) ?: return null
                     namedImgList.add(
                         NamedParsedImageByteArray(

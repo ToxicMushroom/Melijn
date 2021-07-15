@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.image
 
+import com.sksamuel.scrimage.ImageParseException
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.webp.WebpWriter
 import me.melijn.melijnbot.enums.DiscordSize
@@ -8,6 +9,7 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendFile
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
 
 class WebpCommand : AbstractCommand("command.webp") {
@@ -35,8 +37,14 @@ class WebpCommand : AbstractCommand("command.webp") {
             getIntegerFromArgNMessage(context, it, 0, 6)
         } ?: return
 
-        val png = ImmutableImage.loader()
-            .fromBytes(image.bytes)
+        val immutableImage = try {
+            ImmutableImage.loader()
+                .fromBytes(image.bytes)
+        } catch (t: ImageParseException) {
+            sendRsp(context, "Your input is a non supported image type, (tenor and giphy supply mp4's, not gifs)")
+            return
+        }
+        val png = immutableImage
             .bytes(WebpWriter(losslessMode, compression, compressMode, !lossy))
 
         val ogSize = StringUtils.humanReadableByteCountBin(image.bytes.size)
