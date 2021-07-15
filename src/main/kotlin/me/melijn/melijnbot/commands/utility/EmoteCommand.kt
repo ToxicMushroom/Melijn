@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import net.dv8tion.jda.api.utils.TimeFormat
 
 class EmoteCommand : AbstractCommand("command.emote") {
 
@@ -85,7 +86,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
 
     private suspend fun replaceEmoteVars(string: String, context: ICommandContext, emote: LiteEmote): String =
         replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
-            .withVariable("creationTime", snowflakeToEpochMillis(emote.id).asEpochMillisToDateTimeMillis(context.getTimeZoneId()))
+            .withVariable("creationTime", TimeFormat.DATE_TIME_SHORT.atTimestamp(snowflakeToEpochMillis(emote.id)))
 
 }
 

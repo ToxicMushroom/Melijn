@@ -64,6 +64,6 @@ class InfoCommand : AbstractCommand("command.info") {
         .withVariable("invite", "https://discord.gg/tfQ9s7u")
         .withVariable("botInvite", "https://melijn.com/invite")
         .withVariable("website", "https://melijn.com")
-        .withVariable("contact", "merlijn@melijn.me")
+        .withVariable("contact", "admin@melijn.com")
 
 }

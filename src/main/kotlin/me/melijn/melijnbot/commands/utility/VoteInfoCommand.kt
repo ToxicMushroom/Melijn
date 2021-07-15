@@ -5,13 +5,13 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.internals.utils.withVariable
 import me.melijn.melijnbot.internals.web.rest.voted.BotList
 import me.melijn.melijnbot.internals.web.rest.voted.getBotListTimeOut
+import net.dv8tion.jda.api.utils.TimeFormat
 
 class VoteInfoCommand : AbstractCommand("command.voteinfo") {
 
@@ -61,7 +61,7 @@ class VoteInfoCommand : AbstractCommand("command.voteinfo") {
             .withVariable("dbl", statusTwo)
             .withVariable("bfd", statusThree)
             .withVariable("dboats", statusFour)
-            .withVariable("lastTime", lastTime?.asEpochMillisToDateTime(context.getTimeZoneId()) ?: "/")
+            .withVariable("lastTime", lastTime?.let { TimeFormat.DATE_TIME_SHORT.atTimestamp(it) } ?: "/")
 
         val eb = Embedder(context)
             .setThumbnail(target.effectiveAvatarUrl)
