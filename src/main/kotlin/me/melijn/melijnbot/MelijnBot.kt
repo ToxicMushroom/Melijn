@@ -34,7 +34,6 @@ object MelijnBot {
     var hostName: String = "localhost-0"
 
 
-
     init {
         Locale.setDefault(Locale.ENGLISH)
         System.setProperty(
@@ -137,12 +136,11 @@ object MelijnBot {
     private fun initSentry(container: Container) {
         Sentry.init { options ->
             options.dsn = container.settings.sentry.url
-            options.environment =container.settings.environment.toLCC()
-                // Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
-                // We recommend adjusting this value in production.
-                options.tracesSampleRate = 1.0
+            options.environment = container.settings.environment.toLCC()
+            // Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
+            // We recommend adjusting this value in production.
+            options.tracesSampleRate = 0.1
             // When first trying Sentry it's good to see what the SDK is doing:
-            options.setDebug(true)
         }
     }
 
