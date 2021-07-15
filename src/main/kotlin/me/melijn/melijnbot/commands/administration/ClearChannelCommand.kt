@@ -7,6 +7,7 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 class ClearChannelCommand : AbstractCommand("command.clearchannel") {
@@ -31,6 +32,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
 
         // permission check for bot
         if (notEnoughPermissionsAndMessage(context, textChannel, Permission.MANAGE_CHANNEL)) return
+        if (missingPermsForOverrideCheck(textChannel, context)) return
         if (textChannel.parent?.channels?.size ?: 0 == 50) { // category size check
             sendRsp(context, "I cant create a new channel here, the limit under each category is 50 channels")
             return
@@ -48,8 +50,15 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
                 context.initCooldown()
                 // permission check for bot
                 if (notEnoughPermissionsAndMessage(context, textChannel, Permission.MANAGE_CHANNEL)) return@waitFor
+                if (missingPermsForOverrideCheck(textChannel, context)) return@waitFor
                 // Explicit check for the parent category if present
-                if (textChannel.parent?.let { notEnoughPermissionsAndMessage(context, it, Permission.MANAGE_CHANNEL) } == true) return@waitFor
+                if (textChannel.parent?.let {
+                        notEnoughPermissionsAndMessage(
+                            context,
+                            it,
+                            Permission.MANAGE_CHANNEL
+                        )
+                    } == true) return@waitFor
 
                 if (textChannel.parent?.channels?.size ?: 0 == 50) { // category size check
                     sendRsp(context, "I cant create a new channel here, the limit under each category is 50 channels")
@@ -71,6 +80,32 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
                 sendRsp(context, nonConfirm)
             }
         })
+    }
+
+    private suspend fun missingPermsForOverrideCheck(
+        textChannel: TextChannel,
+        context: ICommandContext
+    ): Boolean {
+        val missingPerms = mutableSetOf<Permission>()
+        textChannel.permissionOverrides.forEach {
+            (it.allowed + it.denied).all { perm ->
+                if (context.selfMember.hasPermission(perm)) true
+                else {
+                    missingPerms.add(perm)
+                    false
+                }
+            }
+        }
+        if (missingPerms.isNotEmpty()) {
+            sendRsp(
+                context,
+                "I cannot copy the channel because I am missing: `${missingPerms.joinToString(limit = 5) { it.getName() }}` permissions.\n" +
+                    "Alternatively you could temporarily grant `Administrator` permissions\n" +
+                    "If these permissions seem unnecessary for clearChannel: they are required because I am required to have all permissions that had overrides, to restore the overrides on the new channel."
+            )
+            return true
+        }
+        return false
     }
 
     private fun migrateSettings(context: ICommandContext, oldId: Long, newId: Long) {
