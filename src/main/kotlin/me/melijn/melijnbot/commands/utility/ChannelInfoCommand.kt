@@ -4,12 +4,13 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.getTextChannelByArgsN
 import me.melijn.melijnbot.internals.utils.getVoiceChannelByArgsN
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.GuildChannel
+import net.dv8tion.jda.api.utils.TimeFormat
 
 class ChannelInfoCommand : AbstractCommand("command.channelinfo") {
 
@@ -32,10 +33,7 @@ class ChannelInfoCommand : AbstractCommand("command.channelinfo") {
             val eb = Embedder(context)
                 .setTitle("TextChannel Info")
                 .setDescription(
-                    "**Name** ${text.name}\n" +
-                        "**ID** ${text.id}\n" +
-                        "**Creation Time** ${text.timeCreated.asEpochMillisToDateTime(context.getTimeZoneId())}\n" +
-                        "**Position** ${text.position}\n" +
+                    guildChannelInfo(text) +
                         "**Topic** ${text.topic}\n" +
                         "**Nsfw** ${text.isNSFW}\n" +
                         "**Slowmode** ${text.slowmode}s\n" +
@@ -51,12 +49,11 @@ class ChannelInfoCommand : AbstractCommand("command.channelinfo") {
             val eb = Embedder(context)
                 .setTitle("VoiceChannel Info")
                 .setDescription(
-                    "**Name** ${voice.name}\n" +
-                        "**ID** ${voice.id}\n" +
-                        "**Creation Time** ${voice.timeCreated.asEpochMillisToDateTime(context.getTimeZoneId())}\n" +
-                        "**Position** ${voice.position}\n" +
+                    guildChannelInfo(voice) +
                         "**UserLimit** ${voice.userLimit}\n" +
                         "**Connected Users** ${voice.members.size}\n" +
+                        "**Region:** ${voice.region.getName()} ${voice.region.emoji}\n" +
+                        "**VIP Region:** ${voice.region.isVip}\n" +
                         "**Mention** <#${voice.idLong}>\n" +
                         "**Link** [click](https://discord.com/channels/${voice.guild.id}/${voice.id})\n" +
                         "**Can Melijn Speak** ${selfMember.hasPermission(voice, Permission.VOICE_SPEAK)}\n" +
@@ -69,4 +66,9 @@ class ChannelInfoCommand : AbstractCommand("command.channelinfo") {
             return
         }
     }
+
+    private fun guildChannelInfo(voice: GuildChannel) = "**Name** ${voice.name}\n" +
+        "**ID** ${voice.id}\n" +
+        "**Creation Time** ${TimeFormat.DATE_TIME_SHORT.atDate(voice.timeCreated)}\n" +
+        "**Position** ${voice.position}\n"
 }
