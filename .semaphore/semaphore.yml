@@ -20,9 +20,7 @@ blocks:
 promotions:
   - name: Staging pull img & down bot
     pipeline_file: staging-1-deploy.yml
-    auto_promote_on:
-      - result: passed
-        branch:
-          - staging
+    auto_promote:
+      when: "result = 'passed' and branch = 'staging'"
   - name: Prod pull img & down bot
     pipeline_file: production-1-deploy.yml
