@@ -125,6 +125,11 @@ object ImageUtils {
 
     private suspend fun changeUrlToFitTypes(context: ICommandContext, url: String, acceptTypes: Set<ImageType>?): String {
         if (acceptTypes == null || acceptTypes.isEmpty()) return url
+        if (url.matches(BAD_TENOR_GIF) || url.matches(VERYBAD_TENOR_GIF)) {
+            val result = getTenorGifUrl(context, url, acceptTypes)
+            if (result != null) return result
+        }
+
         if (acceptTypes.contains(ImageType.GIF) && url.endsWith(".gif", true)) return url
         if (acceptTypes.any { url.endsWith(".$it", true) }) return url
 
@@ -135,11 +140,6 @@ object ImageUtils {
                 ImageType.JPG -> 3
                 ImageType.TIFF -> 4
             }
-        }
-
-        if (url.matches(BAD_TENOR_GIF) || url.matches(VERYBAD_TENOR_GIF)) {
-            val result = getTenorGifUrl(context, url, acceptTypes)
-            if (result != null) return result
         }
 
         val bestType = acceptTypes.minByOrNull(importance) ?: throw StinkyException()
