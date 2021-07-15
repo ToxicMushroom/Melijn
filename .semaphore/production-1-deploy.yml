@@ -17,6 +17,6 @@ blocks:
             - "ssh ${PROD_SSH_USER}@${PROD_SSH_HOST} -p ${PROD_SSH_PORT} sudo /opt/k3s/merlijn/melijn/deploy.sh ${SEMAPHORE_GIT_SHA}"
             - curl -sL https://sentry.io/get-cli/ | bash
             - sentry-cli releases new -p melijn-bot ${SEMAPHORE_GIT_SHA}
-            - sentry-cli releases set-commits ${SEMAPHORE_GIT_SHA} --commit "Melijn@${SEMAPHORE_GIT_SHA}"
+            - sentry-cli releases set-commits ${SEMAPHORE_GIT_SHA} --commit "ToxicMushroom/Melijn@${SEMAPHORE_GIT_SHA}"
             - sentry-cli releases finalize ${SEMAPHORE_GIT_SHA}
             - sentry-cli releases deploys ${SEMAPHORE_GIT_SHA} new -e production
