@@ -10,6 +10,7 @@ import io.ktor.utils.io.streams.*
 import me.melijn.melijnbot.commands.image.StinkyException
 import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.web.apis.BAD_TENOR_GIF
@@ -123,6 +124,7 @@ object ImageUtils {
         .toRegex(RegexOption.IGNORE_CASE)
 
 
+    private val giphyPattern = "https?://giphy\\.com/gifs/(?:[a-zA-Z0-9]+-)*([a-zA-Z0-9]+)".toRegex()
     private suspend fun changeUrlToFitTypes(context: ICommandContext, url: String, acceptTypes: Set<ImageType>?): String {
         if (acceptTypes == null || acceptTypes.isEmpty()) return url
         if (url.matches(BAD_TENOR_GIF) || url.matches(VERYBAD_TENOR_GIF)) {
@@ -132,6 +134,11 @@ object ImageUtils {
 
         if (acceptTypes.contains(ImageType.GIF) && url.endsWith(".gif", true)) return url
         if (acceptTypes.any { url.endsWith(".$it", true) }) return url
+
+        if (url.matches(giphyPattern)) {
+            val id = giphyPattern.find(url)?.groupValues?.get(1) ?: return MISSING_IMAGE_URL
+            return "https://i.giphy.com/media/$id/giphy.gif"
+        }
 
         val importance = { type: ImageType ->
             when (type) {
