@@ -26,7 +26,7 @@ class SetBirthdayCommand : AbstractCommand("command.setbirthday") {
                 val name = context.getTranslation("$root.show.unset")
                 sendRsp(context, name)
             } else {
-                val localDate = LocalDate.ofYearDay(2019, birthday.first)
+                val localDate = LocalDate.ofYearDay(birthday.second, birthday.first)
                 val dayOfMonth = localDate.dayOfMonth
                 val month = localDate.monthValue
 
@@ -57,7 +57,7 @@ suspend fun setBirthday(context: ICommandContext, datePair: Pair<Int, Int?>) {
     val birthdayWrapper = context.daoManager.birthdayWrapper
     birthdayWrapper.setBirthday(context.authorId, birthday, optionalBirthYear)
 
-    val localDate = LocalDate.ofYearDay(2019, birthday)
+    val localDate = LocalDate.ofYearDay(optionalBirthYear ?: 2019, birthday)
     val dayOfMonth = localDate.dayOfMonth
     val month = localDate.monthValue
     val extra = if (optionalBirthYear != null) ".year" else ""

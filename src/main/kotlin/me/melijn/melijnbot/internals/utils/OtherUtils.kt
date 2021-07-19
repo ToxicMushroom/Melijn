@@ -331,7 +331,7 @@ suspend fun getBirthdayByArgsNMessage(
             return null
         }
 
-        val localDate = LocalDate.of(2019, Month.of(birthMonth), birthday)
+        val localDate = LocalDate.of(birthYear ?: 2020, Month.of(birthMonth), birthday)
         return Pair(localDate.dayOfYear, birthYear)
     } else {
         val msg = context.getTranslation("message.unknown.birthday")
