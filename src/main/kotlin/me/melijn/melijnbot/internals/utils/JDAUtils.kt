@@ -321,8 +321,13 @@ suspend fun getImageUrlFromArgsNMessage(
                     return Pair(true, "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1")
                 }
                 else -> {
-                    val msg = "The text you provided `${MarkdownSanitizer.sanitize(arg)}` is not a valid url"
-                    sendRsp(context, msg)
+                    val user = retrieveUserByArgsN(context, index)
+                    if (user != null) {
+                        return Pair(true, user.effectiveAvatarUrl)
+                    } else {
+                        val msg = "The text you provided `${MarkdownSanitizer.sanitize(arg)}` is not a valid url"
+                        sendRsp(context, msg)
+                    }
                 }
             }
         }
