@@ -7,7 +7,6 @@ import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.services.Service
 import me.melijn.melijnbot.internals.threading.RunnableTask
 import me.melijn.melijnbot.internals.utils.LogUtils
-import me.melijn.melijnbot.internals.utils.awaitBool
 import me.melijn.melijnbot.internals.utils.awaitEX
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelById
@@ -49,7 +48,6 @@ class BirthdayService(
 
             // Add birthday role (maybe channel message)
             for ((userId, info) in HashMap(birthdays)) {
-                val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                 val userTZ = info.zoneId?.let { TimeZone.getTimeZone(it) } ?: guildTZ
 
                 var actualBirthday = info.birthday
@@ -67,6 +65,8 @@ class BirthdayService(
                 ) {
                     // Check if birthday already happened
                     if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
+
+                    val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                     val ex = guild.addRoleToMember(member, role)
                         .reason("Birthday begins")
                         .awaitEX()
@@ -98,7 +98,7 @@ class BirthdayService(
                 val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                 guild.removeRoleFromMember(member, role)
                     .reason("Birthday is over")
-                    .awaitBool()
+                    .awaitOrNull()
 
                 birthdayHistory.deactivate(pair.first, guildId, userId)
             }
@@ -118,9 +118,7 @@ class BirthdayService(
             } ?: continue
 
             for ((userId, info) in birthdays) {
-                val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                 val userTZ = info.zoneId?.let { TimeZone.getTimeZone(it) } ?: guildTZ
-
                 var actualBirthday = info.birthday
 
                 info.startMinute = userTZ.rawOffset / 60_000.0
@@ -137,6 +135,7 @@ class BirthdayService(
                 ) {
                     if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
 
+                    val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                     LogUtils.sendBirthdayMessage(daoManager, httpClient, textChannel, member, info.birthYear)
                     birthdayHistory.add(calendar.get(Calendar.YEAR), guildId, userId)
                 }
