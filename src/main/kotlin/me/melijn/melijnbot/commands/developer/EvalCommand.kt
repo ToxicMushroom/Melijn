@@ -31,6 +31,7 @@ class EvalCommand : AbstractCommand("command.eval") {
             import me.melijn.melijnbot.internals.utils.message.sendRsp
 			import me.melijn.melijnbot.internals.*
 			import me.melijn.melijnbot.MelijnBot
+            import net.dv8tion.jda.api.entities.*
 			import java.awt.image.BufferedImage
             import kotlinx.coroutines.Deferred
 			import java.io.File
