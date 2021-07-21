@@ -16,7 +16,8 @@ import java.text.DecimalFormatSymbols
 import java.util.*
 
 object OsuUtil {
-    suspend fun retrieveDiscordUserForOsuByArgsN(context: ICommandContext, index: Int): User? {
+
+    private suspend fun retrieveDiscordUserForOsuByArgsN(context: ICommandContext, index: Int): User? {
         return when {
             context.args.size > index -> {
                 val arg = context.args[index]
@@ -27,8 +28,8 @@ object OsuUtil {
                     }
                     USER_MENTION.matches(arg) -> {
                         val id = (USER_MENTION.find(arg) ?: return null).groupValues[1]
-                        context.message.mentionedUsers.firstOrNull { it.id == id } ?:
-                        context.shardManager.retrieveUserById(id).awaitOrNull()
+                        context.message.mentionedUsers.firstOrNull { it.id == id }
+                            ?: context.shardManager.retrieveUserById(id).awaitOrNull()
                     }
                     else -> null
                 }
@@ -74,7 +75,7 @@ object OsuUtil {
         context: ICommandContext,
         index: Int
     ): String? {
-        val username = OsuUtil.retrieveDiscordUserForOsuByArgsN(context, index)?.let { user ->
+        val username = retrieveDiscordUserForOsuByArgsN(context, index)?.let { user ->
             context.daoManager.osuWrapper.getUserName(user.idLong)
         }
         return username ?: getStringFromArgsNMessage(context, index, 1, 50)
@@ -152,7 +153,7 @@ object OsuUtil {
         val rankAchievedEmote = convertRankToEmote(result.rank) ?: result.rank
         val formatter = getStatsDecimalformat()
         val mods = getOsuModsString(result.mods)
-        eb.setThumbnail("https://b.ppy.sh/thumb/${beatMap.beatMapSetId}l.jpg")
+        eb.setThumbnail(getBeatmapThumbnailUrl(beatMap.beatMapSetId))
         eb.addField(
             "Beatmap Info", """
                             **title** [${beatMap.title}](${getOsuBeatmapLink(beatMap.beatMapId)})
@@ -186,6 +187,8 @@ object OsuUtil {
         eb.addField("Accuracy", "`${formatter.format(result.accuracy)}%`", true)
         if (mods.isNotBlank()) eb.addField("Mods", mods, true)
     }
+
+    fun getBeatmapThumbnailUrl(beatMapSetId: Long) = "https://b.ppy.sh/thumb/${beatMapSetId}l.jpg"
 
     /** osu beatmap link format **/
     fun getOsuBeatmapLink(beatMapId: Any) = "https://osu.ppy.sh/b/${beatMapId}"
