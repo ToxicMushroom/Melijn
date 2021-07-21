@@ -1,18 +1,26 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.commandutil.game.OsuUtil
+import me.melijn.melijnbot.commandutil.game.OsuUtil.addBeatmapInfoToEmbed
+import me.melijn.melijnbot.commandutil.game.OsuUtil.convertRankToEmote
+import me.melijn.melijnbot.commandutil.game.OsuUtil.getBeatmapNMessage
+import me.melijn.melijnbot.commandutil.game.OsuUtil.getOsuAvatarUrl
+import me.melijn.melijnbot.commandutil.game.OsuUtil.getOsuUserLink
+import me.melijn.melijnbot.commandutil.game.OsuUtil.getOsuUserinfoNMessage
+import me.melijn.melijnbot.commandutil.game.OsuUtil.getOsuUsernameByArgsNMessage
+import me.melijn.melijnbot.commandutil.game.OsuUtil.getStatsDecimalformat
+import me.melijn.melijnbot.commandutil.game.OsuUtil.sendUnknownOsuUserMsg
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.utils.*
-import me.melijn.melijnbot.internals.utils.message.getSyntax
+import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
+import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-import java.util.*
+import me.melijn.melijnbot.internals.utils.withSafeVariable
+import me.melijn.melijnbot.internals.web.apis.OsuMode
 
 class OsuCommand : AbstractCommand("command.osu") {
 
@@ -20,10 +28,11 @@ class OsuCommand : AbstractCommand("command.osu") {
         id = 206
         name = "osu"
         aliases = arrayOf("osu!", "o")
+        val mode = OsuMode.OSU
         children = arrayOf(
-            UserArg(root),
-            TopArg(root),
-            RecentArg(root),
+            UserArg(root, mode),
+            TopArg(root, mode),
+            RecentArg(root, mode),
             SetUserArg(root)
         )
         commandCategory = CommandCategory.UTILITY
@@ -31,24 +40,6 @@ class OsuCommand : AbstractCommand("command.osu") {
 
     override suspend fun execute(context: ICommandContext) {
         sendSyntax(context)
-    }
-
-    companion object {
-        private val emotes = listOf(
-            Triple("SSH", 744300240370139226, "GradeSSSilver"),
-            Triple("SS", 744300239946514433, "GradeSS"),
-            Triple("SH", 744300240269475861, "GradeSSilver"),
-            Triple("S", 744300240202367017, "GradeS"),
-            Triple("A", 744300239867084842, "GradeA"),
-            Triple("B", 744300240114417665, "GradeB"),
-            Triple("C", 744300239954903062, "GradeC"),
-            Triple("D", 744300240248635503, "GradeD")
-        )
-
-        fun convertRankToEmote(rank: String): String? {
-            val (_, id, name) = emotes.firstOrNull() { it.first == rank } ?: return null
-            return "<:$name:$id>"
-        }
     }
 
     class SetUserArg(val parent: String) : AbstractCommand("$parent.setuser") {
@@ -59,9 +50,10 @@ class OsuCommand : AbstractCommand("command.osu") {
         }
 
         override suspend fun execute(context: ICommandContext) {
+            val osuWrapper = context.daoManager.osuWrapper
             if (context.args.isEmpty()) {
-                val currentName = context.daoManager.osuWrapper.getUserName(context.authorId)
-                val msg = if (currentName == "") {
+                val currentName = osuWrapper.getUserName(context.authorId)
+                val msg = if (currentName == null) {
                     context.getTranslation("$root.show.unset")
                 } else {
                     context.getTranslation("$root.show.set")
@@ -73,22 +65,15 @@ class OsuCommand : AbstractCommand("command.osu") {
 
             val name = getStringFromArgsNMessage(context, 0, 1, 50) ?: return
 
-            if (context.rawArg == "null") {
-                context.daoManager.osuWrapper.remove(context.authorId)
+            if (context.args.first() == "null") {
+                osuWrapper.remove(context.authorId)
                 val msg = context.getTranslation("$root.unset")
                 sendRsp(context, msg)
                 return
             }
 
-            val profile = context.webManager.osuApi.getUserInfo(name)
-            if (profile == null) {
-                val msg = context.getTranslation("$parent.unknownuser")
-                    .withSafeVariable("name", name)
-                sendRsp(context, msg)
-                return
-            }
-
-            context.daoManager.osuWrapper.setName(context.authorId, name)
+            getOsuUserinfoNMessage(context, name, OsuMode.OSU) ?: return
+            osuWrapper.setName(context.authorId, name)
 
             val msg = context.getTranslation("$root.set")
                 .withSafeVariable("name", name)
@@ -96,40 +81,21 @@ class OsuCommand : AbstractCommand("command.osu") {
         }
     }
 
-    class RecentArg(val parent: String) : AbstractCommand("$parent.recent") {
+    class RecentArg(val parent: String, private val osuMode: OsuMode) : AbstractCommand("$parent.recent") {
 
         init {
             name = "recent"
         }
 
         override suspend fun execute(context: ICommandContext) {
-            var userName: String? = null
-            if (context.args.isEmpty()) {
-                val name = context.daoManager.osuWrapper.getUserName(context.authorId)
-                userName = if (name.isEmpty()) null else name
-                if (userName == null) {
-                    val msg = context.getTranslation("$parent.guide")
-                        .withVariable("syntax", getSyntax(context, syntax))
-                        .withSafeVariable("prefix", context.usedPrefix)
+            val name = getOsuUsernameByArgsNMessage(context, 0) ?: return
 
-                    sendRsp(context, msg)
-                    return
-                }
+            val results = context.webManager.osuApi.getUserRecentPlays(name, osuMode)
+            if (results == null) {
+                sendUnknownOsuUserMsg(context, name)
+                return
             }
-
-            if (userName == null) {
-                val user = OsuUtil.retrieveDiscordUserForOsuByArgsN(context, 0)
-                userName = if (user != null) {
-                    val cache = context.daoManager.osuWrapper.getUserName(user.idLong)
-                    if (cache.isEmpty()) null
-                    else cache
-                } else null
-            }
-
-            val name = userName ?: getStringFromArgsNMessage(context, 0, 1, 50) ?: return
-            val results = context.webManager.osuApi.getUserRecentPlays(name)
-
-            if (results == null || results.isEmpty()) {
+            if (results.isEmpty()) {
                 val msg = context.getTranslation("$root.norecent")
                     .withSafeVariable("name", name)
                 sendRsp(context, msg)
@@ -137,71 +103,22 @@ class OsuCommand : AbstractCommand("command.osu") {
             }
 
             val index = (getIntegerFromArgN(context, 1, 1, results.size) ?: 1) - 1
-
             val result = results[index]
-            val rankAchievedEmote = convertRankToEmote(result.rank) ?: result.rank
-            val formatter = DecimalFormat("#.##", DecimalFormatSymbols(Locale.GERMANY))
-            formatter.isGroupingUsed = true
-            formatter.groupingSize = 3
+            val beatMap = getBeatmapNMessage(context, result, index) ?: return
 
-            var mods = ""
-            Integer.toBinaryString(result.mods).split("").reversed().withIndex().forEach { (index, value) ->
-                if (value == "1") mods += "${OsuMod.values().first { it.offset == (index) }}, "
-            }
-
-            val beatMap = context.webManager.osuApi.getBeatMap(result.beatmapId)
-            if (beatMap == null) {
-                val msg = context.getTranslation("$parent.unknownbeatmapfromscore")
-                    .withSafeVariable("x", index + 1)
-                sendRsp(context, msg)
-                return
-            }
-
-            val accuracy = (result.count300 * 300 + result.count100 * 100 + result.count50 * 50) * 100.0 /
-                ((result.count300 + result.count100 + result.count50 + result.countMiss) * 300.0).toFloat()
-
-            mods = mods.trim().removeSuffix(",")
             val eb = Embedder(context)
-                .setAuthor(
-                    name + " | recent #${index + 1}",
-                    "https://osu.ppy.sh/users/${result.userId}",
-                    "https://s.ppy.sh/a/${result.userId}"
-                )
-                .setThumbnail("https://b.ppy.sh/thumb/${beatMap.beatMapSetId}l.jpg")
-                .addField(
-                    "Beatmap Info", """
-                    **title** [${beatMap.title}](https://osu.ppy.sh/b/${beatMap.beatMapId})
-                    **author** [${beatMap.creator}](https://osu.ppy.sh/u/${beatMap.creatorId})
-                    **artist** ${beatMap.artist}
-                    **diff** ${formatter.format(beatMap.difficulty)} | ${beatMap.version}
-                    **bpm** ${beatMap.bpm}
-                """.trimIndent(), false
-                )
-                .addField(
-                    "Combo",
-                    "`" + formatter.format(result.maxCombo) + "x`/" + formatter.format(beatMap.maxCombo) + "x",
-                    true
-                )
-                .addField("Rank", rankAchievedEmote, true)
-                .addField("Score", "`" + formatter.format(result.score) + "`", true)
-                .setFooter("Score placed on: ${result.date}")
-
-            eb.addField(
-                "Hits", """
-                  miss: `${formatter.format(result.countMiss)}`
-                  50: `${formatter.format(result.count50)}` 
-                  100: `${formatter.format(result.count100)}`
-                  300: `${formatter.format(result.count300)}`
-            """.trimIndent(), true
+            eb.setAuthor(
+                name + " | recent #${index + 1}",
+                getOsuUserLink(result.userId),
+                getOsuAvatarUrl(result.userId)
             )
-                .addField("Accuracy", "`" + formatter.format(accuracy) + "%`", true)
-            if (mods.isNotBlank()) eb.addField("Mods", mods, true)
 
+            addBeatmapInfoToEmbed(result, eb, beatMap)
             sendEmbedRsp(context, eb.build())
         }
     }
 
-    class TopArg(val parent: String) : AbstractCommand("$parent.top") {
+    class TopArg(val parent: String, private val osuMode: OsuMode) : AbstractCommand("$parent.top") {
 
         init {
             name = "top"
@@ -209,36 +126,10 @@ class OsuCommand : AbstractCommand("command.osu") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            var userName: String? = null
-            if (context.args.isEmpty()) {
-                val name = context.daoManager.osuWrapper.getUserName(context.authorId)
-                userName = if (name.isEmpty()) null else name
-                if (userName == null) {
-                    val msg = context.getTranslation("$parent.guide")
-                        .withVariable("syntax", getSyntax(context, syntax))
-                        .withSafeVariable("prefix", context.usedPrefix)
-
-                    sendRsp(context, msg)
-                    return
-                }
-            }
-
-            if (userName == null) {
-                val user = OsuUtil.retrieveDiscordUserForOsuByArgsN(context, 0)
-                userName = if (user != null) {
-                    val cache = context.daoManager.osuWrapper.getUserName(user.idLong)
-                    if (cache.isEmpty()) null
-                    else cache
-                } else null
-            }
-
-            val name = userName ?: getStringFromArgsNMessage(context, 0, 1, 50) ?: return
-            val results = context.webManager.osuApi.getUserTopPlays(name)
-
+            val name = getOsuUsernameByArgsNMessage(context, 0) ?: return
+            val results = context.webManager.osuApi.getUserTopPlays(name, osuMode)
             if (results == null) {
-                val msg = context.getTranslation("$parent.unknownuser")
-                    .withSafeVariable("name", name)
-                sendRsp(context, msg)
+                sendUnknownOsuUserMsg(context, name)
                 return
             }
 
@@ -250,73 +141,22 @@ class OsuCommand : AbstractCommand("command.osu") {
             }
 
             val index = (getIntegerFromArgN(context, 1, 1, results.size) ?: 1) - 1
-
             val result = results[index]
-            val rankAchievedEmote = convertRankToEmote(result.rank) ?: result.rank
-            val formatter = DecimalFormat("#.##", DecimalFormatSymbols(Locale.GERMANY))
-            formatter.isGroupingUsed = true
-            formatter.groupingSize = 3
+            val beatMap = getBeatmapNMessage(context, result, index) ?: return
 
-            var mods = ""
-            Integer.toBinaryString(result.mods).split("").reversed().withIndex().forEach { (index, value) ->
-                if (value == "1") mods += "${OsuMod.values().first { it.offset == (index) }}, "
-            }
-
-            val beatMap = context.webManager.osuApi.getBeatMap(result.beatmapId)
-            if (beatMap == null) {
-                val msg = context.getTranslation("$parent.unknownbeatmapfromscore")
-                    .withVariable("x", index + 1)
-                sendRsp(context, msg)
-                return
-            }
-
-            val accuracy = (result.count300 * 300 + result.count100 * 100 + result.count50 * 500) * 100.0 /
-                ((result.count300 + result.count100 + result.count50 + result.countMiss) * 300.0).toFloat()
-
-            mods = mods.trim().removeSuffix(",")
             val eb = Embedder(context)
-                .setAuthor(
-                    name + " | score #${index + 1}",
-                    "https://osu.ppy.sh/scores/osu/${result.scoreId}",
-                    "https://s.ppy.sh/a/${result.userId}"
-                )
-                .setThumbnail("https://b.ppy.sh/thumb/${beatMap.beatMapSetId}l.jpg")
-                .addField(
-                    "Beatmap Info", """
-                    **title** [${beatMap.title}](https://osu.ppy.sh/b/${beatMap.beatMapId})
-                    **author** [${beatMap.creator}](https://osu.ppy.sh/u/${beatMap.creatorId})
-                    **artist** ${beatMap.artist}
-                    **diff** ${formatter.format(beatMap.difficulty)} | ${beatMap.version}
-                    **bpm** ${beatMap.bpm}
-                """.trimIndent(), false
-                )
-                .addField("PP", "`" + formatter.format(result.pp) + "`", true)
-                .addField(
-                    "Combo",
-                    "`" + formatter.format(result.maxCombo) + "x`/" + formatter.format(beatMap.maxCombo) + "x",
-                    true
-                )
-                .addField("Rank", rankAchievedEmote, true)
-
-            eb.addField(
-                "Hits", """
-                  miss: `${formatter.format(result.countMiss)}`
-                  50: `${formatter.format(result.count50)}` 
-                  100: `${formatter.format(result.count100)}`
-                  300: `${formatter.format(result.count300)}`
-            """.trimIndent(), true
+            eb.setAuthor(
+                name + " | score #${index + 1}",
+                "https://osu.ppy.sh/scores/osu/${result.scoreId}",
+                "https://s.ppy.sh/a/${result.userId}"
             )
-                .addField("Accuracy", "`" + formatter.format(accuracy) + "%`", true)
-            if (mods.isNotBlank()) eb.addField("Mods", mods, true)
-            eb
-                .addField("Score", "`" + formatter.format(result.score) + "`", true)
-                .setFooter("Score placed on: ${result.date}")
+            addBeatmapInfoToEmbed(result, eb, beatMap)
 
             sendEmbedRsp(context, eb.build())
         }
     }
 
-    class UserArg(val parent: String) : AbstractCommand("$parent.user") {
+    class UserArg(val parent: String, private val osuMode: OsuMode) : AbstractCommand("$parent.user") {
 
         init {
             name = "user"
@@ -324,36 +164,8 @@ class OsuCommand : AbstractCommand("command.osu") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            var userName: String? = null
-            if (context.args.isEmpty()) {
-                val name = context.daoManager.osuWrapper.getUserName(context.authorId)
-                userName = name.ifEmpty { null }
-                if (userName == null) {
-                    val msg = context.getTranslation("$parent.guide")
-                        .withVariable("syntax", getSyntax(context, syntax))
-                        .withSafeVariable("prefix", context.usedPrefix)
-
-                    sendRsp(context, msg)
-                    return
-                }
-            }
-
-            if (userName == null) {
-                val user = OsuUtil.retrieveDiscordUserForOsuByArgsN(context, 0)
-                userName = if (user != null) {
-                    val cache = context.daoManager.osuWrapper.getUserName(user.idLong)
-                    cache.ifEmpty { null }
-                } else null
-            }
-
-            val name = userName ?: getStringFromArgsNMessage(context, 0, 1, 50) ?: return
-            val result = context.webManager.osuApi.getUserInfo(name)
-            if (result == null) {
-                val msg = context.getTranslation("$parent.unknownuser")
-                    .withSafeVariable("name", name)
-                sendRsp(context, msg)
-                return
-            }
+            val name = getOsuUsernameByArgsNMessage(context, 0) ?: return
+            val result = getOsuUserinfoNMessage(context, name, osuMode) ?: return
 
             val ssSEmote = convertRankToEmote("SSH")
             val ssEmote = convertRankToEmote("SS")
@@ -361,12 +173,9 @@ class OsuCommand : AbstractCommand("command.osu") {
             val sEmote = convertRankToEmote("S")
             val aEmote = convertRankToEmote("A")
 
-            val formatter = DecimalFormat("#.##", DecimalFormatSymbols(Locale.GERMANY))
-            formatter.isGroupingUsed = true
-            formatter.groupingSize = 3
-
+            val formatter = getStatsDecimalformat()
             val eb = Embedder(context)
-                .setTitle(result.username, "https://osu.ppy.sh/users/${result.id}")
+                .setTitle(result.username, getOsuUserLink(result.id))
                 .addField("Games Played", formatter.format(result.plays), true)
                 .addField("Accuracy", formatter.format(result.acc) + "%", true)
                 .addField("Level", formatter.format(result.level), true)
@@ -385,7 +194,7 @@ class OsuCommand : AbstractCommand("command.osu") {
                         :flag_${result.country.lowercase()}: - ${formatter.format(result.localRank)}
                         """.trimIndent(), true
                 )
-                .setThumbnail("https://s.ppy.sh/a/${result.id}")
+                .setThumbnail(getOsuAvatarUrl(result.id))
                 .setFooter("Joined: ${result.joinDate}")
 
             sendEmbedRsp(context, eb.build())
@@ -395,8 +204,8 @@ class OsuCommand : AbstractCommand("command.osu") {
 
 enum class OsuMod(val offset: Int) {
     NF(1), // NO fail
-    EASY(2),
-    TOUCH_DEVICE(3),
+    Easy(2),
+    TouchDevice(3),
     HD(4), // Hidden
     HR(5), // Hard Rock
     SD(6), // Sudden Death
@@ -414,15 +223,21 @@ enum class OsuMod(val offset: Int) {
     K6(18), // 6Key
     K7(19), // 7Key
     K8(20), // 8Key
-    FADE_IN(21),
-    RANDOM(22), // ??
-    CINEMA(23), // ??
-    TARGET(24), // ??
+    FadeIn(21),
+    Random(22), // ??
+    Cinema(23), // ??
+    Target(24), // ??
     K9(25), // 9Key
-    KEY_COOP(26), // ?
+    KeyCoop(26), // ?
     K1(27), // 1Key
     K2(28), // 2Key
     K3(29), // 3Key
-    SCORE_V2(30),
-    MIRRO(31)
+    ScoreV2(30),
+    Mirrored(31);
+
+    companion object {
+        fun byIndex(index: Int): OsuMod? {
+            return values().firstOrNull { it.offset == index }
+        }
+    }
 }

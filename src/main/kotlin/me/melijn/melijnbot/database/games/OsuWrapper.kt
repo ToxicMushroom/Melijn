@@ -5,13 +5,13 @@ import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class OsuWrapper(private val osuDao: OsuDao) {
 
-    suspend fun getUserName(userId: Long): String {
+    suspend fun getUserName(userId: Long): String? {
         val result = osuDao.getCacheEntry(userId, HIGHER_CACHE)
         if (result != null) return result
 
         val name = osuDao.get(userId)
         osuDao.setCacheEntry(userId, name, NORMAL_CACHE)
-        return name
+        return name.ifEmpty { null }
     }
 
     fun setName(userId: Long, name: String) {

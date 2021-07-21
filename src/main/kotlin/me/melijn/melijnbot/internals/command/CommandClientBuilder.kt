@@ -293,7 +293,10 @@ class CommandClientBuilder(private val container: Container) {
         KaleidoScopeCommand(),
         CalculateCommand(),
         ChannelFlagsCommand(),
-        DiceCommand()
+        DiceCommand(),
+        ManiaCommand(),
+        TaikoCommand(),
+        CatchTheBeatCommand()
     )
 
     fun build(): CommandClient {
