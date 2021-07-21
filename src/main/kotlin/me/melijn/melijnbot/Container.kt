@@ -41,7 +41,7 @@ class Container {
     var shuttingDown: Boolean = false
         set(value) {
             if (value) {
-                serviceManager.stopServices()
+                serviceManager.stopAllServices()
                 MelijnBot.shardManager.setActivity(Activity.playing("updating or maintenance"))
                 MelijnBot.shardManager.setStatus(OnlineStatus.IDLE)
             }

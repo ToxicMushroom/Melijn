@@ -66,7 +66,6 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
 
         // Some conditional services
         if (podInfo.minShardId == 0) {
-
             services.add(VoteReminderService(daoManager))
             services.add(MessageCleanerService(daoManager.messageHistoryWrapper))
             services.add(ReminderService(daoManager))
@@ -85,28 +84,25 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         }
     }
 
-    fun startSlowservices() {
-        requireNotNull(shardManager) { "Init first!" }
-        slowServices.forEach { service ->
-            service.start()
-        }
-
+    fun startSlowServices() {
+        requireNotNull(shardManager) { "Init shardManager first!" }
+        slowServices.startAll()
         slowStarted = true
     }
 
     fun startServices() {
-        requireNotNull(shardManager) { "Init first!" }
-        services.forEach { service ->
-            service.start()
-        }
-
+        requireNotNull(shardManager) { "Init shardManager first!" }
+        services.startAll()
         started = true
     }
 
-    fun stopServices() {
+    fun stopAllServices() {
         require(started) { "Never started!" }
-        services.forEach { service ->
-            service.stop()
-        }
+        services.stopAll()
+        slowServices.stopAll()
     }
+
+    private fun List<Service>.stopAll() = this.forEach { it.stop() }
+    private fun List<Service>.startAll() = this.forEach { it.start() }
+
 }
