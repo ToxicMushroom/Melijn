@@ -7,7 +7,9 @@ import me.melijn.melijnbot.commands.image.GifSequenceWriter
 import me.melijn.melijnbot.commands.image.UserImageException
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
+import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.message.*
+import net.dv8tion.jda.api.entities.Message
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -39,6 +41,7 @@ object ImageCommandUtil {
             val dst = ImmutableImage.wrapAwt(src).copy().awt()
             modifications(src, dst)
             gifWriter.writeToSequence(dst, gif.getDelay(index) * 10)
+            true
         } ?: return
 
         sendFileRsp(context, bytes, "gif")
@@ -72,34 +75,63 @@ object ImageCommandUtil {
             val ogDelay = gif.getDelay(index)
             val delay = delayFunction?.invoke(ogDelay) ?: ogDelay
             gifWriter.writeToSequence(src.awt(), delay * 10)
+            true
         } ?: return
 
         if (message != null) sendFileRsp(context, message, bytes, extension)
         else sendFileRsp(context, bytes, extension)
     }
 
+    /**
+     * GIF modification Helper function that handles, loading chat message while applying effects, checks size of resulting image for good error response.
+     * Safely parses the gif, or send good error response
+     * @param frameEditor | multi parameter function that should be used to write the modified gif frames to the gifWriter, return true if successful, return false to abort (make sure you send a message)
+     * **/
     private suspend fun writeModificationsToNewGifNMessage(
         context: ICommandContext,
         image: ParsedImageByteArray,
-        frameEditor: (index: Int, gifWriter: GifSequenceWriter, gif: GifDecoder.GifImage) -> Unit
+        frameEditor: suspend (index: Int, gifWriter: GifSequenceWriter, gif: GifDecoder.GifImage) -> Boolean
     ): ByteArray? {
         val message = sendRspAwaitEL(context, "<a:loading:867394725938331658> Applying image effects")
+        fun deleteLoadingMessage(message: List<Message>) {
+            message.firstOrNull()?.delete()?.reason("Temporary status progress message")?.queue()
+        }
         try {
             val gif = getSafeGifImageNMessage(image, context) ?: return null
             val baos = ByteArrayOutputStream()
             ImageIO.createImageOutputStream(baos).use { ios ->
                 GifSequenceWriter(ios, gif.repetitions).use { gifWriter ->
                     for (index in 0 until gif.frameCount) {
-                        frameEditor(index, gifWriter, gif)
+                        val ok = frameEditor(index, gifWriter, gif)
+                        if (!ok) {
+                            deleteLoadingMessage(message)
+                            return null
+                        }
                     }
                 }
             }
-            return baos.toByteArray()
+
+            val temp = baos.toByteArray()
+            if (temp.size > Message.MAX_FILE_SIZE) {
+                sendMsgMaxFilesizeHit(context, image)
+                return null
+            }
+            return temp
         } catch (t: Throwable) {
             t.sendInGuild(context)
         }
-        message.firstOrNull()?.delete()?.reason("Temporary status progress message")?.queue()
+        deleteLoadingMessage(message)
         return null
+    }
+
+
+    private suspend fun sendMsgMaxFilesizeHit(context: ICommandContext, image: ParsedImageByteArray) {
+        val max = StringUtils.humanReadableByteCountBin(Message.MAX_FILE_SIZE)
+        if (image.bytes.size > Message.MAX_FILE_SIZE) {
+            sendRsp(context, "The source image ${image.url} is bigger then what I can send to discord (`${max}`)")
+        } else {
+            sendRsp(context, "The resulting image after applying effects is bigger then what I can send to discord (`${max}`) :/")
+        }
     }
 
     private suspend fun getSafeGifImageNMessage(
@@ -141,26 +173,19 @@ object ImageCommandUtil {
         message: String? = null,
         extension: String = "gif"
     ) {
-        val gif = GifDecoder.read(image.bytes)
-        val baos = ByteArrayOutputStream()
-        ImageIO.createImageOutputStream(baos).use { ios ->
-            GifSequenceWriter(ios, gif.repetitions).use { gifWriter ->
-                for (index in 0 until gif.frameCount) {
-                    val src = ImmutableImage.wrapAwt(gif.getFrame(index))
-                    val new = try {
-                        modification(src)
-                    } catch (t: UserImageException) {
-                        sendRsp(context, t.getUserFriendlyMessage())
-                        return
-                    }
-                    val ogDelay = gif.getDelay(index)
-                    val delay = delayFunction?.invoke(ogDelay) ?: ogDelay
-                    gifWriter.writeToSequence(new.awt(), delay * 10)
-                }
+        val bytes = writeModificationsToNewGifNMessage(context, image) { index, gifWriter, gif ->
+            val src = ImmutableImage.wrapAwt(gif.getFrame(index))
+            val new = try {
+                modification(src)
+            } catch (t: UserImageException) {
+                sendRsp(context, t.getUserFriendlyMessage())
+                return@writeModificationsToNewGifNMessage false
             }
-        }
-
-        val bytes = baos.toByteArray()
+            val ogDelay = gif.getDelay(index)
+            val delay = delayFunction?.invoke(ogDelay) ?: ogDelay
+            gifWriter.writeToSequence(new.awt(), delay * 10)
+            true
+        } ?: return
         if (message != null) sendFileRsp(context, message, bytes, extension)
         else sendFileRsp(context, bytes, extension)
     }
