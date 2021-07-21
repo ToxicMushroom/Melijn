@@ -168,11 +168,12 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
     }
 }
 
-enum class OsuMode(val id: Int) {
-    OSU(0),
-    MANIA(3),
-    TAIKO(1),
-    CATCH_THE_BEAT(2)
+/** pathValue is the value it would need to be valid in a https://osu.ppy.sh/scores/%pathValue%/433702840 link **/
+enum class OsuMode(val id: Int, val pathValue: String) {
+    OSU(0, "osu"),
+    MANIA(3, "mania"),
+    TAIKO(1, "taiko"),
+    CATCH_THE_BEAT(2, "fruits")
 }
 
 data class OsuBeatMap(

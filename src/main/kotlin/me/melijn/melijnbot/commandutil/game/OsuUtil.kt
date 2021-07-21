@@ -147,7 +147,8 @@ object OsuUtil {
     fun addBeatmapInfoToEmbed(
         mutuableResult: OsuMutuableResult,
         eb: Embedder,
-        beatMap: OsuBeatMap
+        beatMap: OsuBeatMap,
+        osuMode: OsuMode
     ) {
         val result = mutuableResult.toMutual()
         val rankAchievedEmote = convertRankToEmote(result.rank) ?: result.rank
@@ -156,8 +157,8 @@ object OsuUtil {
         eb.setThumbnail(getBeatmapThumbnailUrl(beatMap.beatMapSetId))
         eb.addField(
             "Beatmap Info", """
-                            **title** [${beatMap.title}](${getOsuBeatmapLink(beatMap.beatMapId)})
-                            **author** [${beatMap.creator}](${getOsuUserLink(beatMap.creatorId)})
+                            **title** [${beatMap.title}](${getOsuBeatmapLink(beatMap.beatMapId, osuMode)})
+                            **author** [${beatMap.creator}](${getOsuUserLink(beatMap.creatorId, osuMode)})
                             **artist** ${beatMap.artist}
                             **diff** ${formatter.format(beatMap.difficulty)} | ${beatMap.version}
                             **bpm** ${beatMap.bpm}
@@ -165,8 +166,8 @@ object OsuUtil {
         )
         if (result.pp != null) eb.addField("PP", "`${formatter.format(result.pp)}`", true)
 
-        // Can be missing on mania
-        val comboLimit = if (beatMap.maxCombo != null) "/${formatter.format(beatMap.maxCombo)}x" else ""
+        // Can be missing on mania, or wrong when converting OSU! map to mania
+        val comboLimit = if (osuMode != OsuMode.MANIA) "/${formatter.format(beatMap.maxCombo)}x" else ""
         eb.addField(
             "Combo",
             "`${formatter.format(result.maxCombo)}x`" + comboLimit,
@@ -190,11 +191,14 @@ object OsuUtil {
 
     fun getBeatmapThumbnailUrl(beatMapSetId: Long) = "https://b.ppy.sh/thumb/${beatMapSetId}l.jpg"
 
+    /** osu score link format **/
+    fun getOsuScoreLink(beatMapId: Any, osuMode: OsuMode) = "https://osu.ppy.sh/scores/${osuMode.pathValue}/${beatMapId}"
+
     /** osu beatmap link format **/
-    fun getOsuBeatmapLink(beatMapId: Any) = "https://osu.ppy.sh/b/${beatMapId}"
+    fun getOsuBeatmapLink(beatMapId: Any, osuMode: OsuMode) = "https://osu.ppy.sh/b/${beatMapId}?m=${osuMode.id}"
 
     /** osu user profile link format **/
-    fun getOsuUserLink(userId: Any) = "https://osu.ppy.sh/users/${userId}"
+    fun getOsuUserLink(userId: Any, osuMode: OsuMode) = "https://osu.ppy.sh/users/${userId}/${osuMode.pathValue}"
 
     /** osu avatar url format **/
     fun getOsuAvatarUrl(userId: Any) = "https://s.ppy.sh/a/${userId}"

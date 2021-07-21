@@ -4,6 +4,7 @@ import me.melijn.melijnbot.commandutil.game.OsuUtil.addBeatmapInfoToEmbed
 import me.melijn.melijnbot.commandutil.game.OsuUtil.convertRankToEmote
 import me.melijn.melijnbot.commandutil.game.OsuUtil.getBeatmapNMessage
 import me.melijn.melijnbot.commandutil.game.OsuUtil.getOsuAvatarUrl
+import me.melijn.melijnbot.commandutil.game.OsuUtil.getOsuScoreLink
 import me.melijn.melijnbot.commandutil.game.OsuUtil.getOsuUserLink
 import me.melijn.melijnbot.commandutil.game.OsuUtil.getOsuUserinfoNMessage
 import me.melijn.melijnbot.commandutil.game.OsuUtil.getOsuUsernameByArgsNMessage
@@ -105,11 +106,11 @@ class OsuCommand : AbstractCommand("command.osu") {
             val eb = Embedder(context)
             eb.setAuthor(
                 name + " | recent #${index + 1}",
-                getOsuUserLink(result.userId),
+                getOsuUserLink(result.userId, osuMode),
                 getOsuAvatarUrl(result.userId)
             )
 
-            addBeatmapInfoToEmbed(result, eb, beatMap)
+            addBeatmapInfoToEmbed(result, eb, beatMap, osuMode)
             sendEmbedRsp(context, eb.build())
         }
     }
@@ -143,10 +144,10 @@ class OsuCommand : AbstractCommand("command.osu") {
             val eb = Embedder(context)
             eb.setAuthor(
                 name + " | score #${index + 1}",
-                "https://osu.ppy.sh/scores/osu/${result.scoreId}",
-                "https://s.ppy.sh/a/${result.userId}"
+                getOsuScoreLink(result.scoreId, osuMode),
+                getOsuAvatarUrl(result.userId)
             )
-            addBeatmapInfoToEmbed(result, eb, beatMap)
+            addBeatmapInfoToEmbed(result, eb, beatMap, osuMode)
 
             sendEmbedRsp(context, eb.build())
         }
@@ -171,7 +172,7 @@ class OsuCommand : AbstractCommand("command.osu") {
 
             val formatter = getStatsDecimalformat()
             val eb = Embedder(context)
-                .setTitle(result.username, getOsuUserLink(result.id))
+                .setTitle(result.username, getOsuUserLink(result.id, osuMode))
                 .addField("Games Played", formatter.format(result.plays), true)
                 .addField("Accuracy", formatter.format(result.acc) + "%", true)
                 .addField("Level", formatter.format(result.level), true)
