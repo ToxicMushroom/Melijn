@@ -7,8 +7,7 @@ import me.melijn.melijnbot.commands.image.GifSequenceWriter
 import me.melijn.melijnbot.commands.image.UserImageException
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.ParsedImageByteArray
-import me.melijn.melijnbot.internals.utils.message.sendFile
-import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.*
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -35,21 +34,14 @@ object ImageCommandUtil {
         image: ParsedImageByteArray,
         modifications: (src: BufferedImage, dst: BufferedImage) -> Unit
     ) {
-        val gif = GifDecoder.read(image.bytes)
-        val baos = ByteArrayOutputStream()
-        ImageIO.createImageOutputStream(baos).use { ios ->
-            GifSequenceWriter(ios, gif.repetitions).use { gifWriter ->
-                for (index in 0 until gif.frameCount) {
-                    val src = gif.getFrame(index)
-                    val dst = ImmutableImage.wrapAwt(src).copy().awt()
-                    modifications(src, dst)
-                    gifWriter.writeToSequence(dst, gif.getDelay(index) * 10)
-                }
-            }
-        }
+        val bytes = writeModificationsToNewGifNMessage(context, image) { index, gifWriter, gif ->
+            val src = gif.getFrame(index)
+            val dst = ImmutableImage.wrapAwt(src).copy().awt()
+            modifications(src, dst)
+            gifWriter.writeToSequence(dst, gif.getDelay(index) * 10)
+        } ?: return
 
-        val bytes = baos.toByteArray()
-        sendFile(context, bytes, "gif")
+        sendFileRsp(context, bytes, "gif")
     }
 
     suspend fun applyImmutableImgModification(
@@ -62,8 +54,8 @@ object ImageCommandUtil {
         modification(immutableImg)
 
         val bytes = immutableImg.bytes(PngWriter(3))
-        if (message != null) sendFile(context, message, bytes, "png")
-        else sendFile(context, bytes, "png")
+        if (message != null) sendFileRsp(context, message, bytes, "png")
+        else sendFileRsp(context, bytes, "png")
     }
 
     suspend fun applyGifImmutableFrameModification(
@@ -74,28 +66,52 @@ object ImageCommandUtil {
         message: String? = null,
         extension: String = "gif"
     ) {
-        val gif = try {
-            GifDecoder.read(image.bytes)
-        } catch (t: IOException) {
-            sendRsp(context, "Not a valid gif, (some tenor and giphy urls are actually mp4's)")
-            return
-        }
-        val baos = ByteArrayOutputStream()
-        ImageIO.createImageOutputStream(baos).use { ios ->
-            GifSequenceWriter(ios, gif.repetitions).use { gifWriter ->
-                for (index in 0 until gif.frameCount) {
-                    val src = ImmutableImage.wrapAwt(gif.getFrame(index))
-                    modification(src)
-                    val ogDelay = gif.getDelay(index)
-                    val delay = delayFunction?.invoke(ogDelay) ?: ogDelay
-                    gifWriter.writeToSequence(src.awt(), delay * 10)
+        val bytes = writeModificationsToNewGifNMessage(context, image) { index, gifWriter, gif ->
+            val src = ImmutableImage.wrapAwt(gif.getFrame(index))
+            modification(src)
+            val ogDelay = gif.getDelay(index)
+            val delay = delayFunction?.invoke(ogDelay) ?: ogDelay
+            gifWriter.writeToSequence(src.awt(), delay * 10)
+        } ?: return
+
+        if (message != null) sendFileRsp(context, message, bytes, extension)
+        else sendFileRsp(context, bytes, extension)
+    }
+
+    private suspend fun writeModificationsToNewGifNMessage(
+        context: ICommandContext,
+        image: ParsedImageByteArray,
+        frameEditor: (index: Int, gifWriter: GifSequenceWriter, gif: GifDecoder.GifImage) -> Unit
+    ): ByteArray? {
+        val message = sendRspAwaitEL(context, "<a:loading:867394725938331658> Applying image effects")
+        try {
+            val gif = getSafeGifImageNMessage(image, context) ?: return null
+            val baos = ByteArrayOutputStream()
+            ImageIO.createImageOutputStream(baos).use { ios ->
+                GifSequenceWriter(ios, gif.repetitions).use { gifWriter ->
+                    for (index in 0 until gif.frameCount) {
+                        frameEditor(index, gifWriter, gif)
+                    }
                 }
             }
+            return baos.toByteArray()
+        } catch (t: Throwable) {
+            t.sendInGuild(context)
         }
+        message.firstOrNull()?.delete()?.reason("Temporary status progress message")?.queue()
+        return null
+    }
 
-        val bytes = baos.toByteArray()
-        if (message != null) sendFile(context, message, bytes, extension)
-        else sendFile(context, bytes, extension)
+    private suspend fun getSafeGifImageNMessage(
+        image: ParsedImageByteArray,
+        context: ICommandContext
+    ): GifDecoder.GifImage? {
+        return try {
+            GifDecoder.read(image.bytes)
+        } catch (t: IOException) {
+            sendRsp(context, "Not a valid gif")
+            null
+        }
     }
 
     suspend fun createImmutableImg(
@@ -113,8 +129,8 @@ object ImageCommandUtil {
         }
 
         val bytes = new.bytes(PngWriter(3))
-        if (message != null) sendFile(context, message, bytes, "png")
-        else sendFile(context, bytes, "png")
+        if (message != null) sendFileRsp(context, message, bytes, "png")
+        else sendFileRsp(context, bytes, "png")
     }
 
     suspend fun createGifImmutableFrame(
@@ -145,7 +161,7 @@ object ImageCommandUtil {
         }
 
         val bytes = baos.toByteArray()
-        if (message != null) sendFile(context, message, bytes, extension)
-        else sendFile(context, bytes, extension)
+        if (message != null) sendFileRsp(context, message, bytes, extension)
+        else sendFileRsp(context, bytes, extension)
     }
 }
