@@ -63,7 +63,7 @@ object OsuUtil {
         index: Int,
         useCache: Boolean = true
     ): String? {
-        if (useCache && (context.args.size < index || context.args[index] == "-"))
+        if (useCache && (context.args.size <= index || context.args[index] == "-"))
             return getOsuUsernameNMessage(context)
 
         return getOsuUsernameByArgsNMessage(context, index)
