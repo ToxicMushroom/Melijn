@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import javax.imageio.ImageIO
 
+/** Gif/Image modification utilities with error handling, size exceptions ect **/
 object ImageCommandUtil {
 
     suspend fun applyBufferedImgModification(
