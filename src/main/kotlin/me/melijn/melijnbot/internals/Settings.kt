@@ -34,6 +34,7 @@ data class Settings(
         val podCount: Int,
         val exceptionChannel: Long,
         val hostPattern: String,
+        val version: String,
         val developerIds: LongArray
     )
 
@@ -138,8 +139,8 @@ data class Settings(
             this.ignoreIfMissing = true
         }
 
-        fun get(path: String): String = dotenv[path.uppercase().replace(".", "_")]
-            ?: throw IllegalStateException("missing env value: $path")
+        fun get(path: String): String = getN(path) ?: throw IllegalStateException("missing env value: $path")
+        private fun getN(path: String) = dotenv[path.uppercase().replace(".", "_")]
 
         fun getLong(path: String): Long = get(path).toLong()
         fun getFloat(path: String): Float = get(path).toFloat()
@@ -169,6 +170,7 @@ data class Settings(
                     getInt("botinfo.podCount"),
                     getLong("botinfo.exceptionsChannelId"),
                     get("botinfo.hostPattern"),
+                    getN("version.hash") ?: getN("botinfo.version") ?: "unknown",
                     get("botinfo.developerIds").split(",").map { it.toLong() }.toLongArray()
                 ),
                 RestServer(

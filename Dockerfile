@@ -8,6 +8,7 @@ RUN ./gradlew shadowJar
 # Full jdk required for font rendering on ship ect
 FROM toxicmushroom/openjdk:16-glibc
 WORKDIR /opt/melijn
+ENV VERSION_HASH=%VERSION_HASH%
 COPY --from=builder ./etc/melijn/build/libs/ .
 ENTRYPOINT java \
     -Xmx${RAM_LIMIT} \

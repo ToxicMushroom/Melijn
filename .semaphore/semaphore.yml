@@ -14,6 +14,7 @@ blocks:
           commands:
             - checkout
             - docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
+            - sed -i "s/%VERSION_HASH%/$SEMAPHORE_GIT_SHA/g" Dockerfile
             - docker build -t ${DOCKER_USERNAME}/${DOCKER_IMAGE}:$SEMAPHORE_GIT_SHA -t ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest .
             - docker push ${DOCKER_USERNAME}/${DOCKER_IMAGE}:$SEMAPHORE_GIT_SHA
             - docker push ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest
