@@ -155,7 +155,7 @@ object ImageUtils {
     }
 
     private fun stripQuery(url: String): String {
-        return url.split("?").first()
+        return url.split("?", "#").first()
     }
 
     private suspend fun getTenorGifUrl(context: ICommandContext, url: String, acceptTypes: Set<ImageType>): String? {
