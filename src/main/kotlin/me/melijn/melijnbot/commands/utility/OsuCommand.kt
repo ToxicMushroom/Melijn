@@ -91,11 +91,7 @@ class OsuCommand : AbstractCommand("command.osu") {
             val name = getOsuUsernameByArgsNMessage(context, 0) ?: return
 
             val results = context.webManager.osuApi.getUserRecentPlays(name, osuMode)
-            if (results == null) {
-                sendUnknownOsuUserMsg(context, name)
-                return
-            }
-            if (results.isEmpty()) {
+            if (results == null || results.isEmpty()) {
                 val msg = context.getTranslation("$root.norecent")
                     .withSafeVariable("name", name)
                 sendRsp(context, msg)

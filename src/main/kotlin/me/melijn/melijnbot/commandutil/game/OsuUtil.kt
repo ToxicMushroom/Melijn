@@ -155,17 +155,20 @@ object OsuUtil {
         eb.setThumbnail("https://b.ppy.sh/thumb/${beatMap.beatMapSetId}l.jpg")
         eb.addField(
             "Beatmap Info", """
-                            **title** [${beatMap.title}](https://osu.ppy.sh/b/${beatMap.beatMapId})
-                            **author** [${beatMap.creator}](https://osu.ppy.sh/u/${beatMap.creatorId})
+                            **title** [${beatMap.title}](${getOsuBeatmapLink(beatMap.beatMapId)})
+                            **author** [${beatMap.creator}](${getOsuUserLink(beatMap.creatorId)})
                             **artist** ${beatMap.artist}
                             **diff** ${formatter.format(beatMap.difficulty)} | ${beatMap.version}
                             **bpm** ${beatMap.bpm}
                         """.trimIndent(), false
         )
         if (result.pp != null) eb.addField("PP", "`${formatter.format(result.pp)}`", true)
+
+        // Can be missing on mania
+        val comboLimit = if (beatMap.maxCombo != null) "/${formatter.format(beatMap.maxCombo)}x" else ""
         eb.addField(
             "Combo",
-            "`${formatter.format(result.maxCombo)}x`/${formatter.format(beatMap.maxCombo)}x",
+            "`${formatter.format(result.maxCombo)}x`" + comboLimit,
             true
         )
         eb.addField("Rank", rankAchievedEmote, true)
@@ -183,6 +186,9 @@ object OsuUtil {
         eb.addField("Accuracy", "`${formatter.format(result.accuracy)}%`", true)
         if (mods.isNotBlank()) eb.addField("Mods", mods, true)
     }
+
+    /** osu beatmap link format **/
+    fun getOsuBeatmapLink(beatMapId: Any) = "https://osu.ppy.sh/b/${beatMapId}"
 
     /** osu user profile link format **/
     fun getOsuUserLink(userId: Any) = "https://osu.ppy.sh/users/${userId}"

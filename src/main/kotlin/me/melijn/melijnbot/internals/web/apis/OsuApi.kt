@@ -41,7 +41,7 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
 
     // limit - amount of results (range between 1 and 100 - defaults to 10).
     suspend fun getUserTopPlays(name: String, mode: OsuMode): List<OsuRankedScoreResult>? {
-        val urlString = "$OSU_URL/get_user_best?k=$apiKey&u=$name&type=string&limit=25&mode=${mode.id}"
+        val urlString = "$OSU_URL/get_user_best?k=$apiKey&u=$name&type=string&limit=25&m=${mode.id}"
         val result = httpClient.getOrNull<String>(urlString, {}, logger) ?: return null
 
         if (result.isEmpty()) return null
@@ -102,8 +102,8 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
             beatMapJson.getString("creator"), // User who uploaded the map
             beatMapJson.getString("creator_id").toLong(),
             beatMapJson.getString("difficultyrating").toFloat(), // amount of stars
-            beatMapJson.getString("diff_aim").toFloat(), // aim diff
-            beatMapJson.getString("diff_speed").toFloat(), // speed diff
+            beatMapJson.getString("diff_aim", null)?.toFloat(), // aim diff
+            beatMapJson.getString("diff_speed", null)?.toFloat(), // speed diff
             beatMapJson.getString("diff_size").toFloat(), // size diff
             beatMapJson.getString("diff_approach").toFloat(), // approach diff
             beatMapJson.getString("diff_drain").toFloat(), // drain diff
@@ -123,7 +123,7 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
             beatMapJson.getString("count_normal").toLong(),
             beatMapJson.getString("count_slider").toLong(),
             beatMapJson.getString("count_spinner").toLong(),
-            beatMapJson.getString("max_combo").toLong(),
+            beatMapJson.getString("max_combo", null)?.toLong(),
             beatMapJson.getString("storyboard").toBoolean(),
             beatMapJson.getString("video").toBoolean(),
             beatMapJson.getString("download_unavailable").toBoolean(), // really old maps
@@ -187,8 +187,8 @@ data class OsuBeatMap(
     val creator: String,
     val creatorId: Long,
     val difficulty: Float,
-    val aimDifficulty: Float,
-    val speedDifficulty: Float,
+    val aimDifficulty: Float?,
+    val speedDifficulty: Float?,
     val sizeDifficulty: Float,
     val approachDifficulty: Float,
     val drainDifficulty: Float,
@@ -206,7 +206,7 @@ data class OsuBeatMap(
     val normalCount: Long,
     val sliderCount: Long,
     val spinnerCount: Long,
-    val maxCombo: Long,
+    val maxCombo: Long?,
     val story: Boolean,
     val video: Boolean,
     val noDownload: Boolean,
