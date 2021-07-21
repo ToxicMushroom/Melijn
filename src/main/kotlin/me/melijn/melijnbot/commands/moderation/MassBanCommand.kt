@@ -94,22 +94,12 @@ class MassBanCommand : AbstractCommand("command.massban") {
 
         val banning = context.getTranslation("message.banning")
         var success = 0
+        var updated = 0
         var failed = 0
 
         for ((targetUser, member) in users) {
-            val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
-            val ban = Ban(
-                context.guildId,
-                targetUser.idLong,
-                context.authorId,
-                reason,
-                null
-            )
-            if (activeBan != null) {
-                ban.banId = activeBan.banId
-                ban.startTime = activeBan.startTime
-            }
-
+            val (ban, updatedBan) = BanCommand.createBanFromActiveOrNew(context, targetUser, reason)
+            updated += if (updatedBan) 1 else 0
             val privateChannel = if (users.size < 11 && member != null) {
                 targetUser.openPrivateChannel().awaitOrNull()
             } else {
@@ -149,8 +139,8 @@ class MassBanCommand : AbstractCommand("command.massban") {
         val doaManager = context.daoManager
         val logChannel = context.guild.getAndVerifyLogChannelByType(doaManager, LogChannelType.MASS_BAN)
         logChannel?.let {
-            for (msg in bannedMessageLc)
-                sendEmbed(doaManager.embedDisabledWrapper, it, msg)
+            for (msgEb in bannedMessageLc)
+                sendEmbed(doaManager.embedDisabledWrapper, it, msgEb)
         }
         sendRsp(context, msg)
     }

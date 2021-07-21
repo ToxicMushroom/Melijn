@@ -37,6 +37,29 @@ class BanCommand : AbstractCommand("command.ban") {
     }
 
     companion object {
+        /** Helper function to create a ban object based on active ban, or just create a new one.
+         *  @returns created ban object AND boolean == based on the active ban?
+         **/
+        suspend fun createBanFromActiveOrNew(
+            context: ICommandContext,
+            banned: User,
+            reason: String
+        ): Pair<Ban, Boolean> {
+            val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, banned.idLong)
+            val ban = Ban(
+                context.guildId,
+                banned.idLong,
+                context.authorId,
+                reason,
+                null
+            )
+            if (activeBan != null) {
+                ban.banId = activeBan.banId
+                ban.startTime = activeBan.startTime
+            }
+            return ban to (activeBan != null)
+        }
+
         val optionalDeldaysPattern = "-t([0-7])".toRegex()
     }
 
@@ -86,18 +109,7 @@ class BanCommand : AbstractCommand("command.ban") {
         if (reason.isBlank()) reason = "/"
         reason = reason.trim()
 
-        val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
-        val ban = Ban(
-            context.guildId,
-            targetUser.idLong,
-            context.authorId,
-            reason,
-            null
-        )
-        if (activeBan != null) {
-            ban.banId = activeBan.banId
-            ban.startTime = activeBan.startTime
-        }
+        val (ban, updated) = createBanFromActiveOrNew(context, targetUser, reason)
 
         val banning = context.getTranslation("message.banning")
         val privateChannel = if (context.guild.isMember(targetUser)) {
@@ -109,14 +121,14 @@ class BanCommand : AbstractCommand("command.ban") {
             sendMsgAwaitEL(it, banning)
         }?.firstOrNull()
 
-        continueBanning(context, targetUser, ban, activeBan, deldays, message)
+        continueBanning(context, targetUser, ban, updated, deldays, message)
     }
 
     private suspend fun continueBanning(
         context: ICommandContext,
         targetUser: User,
         ban: Ban,
-        activeBan: Ban?,
+        updated: Boolean,
         deldays: Int,
         banningMessage: Message? = null
     ) {
@@ -144,7 +156,7 @@ class BanCommand : AbstractCommand("command.ban") {
                 .reason("(ban) " + context.author.asTag + ": " + ban.reason)
                 .async { daoManager.banWrapper.setBan(ban) }
 
-            banningMessage?.editMessage(
+            banningMessage?.editMessageEmbeds(
                 bannedMessageDm
             )?.override(true)?.queue()
 
@@ -153,7 +165,7 @@ class BanCommand : AbstractCommand("command.ban") {
                 sendEmbed(daoManager.embedDisabledWrapper, it, bannedMessageLc)
             }
 
-            context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
+            context.getTranslation("$root.success" + if (updated) ".updated" else "")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 .withSafeVarInCodeblock("reason", ban.reason)
 
