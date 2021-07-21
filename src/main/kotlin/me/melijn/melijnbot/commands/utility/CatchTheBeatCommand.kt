@@ -11,7 +11,7 @@ class CatchTheBeatCommand : AbstractCommand("command.catchthebeat") {
     init {
         name = "catchTheBeat"
         aliases = arrayOf("ctb","osu!catchTheBeat", "o!ctb")
-        val mode = OsuMode.TAIKO
+        val mode = OsuMode.CATCH_THE_BEAT
         children = arrayOf(
             OsuCommand.UserArg(root, mode),
             OsuCommand.TopArg(root, mode),
