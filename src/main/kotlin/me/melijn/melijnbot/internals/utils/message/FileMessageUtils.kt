@@ -263,14 +263,13 @@ private suspend fun msgWithAttachmentsAction(
         mb.setContent(message.contentRaw)
     }
     for (embed in message.embeds) {
-        mb.setEmbed(embed)
+        mb.setEmbeds(embed)
     }
     if (message is DataMessage) {
         mb.setAllowedMentions(message.allowedMentions)
     }
 
     val action = channel.sendMessage(mb.build())
-    if (channel is TextChannel) channel.guild else null
     for ((url, fileName) in attachments.iterator()) {
         val stream = ImageApi.downloadDiscordBytes(httpClient, url, DiscordSize.Original) ?: continue
         action.addFile(stream, fileName)

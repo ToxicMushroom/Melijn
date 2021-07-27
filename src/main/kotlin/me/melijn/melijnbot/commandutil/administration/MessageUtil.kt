@@ -407,7 +407,7 @@ object MessageUtil {
         val eb = EmbedBuilder(message.embed)
 
         if (arg.length > MessageEmbed.TITLE_MAX_LENGTH) {
-            val msg = context.getTranslation("message.embed.title.tolong")
+            val msg = context.getTranslation("message.embed.title.toolong")
                 .withVariable("arg", arg)
                 .withVariable("length", arg.length)
                 .withVariable("max", MessageEmbed.TITLE_MAX_LENGTH)

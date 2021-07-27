@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.database.warn
 
+import me.melijn.melijnbot.database.ban.PunishMapProvider
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
@@ -8,23 +9,28 @@ import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
-class WarnWrapper(private val warnDao: WarnDao) {
+class WarnWrapper(private val warnDao: WarnDao): PunishMapProvider<Warn> {
 
     fun addWarn(warn: Warn) {
         warnDao.add(warn)
     }
 
-    suspend fun getWarnMap(context: ICommandContext, targetUser: User): Map<Long, String> {
+    override suspend fun getPunishMap(context: ICommandContext, targetUser: User): Map<Long, String> {
+        val bans = warnDao.getWarns(context.guildId, targetUser.idLong)
+        return warnsToMap(bans, context)
+    }
+
+    override suspend fun getPunishMap(context: ICommandContext, punishmentId: String): Map<Long, String> {
+        val bans = warnDao.getWarns(punishmentId)
+        return warnsToMap(bans, context)
+    }
+
+    private suspend fun warnsToMap(warns: List<Warn>, context: ICommandContext): Map<Long, String> {
         val map = hashMapOf<Long, String>()
-        val warns = warnDao.getWarns(context.guildId, targetUser.idLong)
-
-        if (warns.isEmpty()) {
-            return emptyMap()
-        }
-
-        warns.forEach { warn ->
-            val message = convertWarnInfoToMessage(context, warn)
-            map[warn.moment] = message
+        if (warns.isEmpty()) return emptyMap()
+        warns.forEach { ban ->
+            val message = convertWarnInfoToMessage(context, ban)
+            map[ban.moment] = message
         }
         return map
     }
@@ -46,27 +52,12 @@ class WarnWrapper(private val warnDao: WarnDao) {
             .withVariable("warnId", warn.warnId)
     }
 
-    suspend fun getWarnMap(context: ICommandContext, warnId: String): Map<Long, String> {
-        val map = hashMapOf<Long, String>()
-        val warns = warnDao.getWarns(warnId)
-        if (warns.isEmpty()) {
-            return emptyMap()
-        }
-
-        warns.forEach { warn ->
-            val message = convertWarnInfoToMessage(context, warn)
-            map[warn.moment] = message
-        }
-
-        return map
-    }
-
     fun clear(guildId: Long, warnedId: Long) {
         warnDao.clear(guildId, warnedId)
     }
 
-    suspend fun getWarns(guildId: Long, warnedId: Long): List<Warn> {
-        return warnDao.getWarns(guildId, warnedId)
+    override suspend fun getPunishments(guildId: Long, targetId: Long): List<Warn> {
+        return warnDao.getWarns(guildId, targetId)
     }
 
     fun remove(warn: Warn) {

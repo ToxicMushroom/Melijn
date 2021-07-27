@@ -417,36 +417,21 @@ suspend fun sendMsgAwaitN(channel: TextChannel, msg: Message): Message? {
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
 
-    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
-    for (embed in msg.embeds) {
-        if (action == null) action = channel.sendMessage(embed)
-        else action.embed(embed)
-    }
+    val action = channel.sendMessage(msg)
+    if (msg is DataMessage)
+        action.allowedMentions(msg.allowedMentions)
 
-    if (msg is DataMessage) {
-        action?.allowedMentions(msg.allowedMentions)
-    }
-
-    return action?.awaitOrNull()
+    return action.awaitOrNull()
 }
 
 suspend fun sendMsgAwaitN(channel: PrivateChannel, msg: Message): Message? {
     if (channel.user.isBot) return null
 
-    var action = if (msg.contentRaw.isNotBlank()) {
-        channel.sendMessage(msg.contentRaw)
-    } else null
+    val action = channel.sendMessage(msg)
+    if (msg is DataMessage)
+        action.allowedMentions(msg.allowedMentions)
 
-    for (embed in msg.embeds) {
-        if (action == null) action = channel.sendMessage(embed)
-        else action.embed(embed)
-    }
-
-    if (msg is DataMessage) {
-        action?.allowedMentions(msg.allowedMentions)
-    }
-
-    return action?.awaitOrNull()
+    return action.awaitOrNull()
 }
 
 suspend fun sendFeatureRequiresPremiumMessage(

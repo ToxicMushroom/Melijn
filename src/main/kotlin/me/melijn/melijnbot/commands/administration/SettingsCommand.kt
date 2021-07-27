@@ -68,7 +68,6 @@ class SettingsCommand : AbstractCommand("command.settings") {
         ) +
             "\n**JoinChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.JOIN)) +
             "\n**LeaveChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.LEAVE)) +
-            "\n**SelfRoleChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.SELFROLE)) +
             "\n**BirthDayChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.BIRTHDAY)) +
             "\n**PreVerificationJoinChannel:** " + idToChannelMention(
             channelWrapper.getChannelId(

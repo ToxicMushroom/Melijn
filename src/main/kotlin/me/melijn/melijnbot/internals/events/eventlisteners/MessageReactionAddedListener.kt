@@ -12,6 +12,7 @@ import me.melijn.melijnbot.enums.VerificationType
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.SelfRoleUtil
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.music.DONATE_QUEUE_LIMIT
 import me.melijn.melijnbot.internals.music.MusicPlayerManager
 import me.melijn.melijnbot.internals.music.QUEUE_LIMIT
@@ -21,6 +22,8 @@ import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.internals.utils.message.Pagination
+import me.melijn.melijnbot.internals.utils.message.StoringPagination
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
@@ -50,15 +53,44 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
     private fun onButtonClick(event: ButtonClickEvent) = TaskManager.async(event.channel) {
         searchMenuHandler(event)
         commandListHandler(event)
+        paginationHandler(event)
     }
 
-    private suspend fun commandListHandler(event: ButtonClickEvent) {
+    private suspend fun paginationHandler(event: ButtonClickEvent) {
+        val button = event.button ?: return
+        val entry = container.paginationMap.entries.firstOrNull { (_, info) ->
+            info.messageId == event.messageIdLong && info.authorId == event.user.idLong
+        }
+        if (entry != null) {
+            val (_, info) = entry
+            val pagination = info.toPagination()
+
+            val message = pagination.navigate(button) ?: return
+            info.currentPage = pagination.currentPage
+            event.editMessage(message).queue()
+        }
+
+        val modularEntry = container.modularPaginationMap.entries.firstOrNull { (_, info) ->
+            info.messageId == event.messageIdLong && info.authorId == event.user.idLong
+        }
+        if (modularEntry != null) {
+            val (_, info) = modularEntry
+            val pagination = info.toPagination()
+
+            val message = pagination.navigate(button) ?: return
+            info.currentPage = pagination.currentPage
+            event.editMessage(message).queue()
+        }
+    }
+
+    private fun commandListHandler(event: ButtonClickEvent) {
         val textChannel = if (event.isFromGuild) event.textChannel else null
-        event.deferReply(true)
-            .addEmbeds(
-                HelpCommand.ListArg.getHelpListMessage(container, textChannel, event.user, null).build()
-            )
-            .queue()
+        if (event.button?.id == "help_list")
+            event.deferReply(true)
+                .addEmbeds(
+                    HelpCommand.ListArg.getHelpListMessage(container, textChannel, event.user, null).build()
+                )
+                .queue()
     }
 
     private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = TaskManager.async(event.channel) {
@@ -102,10 +134,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
             val newIndex = min(
-                pagination.messageList.size - 1, max(
+                pagination.storage.size - 1, max(
                     0, when (emoji) {
                         "⏪" -> 0
-                        "⏩" -> pagination.messageList.size - 1
+                        "⏩" -> pagination.storage.size - 1
                         "◀️" -> pagination.currentPage - 1
                         "▶️" -> pagination.currentPage + 1
                         else -> return
@@ -134,10 +166,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
             val newIndex = min(
-                pagination.messageList.size - 1, max(
+                pagination.storage.size - 1, max(
                     0, when (emoji) {
                         "⏪" -> 0
-                        "⏩" -> pagination.messageList.size - 1
+                        "⏩" -> pagination.storage.size - 1
                         "◀️" -> pagination.currentPage - 1
                         "▶️" -> pagination.currentPage + 1
                         else -> return
@@ -146,7 +178,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             )
 
             if (newIndex != pagination.currentPage) {
-                val msg = pagination.messageList[newIndex].toMessage()
+                val msg = pagination.storage[newIndex].toMessage()
                     ?: throw IllegalArgumentException("cannot transform message")
                 message.editMessage(msg).queue()
             }
@@ -348,7 +380,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
             val newIndex = min(
-                pagination.messageList.size - 1, max(
+                pagination.storage.size - 1, max(
                     0, when (emoji) {
                         "⏪" -> 0
                         "⏩" -> pagination.messageList.size - 1
@@ -383,7 +415,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
             val newIndex = min(
-                pagination.messageList.size - 1, max(
+                pagination.storage.size - 1, max(
                     0, when (emoji) {
                         "⏪" -> 0
                         "⏩" -> pagination.messageList.size - 1
@@ -395,7 +427,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             )
 
             if (newIndex != pagination.currentPage) {
-                val msg = pagination.messageList[newIndex].toMessage()
+                val msg = pagination.storage[newIndex].toMessage()
                     ?: throw IllegalArgumentException("cannot transform message")
                 message.editMessage(msg).queue()
             }
@@ -451,7 +483,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong)
                     .setTitle(title)
                     .setDescription(desc)
-                event.editMessage(MessageBuilder().setEmbed(eb.build()).build()).queue()
+                event.editMessage(MessageBuilder().setEmbeds(eb.build()).build()).queue()
             }
             guildPlayer.safeQueueSilent(container.daoManager, track, menu.nextPosition) -> {
                 guild.selfMember.voiceState?.channel?.let {
@@ -470,7 +502,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong)
                 eb.setTitle(title)
                 eb.setDescription(description)
-                event.editMessage(MessageBuilder().setEmbed(eb.build()).build()).queue()
+                event.editMessage(MessageBuilder().setEmbeds(eb.build()).build()).queue()
             }
             else -> {
                 val msg = i18n.getTranslation(language, "message.music.queuelimit")
@@ -592,4 +624,11 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             }
         }
     }
+}
+
+private fun StoragePaginationInfo.toPagination(): Pagination {
+    return StoringPagination(this.storage.map { ModularMessage(it) }, currentPage)
+}
+private fun ModularStoragePaginationInfo.toPagination(): Pagination {
+    return StoringPagination(this.storage.map { it }, currentPage)
 }

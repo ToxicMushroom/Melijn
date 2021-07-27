@@ -30,8 +30,9 @@ class StarboardMessageWrapper(private val starboardMessageDao: StarboardMessageD
         starboardMessageDao.updateDeleted(messageId, deleted)
     }
 
-    fun delete(messageId: Long) {
-        starboardMessageDao.removeCacheEntry(messageId)
-        starboardMessageDao.delete(messageId)
+    fun delete(info: StarboardInfo) {
+        starboardMessageDao.removeCacheEntry(info.ogMessageId)
+        starboardMessageDao.removeCacheEntry(info.starboardMessageId)
+        starboardMessageDao.delete(info.ogMessageId)
     }
 }

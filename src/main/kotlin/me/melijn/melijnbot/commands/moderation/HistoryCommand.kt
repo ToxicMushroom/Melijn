@@ -1,19 +1,17 @@
 package me.melijn.melijnbot.commands.moderation
 
+import me.melijn.melijnbot.database.ban.PunishMapProvider
 import me.melijn.melijnbot.enums.PunishmentType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
-import me.melijn.melijnbot.internals.utils.message.sendPaginationMsg
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendPaginationMsgFetching
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
-import me.melijn.melijnbot.internals.utils.withSafeVariable
-import me.melijn.melijnbot.internals.utils.withVariable
 
 class HistoryCommand : AbstractCommand("command.history") {
 
@@ -28,10 +26,7 @@ class HistoryCommand : AbstractCommand("command.history") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.args.size < 2) {
-            sendSyntax(context)
-            return
-        }
+        if (argSizeCheckFailed(context, 1)) return
 
         val types = PunishmentType.getMatchingTypesFromNode(context.args[0])
         if (types.isEmpty()) {
@@ -47,31 +42,16 @@ class HistoryCommand : AbstractCommand("command.history") {
 
         //put info inside maps
         for (type in types) {
-            when (type) {
-                PunishmentType.BAN -> {
-                    val banMap = dao.banWrapper.getBanMap(context, targetUser)
-                    unorderedMap.putAll(banMap)
-                }
-                PunishmentType.KICK -> {
-                    val kickMap = dao.kickWrapper.getKickMap(context, targetUser)
-                    unorderedMap.putAll(kickMap)
-                }
-                PunishmentType.WARN -> {
-                    val warnMap = dao.warnWrapper.getWarnMap(context, targetUser)
-                    unorderedMap.putAll(warnMap)
-                }
-                PunishmentType.MUTE -> {
-                    val muteMap = dao.muteWrapper.getMuteMap(context, targetUser)
-                    unorderedMap.putAll(muteMap)
-                }
-                PunishmentType.SOFTBAN -> {
-                    val banMap = dao.softBanWrapper.getSoftBanMap(context, targetUser)
-                    unorderedMap.putAll(banMap)
-                }
-                else -> {
-
-                }
+            val provider: PunishMapProvider<*> = when (type) {
+                PunishmentType.BAN -> dao.banWrapper
+                PunishmentType.KICK -> dao.kickWrapper
+                PunishmentType.WARN -> dao.warnWrapper
+                PunishmentType.MUTE -> dao.muteWrapper
+                PunishmentType.SOFTBAN -> dao.softBanWrapper
+                else -> continue
             }
+            val punishMap = provider.getPunishMap(context, targetUser)
+            unorderedMap.putAll(punishMap)
         }
 
         val orderedMap = unorderedMap
@@ -177,26 +157,26 @@ class HistoryCommand : AbstractCommand("command.history") {
             val unorderedMap: MutableMap<Long, String> = hashMapOf()
             //put info inside maps
 
-            val banMap = dao.banWrapper.getBanMap(context, id)
+            val banMap = dao.banWrapper.getPunishMap(context, id)
             unorderedMap.putAll(banMap)
 
             if (unorderedMap.isEmpty()) {
-                val kickMap = dao.kickWrapper.getKickMap(context, id)
+                val kickMap = dao.kickWrapper.getPunishMap(context, id)
                 unorderedMap.putAll(kickMap)
             }
 
             if (unorderedMap.isEmpty()) {
-                val warnMap = dao.warnWrapper.getWarnMap(context, id)
+                val warnMap = dao.warnWrapper.getPunishMap(context, id)
                 unorderedMap.putAll(warnMap)
             }
 
             if (unorderedMap.isEmpty()) {
-                val muteMap = dao.muteWrapper.getMuteMap(context, id)
+                val muteMap = dao.muteWrapper.getPunishMap(context, id)
                 unorderedMap.putAll(muteMap)
             }
 
             if (unorderedMap.isEmpty()) {
-                val softbanMap = dao.softBanWrapper.getSoftBanMap(context, id)
+                val softbanMap = dao.softBanWrapper.getPunishMap(context, id)
                 unorderedMap.putAll(softbanMap)
             }
 

@@ -6,7 +6,7 @@ import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
-class BanWrapper(private val banDao: BanDao) {
+class BanWrapper(private val banDao: BanDao) : PunishMapProvider<Ban> {
 
     suspend fun getUnbannableBans(podInfo: PodInfo): List<Ban> {
         return banDao.getUnbannableBans(podInfo)
@@ -28,37 +28,27 @@ class BanWrapper(private val banDao: BanDao) {
         }
     }
 
-    suspend fun getBans(guildId: Long, bannedId: Long): List<Ban> {
-        return banDao.getBans(guildId, bannedId)
+    override suspend fun getPunishments(guildId: Long, targetId: Long): List<Ban> {
+        return banDao.getBans(guildId, targetId)
     }
 
-    suspend fun getBanMap(context: ICommandContext, targetUser: User): Map<Long, String> {
-        val map = hashMapOf<Long, String>()
+    override suspend fun getPunishMap(context: ICommandContext, targetUser: User): Map<Long, String> {
         val bans = banDao.getBans(context.guildId, targetUser.idLong)
-        if (bans.isEmpty()) {
-            return emptyMap()
-        }
-
-        bans.forEach { ban ->
-            val message = convertBanInfoToMessage(context, ban)
-            map[ban.startTime] = message
-        }
-
-        return map
+        return bansToMap(bans, context)
     }
 
-    suspend fun getBanMap(context: ICommandContext, banId: String): Map<Long, String> {
-        val map = hashMapOf<Long, String>()
-        val bans = banDao.getBans(banId)
-        if (bans.isEmpty()) {
-            return emptyMap()
-        }
+    override suspend fun getPunishMap(context: ICommandContext, punishmentId: String): Map<Long, String> {
+        val bans = banDao.getBans(punishmentId)
+        return bansToMap(bans, context)
+    }
 
+    private suspend fun bansToMap(bans: List<Ban>, context: ICommandContext): Map<Long, String> {
+        val map = hashMapOf<Long, String>()
+        if (bans.isEmpty()) return emptyMap()
         bans.forEach { ban ->
             val message = convertBanInfoToMessage(context, ban)
             map[ban.startTime] = message
         }
-
         return map
     }
 
@@ -110,4 +100,12 @@ class BanWrapper(private val banDao: BanDao) {
     fun remove(ban: Ban) {
         banDao.remove(ban)
     }
+}
+
+interface PunishMapProvider<T> {
+
+    suspend fun getPunishMap(context: ICommandContext, targetUser: User): Map<Long, String>
+    suspend fun getPunishMap(context: ICommandContext, punishmentId: String): Map<Long, String>
+
+    suspend fun getPunishments(guildId: Long, targetId: Long): List<T>
 }

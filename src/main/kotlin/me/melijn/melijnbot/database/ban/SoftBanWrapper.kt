@@ -8,22 +8,28 @@ import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
-class SoftBanWrapper(private val softBanDao: SoftBanDao) {
+class SoftBanWrapper(private val softBanDao: SoftBanDao): PunishMapProvider<SoftBan> {
 
     fun addSoftBan(softBan: SoftBan) {
         softBanDao.addSoftBan(softBan)
     }
 
-    suspend fun getSoftBanMap(context: ICommandContext, targetUser: User): Map<Long, String> {
-        val map = hashMapOf<Long, String>()
-        val softBans = softBanDao.getSoftBans(context.guildId, targetUser.idLong)
+    override suspend fun getPunishMap(context: ICommandContext, targetUser: User): Map<Long, String> {
+        val bans = softBanDao.getSoftBans(context.guildId, targetUser.idLong)
+        return softSoftBansToMap(bans, context)
+    }
 
-        if (softBans.isEmpty()) {
-            return emptyMap()
-        }
-        softBans.forEach { softBan ->
-            val message = convertSoftBanInfoToMessage(context, softBan)
-            map[softBan.moment] = message
+    override suspend fun getPunishMap(context: ICommandContext, punishmentId: String): Map<Long, String> {
+        val bans = softBanDao.getSoftBans(punishmentId)
+        return softSoftBansToMap(bans, context)
+    }
+
+    private suspend fun softSoftBansToMap(softBans: List<SoftBan>, context: ICommandContext): Map<Long, String> {
+        val map = hashMapOf<Long, String>()
+        if (softBans.isEmpty()) return emptyMap()
+        softBans.forEach { ban ->
+            val message = convertSoftBanInfoToMessage(context, ban)
+            map[ban.moment] = message
         }
         return map
     }
@@ -45,27 +51,12 @@ class SoftBanWrapper(private val softBanDao: SoftBanDao) {
 
     }
 
-    suspend fun getSoftBanMap(context: ICommandContext, softbanId: String): Map<Long, String> {
-        val map = hashMapOf<Long, String>()
-        val softBans = softBanDao.getSoftBans(softbanId)
-        if (softBans.isEmpty()) {
-            return emptyMap()
-        }
-
-        softBans.forEach { softban ->
-            val message = convertSoftBanInfoToMessage(context, softban)
-            map[softban.moment] = message
-        }
-
-        return map
+    fun clear(guildId: Long, softBannedId: Long) {
+        softBanDao.clear(guildId, softBannedId)
     }
 
-    fun clear(guildId: Long, softbannedId: Long) {
-        softBanDao.clear(guildId, softbannedId)
-    }
-
-    suspend fun getSoftBans(guildId: Long, softbannedId: Long): List<SoftBan> {
-        return softBanDao.getSoftBans(guildId, softbannedId)
+    override suspend fun getPunishments(guildId: Long, targetId: Long): List<SoftBan> {
+        return softBanDao.getSoftBans(guildId, targetId)
     }
 
     fun remove(softBan: SoftBan) {

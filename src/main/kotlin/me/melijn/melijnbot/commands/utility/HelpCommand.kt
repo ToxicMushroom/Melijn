@@ -204,11 +204,13 @@ class HelpCommand : AbstractCommand("command.help") {
                 .setDescription(description)
                 .setFooter("@${context.selfUser.asTag} is always a valid prefix")
 
-            val messageBuilder= MessageBuilder()
+            val messageBuilder = MessageBuilder()
                 .setEmbeds(embedder.build())
-                .setActionRows(ActionRow.of(
-                    Button.primary("help_list","command list")
-                ))
+                .setActionRows(
+                    ActionRow.of(
+                        Button.primary("help_list", "command list")
+                    )
+                )
             sendRsp(context, messageBuilder.build())
             return
         }
@@ -337,20 +339,20 @@ class HelpCommand : AbstractCommand("command.help") {
             aliases = arrayOf("ls")
         }
 
-        companion object{
-             fun getHelpListMessage(
-                 container: Container,
-                 textChannel: TextChannel?,
-                 user: User,
+        companion object {
+            fun getHelpListMessage(
+                container: Container,
+                textChannel: TextChannel?,
+                user: User,
 
-                 category: CommandCategory?
+                category: CommandCategory?
             ): EmbedBuilder {
-                val root="command.help.list"
+                val root = "command.help.list"
                 val commandList = container.commandSet
                     .filter { cmd -> category == null || cmd.commandCategory == category }
                     .sortedBy { cmd -> cmd.name }
 
-                val title = i18n.getTranslation("en","$root.title")
+                val title = i18n.getTranslation("en", "$root.title")
 
                 val categoryPathMap = mutableMapOf(
                     Pair(CommandCategory.ADMINISTRATION, "$root.field2.title"),
@@ -364,24 +366,28 @@ class HelpCommand : AbstractCommand("command.help") {
                     Pair(CommandCategory.UTILITY, "$root.field1.title")
                 )
 
-                if (textChannel!=null && textChannel.isNSFW) {
+                if (textChannel != null && textChannel.isNSFW) {
                     categoryPathMap[CommandCategory.NSFW] = "$root.field10.title"
                 }
                 val categoryFiltered = categoryPathMap.filter { entry ->
                     entry.key == category || category == null
                 }
 
-                val commandAmount = i18n.getTranslation("en","$root.footer")
+                val commandAmount = i18n.getTranslation("en", "$root.footer")
                     .withVariable("cmdCount", commandList.size.toString())
 
-                val eb = Embedder(container.daoManager,textChannel?.guild?.idLong?:-1,user.idLong)
+                val eb = Embedder(container.daoManager, textChannel?.guild?.idLong ?: -1, user.idLong)
                     .setTitle(title, "https://melijn.com/commands")
                     .setFooter(commandAmount, null)
 
                 categoryFiltered.toSortedMap { o1, o2 ->
                     o1.toString().compareTo(o2.toString())
                 }.forEach { entry ->
-                    eb.addField(i18n.getTranslation("en",entry.value), commandListString(commandList, entry.key), false)
+                    eb.addField(
+                        i18n.getTranslation("en", entry.value),
+                        commandListString(commandList, entry.key),
+                        false
+                    )
                 }
                 return eb
             }
@@ -391,7 +397,7 @@ class HelpCommand : AbstractCommand("command.help") {
             val category = getEnumFromArgN<CommandCategory>(context, 0)
 
             val textChannel = if (context.isFromGuild) context.message.textChannel else null
-            val eb = getHelpListMessage(context.container, textChannel,context.author, category)
+            val eb = getHelpListMessage(context.container, textChannel, context.author, category)
 
             sendEmbedRsp(context, eb.build())
         }

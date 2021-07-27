@@ -1,12 +1,13 @@
 package me.melijn.melijnbot.database.mute
 
+import me.melijn.melijnbot.database.ban.PunishMapProvider
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
-class MuteWrapper(private val muteDao: MuteDao) {
+class MuteWrapper(private val muteDao: MuteDao): PunishMapProvider<Mute> {
 
     suspend fun getUnmuteableMutes(podInfo: PodInfo): List<Mute> {
         return muteDao.getUnmuteableMutes(podInfo)
@@ -20,16 +21,22 @@ class MuteWrapper(private val muteDao: MuteDao) {
         return muteDao.getActiveMute(guildId, mutedId)
     }
 
-    suspend fun getMuteMap(context: ICommandContext, targetUser: User): Map<Long, String> {
-        val map = hashMapOf<Long, String>()
+    override suspend fun getPunishMap(context: ICommandContext, targetUser: User): Map<Long, String> {
         val mutes = muteDao.getMutes(context.guildId, targetUser.idLong)
-        if (mutes.isEmpty()) {
-            return emptyMap()
+        return mutesToMap(mutes, context)
+    }
 
-        }
-        mutes.forEach { ban ->
-            val message = convertMuteInfoToMessage(context, ban)
-            map[ban.startTime] = message
+    override suspend fun getPunishMap(context: ICommandContext, punishmentId: String): Map<Long, String> {
+        val mutes = muteDao.getMutes(punishmentId)
+        return mutesToMap(mutes, context)
+    }
+
+    private suspend fun mutesToMap(mutes: List<Mute>, context: ICommandContext): Map<Long, String> {
+        val map = hashMapOf<Long, String>()
+        if (mutes.isEmpty()) return emptyMap()
+        mutes.forEach { mute ->
+            val message = convertMuteInfoToMessage(context, mute)
+            map[mute.startTime] = message
         }
         return map
     }
@@ -82,21 +89,6 @@ class MuteWrapper(private val muteDao: MuteDao) {
             .withVariable("active", "${mute.active}")
     }
 
-    suspend fun getMuteMap(context: ICommandContext, muteId: String): Map<Long, String> {
-        val map = hashMapOf<Long, String>()
-        val mutes = muteDao.getMutes(muteId)
-        if (mutes.isEmpty()) {
-            return emptyMap()
-        }
-
-        mutes.forEach { mute ->
-            val message = convertMuteInfoToMessage(context, mute)
-            map[mute.startTime] = message
-        }
-
-        return map
-    }
-
     fun clear(guildId: Long, mutedId: Long, clearActive: Boolean) {
         if (clearActive) {
             muteDao.clearHistory(guildId, mutedId)
@@ -105,8 +97,8 @@ class MuteWrapper(private val muteDao: MuteDao) {
         }
     }
 
-    suspend fun getMutes(guildId: Long, mutedId: Long): List<Mute> {
-        return muteDao.getMutes(guildId, mutedId)
+    override suspend fun getPunishments(guildId: Long, targetId: Long): List<Mute> {
+        return muteDao.getMutes(guildId, targetId)
     }
 
     fun remove(mute: Mute) {

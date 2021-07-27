@@ -57,23 +57,23 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
             for (type in types) {
                 when (type) {
                     PunishmentType.BAN -> {
-                        amount += dao.banWrapper.getBanMap(context, targetUser).size - (if (clearActive) 0 else 1)
+                        amount += dao.banWrapper.getPunishMap(context, targetUser).size - (if (clearActive) 0 else 1)
                         dao.banWrapper.clear(context.guildId, targetUser.idLong, clearActive)
                     }
                     PunishmentType.KICK -> {
-                        amount += dao.kickWrapper.getKickMap(context, targetUser).size
+                        amount += dao.kickWrapper.getPunishMap(context, targetUser).size
                         dao.kickWrapper.clear(context.guildId, targetUser.idLong)
                     }
                     PunishmentType.WARN -> {
-                        amount += dao.warnWrapper.getWarnMap(context, targetUser).size
+                        amount += dao.warnWrapper.getPunishMap(context, targetUser).size
                         dao.warnWrapper.clear(context.guildId, targetUser.idLong)
                     }
                     PunishmentType.MUTE -> {
-                        amount += dao.muteWrapper.getMuteMap(context, targetUser).size - (if (clearActive) 0 else 1)
+                        amount += dao.muteWrapper.getPunishMap(context, targetUser).size - (if (clearActive) 0 else 1)
                         dao.muteWrapper.clear(context.guildId, targetUser.idLong, clearActive)
                     }
                     PunishmentType.SOFTBAN -> {
-                        amount += dao.softBanWrapper.getSoftBanMap(context, targetUser).size
+                        amount += dao.softBanWrapper.getPunishMap(context, targetUser).size
                         dao.softBanWrapper.clear(context.guildId, targetUser.idLong)
                     }
                     else -> {
@@ -119,35 +119,35 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
             loop@ for (type in PunishmentType.values()) {
                 when (type) {
                     PunishmentType.BAN -> {
-                        val ban = dao.banWrapper.getBans(context.guildId, targetUser.idLong)
+                        val ban = dao.banWrapper.getPunishments(context.guildId, targetUser.idLong)
                             .firstOrNull { it.banId == caseId } ?: continue@loop
                         dao.banWrapper.remove(ban)
                         foundType = type
                         break@loop
                     }
                     PunishmentType.KICK -> {
-                        val kick = dao.kickWrapper.getKicks(context.guildId, targetUser.idLong)
+                        val kick = dao.kickWrapper.getPunishments(context.guildId, targetUser.idLong)
                             .firstOrNull { it.kickId == caseId } ?: continue@loop
                         dao.kickWrapper.remove(kick)
                         foundType = type
                         break@loop
                     }
                     PunishmentType.WARN -> {
-                        val warn = dao.warnWrapper.getWarns(context.guildId, targetUser.idLong)
+                        val warn = dao.warnWrapper.getPunishments(context.guildId, targetUser.idLong)
                             .firstOrNull { it.warnId == caseId } ?: continue@loop
                         dao.warnWrapper.remove(warn)
                         foundType = type
                         break@loop
                     }
                     PunishmentType.MUTE -> {
-                        val mute = dao.muteWrapper.getMutes(context.guildId, targetUser.idLong)
+                        val mute = dao.muteWrapper.getPunishments(context.guildId, targetUser.idLong)
                             .firstOrNull { it.muteId == caseId } ?: continue@loop
                         dao.muteWrapper.remove(mute)
                         foundType = type
                         break@loop
                     }
                     PunishmentType.SOFTBAN -> {
-                        val softBan = dao.softBanWrapper.getSoftBans(context.guildId, targetUser.idLong)
+                        val softBan = dao.softBanWrapper.getPunishments(context.guildId, targetUser.idLong)
                             .firstOrNull { it.softBanId == caseId } ?: continue@loop
                         dao.softBanWrapper.remove(softBan)
                         foundType = type

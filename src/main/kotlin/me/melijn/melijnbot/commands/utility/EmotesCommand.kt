@@ -4,10 +4,11 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.message.sendMsgCodeBlock
-import me.melijn.melijnbot.internals.utils.message.sendPaginationMsg
+import me.melijn.melijnbot.internals.utils.message.sendPaginationModularRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 
 class EmotesCommand : AbstractCommand("command.emotes") {
@@ -34,7 +35,13 @@ class EmotesCommand : AbstractCommand("command.emotes") {
                     .appendLine(":`")
             }
             sb.append(emotes.size).append("/").append(context.guild.maxEmotes)
-            sendPaginationMsg(context, StringUtils.splitMessage(sb.toString()), 0)
+
+            val msgs = StringUtils.splitMessage(sb.toString())
+            val modularMessages = msgs.withIndex()
+                .map { (index, content) ->
+                    ModularMessage("$content\nPage ${index + 1}/${msgs.size}")
+                }
+            sendPaginationModularRsp(context, modularMessages, 0)
             return
         }
         if (context.args.isNotEmpty() && context.args[0] == "compact") {

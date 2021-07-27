@@ -85,11 +85,6 @@ class StarboardCommand : AbstractCommand("command.starboard") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
-
             val starboardSettingsWrapper = context.daoManager.starboardSettingsWrapper
             val starboardSettings = starboardSettingsWrapper.getStarboardSettings(context.guildId)
             val currentExcluded = starboardSettings.excludedChannelIds.splitIETEL(",").toMutableList()
@@ -111,11 +106,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
-
+            if (argSizeCheckFailed(context, 0)) return
             val id = getLongFromArgNMessage(context, 0, 0) ?: return
             val starboardMessageWrapper = context.daoManager.starboardMessageWrapper
             val info = starboardMessageWrapper.getStarboardInfo(id)
@@ -133,13 +124,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
             }
 
             val starMessage = channel.retrieveMessageById(info.starboardMessageId).awaitOrNull()
-            if (starMessage == null) {
-                val blub = context.getTranslation("$root.stargone")
-                sendRsp(context, blub)
-                return
-            }
-
-            starMessage.delete().reason("(starboard hideMessage) ${context.author.asTag}").queue()
+            starMessage?.delete()?.reason("(starboard hideMessage) ${context.author.asTag}")?.queue()
             starboardMessageWrapper.updateDeleted(info.starboardMessageId, true)
             val msg = context.getTranslation("$root.hidden")
             sendRsp(context, msg)
@@ -154,11 +139,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
-
+            if (argSizeCheckFailed(context, 0)) return
             val id = getLongFromArgNMessage(context, 0, 0) ?: return
             val starboardMessageWrapper = context.daoManager.starboardMessageWrapper
             val info = starboardMessageWrapper.getStarboardInfo(id)
@@ -176,15 +157,8 @@ class StarboardCommand : AbstractCommand("command.starboard") {
             }
 
             val starMessage = channel.retrieveMessageById(info.starboardMessageId).awaitOrNull()
-            if (starMessage == null) {
-                starboardMessageWrapper.delete(info.starboardMessageId)
-                val blub = context.getTranslation("$root.stargone")
-                sendRsp(context, blub)
-                return
-            }
-
-            starMessage.delete().reason("(starboard deleteMessage) ${context.author.asTag}").queue()
-            starboardMessageWrapper.delete(info.starboardMessageId)
+            starMessage?.delete()?.reason("(starboard deleteMessage) ${context.author.asTag}")?.queue()
+            starboardMessageWrapper.delete(info)
             val msg = context.getTranslation("$root.deleted")
             sendRsp(context, msg)
         }

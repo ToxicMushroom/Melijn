@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
@@ -20,6 +21,7 @@ data class ModularMessage(
     var messageContent: String? = null,
     var embed: MessageEmbed? = null,
     var attachments: Map<String, String> = emptyMap(), // url -> name
+    var actionRows: List<ActionRow> = emptyList(),
     var extra: Map<String, String> = emptyMap()
 ) {
 
@@ -77,8 +79,10 @@ data class ModularMessage(
         val mb = MessageBuilder()
             .setContent(messageContent)
         if (membed?.isSendable == true) {
-            mb.setEmbed(membed)
+            mb.setEmbeds(membed)
         }
+
+        mb.setActionRows(actionRows)
 
         // Timestamp handler
         if (extra.containsKey("isPingable")) {
@@ -172,6 +176,7 @@ data class ModularMessage(
                 }
             }
         }
+        mappedModularMsg.actionRows = actionRows
         mappedModularMsg.attachments = mappedAttachments
         mappedModularMsg.extra = extra
 
@@ -218,7 +223,9 @@ data class ModularMessage(
                         extra[extraObj.getString(0)] = extraObj.getString(1)
                     }
                 }
-                return ModularMessage(content, embed, attachments, extra)
+
+
+                return ModularMessage(content, embed, attachments, emptyList(), extra)
             } catch (e: Exception) {
                 e.printStackTrace()
                 throw IllegalArgumentException("Invalid JSON structure")
