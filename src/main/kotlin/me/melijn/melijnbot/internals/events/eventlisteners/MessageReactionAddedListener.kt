@@ -145,8 +145,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 )
             )
 
-            if (newIndex != pagination.currentPage)
-                message.editMessage(pagination.messageList[newIndex]).queue()
+            if (newIndex != pagination.storage.size)
+                message.editMessage(pagination.storage[newIndex]).queue()
 
             pagination.currentPage = newIndex
             container.paginationMap[entry.key] = pagination
@@ -383,7 +383,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 pagination.storage.size - 1, max(
                     0, when (emoji) {
                         "⏪" -> 0
-                        "⏩" -> pagination.messageList.size - 1
+                        "⏩" -> pagination.storage.size - 1
                         "◀️" -> pagination.currentPage - 1
                         "▶️" -> pagination.currentPage + 1
                         else -> return
@@ -391,8 +391,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 )
             )
 
-            if (newIndex != pagination.currentPage)
-                message.editMessage(pagination.messageList[newIndex]).queue()
+            if (newIndex != pagination.storage.size)
+                message.editMessage(pagination.storage[newIndex]).queue()
 
             pagination.currentPage = newIndex
             container.paginationMap[entry.key] = pagination
@@ -418,7 +418,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 pagination.storage.size - 1, max(
                     0, when (emoji) {
                         "⏪" -> 0
-                        "⏩" -> pagination.messageList.size - 1
+                        "⏩" -> pagination.storage.size - 1
                         "◀️" -> pagination.currentPage - 1
                         "▶️" -> pagination.currentPage + 1
                         else -> return

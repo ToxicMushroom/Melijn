@@ -8,10 +8,7 @@ import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
-import me.melijn.melijnbot.internals.utils.StringUtils
-import me.melijn.melijnbot.internals.utils.await
-import me.melijn.melijnbot.internals.utils.awaitOrNull
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.web.apis.ImageApi
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
@@ -302,6 +299,13 @@ suspend fun sendRspWithAttachmentsAwaitN(
         handleRspDelete(daoManager, msg)
     }
     return msg
+}
+
+suspend fun sendRspAwaitN(context: ICommandContext, msg: Message): Message? {
+    return if (context.isFromGuild)
+        if (isPremiumGuild(context)) sendRspAwaitN(context.textChannel, context.daoManager, msg)
+        else sendMsgAwaitN(context.textChannel, msg)
+    else sendMsgAwaitN(context.privateChannel, msg)
 }
 
 suspend fun sendRspAwaitN(channel: TextChannel, daoManager: DaoManager, msg: Message): Message? {

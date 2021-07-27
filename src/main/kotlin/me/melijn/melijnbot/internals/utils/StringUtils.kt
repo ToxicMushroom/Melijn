@@ -13,15 +13,15 @@ object StringUtils {
     fun splitMessageWithCodeBlocks(
         message: String,
         nextSplitThreshold: Int = 1800,
-        margin: Int = 30,
+        maxLength: Int = 1970,
         lang: String = ""
     ): List<String> {
         var msg = message
         val messages = ArrayList<String>()
         var shouldAppendBackTicks = false
         var shouldPrependBackTicks = false
-        while (msg.length > 2000 - margin) {
-            var findLastNewline = msg.substring(0, 1999 - margin)
+        while (msg.length > maxLength) {
+            var findLastNewline = msg.substring(0, maxLength - 1)
             if (shouldPrependBackTicks) {
                 findLastNewline = "```$lang\n$findLastNewline"
             } else {
@@ -35,16 +35,11 @@ object StringUtils {
                 val amount = triple.first
                 val previousIndex = triple.second
                 val mostRightIndex = triple.third
-
-                val lastEvenIndex = if (amount % 2 == 0) {
-                    mostRightIndex
-                } else {
-                    previousIndex
-                }
+                val lastEvenIndex = if (amount % 2 == 0) mostRightIndex else previousIndex
 
                 shouldPrependBackTicks = true
 
-                if (lastEvenIndex > (nextSplitThreshold - margin)) {
+                if (lastEvenIndex > nextSplitThreshold) {
                     val subMsg = msg.substring(0, lastEvenIndex)
                     messages.add(subMsg)
                     msg = msg.substring(lastEvenIndex)
@@ -55,14 +50,9 @@ object StringUtils {
                 }
             }
 
-            val index = getSplitIndex(findLastNewline, nextSplitThreshold, margin, 2000)
+            val index = getSplitIndex(findLastNewline, nextSplitThreshold, maxLength)
             messages.add(
-                findLastNewline.substring(0, index) +
-                    if (shouldAppendBackTicks) {
-                        "```"
-                    } else {
-                        ""
-                    }
+                findLastNewline.substring(0, index) + (if (shouldAppendBackTicks) "```" else "")
             )
 
             msg = msg.substring(index)
@@ -104,12 +94,11 @@ object StringUtils {
 
     fun splitMessage(message: String, splitAtLeast: Int = 1800, maxLength: Int = 2000): List<String> {
         var msg = message
-        val margin = maxLength - splitAtLeast
         val messages = ArrayList<String>()
         while (msg.length > maxLength) {
             val findLastNewline = msg.substring(0, maxLength - 1)
 
-            val index = getSplitIndex(findLastNewline, splitAtLeast, margin, maxLength)
+            val index = getSplitIndex(findLastNewline, splitAtLeast, maxLength)
 
             messages.add(msg.substring(0, index))
             msg = msg.substring(index)
@@ -118,7 +107,7 @@ object StringUtils {
         return messages
     }
 
-    private fun getSplitIndex(findLastNewline: String, splitAtLeast: Int, margin: Int, maxLength: Int): Int {
+    private fun getSplitIndex(findLastNewline: String, splitAtLeast: Int, maxLength: Int): Int {
         var index = findLastNewline.lastIndexOf("\n")
         if (index < splitAtLeast) {
             index = findLastNewline.lastIndexOf(". ")
@@ -130,7 +119,7 @@ object StringUtils {
             index = findLastNewline.lastIndexOf(",")
         }
         if (index < splitAtLeast) {
-            index = (maxLength - 1) - margin
+            index = maxLength - 1
         }
 
         return index
@@ -144,36 +133,6 @@ object StringUtils {
                 .array()
         )
             .remove("=")
-    }
-
-    fun splitMessageAtMaxCharAmountOrLength(message: String, maxAmount: Int, c: Char, maxLength: Int): List<String> {
-        var msg = message
-        var charCount = msg.count { c == it }
-        val messages = ArrayList<String>()
-        if (charCount > maxAmount) {
-            while (charCount > maxAmount) {
-                charCount -= maxAmount
-
-                var index = 0
-                var amount = 0
-                for ((charIndex, char) in msg.withIndex()) {
-                    amount++
-                    if (char == c && amount == maxAmount) {
-                        index = charIndex
-                        break
-                    }
-                }
-                messages.addAll(splitMessage(msg.substring(0, index + 1)))
-                msg = msg.substring(index + 1, msg.length)
-            }
-            messages.addAll(splitMessage(msg.substring(0, msg.length)))
-        } else if (maxLength > msg.length) {
-            messages.addAll(splitMessage(msg))
-        } else {
-            messages.add(msg)
-        }
-
-        return messages
     }
 }
 

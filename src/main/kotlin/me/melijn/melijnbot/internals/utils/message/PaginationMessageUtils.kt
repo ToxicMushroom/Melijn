@@ -41,8 +41,12 @@ suspend fun sendPaginationModularRsp(
         registerPaginationModularMessage(textChannel, authorId, message, modularMessages, index)
 }
 
-suspend fun sendPaginationMsg(context: ICommandContext, msgList: List<String>, index: Int) {
-    val msg = msgList[index]
+suspend fun sendPaginationMsgFetching(
+    context: ICommandContext,
+    msg: String,
+    pages: Int,
+    fetcher: suspend (Int) -> String
+) {
     if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
     val channel = context.channel
     require(context.isFromGuild || context.textChannel.canTalk()) { "Cannot talk in this channel " + channel.name }
@@ -87,14 +91,14 @@ suspend fun sendPaginationModularMsg(context: ICommandContext, msgList: List<Mod
     }
 }
 
-suspend fun registerPaginationModularMessage(
+fun registerPaginationModularMessage(
     textChannel: TextChannel,
     authorId: Long,
     message: Message,
     msgList: List<ModularMessage>,
     index: Int
 ) {
-    Container.instance.modularPaginationMap[System.nanoTime()] = ModularPaginationInfo(
+    Container.instance.modularPaginationMap[message.idLong] = ModularStoragePaginationInfo(
         textChannel.guild.idLong,
         textChannel.idLong,
         authorId,
@@ -102,18 +106,16 @@ suspend fun registerPaginationModularMessage(
         msgList,
         index
     )
-
-    addPaginationEmotes(message, msgList.size > 2)
 }
 
-suspend fun registerPaginationModularMessage(
+fun registerPaginationModularMessage(
     privateChannel: PrivateChannel,
     authorId: Long,
     message: Message,
     msgList: List<ModularMessage>,
     index: Int
 ) {
-    Container.instance.modularPaginationMap[System.nanoTime()] = ModularPaginationInfo(
+    Container.instance.modularPaginationMap[message.idLong] = ModularStoragePaginationInfo(
         -1,
         privateChannel.idLong,
         authorId,
@@ -122,17 +124,16 @@ suspend fun registerPaginationModularMessage(
         index
     )
 
-    addPaginationEmotes(message, msgList.size > 2)
 }
 
-suspend fun registerPaginationMessage(
+fun registerPaginationMessage(
     textChannel: TextChannel,
     authorId: Long,
     message: Message,
     msgList: List<String>,
     index: Int
 ) {
-    Container.instance.paginationMap[System.nanoTime()] = PaginationInfo(
+    Container.instance.paginationMap[System.nanoTime()] = StoragePaginationInfo(
         textChannel.guild.idLong,
         textChannel.idLong,
         authorId,
@@ -140,18 +141,16 @@ suspend fun registerPaginationMessage(
         msgList,
         index
     )
-
-    addPaginationEmotes(message, msgList.size > 2)
 }
 
-suspend fun registerPaginationMessage(
+fun registerPaginationMessage(
     privateChannel: PrivateChannel,
     authorId: Long,
     message: Message,
     msgList: List<String>,
     index: Int
 ) {
-    Container.instance.paginationMap[System.nanoTime()] = PaginationInfo(
+    Container.instance.paginationMap[System.nanoTime()] = StoragePaginationInfo(
         -1,
         privateChannel.idLong,
         authorId,
@@ -159,26 +158,4 @@ suspend fun registerPaginationMessage(
         msgList,
         index
     )
-
-    addPaginationEmotes(message, msgList.size > 2)
-}
-
-suspend fun addPaginationEmotes(message: Message, morePages: Boolean) {
-    if (message.isFromGuild) {
-        if (!message.guild.selfMember.hasPermission(message.textChannel, Permission.MESSAGE_HISTORY)) {
-            sendMelijnMissingChannelPermissionMessage(
-                message.textChannel,
-                message.textChannel,
-                "en",
-                Container.instance.daoManager,
-                listOf(Permission.MESSAGE_HISTORY)
-            )
-            return
-        }
-    }
-
-    if (morePages) message.addReaction("⏪").queue()
-    message.addReaction("◀️").queue()
-    message.addReaction("▶️").queue()
-    if (morePages) message.addReaction("⏩").queue()
 }

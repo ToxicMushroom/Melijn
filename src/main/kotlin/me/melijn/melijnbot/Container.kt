@@ -11,8 +11,10 @@ import me.melijn.melijnbot.internals.events.eventlisteners.EventWaiter
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.music.LavaManager
 import me.melijn.melijnbot.internals.services.ServiceManager
-import me.melijn.melijnbot.internals.utils.ModularPaginationInfo
-import me.melijn.melijnbot.internals.utils.PaginationInfo
+import me.melijn.melijnbot.internals.utils.FetchingPaginationInfo
+import me.melijn.melijnbot.internals.utils.ModularFetchingPaginationInfo
+import me.melijn.melijnbot.internals.utils.ModularStoragePaginationInfo
+import me.melijn.melijnbot.internals.utils.StoragePaginationInfo
 import me.melijn.melijnbot.internals.web.ProbeServer
 import me.melijn.melijnbot.internals.web.RestServer
 import me.melijn.melijnbot.internals.web.WebManager
@@ -31,9 +33,10 @@ class Container {
     lateinit var podInfo: PodInfo
 
     //millis, info
-    val paginationMap = mutableMapOf<Long, PaginationInfo>()
-    val modularPaginationMap = mutableMapOf<Long, ModularPaginationInfo>()
-
+    val fetcherPaginationMap = mutableMapOf<Long, FetchingPaginationInfo>()
+    val modularFetcherPaginationMap = mutableMapOf<Long, ModularFetchingPaginationInfo>()
+    val paginationMap = mutableMapOf<Long, StoragePaginationInfo>()
+    val modularPaginationMap = mutableMapOf<Long, ModularStoragePaginationInfo>()
     val eventWaiter by lazy { EventWaiter() }
 
     val restServer: RestServer by lazy { RestServer(this) }

@@ -130,7 +130,9 @@ class HistoryCommand : AbstractCommand("command.history") {
                     paginationPart.clear()
                 }
 
-                sendPaginationMsg(context, paginationPartList, 0)
+                sendPaginationMsgFetching(context, paginationPartList.first(), 0) { i ->
+                    paginationPartList[i]
+                }
             } else {
                 sendRsp(context, msg)
             }
