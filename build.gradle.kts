@@ -54,7 +54,7 @@ val scrimage = "4.2.0.94-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_298") {
+    implementation("net.dv8tion:JDA:4.3.0_299") {
         exclude("opus-java")
     }
 
