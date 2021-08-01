@@ -45,23 +45,23 @@ repositories {
     maven("https://nexus.melijn.com/repository/jitpack/") // pooppack mirror
 }
 
-val jackson = "2.12.3" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-val ktor = "1.6.1"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
+val jackson = "2.12.4" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+val ktor = "1.6.2"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.9" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.5.1" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 val kotlin = "1.5.21"
-val scrimage = "4.2.0.94-SNAPSHOT"
+val scrimage = "4.2.0.109-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_299") {
+    implementation("net.dv8tion:JDA:4.3.0_301") {
         exclude("opus-java")
     }
 
     implementation("io.sentry:sentry:5.0.1")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
-    implementation("club.minnced:discord-webhooks:0.5.7")
+    implementation("club.minnced:discord-webhooks:0.5.8")
 
     // https://github.com/sedmelluq/jda-nas
     implementation("com.sedmelluq:jda-nas:1.1.0")
@@ -72,9 +72,9 @@ dependencies {
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fllklient%2FLavalink-Klient
     implementation("me.melijn.llklient:Lavalink-Klient:2.2.3")
 
-    api(kotlin("script-util"))
-    api(kotlin("compiler"))
-    api(kotlin("scripting-compiler"))
+    api("org.jetbrains.kotlin:kotlin-script-util:$kotlin")
+    api("org.jetbrains.kotlin:kotlin-compiler:$kotlin")
+    api("org.jetbrains.kotlin:kotlin-scripting-compiler:$kotlin")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin")
@@ -101,7 +101,7 @@ dependencies {
     implementation("se.michaelthelin.spotify:spotify-web-api-java:6.5.4")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-    implementation("ch.qos.logback:logback-classic:1.2.3")
+    implementation("ch.qos.logback:logback-classic:1.2.5")
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     implementation("com.fasterxml.jackson.core:jackson-core:$jackson")
