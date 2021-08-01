@@ -676,7 +676,7 @@ object AniListCommandUtil {
         val startdate = context.getTranslation("title.startdate")
         val enddate = context.getTranslation("title.enddate")
 
-        eb.addField(genres, media.genres.joinToString("\n").let { if (it.isEmpty()) "/" else it }, true)
+        eb.addField(genres, media.genres.joinToString("\n").let { it.ifEmpty { "/" } }, true)
         eb.addField(othernames, alias, true)
         eb.addField(rating, (media.averageScore?.toString() ?: "?") + "%", true)
 

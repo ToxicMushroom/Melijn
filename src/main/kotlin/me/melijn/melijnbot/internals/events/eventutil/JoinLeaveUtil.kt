@@ -197,7 +197,7 @@ object JoinLeaveUtil {
 
     suspend fun reAddMute(daoManager: DaoManager, event: GuildMemberJoinEvent) {
         val mute = daoManager.muteWrapper.getActiveMute(event.guild.idLong, event.user.idLong) ?: return
-        if (mute.endTime ?: 0 > System.currentTimeMillis()) {
+        if ((mute.endTime ?: 0) > System.currentTimeMillis()) {
             val muteRole = event.guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE, true) ?: return
             event.guild
                 .addRoleToMember(event.member, muteRole)

@@ -14,6 +14,7 @@ val WELCOME_PARSER_SUPPLIER: Supplier<Parser> = Supplier {
 }
 
 object WelcomeJagTagParser {
+
     suspend fun parseJagTag(guild: Guild, user: User, input: String): String =
         parseJagTag(WelcomeParserArgs(guild, user), input)
 

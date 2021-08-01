@@ -871,7 +871,7 @@ object MessageUtil {
         modularMessage: ModularMessage
     ): ModularMessage {
         val args = UrlParserArgs(member.guild, member.user)
-        return modularMessage.mapAllStringFieldsSafe() {
+        return modularMessage.mapAllStringFieldsSafe {
             if (it != null) {
                 UrlJagTagParser.parseJagTag(args, it)
             } else {

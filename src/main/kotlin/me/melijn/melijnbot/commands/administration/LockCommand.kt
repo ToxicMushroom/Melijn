@@ -425,7 +425,7 @@ class LockCommand : AbstractCommand("command.lock") {
         var permsChangedCounter = 0
         // grant overrides for melijn
         val melijnManager = channel.upsertPermissionOverride(context.guild.selfMember)
-        val melijnFlags = overrideMap[context.selfUserId] ?: 0L to 0L
+        val melijnFlags = overrideMap[context.selfUserId] ?: (0L to 0L)
         var modifiedMelijnOverride = false
         for (perm in denyList) {
             if ((melijnFlags.first and perm.rawValue) == 0L) { // if the permission to allow is not yet allowed

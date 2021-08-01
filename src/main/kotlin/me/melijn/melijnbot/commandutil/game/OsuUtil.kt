@@ -50,7 +50,7 @@ object OsuUtil {
     )
 
     fun convertRankToEmote(rank: String): String? {
-        val (_, id, name) = emotes.firstOrNull() { it.first == rank } ?: return null
+        val (_, id, name) = emotes.firstOrNull { it.first == rank } ?: return null
         return "<:$name:$id>"
     }
 

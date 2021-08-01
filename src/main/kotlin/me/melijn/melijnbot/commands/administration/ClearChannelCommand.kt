@@ -33,7 +33,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
         // permission check for bot
         if (notEnoughPermissionsAndMessage(context, textChannel, Permission.MANAGE_CHANNEL)) return
         if (missingPermsForOverrideCheck(textChannel, context)) return
-        if (textChannel.parent?.channels?.size ?: 0 == 50) { // category size check
+        if ((textChannel.parent?.channels?.size ?: 0) == 50) { // category size check
             sendRsp(context, "I cant create a new channel here, the limit under each category is 50 channels")
             return
         }
@@ -60,7 +60,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
                         )
                     } == true) return@waitFor
 
-                if (textChannel.parent?.channels?.size ?: 0 == 50) { // category size check
+                if ((textChannel.parent?.channels?.size ?: 0) == 50) { // category size check
                     sendRsp(context, "I cant create a new channel here, the limit under each category is 50 channels")
                     return@waitFor
                 }

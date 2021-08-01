@@ -46,7 +46,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 commandMap[alias.lowercase()] = command
             }
         }
-        container.commandMap = commandList.map { it.id to it }.toMap()
+        container.commandMap = commandList.associateBy { it.id }
         container.commandSet = commandList
     }
 
@@ -300,7 +300,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val argLines = rawArg.split("\n")
         val args = rawArg.split(SPACE_REGEX)
         val lineArgMap: Map<Int, List<String>> =
-            argLines.withIndex().map { (i, it) -> i to it.split(SPACE_REGEX) }.toMap()
+            argLines.withIndex().associate { (i, it) -> i to it.split(SPACE_REGEX) }
 
         var missingArg = -1
         var missingLine = -1
@@ -333,7 +333,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         val matchResult = ScriptsCommand.scriptLineArgRegex.find(it) ?: throw IllegalStateException()
                         val lineIndex = (matchResult.groupValues[1].toIntOrNull() ?: throw IllegalStateException()) - 1
                         val argIndex = (matchResult.groupValues[2].toIntOrNull() ?: throw IllegalStateException()) - 1
-                        if (argIndex >= lineArgMap[lineIndex]?.size ?: 0) {
+                        if (argIndex >= (lineArgMap[lineIndex]?.size ?: 0)) {
                             missingLineArg = lineIndex to argIndex
                             break
                         }
