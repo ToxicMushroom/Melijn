@@ -9,7 +9,6 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import java.util.concurrent.ConcurrentHashMap
@@ -32,10 +31,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        }
+        if (argSizeCheckFailed(context, 0)) return
 
         // + 1 is to start counting above the .purge command
         val amount = (getIntegerFromArgNMessage(context, 0, 1, 1000) ?: return) + 1

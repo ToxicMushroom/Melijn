@@ -6,7 +6,6 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.entities.Member
 
 class VerifyCommand : AbstractCommand("command.verify") {
@@ -18,10 +17,7 @@ class VerifyCommand : AbstractCommand("command.verify") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        }
+        if (argSizeCheckFailed(context, 0)) return
 
         val role = VerificationUtils.getUnverifiedRoleNMessage(
             context.author,

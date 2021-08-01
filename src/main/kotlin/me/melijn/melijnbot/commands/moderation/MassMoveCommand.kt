@@ -5,12 +5,8 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.internals.utils.getVoiceChannelByArgNMessage
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
-import me.melijn.melijnbot.internals.utils.withSafeVariable
-import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 
 class MassMoveCommand : AbstractCommand("command.massmove") {
@@ -24,10 +20,7 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.args.size < 2) {
-            sendSyntax(context)
-            return
-        }
+        if (argSizeCheckFailed(context, 1)) return
 
         var total = 0
         if (context.args[0] == "all") {

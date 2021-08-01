@@ -720,7 +720,7 @@ suspend fun retrieveMemberByArgsN(guild: Guild, arg: String): Member? {
 suspend fun retrieveMemberByArgsNMessage(
     context: ICommandContext,
     index: Int,
-    interactable: Boolean = false,
+    intractable: Boolean = false,
     botAllowed: Boolean = true
 ): Member? {
     if (!context.isFromGuild) throw IllegalStateException("Trying to get members in dms")
@@ -740,7 +740,7 @@ suspend fun retrieveMemberByArgsNMessage(
         return null
     }
 
-    if (interactable && !member.guild.selfMember.canInteract(member)) {
+    if (intractable && !member.guild.selfMember.canInteract(member)) {
         val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
             .withSafeVariable(PLACEHOLDER_USER, member.asTag)
         sendRsp(context, msg)

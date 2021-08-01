@@ -1,14 +1,11 @@
 package me.melijn.melijnbot.commands.moderation
 
+import me.melijn.melijnbot.commandutil.moderation.ModUtil
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
-import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.command.hasPermission
-import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
@@ -16,7 +13,6 @@ import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
@@ -32,10 +28,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.args.size < 2) {
-            sendSyntax(context)
-            return
-        }
+        if (argSizeCheckFailed(context, 1)) return
 
         val deldays = 7
         var offset = 0
@@ -65,25 +58,8 @@ class MassBanCommand : AbstractCommand("command.massban") {
             }
 
             val member = context.guild.retrieveMember(user).awaitOrNull()
-            if (member != null) {
-                if (!context.guild.selfMember.canInteract(member)) {
-                    val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                        .withSafeVariable(PLACEHOLDER_USER, user.asTag)
-                    sendRsp(context, msg)
-                    return
-                }
-                if (!context.member.canInteract(member) && !hasPermission(
-                        context,
-                        SpecialPermission.PUNISH_BYPASS_HIGHER.node,
-                        true
-                    )
-                ) {
-                    val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                        .withSafeVariable(PLACEHOLDER_USER, user.asTag)
-                    sendRsp(context, msg)
-                    return
-                }
-            }
+            if (member != null) if (ModUtil.cantPunishAndReply(context, member)) return
+
             users[user] = member
         }
 

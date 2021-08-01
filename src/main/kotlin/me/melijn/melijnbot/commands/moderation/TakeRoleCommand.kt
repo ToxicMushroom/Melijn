@@ -34,10 +34,7 @@ class TakeRoleCommand : AbstractCommand("command.takerole") {
             return
         }
 
-        if (member.roles.none { memberRole: Role ->
-                memberRole.idLong == role.idLong
-            }
-        ) {
+        if (member.roles.none { memberRole: Role -> memberRole.idLong == role.idLong }) {
             val msg = context.getTranslation("$root.missingrole")
                 .withSafeVariable("user", member.asTag)
             sendRsp(context, msg)

@@ -12,7 +12,6 @@ import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -33,12 +32,10 @@ class UnbanCommand : AbstractCommand("command.unban") {
     }
 
     override suspend fun execute(context: ICommandContext) {
+        if (argSizeCheckFailed(context, 0)) return
+
         val guild = context.guild
         val daoManager = context.daoManager
-        if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        }
         val language = context.getLanguage()
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
 
@@ -79,11 +76,10 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 val msgLc =
                     getUnbanMessage(language, zoneId, context.guild, targetUser, banAuthor, context.author, ban, true)
 
-                val privateChannel = if (context.guild.isMember(targetUser)) {
-                    targetUser.openPrivateChannel().awaitOrNull()
-                } else {
-                    null
-                }
+                val privateChannel =
+                    if (context.guild.isMember(targetUser)) targetUser.openPrivateChannel().awaitOrNull()
+                    else null
+
                 privateChannel?.let {
                     try {
                         val msg = sendEmbedAwaitEL(it, msgLc)
