@@ -835,6 +835,14 @@ object MessageUtil {
         val guildId = context.guildId
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
+        sendModularMessagePreview(context, modularMessage, msgName)
+    }
+
+    suspend fun sendModularMessagePreview(
+        context: ICommandContext,
+        modularMessage: ModularMessage,
+        msgName: String
+    ) {
         val message = try {
             val msg = replaceUrlVariablesInPreview(context.member, modularMessage).toMessage()
             if (msg == null && modularMessage.attachments.isEmpty()) {

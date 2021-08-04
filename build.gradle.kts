@@ -38,10 +38,10 @@ repositories {
         name = "m2-dv8tion"
     }
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
-    maven("https://duncte123.jfrog.io/artifactory/maven")
     maven("https://nexus.melijn.com/repository/maven-public/")
     maven("https://nexus.melijn.com/repository/jcenter-mirror/")
     mavenLocal()
+    maven("https://duncte123.jfrog.io/artifactory/maven")
     maven("https://nexus.melijn.com/repository/jitpack/") // pooppack mirror
 }
 
@@ -54,7 +54,7 @@ val scrimage = "4.2.0.109-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_301") {
+    implementation("net.dv8tion:JDA:4.3.0_304") {
         exclude("opus-java")
     }
 
@@ -80,7 +80,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fjagtag
-    implementation("me.melijn.jagtag:JagTag-Kotlin:2.1.5")
+    implementation("me.melijn.jagtag:JagTag-Kotlin:2.2.1")
 
     // https://search.maven.org/artifact/com.zaxxer/HikariCP
     implementation("com.zaxxer:HikariCP:5.0.0")

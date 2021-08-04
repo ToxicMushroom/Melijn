@@ -38,7 +38,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
     fun init(container: Container, shardManager: ShardManager) {
         this.shardManager = shardManager
         val podInfo = container.podInfo
-        slowServices.add(BanService(shardManager, daoManager, podInfo))
+        slowServices.add(BanService(shardManager, daoManager, podInfo, webManager.proxiedHttpClient))
         slowServices.add(MuteService(shardManager, daoManager, podInfo))
         slowServices.add(BirthdayService(shardManager, webManager.proxiedHttpClient, daoManager))
 

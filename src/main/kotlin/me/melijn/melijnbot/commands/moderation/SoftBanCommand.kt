@@ -1,26 +1,29 @@
 package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.commandutil.moderation.ModUtil
+import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.SoftBan
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.jagtag.PunishJagTagParserArgs
+import me.melijn.melijnbot.internals.jagtag.PunishmentJagTagParser
+import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
-import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
-import java.time.ZoneId
 
 class SoftBanCommand : AbstractCommand("command.softban") {
 
@@ -29,6 +32,30 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         name = "softBan"
         commandCategory = CommandCategory.MODERATION
         discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
+    }
+
+    companion object {
+        fun getDefaultMessage(logChannel: Boolean): ModularMessage {
+            return ModularMessage(null, EmbedEditor().apply {
+                setAuthor("{punishAuthorTag}{titleSpaces:{punishAuthorTag}}", null, "{punishAuthorAvatarUrl}")
+                setColor(Color.ORANGE)
+                setThumbnail("{punishedUserAvatarUrl}")
+                setDescription("```LDIF\n")
+                if (!logChannel) appendDescription("Server: {serverName}\nServer Id: {serverId}\n")
+                appendDescription(
+                    """
+            SoftBan Author: {punishAuthorTag}
+            SoftBan Author Id: {punishAuthorId}
+            SoftBanned: {punishedUserTag}
+            SoftBanned Id: {punishedUserId}
+            Reason: {reason}
+            Moment: {startTime:${if (logChannel) "null" else "{punishedUserId}"}}
+            Case Id: {punishId}{if:{extraLcInfo}|=|null|then:|else:{extraLcInfo}}
+        """.trimIndent()
+                )
+                appendDescription("```")
+            }.build())
+        }
     }
 
     override suspend fun execute(context: ICommandContext) {
@@ -85,40 +112,27 @@ class SoftBanCommand : AbstractCommand("command.softban") {
     ) {
         val guild = context.guild
         val author = context.author
-        val language = context.getLanguage()
+        val lang = context.getLanguage()
         val daoManager = context.daoManager
-        val zoneId = getZoneId(daoManager, guild.idLong)
-        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
-        val softBannedMessageDm = getSoftBanMessage(language, privZoneId, guild, targetUser, author, softBan)
-        val softBannedMessageLc = getSoftBanMessage(
-            language,
-            zoneId,
-            guild,
-            targetUser,
-            author,
-            softBan,
-            true,
-            targetUser.isBot,
-            softBanningMessage != null
-        )
+        val softBannedMessageDm = getSoftBanMessage(lang, daoManager, guild, targetUser, author, softBan)
+        val softBannedMessageLc = getSoftBanMessage(lang, daoManager, guild, targetUser, author, softBan,
+            true, softBanningMessage != null)
 
         daoManager.softBanWrapper.addSoftBan(softBan)
 
         val msg = try {
             guild.ban(targetUser, clearDays)
-                .reason("(softban) ${context.author.asTag}: ${softBan.reason}")
+                .reason("(softBan) ${context.author.asTag}: ${softBan.reason}")
                 .await()
 
-            softBanningMessage?.editMessage(
-                softBannedMessageDm
-            )?.override(true)?.queue()
+            softBanningMessage?.editMessage(softBannedMessageDm)?.override(true)?.queue()
 
             val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.SOFT_BAN)
-            logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, softBannedMessageLc) }
+            logChannel?.let { it1 -> sendMsg(it1, context.webManager.proxiedHttpClient, softBannedMessageLc) }
 
             if (!hasActiveBan) {
                 guild.unban(targetUser)
-                    .reason("(softban) ${context.author.asTag}: ${softBan.reason}").await()
+                    .reason("(softBan) ${context.author.asTag}: ${softBan.reason}").await()
             }
 
             context.getTranslation("$root.success")
@@ -137,58 +151,36 @@ class SoftBanCommand : AbstractCommand("command.softban") {
     }
 }
 
-fun getSoftBanMessage(
+suspend fun getSoftBanMessage(
     language: String,
-    zoneId: ZoneId,
+    daoManager: DaoManager,
     guild: Guild,
-    softBannedUser: User,
-    softBanAuthor: User,
-    softBan: SoftBan,
+    bannedUser: User,
+    banAuthor: User?,
+    ban: SoftBan,
     lc: Boolean = false,
-    isBot: Boolean = false,
     received: Boolean = true
-): MessageEmbed {
-    var description = "```LDIF\n"
+): ModularMessage {
+    val isBot = bannedUser.isBot
+    val extraDesc = if (!received || isBot)
+        i18n.getTranslation(language, "message.punishment.extra." + if (isBot) "bot" else "dm")
+    else "null"
 
-    if (!lc) {
-        description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withVariable("serverName", guild.name)
-            .withVariable("serverId", guild.id)
+    val msgType = if (lc) MessageType.SOFT_BAN_LOG else MessageType.SOFT_BAN
+    val banDm = daoManager.linkedMessageWrapper.getMessage(guild.idLong, msgType)?.let {
+        daoManager.messageWrapper.getMessage(guild.idLong, it)
+    } ?: SoftBanCommand.getDefaultMessage(lc)
+
+    val zoneId = getZoneId(daoManager, guild.idLong, if (lc) bannedUser.idLong else null)
+    val args = PunishJagTagParserArgs(
+        banAuthor, bannedUser, null,daoManager,  ban.reason, null,
+        ban.moment, null, ban.softBanId, extraDesc, zoneId, guild
+    )
+
+    val message = banDm.mapAllStringFieldsSafe {
+        if (it != null) PunishmentJagTagParser.parseJagTag(args, it)
+        else null
     }
 
-    description += i18n.getTranslation(language, "message.punishment.softban.description")
-        .withSafeVarInCodeblock("softBanAuthor", softBanAuthor.asTag)
-        .withVariable("softBanAuthorId", softBanAuthor.id)
-        .withSafeVarInCodeblock("softBanned", softBannedUser.asTag)
-        .withVariable("softBannedId", softBannedUser.id)
-        .withSafeVarInCodeblock("reason", softBan.reason)
-        .withVariable("moment", (softBan.moment.asEpochMillisToDateTime(zoneId)))
-        .withVariable("softBanId", softBan.softBanId)
-
-    val extraDesc: String = if (!received || isBot) {
-        i18n.getTranslation(
-            language,
-            if (isBot) {
-                "message.punishment.extra.bot"
-            } else {
-                "message.punishment.extra.dm"
-            }
-        )
-    } else {
-        ""
-    }
-
-    description += extraDesc
-    description += "```"
-
-    val author = i18n.getTranslation(language, "message.punishment.softban.author")
-        .withSafeVariable(PLACEHOLDER_USER, softBanAuthor.asTag)
-        .withVariable("spaces", getAtLeastNCodePointsAfterName(softBanAuthor) + "\u200B")
-
-    return EmbedBuilder()
-        .setAuthor(author, null, softBanAuthor.effectiveAvatarUrl)
-        .setDescription(description)
-        .setThumbnail(softBannedUser.effectiveAvatarUrl)
-        .setColor(Color.RED)
-        .build()
+    return message
 }

@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.utility
 
+import com.jagrosh.jagtag.JagTag
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -161,15 +162,18 @@ class HelpCommand : AbstractCommand("command.help") {
                 aliases = arrayOf("ls")
             }
 
+            val defaultMethods = JagTag().newDefaultBuilder().getMethods()
             override suspend fun execute(context: ICommandContext) {
                 val dList = DiscordMethods.getMethods().map { method -> method.name }
                 val ccList = CCMethods.getMethods().map { method -> method.name }
                 val bList = BirthdayMethods.getMethods().map { method -> method.name }
+                val aList = defaultMethods.map { method -> method.name }
 
                 val eb = Embedder(context)
                     .addField("CustomCommand", ccList.joinToString("}`, `{", "`{", "}`"), false)
                     .addField("Discord", dList.joinToString("}`, `{", "`{", "}`"), false)
                     .addField("Birthday", bList.joinToString("}`, `{", "`{", "}`"), false)
+                    .addField("Default", aList.joinToString("}`, `{", "`{", "}`"), false)
 
                 sendEmbedRsp(context, eb.build())
             }

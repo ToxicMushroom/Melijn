@@ -170,7 +170,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         mute: Mute,
         targetUser: User
     ) {
-        mutingMessage?.editMessage(
+        mutingMessage?.editMessageEmbeds(
             mutedMessageDm
         )?.override(true)?.queue()
         val daoManager = context.daoManager

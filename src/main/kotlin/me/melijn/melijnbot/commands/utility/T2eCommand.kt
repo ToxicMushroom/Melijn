@@ -5,7 +5,6 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.argSizeCheckFailed
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 class T2eCommand : AbstractCommand("command.t2e") {

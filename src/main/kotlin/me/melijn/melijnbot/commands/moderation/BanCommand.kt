@@ -1,26 +1,28 @@
 package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.commandutil.moderation.ModUtil
+import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.jagtag.PunishJagTagParserArgs
+import me.melijn.melijnbot.internals.jagtag.PunishmentJagTagParser
+import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
-import me.melijn.melijnbot.internals.utils.message.sendEmbed
-import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
-import java.time.ZoneId
 
 class BanCommand : AbstractCommand("command.ban") {
 
@@ -42,18 +44,37 @@ class BanCommand : AbstractCommand("command.ban") {
             reason: String
         ): Pair<Ban, Boolean> {
             val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, banned.idLong)
-            val ban = Ban(
-                context.guildId,
-                banned.idLong,
-                context.authorId,
-                reason,
-                null
-            )
+            val ban = Ban(context.guildId, banned.idLong, context.authorId, reason, null)
             if (activeBan != null) {
                 ban.banId = activeBan.banId
                 ban.startTime = activeBan.startTime
             }
             return ban to (activeBan != null)
+        }
+
+        fun getDefaultMessage(logChannel: Boolean): ModularMessage {
+            val embed = EmbedEditor().apply {
+                setAuthor("{punishAuthorTag}{titleSpaces:{punishAuthorTag}}", null, "{punishAuthorAvatarUrl}")
+                setColor(Color.RED)
+                setThumbnail("{punishedUserAvatarUrl}")
+                setDescription("```LDIF\n")
+                if (!logChannel) appendDescription("Server: {serverName}\nServer Id: {serverId}\n")
+                appendDescription(
+                    """
+            Ban Author: {punishAuthorTag}
+            Ban Author Id: {punishAuthorId}
+            Banned: {punishedUserTag}
+            Banned Id: {punishedUserId}
+            Reason: {reason}
+            Duration: {timeDuration}
+            Start of ban: {startTime:${if (logChannel) "null" else "{punishedUserId}"}}
+            End of ban: {endTime:${if (logChannel) "null" else "{punishedUserId}"}}
+            Case Id: {punishId}{if:{extraLcInfo}|=|null|then:|else:{extraLcInfo}}
+        """.trimIndent()
+                )
+                appendDescription("```")
+            }.build()
+            return ModularMessage(null, embed)
         }
 
         val optionalDeldaysPattern = "-t([0-7])".toRegex()
@@ -86,16 +107,7 @@ class BanCommand : AbstractCommand("command.ban") {
 
         val (ban, updated) = createBanFromActiveOrNew(context, targetUser, reason)
 
-        val banning = context.getTranslation("message.banning")
-        val privateChannel = if (context.guild.isMember(targetUser)) {
-            targetUser.openPrivateChannel().awaitOrNull()
-        } else {
-            null
-        }
-        val message: Message? = privateChannel?.let {
-            sendMsgAwaitEL(it, banning)
-        }?.firstOrNull()
-
+        val message: Message? = TempBanCommand.sendBanningDM(context, targetUser)
         continueBanning(context, targetUser, ban, updated, deldays, message)
     }
 
@@ -104,41 +116,28 @@ class BanCommand : AbstractCommand("command.ban") {
         targetUser: User,
         ban: Ban,
         updated: Boolean,
-        deldays: Int,
+        delDays: Int,
         banningMessage: Message? = null
     ) {
         val guild = context.guild
         val author = context.author
-        val language = context.getLanguage()
+        val lang = context.getLanguage()
         val daoManager = context.daoManager
-        val zoneId = getZoneId(daoManager, guild.idLong)
-        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
-        val bannedMessageDm = getBanMessage(language, privZoneId, guild, targetUser, author, ban)
+        val bannedMessageDm = getBanMessage(lang, daoManager, guild, targetUser, author, ban, msgType = MessageType.BAN)
         val bannedMessageLc = getBanMessage(
-            language,
-            zoneId,
-            guild,
-            targetUser,
-            author,
-            ban,
-            true,
-            targetUser.isBot,
-            banningMessage != null
+            lang, daoManager, guild, targetUser, author, ban, true,
+            banningMessage != null, MessageType.BAN_LOG
         )
 
         val msg = try {
-            guild.ban(targetUser, deldays)
-                .reason("(ban) " + context.author.asTag + ": " + ban.reason)
+            guild.ban(targetUser, delDays)
+                .reason("(ban) ${context.author.asTag}: " + ban.reason)
                 .async { daoManager.banWrapper.setBan(ban) }
 
-            banningMessage?.editMessageEmbeds(
-                bannedMessageDm
-            )?.override(true)?.queue()
+            banningMessage?.editMessage(bannedMessageDm)?.override(true)?.queue()
 
-            val logChannel = guild.getAndVerifyLogChannelByType(context.daoManager, LogChannelType.PERMANENT_BAN)
-            logChannel?.let {
-                sendEmbed(daoManager.embedDisabledWrapper, it, bannedMessageLc)
-            }
+            val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.PERMANENT_BAN)
+            logChannel?.let { it1 -> sendMsg(it1, context.webManager.proxiedHttpClient, bannedMessageLc) }
 
             context.getTranslation("$root.success" + if (updated) ".updated" else "")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
@@ -157,64 +156,39 @@ class BanCommand : AbstractCommand("command.ban") {
     }
 }
 
-fun getBanMessage(
+
+suspend fun getBanMessage(
     language: String,
-    zoneId: ZoneId,
+    daoManager: DaoManager,
     guild: Guild,
     bannedUser: User,
     banAuthor: User,
     ban: Ban,
     lc: Boolean = false,
-    isBot: Boolean = false,
-    received: Boolean = true
-): MessageEmbed {
-    val banDuration = ban.endTime?.let { endTime ->
-        getDurationString((endTime - ban.startTime))
-    } ?: i18n.getTranslation(language, "infinite")
+    received: Boolean = true,
+    msgType: MessageType
+): ModularMessage {
+    val isBot = bannedUser.isBot
+    val extraDesc = if (!received || isBot)
+        i18n.getTranslation(language, "message.punishment.extra." + if (isBot) "bot" else "dm")
+    else "null"
 
-    var description = "```LDIF\n"
-    if (!lc) {
-        description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withSafeVarInCodeblock("serverName", guild.name)
-            .withVariable("serverId", guild.id)
+    val banDm = daoManager.linkedMessageWrapper.getMessage(guild.idLong, msgType)?.let {
+        daoManager.messageWrapper.getMessage(guild.idLong, it)
+    } ?: BanCommand.getDefaultMessage(lc)
+
+    val zoneId = getZoneId(daoManager, guild.idLong, if (lc) bannedUser.idLong else null)
+    val args = PunishJagTagParserArgs(
+        banAuthor, bannedUser, null, daoManager, ban.reason, ban.unbanReason,
+        ban.startTime, ban.endTime, ban.banId, extraDesc, zoneId, guild
+    )
+
+    val message = banDm.mapAllStringFieldsSafe {
+        if (it != null) PunishmentJagTagParser.parseJagTag(args, it)
+        else null
     }
 
-    description += i18n.getTranslation(language, "message.punishment.ban.description")
-        .withSafeVarInCodeblock("banAuthor", banAuthor.asTag)
-        .withVariable("banAuthorId", banAuthor.id)
-        .withSafeVarInCodeblock("banned", bannedUser.asTag)
-        .withVariable("bannedId", bannedUser.id)
-        .withSafeVarInCodeblock("reason", ban.reason)
-        .withVariable("duration", banDuration)
-        .withVariable("startTime", (ban.startTime.asEpochMillisToDateTime(zoneId)))
-        .withVariable("endTime", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
-        .withVariable("banId", ban.banId)
-
-    val extraDesc: String = if (!received || isBot) {
-        i18n.getTranslation(
-            language,
-            if (isBot) {
-                "message.punishment.extra.bot"
-            } else {
-                "message.punishment.extra.dm"
-            }
-        )
-    } else {
-        ""
-    }
-    description += extraDesc
-    description += "```"
-
-    val author = i18n.getTranslation(language, "message.punishment.ban.author")
-        .withVariable(PLACEHOLDER_USER, banAuthor.asTag)
-        .withVariable("spaces", getAtLeastNCodePointsAfterName(banAuthor) + "\u200B")
-
-    return EmbedBuilder()
-        .setAuthor(author, null, banAuthor.effectiveAvatarUrl)
-        .setThumbnail(bannedUser.effectiveAvatarUrl)
-        .setColor(Color.RED)
-        .setDescription(description)
-        .build()
+    return message
 }
 
 fun getAtLeastNCodePointsAfterName(user: User): String {

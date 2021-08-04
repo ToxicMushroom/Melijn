@@ -1,7 +1,12 @@
 package me.melijn.melijnbot.commands.administration
 
+import me.melijn.melijnbot.commands.moderation.BanCommand
+import me.melijn.melijnbot.commands.moderation.MassBanCommand
+import me.melijn.melijnbot.commands.moderation.SoftBanCommand
+import me.melijn.melijnbot.commands.moderation.UnbanCommand
 import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.enums.MessageTemplate
 import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -21,13 +26,75 @@ class MessageCommand : AbstractCommand("command.message") {
         children = arrayOf(
             ListArg(root),
             AddArg(root),
+            CreateFromTemplateArg(root),
             SelectArg(root),
             RemoveArg(root),
             RemoveAtArg(root),
             EditArg(root),
-            ViewArg(root)
+            ViewArg(root),
+            ViewTemplateArg(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
+    }
+
+    class CreateFromTemplateArg(val parent: String): AbstractCommand("$parent.createfromtemplate") {
+
+        init {
+            name = "createFromTemplate"
+            aliases = arrayOf("cft")
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            val msgName = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
+            val template = getEnumFromArgNMessage<MessageTemplate>(context, 1, "message.unknown.msgtemplate") ?: return
+            val messages = context.daoManager.messageWrapper.getMessages(context.guildId)
+            if (msgName.isInside(messages, true)) {
+                val msg = context.getTranslation("${parent}.add.alreadyexists")
+                    .withSafeVariable("msg", msgName)
+                sendRsp(context, msg)
+            } else {
+                val modular = ViewTemplateArg.getDefaultMessage(template)
+                context.daoManager.messageWrapper.setMessage(context.guildId, msgName, modular)
+                val msg = context.getTranslation("${parent}.add.added")
+                    .withSafeVariable("msg", msgName)
+                    .withSafeVarInCodeblock("msgInSyntax", msgName)
+                    .withSafeVarInCodeblock(PLACEHOLDER_PREFIX, context.usedPrefix)
+                sendRsp(context, msg)
+            }
+        }
+    }
+
+    class ViewTemplateArg(parent: String) : AbstractCommand("$parent.viewtemplate") {
+
+        init {
+            name = "viewTemplate"
+            aliases = arrayOf("vwt")
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            val template = getEnumFromArgNMessage<MessageTemplate>(context, 0, "message.unknown.msgtemplate") ?: return
+            MessageUtil.sendModularMessagePreview(context, getDefaultMessage(template), "template_$template")
+        }
+
+        companion object{
+            fun getDefaultMessage(template: MessageTemplate): ModularMessage {
+                val modular = when (template) {
+                    MessageTemplate.BAN -> BanCommand.getDefaultMessage(false)
+                    MessageTemplate.TEMP_BAN -> BanCommand.getDefaultMessage(false)
+                    MessageTemplate.MASS_BAN -> BanCommand.getDefaultMessage(false)
+                    MessageTemplate.SOFT_BAN -> SoftBanCommand.getDefaultMessage(false)
+                    MessageTemplate.UNBAN -> UnbanCommand.getDefaultMessage(false)
+                    MessageTemplate.BAN_LOG -> BanCommand.getDefaultMessage(true)
+                    MessageTemplate.TEMP_BAN_LOG -> BanCommand.getDefaultMessage(true)
+                    MessageTemplate.MASS_BAN_LOG -> MassBanCommand.getDefaultMessage()
+                    MessageTemplate.SOFT_BAN_LOG -> SoftBanCommand.getDefaultMessage(true)
+                    MessageTemplate.UNBAN_LOG -> UnbanCommand.getDefaultMessage(true)
+                }
+                return modular
+            }
+        }
+
+
     }
 
     class ViewArg(parent: String) : AbstractCommand("$parent.view") {
@@ -571,28 +638,44 @@ class MessageCommand : AbstractCommand("command.message") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            val msgName = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
-            val messages = context.daoManager.messageWrapper.getMessages(context.guildId)
-            var match = messages.firstOrNull { it.equals(msgName, true) }
-            val index = msgName.toIntOrNull()
-            if (index != null && index > 0 && index <= messages.size) {
-                match = messages.sorted()[index - 1]
+            val match = getMessageNameFromArgsNMessage(context, 0) ?: return
+
+            context.daoManager.driverManager.setCacheEntry("selectedMessage:${context.guildId}", match, HIGHER_CACHE)
+            val msg = context.getTranslation("$root.selected")
+                .withSafeVariable("msgName", match)
+            sendRsp(context, msg)
+        }
+
+        companion object {
+            suspend fun getMessageNameFromArgsNMessage(context: ICommandContext, index: Int): String? {
+                val msgName = getStringFromArgsNMessage(context, index, 1, 64) ?: return null
+                val match = getMessageNameFromArgsN(context, msgName)
+                if (match == null) {
+                    val msg = context.getTranslation("${context.commandOrder.first().root}.msgnoexist")
+                        .withSafeVariable("msg", msgName)
+                        .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                    sendRsp(context, msg)
+                }
+
+                return match
             }
 
-            if (match != null) {
-                val guildId = context.guildId
-                context.daoManager.driverManager.setCacheEntry("selectedMessage:$guildId", match, HIGHER_CACHE)
-                val msg = context.getTranslation("$root.selected")
-                    .withSafeVariable("msgName", match)
-                sendRsp(context, msg)
-            } else {
-                val msg = context.getTranslation("${context.commandOrder.first().root}.msgnoexist")
-                    .withSafeVariable("msg", msgName)
-                    .withSafeVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
-                sendRsp(context, msg)
+            suspend fun getMessageNameFromArgsN(
+                context: ICommandContext,
+                msgName: String
+            ): String? {
+                val messages = context.daoManager.messageWrapper.getMessages(context.guildId)
+                var match = messages.firstOrNull { it.equals(msgName, true) }
+                val subIndex = msgName.toIntOrNull()
+                if (subIndex != null && subIndex > 0 && subIndex <= messages.size) {
+                    match = messages.sorted()[subIndex - 1]
+                }
+                return match
             }
         }
     }
+
+
 
     class AddArg(parent: String) : AbstractCommand("$parent.add") {
 

@@ -15,5 +15,6 @@ class MessageSplitter(val minSplit: Int, val maxSplit: Int) {
 
     companion object {
         val Default = MessageSplitter(1800, 2000)
+        val EmbedLdif = MessageSplitter(3800, 4000)
     }
 }
