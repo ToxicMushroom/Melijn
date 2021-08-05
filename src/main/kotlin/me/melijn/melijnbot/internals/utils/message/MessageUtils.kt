@@ -403,7 +403,7 @@ fun sendMsg(
     if (msg.contentRaw.isNotBlank()) mb.setContent(msg.contentRaw)
 
     for (embed in msg.embeds) {
-        mb.setEmbed(embed)
+        mb.setEmbeds(embed)
     }
     if (msg is DataMessage) {
         mb.setAllowedMentions(msg.allowedMentions)

@@ -30,7 +30,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (argSizeCheckFailed(context, 0)) return
+        if (argSizeCheckFailed(context, 1)) return
 
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
         val member = context.guild.retrieveMember(targetUser).awaitOrNull()
