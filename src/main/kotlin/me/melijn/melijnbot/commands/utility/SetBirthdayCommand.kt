@@ -57,7 +57,7 @@ suspend fun setBirthday(context: ICommandContext, datePair: Pair<Int, Int?>) {
     val birthdayWrapper = context.daoManager.birthdayWrapper
     birthdayWrapper.setBirthday(context.authorId, birthday, optionalBirthYear)
 
-    val localDate = LocalDate.ofYearDay(optionalBirthYear ?: 2019, birthday)
+    val localDate = LocalDate.ofYearDay(optionalBirthYear ?: 0, birthday)
     val dayOfMonth = localDate.dayOfMonth
     val month = localDate.monthValue
     val extra = if (optionalBirthYear != null) ".year" else ""
