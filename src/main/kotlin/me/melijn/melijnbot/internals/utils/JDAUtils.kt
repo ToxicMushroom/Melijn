@@ -422,7 +422,7 @@ suspend fun getEmotejiByArgsN(
     sameGuildAsContext: Boolean = false
 ): Pair<LiteEmote?, String?>? {
     if (argSizeCheckFailed(context, index)) return null
-    val arg = context.args[index].substring(0..10)
+    val arg = context.args[index].take(10)
 
     val emote = getEmoteByArgsN(context, index, sameGuildAsContext)?.toLite()
     if (emote == null) return emote to arg
