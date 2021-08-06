@@ -422,21 +422,11 @@ suspend fun getEmotejiByArgsN(
     sameGuildAsContext: Boolean = false
 ): Pair<LiteEmote?, String?>? {
     if (argSizeCheckFailed(context, index)) return null
-    val arg = context.args[index]
-    val emoji = if (SupportedDiscordEmoji.helpMe.contains(arg)) {
-        arg
-    } else {
-        null
-    }
+    val arg = context.args[index].substring(0..10)
 
-    val emote = if (emoji == null) {
-        getEmoteByArgsN(context, index, sameGuildAsContext)?.toLite()
-    } else null
-
-    if (emoji == null && emote == null) {
-        return null
-    }
-    return Pair(emote, emoji)
+    val emote = getEmoteByArgsN(context, index, sameGuildAsContext)?.toLite()
+    if (emote == null) return emote to arg
+    return emote to null
 }
 
 suspend fun getEmoteByArgsNMessage(context: ICommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
