@@ -4,6 +4,7 @@ import com.freya02.emojis.Emojis
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.command.SPACE_REGEX
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.MessageBuilder
@@ -24,7 +25,7 @@ class TestCommand : AbstractCommand("command.test") {
     val logger: Logger = LoggerFactory.getLogger(TestCommand::class.java)
 
     override suspend fun execute(context: ICommandContext) {
-        context.reply(Emojis.ofUnicode(context.args[0]) ?: "missing")
+        context.reply(context.fullArg.split(SPACE_REGEX).map { Emojis.ofUnicode(it)?.unicode() ?: "`missing`" })
     }
 
     private suspend fun sendSelection(context: ICommandContext) {

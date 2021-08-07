@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.administration
 
+import com.freya02.emojis.Emojis
 import me.melijn.melijnbot.database.role.SelfRoleGroup
 import me.melijn.melijnbot.database.statesync.getEmote
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -291,6 +292,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                             }
                         emote?.let { msg.addReaction(it).queue() }
                     } else {
+                        Emojis.ofUnicode(emoteji) ?: continue
                         msg.addReaction(emoteji).queue()
                     }
                 }

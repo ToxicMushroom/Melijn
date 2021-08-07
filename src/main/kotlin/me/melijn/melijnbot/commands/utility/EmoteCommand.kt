@@ -1,5 +1,8 @@
 package me.melijn.melijnbot.commands.utility
 
+import com.freya02.emojis.Emojis
+import com.freya02.emojis.Fritzpatrick
+import com.freya02.emojis.TwemojiType
 import me.melijn.melijnbot.database.statesync.LiteEmote
 import me.melijn.melijnbot.database.statesync.getEmote
 import me.melijn.melijnbot.database.statesync.toLite
@@ -66,9 +69,24 @@ class EmoteCommand : AbstractCommand("command.emote") {
             sendRsp(context, msg)
 
         } else {
-            val msg = context.getTranslation("$root.notanemote")
-                .withSafeVariable(PLACEHOLDER_ARG, arg)
-            sendRsp(context, msg)
+            val emoji = Emojis.ofUnicode(arg) ?: Emojis.ofShortcode(arg)
+            if (emoji != null) {
+                val msg = "**Emoji** ${emoji.unicode()} `${emoji.unicode()}`\n" +
+                    "**Shortcodes** `${emoji.shortcodes().joinToString(",") { ":$it:" }}`\n" +
+                    "**UTF16** `${emoji.utF16.joinToString("")}`\n" +
+                    (if (emoji.doesSupportFitzpatrick()) {
+                        val patricks = Fritzpatrick.values().joinToString { emoji.unicodeWithFritzpatrick(it) }
+                        "**Fitzpatrick Variants** $patricks\n"
+                    } else "") +
+                    "**URL** ${emoji.getTwemojiImageUrl(TwemojiType.X72)}"
+
+                sendRsp(context, msg)
+                return
+            } else {
+                val msg = context.getTranslation("$root.notanemote")
+                    .withSafeVariable(PLACEHOLDER_ARG, arg)
+                sendRsp(context, msg)
+            }
         }
     }
 
