@@ -62,6 +62,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
     implementation("club.minnced:discord-webhooks:0.5.8")
+    implementation("com.github.freya022:JEmojis:56864f3")
 
     // https://github.com/sedmelluq/jda-nas
     implementation("com.sedmelluq:jda-nas:1.1.0")

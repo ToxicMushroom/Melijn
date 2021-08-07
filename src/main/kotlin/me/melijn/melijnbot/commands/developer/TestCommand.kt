@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.developer
 
+import com.freya02.emojis.Emojis
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -23,6 +24,10 @@ class TestCommand : AbstractCommand("command.test") {
     val logger: Logger = LoggerFactory.getLogger(TestCommand::class.java)
 
     override suspend fun execute(context: ICommandContext) {
+        context.reply(Emojis.ofUnicode(context.args[0]) ?: "missing")
+    }
+
+    private suspend fun sendSelection(context: ICommandContext) {
         val menu: SelectionMenu = SelectionMenu.create("menu:class")
             .setPlaceholder("Choose your class") // shows the placeholder indicating what this menu is for
             .setRequiredRange(1, 2) // only one can be selected

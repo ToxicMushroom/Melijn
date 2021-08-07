@@ -277,10 +277,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 context: ICommandContext
             ) {
                 for (emoteji in emotejisForMsg) {
-                    val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
-                    if (isEmoji) {
-                        msg.addReaction(emoteji).queue()
-                    } else if (emoteji.isPositiveNumber()) {
+                    if (emoteji.isPositiveNumber()) {
                         val emote = context.guild.getEmoteById(emoteji)
                             ?: context.shardManager.getEmoteById(emoteji)
                             ?: context.daoManager.emoteCache.getEmote(emoteji.toLong())?.run {
@@ -293,6 +290,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                                     .setManaged(this.isManaged)
                             }
                         emote?.let { msg.addReaction(it).queue() }
+                    } else {
+                        msg.addReaction(emoteji).queue()
                     }
                 }
             }
@@ -349,18 +348,16 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
                 roleMention = roleMention.removeSuffix(", ")
 
-                val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
-                val emotejiValue = when {
-                    isEmoji -> emoteji
+                val emoteValue = when {
                     emoteji.isPositiveNumber() -> getEmote(context, emoteji.toLong())?.asMention
-                    else -> null
+                    else -> emoteji
                 } ?: "error"
                 val body = bodyFormat
                     .withVariable("name", name)
                     .withVariable("role", roleMention)
                     .withVariable("roleMention", roleMention) // legacy support
                     .withVariable("enter", "\n")
-                    .withVariable("emoteji", emotejiValue)
+                    .withVariable("emoteji", emoteValue)
 
                 entries.add(body)
             }
