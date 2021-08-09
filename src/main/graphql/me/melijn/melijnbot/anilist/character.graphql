@@ -25,7 +25,6 @@ query SearchCharacter($name: String!) {
     }
 }
 
-
 fragment characterFragment on Character {
     name {
         first

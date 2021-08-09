@@ -174,7 +174,6 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
                 .append(" • ")
                 .append(msg.authorId)
 
-
             sb.append(":** ")
                 .append(MarkdownSanitizer.escape(escapeForLog(msg.content)))
                 .append(MarkdownSanitizer.escape(escapeForLog(msg.embed.take(2000))))
@@ -221,7 +220,6 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             sendEmbed(daoManager.embedDisabledWrapper, sdmLogChannel, eb.build())
         }
     }
-
 
     private fun removePurgeIds(event: MessageBulkDeleteEvent) {
         for (id in event.messageIds) container.purgedIds.remove(id.toLong())

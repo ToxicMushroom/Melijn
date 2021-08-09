@@ -35,7 +35,8 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun getUnbannableBans(podInfo: PodInfo): List<Ban> = suspendCoroutine {
         val clause = podInfo.shardList.joinToString(", ") { "?" }
         driverManager.executeQuery(
-            "SELECT * FROM $table WHERE active = ? AND endTime < ? AND ((guildId >> 22) % ${podInfo.shardCount}) IN ($clause)", { rs ->
+            "SELECT * FROM $table WHERE active = ? AND endTime < ? AND ((guildId >> 22) % ${podInfo.shardCount}) IN ($clause)",
+            { rs ->
                 val bans = ArrayList<Ban>()
                 while (rs.next()) {
                     bans.add(
@@ -54,8 +55,10 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
                     )
                 }
                 it.resume(bans)
-            }, true, System.currentTimeMillis(),
-              *podInfo.shardList.toTypedArray()
+            },
+            true,
+            System.currentTimeMillis(),
+            *podInfo.shardList.toTypedArray()
         )
     }
 
@@ -155,14 +158,29 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
 }
 
 data class Ban(
-    var guildId: Long,
+    override var guildId: Long,
     var bannedId: Long,
     var banAuthorId: Long?,
-    var reason: String = "/",
+    override var reason: String = "/",
     var unbanAuthorId: Long? = null,
     var unbanReason: String? = null,
-    var startTime: Long = System.currentTimeMillis(),
-    var endTime: Long? = null,
-    var active: Boolean = true,
+    override var startTime: Long = System.currentTimeMillis(),
+    override var endTime: Long? = null,
+    override var active: Boolean = true,
     var banId: String = System.nanoTime().toBase64()
+) : TempPunishment(
+    guildId, bannedId, banAuthorId, reason, unbanAuthorId, unbanReason, startTime, endTime, active, banId
+)
+
+open class TempPunishment(
+    open val guildId: Long,
+    val punishedId: Long,
+    val punishAuthorId: Long?,
+    open val reason: String,
+    val dePunishAuthorId: Long?,
+    val dePunishReason: String?,
+    open val startTime: Long,
+    open val endTime: Long? = null,
+    open val active: Boolean,
+    var punishId: String
 )

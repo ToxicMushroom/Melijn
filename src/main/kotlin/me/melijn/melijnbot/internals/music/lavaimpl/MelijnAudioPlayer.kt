@@ -352,7 +352,6 @@ class MelijnAudioPlayer(private val manager: MelijnAudioPlayerManager) : AudioPl
         private val log = LoggerFactory.getLogger(AudioPlayer::class.java)
     }
 
-
     init {
         listeners = ArrayList()
         trackSwitchLock = Any()

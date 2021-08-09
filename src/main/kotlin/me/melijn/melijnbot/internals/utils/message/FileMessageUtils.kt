@@ -8,9 +8,7 @@ import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.i18n
-import me.melijn.melijnbot.internals.utils.StringUtils
-import me.melijn.melijnbot.internals.utils.awaitOrNull
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.web.apis.ImageApi
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
@@ -23,7 +21,6 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
-
 suspend fun sendRsp(context: ICommandContext, image: BufferedImage, extension: String) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
@@ -32,7 +29,6 @@ suspend fun sendRsp(context: ICommandContext, image: BufferedImage, extension: S
         sendMsg(context, image, extension)
     }
 }
-
 
 suspend fun sendRsp(
     textChannel: TextChannel,
@@ -82,7 +78,6 @@ suspend fun sendMsg(textChannel: TextChannel, image: BufferedImage, extension: S
         textChannel.sendFile(baos.toByteArray(), "finished.$extension").queue()
     }
 }
-
 
 suspend fun sendFileRsp(context: ICommandContext, msg: String, bytes: ByteArray, extension: String) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
@@ -175,7 +170,6 @@ suspend fun sendFile(context: ICommandContext, bytes: ByteArray, extension: Stri
     }
 }
 
-
 fun sendFile(language: String, privateChannel: PrivateChannel, bytes: ByteArray, extension: String) {
     if (privateChannel.jda.selfUser.allowedFileSize < (bytes.size)) {
         val size = StringUtils.humanReadableByteCountBin(bytes.size)
@@ -266,21 +260,19 @@ private suspend fun msgWithAttachmentsAction(
         mb.setContent(message.contentRaw)
     }
     for (embed in message.embeds) {
-        mb.setEmbed(embed)
+        mb.setEmbeds(embed)
     }
     if (message is DataMessage) {
         mb.setAllowedMentions(message.allowedMentions)
     }
 
     val action = channel.sendMessage(mb.build())
-    if (channel is TextChannel) channel.guild else null
     for ((url, fileName) in attachments.iterator()) {
         val stream = ImageApi.downloadDiscordBytes(httpClient, url, DiscordSize.Original) ?: continue
         action.addFile(stream, fileName)
     }
     return action
 }
-
 
 suspend fun sendAttachmentsRspAwaitN(
     textChannel: TextChannel,
@@ -309,22 +301,19 @@ suspend fun sendRspWithAttachmentsAwaitN(
     return msg
 }
 
+suspend fun sendRspAwaitN(context: ICommandContext, msg: Message): Message? {
+    return if (context.isFromGuild)
+        if (isPremiumGuild(context)) sendRspAwaitN(context.textChannel, context.daoManager, msg)
+        else sendMsgAwaitN(context.textChannel, msg)
+    else sendMsgAwaitN(context.privateChannel, msg)
+}
+
 suspend fun sendRspAwaitN(channel: TextChannel, daoManager: DaoManager, msg: Message): Message? {
     require(channel.canTalk()) {
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
 
-    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
-    for (embed in msg.embeds) {
-        if (action == null) action = channel.sendMessage(embed)
-        else action.embed(embed)
-    }
-
-    if (msg is DataMessage) {
-        action?.allowedMentions(msg.allowedMentions)
-    }
-
-    val message = action?.awaitOrNull() ?: return null
+    val message = channel.sendMessage(msg).await() ?: return null
     TaskManager.async(channel) {
         handleRspDelete(daoManager, message)
     }

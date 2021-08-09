@@ -17,7 +17,6 @@ class PlaylistDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-
     fun set(userId: Long, playlist: String, id: Int, track: String) {
         driverManager.executeUpdate(
             "INSERT INTO $table (userId, playlist, id, track) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET track = ?",
@@ -38,7 +37,6 @@ class PlaylistDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
             userId, playlist, track
         )
     }
-
 
     suspend fun getPlaylists(userId: Long): Map<String, Map<Int, String>> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", { rs ->

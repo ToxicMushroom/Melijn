@@ -13,6 +13,7 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.GuildChannel
+import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
@@ -147,7 +148,6 @@ class UnlockCommand : AbstractCommand("command.unlock") {
             .withVariable("voiceOverrides", voiceOverrides)
             .withVariable("voicePermChanges", voicePermChanges)
 
-
         val eb = Embedder(context)
             .setDescription(msg)
         sendEmbedRsp(context, eb.build())
@@ -200,7 +200,8 @@ class UnlockCommand : AbstractCommand("command.unlock") {
             val role = context.guild.getRoleById(id) ?: continue
 
             val manager = channel.upsertPermissionOverride(role)
-            val permsChangedHere = revertPermsToOriginal(denyList, flags, manager)
+            val override = channel.permissionOverrides.firstOrNull { it.idLong == id } ?: continue
+            val permsChangedHere = revertPermsToOriginal(denyList, flags, manager, override)
 
             permsChangedCounter += permsChangedHere
             if (permsChangedHere > 0) {
@@ -210,10 +211,10 @@ class UnlockCommand : AbstractCommand("command.unlock") {
         }
 
         // Remove Melijn grants
-        val melFlags = overrideMap[context.selfUserId]
-        if (melFlags != null) {
+        overrideMap[context.selfUserId]?.let { melFlags ->
             val melManager = channel.upsertPermissionOverride(context.selfMember)
-            val permsChangedHere = revertPermsToOriginal(denyList, melFlags, melManager)
+            val override = channel.permissionOverrides.firstOrNull { it.idLong == context.selfUserId } ?: return@let
+            val permsChangedHere = revertPermsToOriginal(denyList, melFlags, melManager, override)
 
             permsChangedCounter += permsChangedHere
             if (permsChangedHere > 0) {
@@ -239,25 +240,26 @@ class UnlockCommand : AbstractCommand("command.unlock") {
     private fun revertPermsToOriginal(
         denyList: Array<Permission>,
         flags: Pair<Long, Long>,
-        manager: PermissionOverrideAction
+        manager: PermissionOverrideAction,
+        override: PermissionOverride
     ): Int {
         var permsChangedHere = 0
         for (perm in denyList) {
             when {
                 (flags.first and perm.rawValue) != 0L -> { // if the role's first state had this permission allowed
-                    if (((manager.allow shr perm.offset) and 0x1) == 0L) { // if the channel doesnt already have this permission set to allowed
+                    if (((override.allowedRaw shr perm.offset) and 0x1) == 0L) { // if the channel doesnt already have this permission set to allowed
                         manager.grant(perm)
                         permsChangedHere++
                     }
                 }
                 (flags.second and perm.rawValue) != 0L -> { // if the role's first state had this permission denied
-                    if (((manager.deny shr perm.offset) and 0x1) == 0L) { // if the channel doesnt already have this permission set to denied
+                    if (((override.deniedRaw shr perm.offset) and 0x1) == 0L) { // if the channel doesnt already have this permission set to denied
                         manager.deny(perm)
                         permsChangedHere++
                     }
                 }
-                else -> { // if the role's first state was to interhit this permission
-                    if (!(((manager.deny shr perm.offset) and 0x1) == 0L && ((manager.allow shr perm.offset) and 0x1) == 0L)) { // Check if a clear is needed
+                else -> { // if the role's first state was to inherit this permission
+                    if (((override.deniedRaw shr perm.offset) and 0x1) == 1L || ((override.allowedRaw shr perm.offset) and 0x1) == 1L) { // Check if a clear is needed
                         manager.clear(perm)
                         permsChangedHere++
                     }

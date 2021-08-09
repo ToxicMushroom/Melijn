@@ -60,7 +60,6 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
 
             val characterName = context.rawArg.take(256)
 
-
             try {
 
                 val characterLite = JikanKt.searchCharacter(characterName).results?.firstOrNull()
@@ -71,7 +70,6 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
                     sendRsp(context, msg)
                     return
                 }
-
 
                 val name = context.getTranslation("title.fullname")
                 val namekanji = context.getTranslation("title.namekanji")
@@ -94,7 +92,6 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
 
                 val animes = mutableListOf<String>()
                 val mangas = mutableListOf<String>()
-
 
                 for (animepgraphi in character.animeography ?: emptyList()) {
                     if (animepgraphi == null) continue
@@ -188,7 +185,6 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
                 val endDate = context.getTranslation("title.enddate")
                 val publishing = context.getTranslation("title.publishing")
                 val synopsis = context.getTranslation("title.synopsis")
-
 
                 val publishingValue = result.publishing?.let {
                     context.getTranslation(
@@ -334,7 +330,6 @@ class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("c
 
                 val about = context.getTranslation("title.about")
                 val joinDate = context.getTranslation("title.joindate")
-
 
                 val eb = Embedder(context)
                     .setTitle(result.username, result.url)

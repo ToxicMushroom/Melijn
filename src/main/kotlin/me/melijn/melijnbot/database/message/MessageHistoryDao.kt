@@ -14,7 +14,7 @@ class MessageHistoryDao(
 
     override val table: String = "history_messages"
     override val tableStructure: String =
-        "guild_id bigint, channel_id bigint, author_id bigint, message_id bigint, content varchar(16000), embed varchar(12000), attachments varchar(4096), moment bigint"
+        "guild_id bigint, channel_id bigint, author_id bigint, message_id bigint, content text, embed text, attachments text, moment bigint"
     override val primaryKey: String = "message_id"
 
     init {

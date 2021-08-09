@@ -9,7 +9,7 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.web.RequestContext
 
 object ShutdownResponseHandler {
-    suspend fun handleShutdownResponse(context: RequestContext, reqAuth: Boolean = true) {
+    suspend fun handleShutdownResponse(context: RequestContext, reqAuth: Boolean = true): Boolean {
         val container = context.container
         val call = context.call
         val players = container.lavaManager.musicPlayerManager.getPlayers()
@@ -18,7 +18,7 @@ object ShutdownResponseHandler {
         if (reqAuth && call.request.header("Authorization") != context.restToken) {
             println("INVALID TOKEN SHUTDOWN")
             call.respondText(status = HttpStatusCode.Forbidden) { "Invalid token\n" }
-            return
+            return false
         }
 
         container.shuttingDown = true // stops services, and updates status
@@ -49,5 +49,6 @@ object ShutdownResponseHandler {
         }
 
         call.respondText { "Shutdown complete!" }
+        return true
     }
 }

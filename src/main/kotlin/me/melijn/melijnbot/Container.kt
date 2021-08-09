@@ -1,6 +1,7 @@
 package me.melijn.melijnbot
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.database.DaoManager
@@ -11,8 +12,10 @@ import me.melijn.melijnbot.internals.events.eventlisteners.EventWaiter
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.music.LavaManager
 import me.melijn.melijnbot.internals.services.ServiceManager
-import me.melijn.melijnbot.internals.utils.ModularPaginationInfo
-import me.melijn.melijnbot.internals.utils.PaginationInfo
+import me.melijn.melijnbot.internals.utils.FetchingPaginationInfo
+import me.melijn.melijnbot.internals.utils.ModularFetchingPaginationInfo
+import me.melijn.melijnbot.internals.utils.ModularStoragePaginationInfo
+import me.melijn.melijnbot.internals.utils.StoragePaginationInfo
 import me.melijn.melijnbot.internals.web.ProbeServer
 import me.melijn.melijnbot.internals.web.RestServer
 import me.melijn.melijnbot.internals.web.WebManager
@@ -21,21 +24,20 @@ import net.dv8tion.jda.api.entities.Activity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-val objectMapper = jacksonObjectMapper()
+val objectMapper: ObjectMapper = jacksonObjectMapper()
     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
 class Container {
-
 
     var voteReq: Boolean = true
     var logToDiscord: Boolean = true
     lateinit var podInfo: PodInfo
 
     //millis, info
-    val paginationMap = mutableMapOf<Long, PaginationInfo>()
-    val modularPaginationMap = mutableMapOf<Long, ModularPaginationInfo>()
-
-
+    val fetcherPaginationMap = mutableMapOf<Long, FetchingPaginationInfo>()
+    val modularFetcherPaginationMap = mutableMapOf<Long, ModularFetchingPaginationInfo>()
+    val paginationMap = mutableMapOf<Long, StoragePaginationInfo>()
+    val modularPaginationMap = mutableMapOf<Long, ModularStoragePaginationInfo>()
     val eventWaiter by lazy { EventWaiter() }
 
     val restServer: RestServer by lazy { RestServer(this) }
@@ -43,7 +45,7 @@ class Container {
     var shuttingDown: Boolean = false
         set(value) {
             if (value) {
-                serviceManager.stopServices()
+                serviceManager.stopAllServices()
                 MelijnBot.shardManager.setActivity(Activity.playing("updating or maintenance"))
                 MelijnBot.shardManager.setStatus(OnlineStatus.IDLE)
             }
@@ -77,7 +79,6 @@ class Container {
 
     //messageId
     val botDeletedMessageIds = mutableSetOf<Long>()
-
 
     private val logger: Logger = LoggerFactory.getLogger(Container::class.java)
 

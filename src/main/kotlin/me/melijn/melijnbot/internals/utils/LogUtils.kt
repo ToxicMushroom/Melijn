@@ -65,7 +65,6 @@ object LogUtils {
         val cause = i18n.getTranslation(language, "logging.removed.channel.causepath.$causePath")
             .withVariable("causeArg", causeArg)
 
-
         val eb = EmbedBuilder()
             .setTitle(title)
             .setColor(Color(0x7289DA))
@@ -97,7 +96,6 @@ object LogUtils {
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
-
 
     suspend fun sendMessageFailedToAddRoleToMember(daoManager: DaoManager, member: Member, role: Role) {
         val guild = member.guild
@@ -168,7 +166,6 @@ object LogUtils {
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-
     //
     // MUSIC LOG STUFF
     //
@@ -206,7 +203,6 @@ object LogUtils {
         val vc = context.lavaManager.getConnectedChannel(context.guild)
             ?: throw IllegalArgumentException("Not connected to a channel")
 
-
         val title = context.getTranslation("logging.music.resumed.title")
 
         val userTitle = context.getTranslation("logging.music.resumed.userfield.title")
@@ -232,7 +228,6 @@ object LogUtils {
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
 
-
         val title = context.getTranslation("logging.music.paused.title")
 
         val userTitle = context.getTranslation("logging.music.paused.userfield.title")
@@ -256,7 +251,6 @@ object LogUtils {
         trackManager.pauseMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 
-
     suspend fun sendMusicPlayerException(
         daoManager: DaoManager,
         guild: Guild,
@@ -269,7 +263,6 @@ object LogUtils {
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.MUSIC, true)
             ?: return
         val title = i18n.getTranslation(language, "logging.music.exception.title")
-
 
         val channel = i18n.getTranslation(language, "logging.music.exception.channelfield.title")
         val channelId = i18n.getTranslation(language, "logging.music.exception.channelIdfield.title")
@@ -295,7 +288,6 @@ object LogUtils {
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val title = context.getTranslation("logging.music.newtrack.title")
 
-
         val userTitle = context.getTranslation("logging.music.newtrack.userfield.title")
         val userIdTitle = context.getTranslation("logging.music.newtrack.userIdfield.title")
         val channel = context.getTranslation("logging.music.newtrack.channelfield.title")
@@ -303,7 +295,6 @@ object LogUtils {
         eb.setTitle(title)
 
         val vc = context.lavaManager.getConnectedChannel(context.guild)
-
 
         eb.setDescription("[%title%](${track.info.uri})".withSafeVariable("title", track.info.title))
         eb.addField(userTitle, context.author.asTag, true)
@@ -342,7 +333,6 @@ object LogUtils {
 
         val title = i18n.getTranslation(language, "logging.music.newtrack.title")
 
-
         val userTitle = i18n.getTranslation(language, "logging.music.newtrack.userfield.title")
         val userIdTitle = i18n.getTranslation(language, "logging.music.newtrack.userIdfield.title")
         val channel = i18n.getTranslation(language, "logging.music.newtrack.channelfield.title")
@@ -374,7 +364,6 @@ object LogUtils {
         val cause = i18n.getTranslation(language, "logging.removed.logchannel.causepath.$causePath")
             .withVariable("causeArg", causeArg)
 
-
         val eb = EmbedBuilder()
             .setTitle(title)
             .setColor(Color(0xCC0000))
@@ -397,7 +386,6 @@ object LogUtils {
             .withVariable("type", roleType.toUCC())
         val cause = i18n.getTranslation(language, "logging.removed.role.causepath.$causePath")
             .withVariable("causeArg", causeArg)
-
 
         val eb = EmbedBuilder()
             .setTitle(title)
@@ -647,9 +635,7 @@ object LogUtils {
             sb.append(":** ")
                 .append(MarkdownSanitizer.escape(escapeForLog(msg.contentRaw)))
 
-
         }
-
 
         val language = getLanguage(daoManager, -1, guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.purge.log.title")
@@ -722,7 +708,6 @@ object LogUtils {
         sendEmbed(pc, embedder)
     }
 
-
     const val VOTE_LINKS = "TopGG:  %statusOne% - `12h` - use `uBlock Origin` to block/skip ads"
 
     suspend fun sendVoteReminder(daoManager: DaoManager, flag: Int, userId: Long) {
@@ -787,7 +772,6 @@ object LogUtils {
             VoteReminderOption.GLOBAL -> "all sites"
         }
     }
-
 
     private fun getBotListFromFlag(opt: VoteReminderOption): String {
         return when (opt) {

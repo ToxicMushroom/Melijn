@@ -30,7 +30,6 @@ class SetVerificationTypeCommand : AbstractCommand("command.setverificationtype"
             return
         }
 
-
         val type = enumValueOrNull<VerificationType>(context.rawArg)
         val msg = if (context.rawArg == "null" || type == VerificationType.NONE) {
             wrapper.removeType(context.guildId)

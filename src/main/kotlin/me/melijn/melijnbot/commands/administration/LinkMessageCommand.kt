@@ -6,12 +6,9 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
-import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
-import me.melijn.melijnbot.internals.utils.isInside
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.withSafeVariable
-import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Guild
 
 class LinkMessageCommand : AbstractCommand("command.linkmessage") {
@@ -21,7 +18,6 @@ class LinkMessageCommand : AbstractCommand("command.linkmessage") {
         aliases = arrayOf("lm", "linkMsg")
         commandCategory = CommandCategory.ADMINISTRATION
     }
-
 
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
@@ -34,20 +30,16 @@ class LinkMessageCommand : AbstractCommand("command.linkmessage") {
             sendSyntax(context)
             return
         }
+
         if (matchingEnums.size > 1) handleEnums(context, matchingEnums)
         else handleEnum(context, matchingEnums[0])
-
     }
 
     companion object {
         suspend fun Guild.getAndVerifyMsgName(daoManager: DaoManager, messageType: MessageType): String? {
-            val msg = daoManager.linkedMessageWrapper.getMessage(this.idLong, messageType)
+            val msg = daoManager.linkedMessageWrapper.getMessage(this.idLong, messageType) ?: return null
             val messages = daoManager.messageWrapper.getMessages(this.idLong)
-            return if (msg == null || !messages.contains(msg)) {
-                null
-            } else {
-                msg
-            }
+            return if (messages.contains(msg)) msg else null
         }
     }
 
@@ -73,12 +65,8 @@ class LinkMessageCommand : AbstractCommand("command.linkmessage") {
         sendRsp(context, msg)
     }
 
-
     private suspend fun linkMessage(context: ICommandContext, messageType: MessageType) {
-        if (context.args.size < 2) {
-            sendSyntax(context)
-            return
-        }
+        if (argSizeCheckFailed(context, 0)) return
 
         val daoWrapper = context.daoManager.linkedMessageWrapper
         val msg = if (context.args[1].equals("null", true)) {

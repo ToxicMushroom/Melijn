@@ -8,7 +8,6 @@ import me.melijn.melijnbot.objectMapper
 
 class ChannelUserPermissionWrapper(private val channelUserPermissionDao: ChannelUserPermissionDao) {
 
-
     suspend fun getPermMap(channelId: Long, userId: Long): Map<String, PermState> {
         val result = channelUserPermissionDao.getCacheEntry("$channelId:$userId", HIGHER_CACHE)?.let {
             objectMapper.readValue<Map<String, PermState>>(it)

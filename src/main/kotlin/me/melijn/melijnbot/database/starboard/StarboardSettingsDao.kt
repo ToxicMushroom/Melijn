@@ -29,7 +29,7 @@ class StarboardSettingsDao(driverManager: DriverManager) : CacheDBDao(driverMana
                     rs.getString("excludedChannelIds")
                 ))
             } else {
-                it.resume(StarboardSettings(4, ""))
+                it.resume(StarboardSettings(3, ""))
             }
         }, guildId)
     }

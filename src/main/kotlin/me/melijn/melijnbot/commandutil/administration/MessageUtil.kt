@@ -60,7 +60,6 @@ object MessageUtil {
         return msgName
     }
 
-
     private suspend fun runCorrectSetThing(
         property: ModularMessageProperty,
         context: ICommandContext,
@@ -83,7 +82,6 @@ object MessageUtil {
             ModularMessageProperty.EMBED_TIME_STAMP -> setEmbedTimeStampMessage(context, message, msgName)
         }
     }
-
 
     private suspend fun showMessage(
         context: ICommandContext,
@@ -159,7 +157,6 @@ object MessageUtil {
         sendRsp(context, msg)
     }
 
-
     suspend fun clearEmbed(context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
         val selectedMessage = getSelectedMessage(context) ?: return
@@ -168,7 +165,6 @@ object MessageUtil {
         clearEmbedAndMessage(context, selectedMessage, modularMessage)
         messageWrapper.updateMessage(modularMessage, context.guildId, selectedMessage)
     }
-
 
     private suspend fun clearEmbedAndMessage(
         context: ICommandContext,
@@ -183,14 +179,12 @@ object MessageUtil {
         sendRsp(context, msg)
     }
 
-
     suspend fun listAttachments(context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
         val msgName = getSelectedMessage(context) ?: return
         val modularMessage = messageWrapper.getMessage(context.guildId, msgName)
         listAttachmentsAndMessage(context, modularMessage, msgName)
     }
-
 
     private suspend fun listAttachmentsAndMessage(
         context: ICommandContext,
@@ -223,7 +217,6 @@ object MessageUtil {
         addAttachmentAndMessage(context, msgName, modularMessage)
         messageWrapper.setMessage(context.guildId, msgName, modularMessage)
     }
-
 
     private suspend fun addAttachmentAndMessage(
         context: ICommandContext,
@@ -404,7 +397,6 @@ object MessageUtil {
             }
         }.withVariable(PLACEHOLDER_TYPE, msgName)
 
-
         message.extra = mmap
         message.embed = eb.build()
         sendRsp(context, msg)
@@ -415,7 +407,7 @@ object MessageUtil {
         val eb = EmbedBuilder(message.embed)
 
         if (arg.length > MessageEmbed.TITLE_MAX_LENGTH) {
-            val msg = context.getTranslation("message.embed.title.tolong")
+            val msg = context.getTranslation("message.embed.title.toolong")
                 .withVariable("arg", arg)
                 .withVariable("length", arg.length)
                 .withVariable("max", MessageEmbed.TITLE_MAX_LENGTH)
@@ -633,7 +625,6 @@ object MessageUtil {
         sendRsp(context, msg)
     }
 
-
     private suspend fun setEmbedFooterIconUrlAndMessage(
         context: ICommandContext,
         message: ModularMessage,
@@ -670,7 +661,6 @@ object MessageUtil {
         message.embed = eb.build()
         sendRsp(context, msg)
     }
-
 
     suspend fun addEmbedField(
         title: String,
@@ -810,7 +800,6 @@ object MessageUtil {
         sendRsp(context, msg)
     }
 
-
     suspend fun showEmbedFields(context: ICommandContext) {
         val messageWrapper = context.daoManager.messageWrapper
         val selectedMessage = getSelectedMessage(context) ?: return
@@ -819,7 +808,6 @@ object MessageUtil {
 
         showEmbedFieldsAndMessage(context, selectedMessage, modularMessage)
     }
-
 
     private suspend fun showEmbedFieldsAndMessage(
         context: ICommandContext,
@@ -847,6 +835,14 @@ object MessageUtil {
         val guildId = context.guildId
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.getMessage(guildId, msgName) ?: return
+        sendModularMessagePreview(context, modularMessage, msgName)
+    }
+
+    suspend fun sendModularMessagePreview(
+        context: ICommandContext,
+        modularMessage: ModularMessage,
+        msgName: String
+    ) {
         val message = try {
             val msg = replaceUrlVariablesInPreview(context.member, modularMessage).toMessage()
             if (msg == null && modularMessage.attachments.isEmpty()) {
@@ -883,7 +879,7 @@ object MessageUtil {
         modularMessage: ModularMessage
     ): ModularMessage {
         val args = UrlParserArgs(member.guild, member.user)
-        return modularMessage.mapAllStringFieldsSafe() {
+        return modularMessage.mapAllStringFieldsSafe {
             if (it != null) {
                 UrlJagTagParser.parseJagTag(args, it)
             } else {

@@ -45,7 +45,6 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-
 class RestServer(container: Container) {
 
     private val jsonType = ContentType.parse("Application/JSON")
@@ -103,7 +102,6 @@ class RestServer(container: Container) {
                     call.respondText { t.message + "\n" + t.stackTraceToString() }
                 }
             }
-
 
             get("/guild/{id}") {
                 GetGuildResponseHandler.handeGuildGetResponse(RequestContext(call, container))
@@ -226,8 +224,8 @@ class RestServer(container: Container) {
             }
 
             get("/shutdown") {
-                ShutdownResponseHandler.handleShutdownResponse(RequestContext(call, container))
-                stop()
+                if (ShutdownResponseHandler.handleShutdownResponse(RequestContext(call, container)))
+                    stop()
             }
 
             //Has to be registered last to not override other paths

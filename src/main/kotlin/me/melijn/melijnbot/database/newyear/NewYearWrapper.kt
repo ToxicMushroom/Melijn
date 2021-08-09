@@ -5,7 +5,6 @@ import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class NewYearWrapper(private val newYearDao: NewYearDao) {
 
-
     fun add(year: Int, userId: Long) {
         newYearDao.add(year, userId)
         newYearDao.setCacheEntry("$year:$userId", true, NORMAL_CACHE)

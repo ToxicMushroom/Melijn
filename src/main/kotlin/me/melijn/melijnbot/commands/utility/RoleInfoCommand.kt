@@ -5,12 +5,12 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE_ID
-import me.melijn.melijnbot.internals.utils.asLongLongGMTString
 import me.melijn.melijnbot.internals.utils.getRoleByArgsNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Role
+import net.dv8tion.jda.api.utils.TimeFormat
 import java.awt.Color
 
 class RoleInfoCommand : AbstractCommand("command.roleinfo") {
@@ -43,7 +43,7 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
     private fun replaceRoleVars(string: String, role: Role, yes: String, no: String): String = string
         .withVariable("roleName", role.name)
         .withVariable(PLACEHOLDER_ROLE_ID, role.id)
-        .withVariable("creationTime", role.timeCreated.asLongLongGMTString())
+        .withVariable("creationTime", TimeFormat.DATE_TIME_SHORT.atDate(role.timeCreated))
         .withVariable("position", role.position.toString() + "/" + role.guild.roleCache.size())
         .withVariable(
             "members",

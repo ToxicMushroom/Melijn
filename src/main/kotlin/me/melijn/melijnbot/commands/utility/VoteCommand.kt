@@ -27,12 +27,10 @@ class VoteCommand : AbstractCommand("command.vote") {
         val userVote = context.daoManager.voteWrapper.getUserVote(context.authorId)
             ?: UserVote(context.authorId, 0, 0, 0, 0, 0, 0)
 
-
         val statusOne = getVoteStatusForSite(VoteReminderOption.TOPGG, userVote.topggLastTime - cMillis)
         val statusTwo = getVoteStatusForSite(VoteReminderOption.BFDCOM, userVote.topggLastTime - cMillis)
         val statusThree = getVoteStatusForSite(VoteReminderOption.DBLCOM, userVote.topggLastTime - cMillis)
         val statusFour = getVoteStatusForSite(VoteReminderOption.DBOATS, userVote.topggLastTime - cMillis)
-
 
         val eb = Embedder(context)
             .setTitle("Voting Sites")

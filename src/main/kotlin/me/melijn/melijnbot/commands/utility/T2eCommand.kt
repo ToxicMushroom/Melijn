@@ -3,8 +3,8 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.utils.argSizeCheckFailed
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 class T2eCommand : AbstractCommand("command.t2e") {
@@ -37,10 +37,7 @@ class T2eCommand : AbstractCommand("command.t2e") {
     companion object {
         suspend fun t2e(context: ICommandContext, spaces: Boolean) {
             context.initCooldown()
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
+            if (argSizeCheckFailed(context, 0)) return
 
             var output = ""
             for (c in context.rawArg.toCharArray()) {
@@ -92,6 +89,5 @@ class T2eCommand : AbstractCommand("command.t2e") {
         private fun regional(input: String): String = ":regional_indicator_$input:"
         fun letter(input: String): String = ":$input:"
     }
-
 
 }

@@ -56,7 +56,6 @@ class SetPrivateTimeZoneCommand : AbstractCommand("command.setprivatetimezone") 
             }, MESSAGE_UNKNOWN_TIMEZONE) ?: return
         }
 
-
         val dao = context.daoManager.timeZoneWrapper
         if (zone == null) {
             dao.removeTimeZone(context.authorId)

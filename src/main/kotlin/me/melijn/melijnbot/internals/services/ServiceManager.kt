@@ -38,10 +38,9 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
     fun init(container: Container, shardManager: ShardManager) {
         this.shardManager = shardManager
         val podInfo = container.podInfo
-        slowServices.add(BanService(shardManager, daoManager, podInfo))
+        slowServices.add(BanService(shardManager, daoManager, podInfo, webManager.proxiedHttpClient))
         slowServices.add(MuteService(shardManager, daoManager, podInfo))
         slowServices.add(BirthdayService(shardManager, webManager.proxiedHttpClient, daoManager))
-
 
         // TODO: create microservice for proper ratelimits
         webManager.spotifyApi?.let { spotifyApi ->
@@ -59,6 +58,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
                 webManager.proxiedHttpClient,
                 container.settings.api.twitter.bearerToken,
                 daoManager.twitterWrapper,
+                daoManager.supporterWrapper,
                 shardManager,
                 podInfo
             )
@@ -66,7 +66,6 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
 
         // Some conditional services
         if (podInfo.minShardId == 0) {
-
             services.add(VoteReminderService(daoManager))
             services.add(MessageCleanerService(daoManager.messageHistoryWrapper))
             services.add(ReminderService(daoManager))
@@ -77,7 +76,6 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
             services.add(TTTService(shardManager, daoManager))
         }
 
-
         val shards = podInfo.shardList
         val melijnGuildId = 340081887265685504L
         val guildShardId = MiscUtil.getShardForGuild(melijnGuildId, podInfo.shardCount)
@@ -86,28 +84,25 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         }
     }
 
-    fun startSlowservices() {
-        requireNotNull(shardManager) { "Init first!" }
-        slowServices.forEach { service ->
-            service.start()
-        }
-
+    fun startSlowServices() {
+        requireNotNull(shardManager) { "Init shardManager first!" }
+        slowServices.startAll()
         slowStarted = true
     }
 
     fun startServices() {
-        requireNotNull(shardManager) { "Init first!" }
-        services.forEach { service ->
-            service.start()
-        }
-
+        requireNotNull(shardManager) { "Init shardManager first!" }
+        services.startAll()
         started = true
     }
 
-    fun stopServices() {
+    fun stopAllServices() {
         require(started) { "Never started!" }
-        services.forEach { service ->
-            service.stop()
-        }
+        services.stopAll()
+        slowServices.stopAll()
     }
+
+    private fun List<Service>.stopAll() = this.forEach { it.stop() }
+    private fun List<Service>.startAll() = this.forEach { it.start() }
+
 }

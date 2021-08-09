@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.database.kick
 
+import me.melijn.melijnbot.database.ban.PunishMapProvider
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
@@ -8,38 +9,29 @@ import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
-class KickWrapper(private val kickDao: KickDao) {
+class KickWrapper(private val kickDao: KickDao): PunishMapProvider<Kick> {
 
-    suspend fun addKick(kick: Kick) {
+    fun addKick(kick: Kick) {
         kickDao.add(kick)
     }
 
-    suspend fun getKickMap(context: ICommandContext, targetUser: User): Map<Long, String> {
-        val map = hashMapOf<Long, String>()
-        val kicks = kickDao.getKicks(context.guildId, targetUser.idLong)
-
-        if (kicks.isEmpty()) {
-            return emptyMap()
-        }
-        kicks.forEach { kick ->
-            val message = convertKickInfoToMessage(context, kick)
-            map[kick.moment] = message
-        }
-        return map
+    override suspend fun getPunishMap(context: ICommandContext, targetUser: User): Map<Long, String> {
+        val bans = kickDao.getKicks(context.guildId, targetUser.idLong)
+        return kicksToMap(bans, context)
     }
 
-    suspend fun getKickMap(context: ICommandContext, kickId: String): Map<Long, String> {
-        val map = hashMapOf<Long, String>()
-        val kicks = kickDao.getKicks(kickId)
-        if (kicks.isEmpty()) {
-            return emptyMap()
-        }
+    override suspend fun getPunishMap(context: ICommandContext, punishmentId: String): Map<Long, String> {
+        val bans = kickDao.getKicks(punishmentId)
+        return kicksToMap(bans, context)
+    }
 
+    private suspend fun kicksToMap(kicks: List<Kick>, context: ICommandContext): Map<Long, String> {
+        val map = hashMapOf<Long, String>()
+        if (kicks.isEmpty()) return emptyMap()
         kicks.forEach { kick ->
             val message = convertKickInfoToMessage(context, kick)
             map[kick.moment] = message
         }
-
         return map
     }
 
@@ -59,15 +51,15 @@ class KickWrapper(private val kickDao: KickDao) {
             .withVariable("kickId", kick.kickId)
     }
 
-    suspend fun clear(guildId: Long, kickedId: Long) {
+    fun clear(guildId: Long, kickedId: Long) {
         kickDao.clear(guildId, kickedId)
     }
 
-    suspend fun getKicks(guildId: Long, kickedId: Long): List<Kick> {
-        return kickDao.getKicks(guildId, kickedId)
+    override suspend fun getPunishments(guildId: Long, targetId: Long): List<Kick> {
+        return kickDao.getKicks(guildId, targetId)
     }
 
-    suspend fun remove(kick: Kick) {
+    fun remove(kick: Kick) {
         kickDao.remove(kick)
     }
 }

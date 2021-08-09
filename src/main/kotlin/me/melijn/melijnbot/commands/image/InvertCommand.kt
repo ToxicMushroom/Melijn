@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.Permission
 
 class InvertCommand : AbstractCommand("command.invert") {
 
-
     init {
         id = 56
         name = "invert"

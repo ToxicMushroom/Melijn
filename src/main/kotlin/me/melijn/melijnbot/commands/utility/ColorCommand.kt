@@ -45,7 +45,6 @@ class ColorCommand : AbstractCommand("command.color") {
             .addField(hsbTitle, hsbFormat, true)
             .setThumbnail("attachment://file.png")
 
-
         val bais = ByteArrayOutputStream()
         bais.use {
             ImageIO.write(ImageUtils.createPlane(64, color.rgb), "png", it)

@@ -5,7 +5,6 @@ import me.melijn.melijnbot.enums.Environment
 import me.melijn.melijnbot.internals.utils.splitIETEL
 import net.dv8tion.jda.api.utils.data.DataArray
 
-
 data class Settings(
     val botInfo: BotInfo,
     val restServer: RestServer,
@@ -19,8 +18,13 @@ data class Settings(
     val redis: Redis,
     val emote: Emote,
     val economy: Economy,
-    val unLoggedThreads: Array<String>
+    val unLoggedThreads: Array<String>,
+    val sentry: Sentry
 ) {
+
+    data class Sentry(
+        val url: String
+    )
 
     data class BotInfo(
         val prefix: String,
@@ -30,6 +34,7 @@ data class Settings(
         val podCount: Int,
         val exceptionChannel: Long,
         val hostPattern: String,
+        val version: String,
         val developerIds: LongArray
     )
 
@@ -79,7 +84,6 @@ data class Settings(
         val port: Int
     )
 
-
     data class Lavalink(
         var http_nodes: Array<LLNode>,
         var verified_nodes: Array<LLNode>,
@@ -95,7 +99,8 @@ data class Settings(
         var randomCatApi: String,
         var kSoftApi: String,
         var osu: String,
-        var hot: String
+        var hot: String,
+        val tenor: String
     )
 
     data class Database(
@@ -105,7 +110,6 @@ data class Settings(
         var host: String,
         var port: Int
     )
-
 
     data class Redis(
         val host: String,
@@ -135,8 +139,8 @@ data class Settings(
             this.ignoreIfMissing = true
         }
 
-        fun get(path: String): String = dotenv[path.uppercase().replace(".", "_")]
-            ?: throw IllegalStateException("missing env value: $path")
+        fun get(path: String): String = getN(path) ?: throw IllegalStateException("missing env value: $path")
+        private fun getN(path: String) = dotenv[path.uppercase().replace(".", "_")]
 
         fun getLong(path: String): Long = get(path).toLong()
         fun getFloat(path: String): Float = get(path).toFloat()
@@ -166,6 +170,7 @@ data class Settings(
                     getInt("botinfo.podCount"),
                     getLong("botinfo.exceptionsChannelId"),
                     get("botinfo.hostPattern"),
+                    getN("version.hash") ?: getN("botinfo.version") ?: "unknown",
                     get("botinfo.developerIds").split(",").map { it.toLong() }.toLongArray()
                 ),
                 RestServer(
@@ -217,7 +222,8 @@ data class Settings(
                     get("token.randomCatApi"),
                     get("token.kSoftApi"),
                     get("token.osuApi"),
-                    get("token.hot")
+                    get("token.hot"),
+                    get("token.tenor"),
                 ),
                 Database(
                     get("database.database"),
@@ -240,7 +246,10 @@ data class Settings(
                     getFloat("economy.premiumMultiplier"),
                     getInt("economy.streakExpireHours")
                 ),
-                get("unloggedThreads").splitIETEL(",").toTypedArray()
+                get("unloggedThreads").splitIETEL(",").toTypedArray(),
+                Sentry(
+                    get("sentry.url")
+                )
             )
         }
 

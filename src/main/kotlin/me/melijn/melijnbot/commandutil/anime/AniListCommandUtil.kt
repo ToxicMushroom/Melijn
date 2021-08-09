@@ -22,7 +22,6 @@ import java.util.regex.Pattern
 
 object AniListCommandUtil {
 
-
     // User methods
     suspend fun searchUser(context: ICommandContext) {
         if (context.args.isEmpty()) {
@@ -146,7 +145,6 @@ object AniListCommandUtil {
             .setThumbnail(user.avatar?.large)
             .setTitle(user.name, user.siteUrl)
 
-
         val aboutValue = user.about
         if (aboutValue != null && aboutValue.isNotEmpty()) {
             val about = context.getTranslation("title.about")
@@ -186,7 +184,6 @@ object AniListCommandUtil {
         val animeStatsTitle = context.getTranslation("$root.title.animestats")
         val mangaStatsTitle = context.getTranslation("$root.title.mangastats")
 
-
         val animePart = animeStatsTitle + if ((animeStats?.count ?: 0) > 0) {
             val animeValueStats = context.getTranslation("$root.animestats")
             "\n" + animeValueStats
@@ -212,7 +209,6 @@ object AniListCommandUtil {
         val otherStats = context.getTranslation("title.otherstats")
 
         eb.addField(otherStats, parts.joinToString("\n\n"), false)
-
 
         user.favourites?.let outer@{
             it.anime?.nodes?.let { animeList ->
@@ -259,7 +255,6 @@ object AniListCommandUtil {
 
         sendEmbedRsp(context, eb.build())
     }
-
 
     // Character methods
     suspend fun searchCharacter(context: ICommandContext) {
@@ -539,7 +534,6 @@ object AniListCommandUtil {
         var alias = media.synonyms.joinToString()
         if (alias.isBlank()) alias = "/"
 
-
         val genres = context.getTranslation("title.genres")
         val othernames = context.getTranslation("title.othernames")
         val rating = context.getTranslation("title.rating")
@@ -548,11 +542,9 @@ object AniListCommandUtil {
         val episodes = context.getTranslation("title.episodes")
         val avgepisodelength = context.getTranslation("title.avgepisodelength")
 
-
         val status = context.getTranslation("title.status")
         val startdate = context.getTranslation("title.startdate")
         val enddate = context.getTranslation("title.enddate")
-
 
         eb.addField(genres, media.genres.joinToString("\n"), true)
             .addField(othernames, alias, true)
@@ -684,15 +676,13 @@ object AniListCommandUtil {
         val startdate = context.getTranslation("title.startdate")
         val enddate = context.getTranslation("title.enddate")
 
-
-        eb.addField(genres, media.genres.joinToString("\n").let { if (it.isEmpty()) "/" else it }, true)
+        eb.addField(genres, media.genres.joinToString("\n").let { it.ifEmpty { "/" } }, true)
         eb.addField(othernames, alias, true)
         eb.addField(rating, (media.averageScore?.toString() ?: "?") + "%", true)
 
         eb.addField(format, media.format?.toUCC() ?: "/", true)
         eb.addField(volumes, "${mangaMedia.manga.volumes ?: 0}", true)
         eb.addField(chapters, "${mangaMedia.manga.chapters ?: 0}", true)
-
 
         eb.addField(status, media.status?.toUCC() ?: "/", true)
         eb.addField(startdate, formatDate(media.startDate), true)
@@ -715,7 +705,6 @@ object AniListCommandUtil {
 
         sendEmbedRsp(context, eb.build())
     }
-
 
     // Media methods
     suspend fun searchMedia(context: ICommandContext, mediaType: MediaType) {

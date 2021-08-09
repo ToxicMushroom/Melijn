@@ -1,21 +1,17 @@
 package me.melijn.melijnbot.commands.moderation
 
+import me.melijn.melijnbot.commandutil.moderation.ModUtil
 import me.melijn.melijnbot.database.kick.Kick
 import me.melijn.melijnbot.enums.LogChannelType
-import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.command.hasPermission
-import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
@@ -32,30 +28,10 @@ class KickCommand : AbstractCommand("command.kick") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        }
+        if (argSizeCheckFailed(context, 0)) return
 
         val targetMember = retrieveMemberByArgsNMessage(context, 0, true, botAllowed = false) ?: return
-        if (!context.guild.selfMember.canInteract(targetMember)) {
-            val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
-            sendRsp(context, msg)
-            return
-        }
-
-        if (!context.member.canInteract(targetMember) && !hasPermission(
-                context,
-                SpecialPermission.PUNISH_BYPASS_HIGHER.node,
-                true
-            )
-        ) {
-            val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
-            sendRsp(context, msg)
-            return
-        }
+        if (ModUtil.cantPunishAndReply(context, targetMember)) return
 
         var reason = context.rawArg
             .removeFirst(context.args[0])
@@ -69,7 +45,6 @@ class KickCommand : AbstractCommand("command.kick") {
             context.authorId,
             reason
         )
-
 
         val kicking = context.getTranslation("message.kicking")
         val privateChannel = targetMember.user.openPrivateChannel().awaitOrNull()
@@ -113,7 +88,7 @@ class KickCommand : AbstractCommand("command.kick") {
                 .reason("(kick) " + context.author.asTag + ": " + kick.reason)
                 .await()
 
-            kickingMessage?.editMessage(
+            kickingMessage?.editMessageEmbeds(
                 kickedMessageDm
             )?.override(true)?.queue()
 

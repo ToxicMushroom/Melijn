@@ -24,7 +24,6 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import org.slf4j.LoggerFactory
 import kotlin.random.Random
 
-
 class GuildTrackManager(
     val guildId: Long,
     val daoManager: DaoManager,
@@ -44,13 +43,11 @@ class GuildTrackManager(
     val pauseMomentMessageMap = mutableMapOf<Long, MessageEmbed>()
     val startMomentMessageMap = mutableMapOf<Long, MessageEmbed>()
 
-
     var loopedTrack = false
     var loopedQueue = false
 
     var tracks: SafeList<AudioTrack> = SafeList()
     fun trackSize() = tracks.size
-
 
     private suspend fun nextTrack(lastTrack: AudioTrack) {
         votedUsers.clear()
@@ -133,7 +130,6 @@ class GuildTrackManager(
     suspend fun shuffle() {
         tracks.shuffle()
     }
-
 
     override fun onPlayerResume(player: AudioPlayer?) {
         TaskManager.async {
@@ -243,7 +239,6 @@ class GuildTrackManager(
             lavaManager.closeConnection(guildId, removeMusicPlayer)
         }.run()
     }
-
 
     suspend fun skip(amount: Int) {
         val nextTrack: AudioTrack? = tracks.removeFirstAndGetNextOrNull(amount)

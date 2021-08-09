@@ -20,7 +20,6 @@ import me.melijn.melijnbot.commands.utility.*
 import me.melijn.melijnbot.internals.threading.TaskManager
 import org.slf4j.LoggerFactory
 
-
 class CommandClientBuilder(private val container: Container) {
 
     private val logger = LoggerFactory.getLogger(this::class.java.name)
@@ -285,14 +284,20 @@ class CommandClientBuilder(private val container: Container) {
         BrightnessCommand(),
         JPGCommand(),
         PNGCommand(),
-        // WebpCommand(),
+        WebpCommand(),
         RotateRightCommand(),
         RotateLeftCommand(),
         TrimCommand(),
         TakeCommand(),
         ContrastCommand(),
         KaleidoScopeCommand(),
-        CalculateCommand()
+        CalculateCommand(),
+        ChannelFlagsCommand(),
+        DiceCommand(),
+        ManiaCommand(),
+        TaikoCommand(),
+        CatchTheBeatCommand(),
+        YoshiCommand()
     )
 
     fun build(): CommandClient {

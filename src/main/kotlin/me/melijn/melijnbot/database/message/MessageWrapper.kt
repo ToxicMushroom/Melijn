@@ -38,13 +38,12 @@ class MessageWrapper(private val messageDao: MessageDao) {
     }
 
     fun updateMessage(message: ModularMessage, guildId: Long, msgName: String) {
-        if (shouldRemove(message)) {
+        if (message.isEmpty()) {
             removeMessage(guildId, msgName)
         } else {
             (setMessage(guildId, msgName, message))
         }
     }
-
 
     fun removeMessage(guildId: Long, msgName: String) {
         messageDao.remove(guildId, msgName)

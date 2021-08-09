@@ -144,19 +144,16 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             } else {
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
 
-
                 val stateMap = daoManager.channelCommandStateWrapper.getMap(channel.idLong)
                 val ids = stateMap.keys
                 val commandMap = HashMap<String, String>()
                 val filteredCommands = context.commandList
                     .filter { cmd -> ids.contains(cmd.id.toString()) }
-                    .map { cmd -> cmd.id.toString() to cmd.name }
-                    .toMap()
+                    .associate { cmd -> cmd.id.toString() to cmd.name }
 
                 val filteredCCs = daoManager.customCommandWrapper.getList(context.guildId)
                     .filter { (ccId) -> ids.contains("cc.$ccId") }
-                    .map { (ccId, ccName) -> ("cc.$ccId") to ccName }
-                    .toMap()
+                    .associate { (ccId, ccName) -> ("cc.$ccId") to ccName }
 
                 commandMap.putAll(filteredCommands)
                 commandMap.putAll(filteredCCs)

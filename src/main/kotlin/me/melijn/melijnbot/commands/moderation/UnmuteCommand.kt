@@ -1,12 +1,13 @@
 package me.melijn.melijnbot.commands.moderation
 
+import me.melijn.melijnbot.commandutil.moderation.ModUtil
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
-import me.melijn.melijnbot.enums.SpecialPermission
-import me.melijn.melijnbot.internals.command.*
-import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
@@ -14,7 +15,6 @@ import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyRoleByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -33,10 +33,8 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        }
+        if (argSizeCheckFailed(context, 0)) return
+
         val guild = context.guild
         val daoManager = context.daoManager
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
@@ -75,25 +73,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         }
 
         if (targetMember != null && targetMember.roles.contains(muteRole)) {
-
-            if (!context.guild.selfMember.canInteract(targetMember)) {
-                val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
-                sendRsp(context, msg)
-                return
-            }
-            if (!context.member.canInteract(targetMember) && !hasPermission(
-                    context,
-                    SpecialPermission.PUNISH_BYPASS_HIGHER.node,
-                    true
-                )
-            ) {
-                val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
-                sendRsp(context, msg)
-                return
-            }
-
+            if (ModUtil.cantPunishAndReply(context, targetMember)) return
 
             val exception = guild.removeRoleFromMember(targetMember, muteRole)
                 .reason("(unmute) ${context.author.asTag}: " + unmuteReason)
@@ -177,7 +157,6 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         sendRsp(context, successMsg)
     }
 }
-
 
 fun getUnmuteMessage(
     language: String,

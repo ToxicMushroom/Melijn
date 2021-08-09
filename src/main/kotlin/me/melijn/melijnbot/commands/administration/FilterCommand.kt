@@ -46,14 +46,12 @@ class FilterCommand : AbstractCommand("command.filter") {
             val wrapper = context.daoManager.filterWrapper
             wrapper.addFilter(context.guildId, filterGroup.filterGroupName, filterType, filter)
 
-
             val msg = context.getTranslation("$root.success")
                 .withVariable("filter", filter)
                 .withVariable("filterGroup", filterGroup.filterGroupName)
             sendRsp(context, msg)
         }
     }
-
 
     class RemoveByIndexArg(parent: String, private val filterType: FilterType) :
         AbstractCommand("$parent.removebyindex") {
@@ -102,14 +100,12 @@ class FilterCommand : AbstractCommand("command.filter") {
             val wrapper = context.daoManager.filterWrapper
             wrapper.removeFilter(context.guildId, filterGroup.filterGroupName, filterType, filter)
 
-
             val msg = context.getTranslation("$root.success")
                 .withVariable("filter", filter)
                 .withVariable("filterGroup", filterGroup.filterGroupName)
             sendRsp(context, msg)
         }
     }
-
 
     class ListArg(parent: String, private val filterType: FilterType) : AbstractCommand("$parent.list") {
 

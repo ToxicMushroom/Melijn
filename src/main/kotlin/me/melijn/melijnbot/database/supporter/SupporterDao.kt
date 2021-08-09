@@ -5,7 +5,6 @@ import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-
 class SupporterDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "supporters"

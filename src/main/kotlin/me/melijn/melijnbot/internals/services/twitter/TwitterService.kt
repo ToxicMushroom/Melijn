@@ -11,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.socialmedia.TwitterWebhook
 import me.melijn.melijnbot.database.socialmedia.TwitterWrapper
+import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.services.Service
 import me.melijn.melijnbot.internals.threading.RunnableTask
@@ -34,6 +35,7 @@ class TwitterService(
     val httpClient: HttpClient,
     private val twitterToken: String,
     private val twitterWrapper: TwitterWrapper,
+    private val supporterWrapper: SupporterWrapper,
     val shardManager: ShardManager,
     private val podInfo: PodInfo
 ) : Service("Twitter", 5, 1, TimeUnit.MINUTES) {
@@ -46,13 +48,17 @@ class TwitterService(
         val map = mutableMapOf<Long, Int>()
         for (twitterWebhook in twitterWebhooks) {
             map[twitterWebhook.guildId] = map.getOrDefault(twitterWebhook.guildId, 0) + 1
-            if ((map[twitterWebhook.guildId] ?: 0) > 3) continue // current mitigations
-            if (twitterWebhook.monthlyTweetCount > 200) continue
+            if ((map[twitterWebhook.guildId] ?: 0) > 3) continue // current mitigations for max 3 tracked accounts
+
+            val limit = if (supporterWrapper.getGuilds().contains(twitterWebhook.guildId))
+                PREMIUM_TWEET_LIMIT else NORMAL_TWEET_LIMIT
+            if (twitterWebhook.monthlyTweetCount > limit) continue
             val tweets = fetchNewTweets(twitterWebhook) ?: continue
             postNewTweets(twitterWebhook, tweets)
             updateTwitterWebhookInfo(twitterWebhook, tweets)
             delay(delay)
         }
+        twitterWrapper.resetExpiredMonths()
     }
 
     private fun updateTwitterWebhookInfo(twitterWebhook: TwitterWebhook, tweets: Tweets) {
@@ -118,14 +124,13 @@ class TwitterService(
             }
 
             mb.addEmbeds(eb.build())
-
-            try {
-                client.send(mb.build()).await()
-            } catch (t: Throwable) {
-                t.printStackTrace()
-                all++
-                delay(100)
-            }
+        }
+        try {
+            client.send(mb.build()).await()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            all++
+            delay(100)
         }
         if (all == tweets.tweetList.size) {
             twitterWebhook.enabled = false
@@ -283,6 +288,11 @@ class TwitterService(
         val newestTweetId = metaInfo.getString("newest_id", null)?.toLongOrNull() ?: list.firstOrNull()?.id
         val author = users.first { it.id == twitterWebhook.twitterUserId }
         return Tweets(author, newestTweetId, list)
+    }
+
+    companion object {
+        const val NORMAL_TWEET_LIMIT = 200
+        const val PREMIUM_TWEET_LIMIT = 600
     }
 }
 

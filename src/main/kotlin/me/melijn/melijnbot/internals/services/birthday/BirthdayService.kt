@@ -7,7 +7,6 @@ import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.services.Service
 import me.melijn.melijnbot.internals.threading.RunnableTask
 import me.melijn.melijnbot.internals.utils.LogUtils
-import me.melijn.melijnbot.internals.utils.awaitBool
 import me.melijn.melijnbot.internals.utils.awaitEX
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelById
@@ -47,9 +46,8 @@ class BirthdayService(
             val guildZone = daoManager.timeZoneWrapper.getTimeZone(guild.idLong)
             val guildTZ = TimeZone.getTimeZone(guildZone.ifBlank { "GMT" })
 
-            //Add birthday role (maybe channel message)
+            // Add birthday role (maybe channel message)
             for ((userId, info) in HashMap(birthdays)) {
-                val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                 val userTZ = info.zoneId?.let { TimeZone.getTimeZone(it) } ?: guildTZ
 
                 var actualBirthday = info.birthday
@@ -59,24 +57,25 @@ class BirthdayService(
                     info.startMinute = 24.0 * 60.0 + info.startMinute
                 }
 
-
-                //Cool checks to see if birthday should happen
+                // Cool checks to see if birthday should happen
                 if (
                     (currentDay == 1 && (info.startMinute <= currentMinuteOfDay || actualBirthday <= currentDay)) ||
                     actualBirthday < currentDay ||
                     (info.startMinute <= currentMinuteOfDay && actualBirthday == currentDay)
                 ) {
-                    //Check if birthday already happened
+                    // Check if birthday already happened
                     if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
+
+                    val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                     val ex = guild.addRoleToMember(member, role)
                         .reason("Birthday begins")
                         .awaitEX()
 
-                    //If role was added add birthday to history
+                    // If role was added add birthday to history
                     if (ex == null)
                         birthdayHistory.add(calendar.get(Calendar.YEAR), guildId, userId)
 
-                    //Get birthday log channel
+                    // Get birthday log channel
                     val channelId = channels.getOrElse(guildId) { null } ?: continue
                     val textChannel = guild.getAndVerifyChannelById(
                         daoManager,
@@ -89,39 +88,37 @@ class BirthdayService(
                         continue
                     }
 
-                    //send birthday message
+                    // send birthday message
                     LogUtils.sendBirthdayMessage(daoManager, httpClient, textChannel, member, info.birthYear)
                 }
             }
 
-            //Birthdays to remove
+            // Birthdays to remove
             for ((userId, pair) in birthDaysToRemove) {
                 val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                 guild.removeRoleFromMember(member, role)
                     .reason("Birthday is over")
-                    .awaitBool()
+                    .awaitOrNull()
 
                 birthdayHistory.deactivate(pair.first, guildId, userId)
             }
         }
 
-        //Send birthday channel message
+        // Send birthday channel message
         for (guildId in channels.keys) {
             val guild = shardManager.getGuildById(guildId) ?: continue
 
-            //Get guild timezone (GMT if none set)
+            // Get guild timezone (GMT if none set)
             val guildZone = daoManager.timeZoneWrapper.getTimeZone(guild.idLong)
-            val guildTZ = TimeZone.getTimeZone(if (guildZone.isBlank()) "GMT" else guildZone)
+            val guildTZ = TimeZone.getTimeZone(guildZone.ifBlank { "GMT" })
 
-            //Get birthday channel
+            // Get birthday channel
             val textChannel = channels[guildId]?.let {
                 guild.getAndVerifyChannelById(daoManager, ChannelType.BIRTHDAY, it, setOf(Permission.MESSAGE_WRITE))
             } ?: continue
 
             for ((userId, info) in birthdays) {
-                val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                 val userTZ = info.zoneId?.let { TimeZone.getTimeZone(it) } ?: guildTZ
-
                 var actualBirthday = info.birthday
 
                 info.startMinute = userTZ.rawOffset / 60_000.0
@@ -130,7 +127,7 @@ class BirthdayService(
                     info.startMinute = 24.0 * 60.0 + info.startMinute
                 }
 
-                //Cool checks to see if birthday should happen
+                // Cool checks to see if birthday should happen
                 if (
                     (currentDay == 1 && (info.startMinute <= currentMinuteOfDay || actualBirthday <= currentDay)) ||
                     actualBirthday < currentDay ||
@@ -138,6 +135,7 @@ class BirthdayService(
                 ) {
                     if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
 
+                    val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                     LogUtils.sendBirthdayMessage(daoManager, httpClient, textChannel, member, info.birthYear)
                     birthdayHistory.add(calendar.get(Calendar.YEAR), guildId, userId)
                 }

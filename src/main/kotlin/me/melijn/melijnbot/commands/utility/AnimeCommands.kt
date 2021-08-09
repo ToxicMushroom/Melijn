@@ -3,7 +3,6 @@ package me.melijn.melijnbot.commands.utility
 import java.util.*
 import kotlin.math.max
 
-
 fun Date.toUniversalDateTimeFormat(): String {
     val cal = Calendar.getInstance()
     cal.time = this

@@ -19,4 +19,8 @@ class TwitterWrapper(private val twitterDao: TwitterDao) {
     fun delete(guildId: Long, handle: String) {
         twitterDao.delete(guildId, handle)
     }
+
+    fun resetExpiredMonths() {
+        twitterDao.resetMonths()
+    }
 }

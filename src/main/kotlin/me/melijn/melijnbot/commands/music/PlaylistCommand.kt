@@ -98,7 +98,6 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                 .withSafeVariable("playlist", playlist.name)
                 .withVariable("count", tracks.size)
 
-
             sendRsp(context, msg)
         }
 
@@ -125,7 +124,6 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                 tracksToAdd.add(it)
             }
 
-
             val playlistWrapper = context.daoManager.playlistWrapper
             val playlists = playlistWrapper.getPlaylists(context.authorId)
             if (AddArg.playlistsLimitReachedAndMessage(context, playlists.size)) {
@@ -136,7 +134,6 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             if (tracksToAdd.size > freeSlots) {
                 tracksToAdd = tracksToAdd.subList(0, freeSlots)
             }
-
 
             val playList = getPlaylistByNameN(context, 0)
             val tracksMap = playList?.encodedTracks
@@ -253,7 +250,6 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                 val title = context.getTranslation("$root.playlist.title")
                 val sb = StringBuilder("```INI\n# index - [name] - tracks")
 
-
                 for ((index, playlistName) in playlistNames.withIndex()) {
                     sb.append("\n").append(index + 1).append(" - [").append(playlistName.escapeMarkdown())
                         .append("] - ")
@@ -275,7 +271,6 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
 
             val title = context.getTranslation("$root.tracks.title")
                 .withSafeVariable("playlist", tracksMap.name)
-
 
             val sb = StringBuilder()
             for ((index, track) in tracks.withIndex()) {
@@ -390,7 +385,6 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
             if (playlistsLimitReachedAndMessage(context, playlists.size)) {
                 return
             }
-
 
             val playlist = getPlaylistByNameN(context, 0)
             val tracksMap = playlist?.encodedTracks

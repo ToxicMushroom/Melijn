@@ -6,7 +6,6 @@ import java.time.LocalTime
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-
 class CommandUsageDao(driverManager: DriverManager) : Dao(driverManager) {
 
     private var currentHour: Int = 25
@@ -29,7 +28,6 @@ class CommandUsageDao(driverManager: DriverManager) : Dao(driverManager) {
             commandId, hourMillis, 1)
     }
 
-
     suspend fun getUsageWithinPeriod(from: Long, until: Long): LinkedHashMap<Int, Long> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE time > ? AND time < ?", { rs ->
             val commandUsages = LinkedHashMap<Int, Long>()
@@ -42,7 +40,6 @@ class CommandUsageDao(driverManager: DriverManager) : Dao(driverManager) {
             }
             it.resume(commandUsages)
         }, from, until)
-
 
     }
 }

@@ -72,7 +72,6 @@ class ScriptDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         }, entityId)
     }
 
-
 }
 
 typealias ScriptBody = Map<Int, Pair<String, List<String>>>

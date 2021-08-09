@@ -14,10 +14,8 @@ suspend fun getLanguage(daoManager: DaoManager, userId: Long, guildId: Long = -1
     return if (guildId > 0) {
         if (isSupporter) {
             val userLang = getUserLanguage(daoManager, userId)
-            if (userLang.isBlank()) {
+            userLang.ifBlank {
                 getGuildLanguageOrDefault(daoManager, guildId)
-            } else {
-                userLang
             }
         } else {
             getGuildLanguageOrDefault(daoManager, guildId)
@@ -34,23 +32,17 @@ suspend fun getLanguage(daoManager: DaoManager, userId: Long, guildId: Long = -1
 
 private suspend fun getGuildLanguageOrDefault(daoManager: DaoManager, guildId: Long): String {
     val guildLanguage = getGuildLanguage(daoManager, guildId)
-    return if (guildLanguage.isBlank()) {
+    return guildLanguage.ifBlank {
         DEFAULT_LANGUAGE
-    } else {
-        guildLanguage
     }
 }
-
 
 private suspend fun getUserLanguageOrDefault(daoManager: DaoManager, userId: Long): String {
     val userLanguage = getUserLanguage(daoManager, userId)
-    return if (userLanguage.isBlank()) {
+    return userLanguage.ifBlank {
         DEFAULT_LANGUAGE
-    } else {
-        userLanguage
     }
 }
-
 
 private suspend fun getUserLanguage(daoManager: DaoManager, userId: Long): String {
     return daoManager.userLanguageWrapper.getLanguage(userId)
@@ -60,4 +52,4 @@ private suspend fun getGuildLanguage(daoManager: DaoManager, guildId: Long): Str
     return daoManager.guildLanguageWrapper.getLanguage(guildId)
 }
 
-val DEFAULT_LANGUAGE = "EN"
+const val DEFAULT_LANGUAGE = "EN"

@@ -1,17 +1,15 @@
 package me.melijn.melijnbot.internals.utils.message
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.threading.TaskManager.async
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
-
 
 suspend fun sendRspCodeBlock(context: ICommandContext, msg: String, lang: String, shouldPaginate: Boolean = false) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
@@ -22,7 +20,7 @@ suspend fun sendRspCodeBlock(context: ICommandContext, msg: String, lang: String
     }
 }
 
-fun sendRspCodeBlock(
+suspend fun sendRspCodeBlock(
     textChannel: TextChannel,
     authorId: Long,
     daoManager: DaoManager,
@@ -32,16 +30,14 @@ fun sendRspCodeBlock(
 ) {
     if (!textChannel.canTalk()) return
     if (msg.length <= 2000) {
-        TaskManager.async(textChannel) {
-            val message = textChannel.sendMessage(msg).awaitOrNull() ?: return@async
-            val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
-            val seconds = timeMap[textChannel.idLong] ?: return@async
+        val message = textChannel.sendMessage(msg).awaitOrNull() ?: return
+        val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
+        val seconds = timeMap[textChannel.idLong] ?: return
 
-            delay(seconds * 1000L)
-            Container.instance.botDeletedMessageIds.add(message.idLong)
+        delay(seconds * 1000L)
+        Container.instance.botDeletedMessageIds.add(message.idLong)
 
-            message.delete().queue(null, { Container.instance.botDeletedMessageIds.remove(message.idLong) })
-        }
+        message.delete().queue(null) { Container.instance.botDeletedMessageIds.remove(message.idLong) }
 
     } else {
         val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length) - if (shouldPaginate) 100 else 0)
@@ -62,7 +58,7 @@ suspend fun sendRspCodeBlocks(
     }
 }
 
-fun sendRspCodeBlocks(
+suspend fun sendRspCodeBlocks(
     textChannel: TextChannel,
     authorId: Long,
     daoManager: DaoManager,
@@ -79,53 +75,47 @@ fun sendRspCodeBlocks(
             }
         }.toMutableList()
 
-        TaskManager.async(textChannel) {
-            val message = textChannel.sendMessage(paginatedParts[0]).awaitOrNull() ?: return@async
-            registerPaginationMessage(textChannel, authorId, message, paginatedParts, 0)
 
-            val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
-            val seconds = timeMap[textChannel.idLong] ?: return@async
+        val message = textChannel.sendMessage(paginatedParts[0]).awaitOrNull() ?: return
+        registerPaginationMessage(textChannel, authorId, message, paginatedParts, 0)
 
-            delay(seconds * 1000L)
-            Container.instance.botDeletedMessageIds.add(message.idLong)
+        val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
+        val seconds = timeMap[textChannel.idLong] ?: return
 
-            message.delete().queue(null, { Container.instance.botDeletedMessageIds.remove(message.idLong) })
-        }
+        delay(seconds * 1000L)
+        Container.instance.botDeletedMessageIds.add(message.idLong)
+
+        message.delete().queue(null) { Container.instance.botDeletedMessageIds.remove(message.idLong) }
     } else if (parts.size > 1) {
-        TaskManager.async(textChannel) {
-            parts.forEachIndexed { index, msgPart ->
-                val message = textChannel.sendMessage(
-                    when {
-                        index == 0 -> "$msgPart```"
-                        index + 1 == parts.size -> "```$lang\n$msgPart"
-                        else -> "```$lang\n$msgPart```"
-                    }
-                ).awaitOrNull() ?: return@async
-
-                launch {
-                    val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
-                    val seconds = timeMap[textChannel.idLong] ?: return@launch
-
-                    delay(seconds * 1000L)
-                    Container.instance.botDeletedMessageIds.add(message.idLong)
-
-                    message.delete().queue(null, { Container.instance.botDeletedMessageIds.remove(message.idLong) })
+        parts.forEachIndexed { index, msgPart ->
+            val message = textChannel.sendMessage(
+                when {
+                    index == 0 -> "$msgPart```"
+                    index + 1 == parts.size -> "```$lang\n$msgPart"
+                    else -> "```$lang\n$msgPart```"
                 }
+            ).awaitOrNull() ?: return
+
+            async {
+                val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
+                val seconds = timeMap[textChannel.idLong] ?: return@async
+
+                delay(seconds * 1000L)
+                Container.instance.botDeletedMessageIds.add(message.idLong)
+
+                message.delete().queue(null) { Container.instance.botDeletedMessageIds.remove(message.idLong) }
             }
         }
-
     } else {
-        TaskManager.async(textChannel) {
-            val message = textChannel.sendMessage(parts[0]).awaitOrNull() ?: return@async
+        val message = textChannel.sendMessage(parts[0]).awaitOrNull() ?: return
 
-            val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
-            val seconds = timeMap[textChannel.idLong] ?: return@async
+        val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
+        val seconds = timeMap[textChannel.idLong] ?: return
 
-            delay(seconds * 1000L)
-            Container.instance.botDeletedMessageIds.add(message.idLong)
+        delay(seconds * 1000L)
+        Container.instance.botDeletedMessageIds.add(message.idLong)
 
-            message.delete().queue(null, { Container.instance.botDeletedMessageIds.remove(message.idLong) })
-        }
+        message.delete().queue(null) { Container.instance.botDeletedMessageIds.remove(message.idLong) }
     }
 }
 

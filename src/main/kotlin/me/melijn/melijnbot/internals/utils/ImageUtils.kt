@@ -10,8 +10,11 @@ import io.ktor.utils.io.streams.*
 import me.melijn.melijnbot.commands.image.StinkyException
 import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.web.apis.BAD_TENOR_GIF
+import me.melijn.melijnbot.internals.web.apis.VERYBAD_TENOR_GIF
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import java.awt.Color
@@ -50,7 +53,6 @@ enum class ImageType {
     PNG, JPG, GIF, TIFF
 }
 
-
 object ImageUtils {
 
     fun createPlane(side: Int, color: Int): BufferedImage {
@@ -60,7 +62,6 @@ object ImageUtils {
         graphics2D.fillRect(0, 0, bufferedImage.width, bufferedImage.height)
         return bufferedImage
     }
-
 
     suspend fun getImageBytesNMessage(
         context: ICommandContext,
@@ -84,7 +85,7 @@ object ImageUtils {
             val arg = args[index]
             val user = retrieveUserByArgsN(context, index)
             if (user != null) {
-                val url = changeUrlToFitTypes(user.effectiveAvatarUrl, acceptTypes) + discordSize.getParam()
+                val url = changeUrlToFitTypes(context, user.effectiveAvatarUrl, acceptTypes) + discordSize.getParam()
                 val type = getFormatNMessage(context, url, acceptTypes) ?: return null
                 val img = downloadBytesNMessage(context, url) ?: return null
 
@@ -93,7 +94,7 @@ object ImageUtils {
             } else if (EMOTE_MENTION.matches(arg)) {
                 val emoteType = if (arg.startsWith("<a")) ImageType.GIF else ImageType.PNG
                 val emoteId = EMOTE_MENTION.find(arg)?.groupValues?.get(2)
-                val url = changeUrlToFitTypes(
+                val url = changeUrlToFitTypes(context,
                     "https://cdn.discordapp.com/emojis/$emoteId.${emoteType.toString().lowercase()}",
                     acceptTypes
                 ) + discordSize.getParam()
@@ -104,7 +105,7 @@ object ImageUtils {
 
             } else {
                 if (!isValidUrlMessage(context, arg)) return null
-                val url = changeUrlToFitTypes(arg, acceptTypes)
+                val url = changeUrlToFitTypes(context, arg, acceptTypes)
                 val type = getFormatNMessage(context, url, acceptTypes) ?: return null
                 val img = downloadBytesNMessage(context, url, proxy = true) ?: return null
 
@@ -112,7 +113,7 @@ object ImageUtils {
             }
         }
 
-        val url = changeUrlToFitTypes(context.author.effectiveAvatarUrl, acceptTypes) + discordSize.getParam()
+        val url = changeUrlToFitTypes(context, context.author.effectiveAvatarUrl, acceptTypes) + discordSize.getParam()
         val type = getFormatNMessage(context, url, acceptTypes) ?: return null
         val img = downloadBytesNMessage(context, url) ?: return null
 
@@ -122,10 +123,23 @@ object ImageUtils {
     private val typePattern = "\\.(?:${ImageType.values().joinToString("|") { it.toString() }})"
         .toRegex(RegexOption.IGNORE_CASE)
 
-    private fun changeUrlToFitTypes(url: String, acceptTypes: Set<ImageType>?): String {
+
+    private val giphyPattern = "https?://giphy\\.com/gifs/(?:[a-zA-Z0-9]+-)*([a-zA-Z0-9]+)".toRegex()
+    private suspend fun changeUrlToFitTypes(context: ICommandContext, url: String, acceptTypes: Set<ImageType>?): String {
         if (acceptTypes == null || acceptTypes.isEmpty()) return url
-        if (acceptTypes.contains(ImageType.GIF) && url.endsWith(".gif", true)) return url
-        if (acceptTypes.any { url.endsWith(".$it", true) }) return url
+        val nakedUrl = stripQuery(url)
+        if (nakedUrl.matches(BAD_TENOR_GIF) || nakedUrl.matches(VERYBAD_TENOR_GIF)) {
+            val result = getTenorGifUrl(context, url, acceptTypes)
+            if (result != null) return result
+        }
+
+        if (acceptTypes.contains(ImageType.GIF) && nakedUrl.endsWith(".gif", true)) return url
+        if (acceptTypes.any { nakedUrl.endsWith(".$it", true) }) return url
+
+        if (nakedUrl.matches(giphyPattern)) {
+            val id = giphyPattern.find(url)?.groupValues?.get(1) ?: return MISSING_IMAGE_URL
+            return "https://i.giphy.com/media/$id/giphy.gif"
+        }
 
         val importance = { type: ImageType ->
             when (type) {
@@ -140,7 +154,15 @@ object ImageUtils {
         return url.replace(typePattern, ".${bestType.toString().lowercase()}")
     }
 
-    suspend fun downloadBytesNMessage(
+    private fun stripQuery(url: String): String {
+        return url.split("?", "#").first()
+    }
+
+    private suspend fun getTenorGifUrl(context: ICommandContext, url: String, acceptTypes: Set<ImageType>): String? {
+        return context.webManager.tenorApi.getUrl(url, acceptTypes)
+    }
+
+    private suspend fun downloadBytesNMessage(
         context: ICommandContext,
         url: String,
         doChecks: Boolean = true,
@@ -224,7 +246,7 @@ object ImageUtils {
                     val barr = downloadBytesNMessage(context, url, doChecks = true, proxy = true) ?: return null
                     extractByteArraysFromZip(barr, namedImgList)
                 } else {
-                    url = changeUrlToFitTypes(url, setOf(ImageType.PNG))
+                    url = changeUrlToFitTypes(context, url, setOf(ImageType.PNG))
                     val bytes = downloadBytesNMessage(context, url, doChecks = true, proxy = true) ?: return null
                     namedImgList.add(
                         NamedParsedImageByteArray(
@@ -245,7 +267,6 @@ object ImageUtils {
                 if (isZip) {
                     val zipBytes = downloadBytesNMessage(context, url1, doChecks = true, proxy = true) ?: return null
                     extractByteArraysFromZip(zipBytes, namedImgList)
-
 
                 } else {
                     val bytes = downloadBytesNMessage(context, url1, doChecks = true, proxy = true) ?: return null

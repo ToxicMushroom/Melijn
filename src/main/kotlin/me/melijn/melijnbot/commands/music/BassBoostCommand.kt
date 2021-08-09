@@ -11,7 +11,6 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
 
-
 class BassBoostCommand : AbstractCommand("command.bassboost") {
 
     init {
@@ -22,7 +21,6 @@ class BassBoostCommand : AbstractCommand("command.bassboost") {
             arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
         commandCategory = CommandCategory.MUSIC
     }
-
 
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {

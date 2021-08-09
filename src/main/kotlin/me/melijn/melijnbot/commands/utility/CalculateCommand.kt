@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.commands.utility
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.delay
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import org.mariuszgromada.math.mxparser.Expression
+import java.lang.reflect.Method
 
 class CalculateCommand : AbstractCommand("command.calculate") {
 
@@ -24,20 +25,24 @@ class CalculateCommand : AbstractCommand("command.calculate") {
             sendSyntax(context)
             return
         }
-
-        val job = CoroutineScope(Dispatchers.Default).launch {
-            var exp = try {
-                Expression(context.rawArg).calculate().toString()
-            } catch (t: Throwable) {
-                "error"
+        val t = object : Thread("calc ${context.contextTime}") {
+            override fun run() {
+                var exp = try {
+                    Expression(context.rawArg).calculate().toString()
+                } catch (t: ThreadDeath) {
+                    "Took too long"
+                } catch (t: Throwable) {
+                    "error"
+                }
+                exp = if (exp.endsWith(".0")) exp.dropLast(2) else exp
+                TaskManager.async { sendRsp(context, "Result: $exp") }
             }
-            exp = if (exp.endsWith(".0")) exp.dropLast(2) else exp
-            TaskManager.async { sendRsp(context, "Result: $exp") }
         }
-        delay(1_000)
-        if (job.isCompleted) return
-        try { job.cancel("Took too long") } catch (t: Throwable) {}
+        t.start()
+        delay(2_000)
+        val m: Method = Thread::class.java.getDeclaredMethod("stop0", Any::class.java)
+        m.isAccessible = true
+        m.invoke(t, ThreadDeath())
         context.initCooldown()
-        sendRsp(context, "Calculation took longer then 1 seconds, cancelled.")
     }
 }

@@ -22,7 +22,6 @@ import javax.sql.DataSource
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-
 class DriverManager(
     dbSettings: Settings.Database,
     redisSettings: Settings.Redis
@@ -68,7 +67,6 @@ class DriverManager(
         } else {
             uriBuilder
         }.build()
-
 
         val redisClient = RedisClient
             .create(uri)
@@ -129,7 +127,6 @@ class DriverManager(
         }
     }
 
-
     /** returns the amount of rows affected by the query
      * [query] the sql query that needs execution
      * [objects] the arguments of the query
@@ -182,7 +179,6 @@ class DriverManager(
             e.printStackTrace()
         }
     }
-
 
     /**
      * [query] the sql query that needs execution
@@ -241,7 +237,6 @@ class DriverManager(
         }
     }
 
-
     suspend fun getConnectorVersion(): String = suspendCoroutine {
         try {
             getUsableConnection { con ->
@@ -279,7 +274,6 @@ class DriverManager(
                     for ((index, value) in objects.withIndex()) {
                         preparedStatement.setObject(index + 1, value)
                     }
-
 
                     preparedStatement.executeUpdate()
                     preparedStatement.generatedKeys.use { rs ->

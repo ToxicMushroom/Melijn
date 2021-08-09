@@ -31,7 +31,7 @@ class SelfRoleGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager)
                         rs.getString("messageIds").splitIETEL("%SPLIT%").map { it.toLong() },
                         rs.getLong("channelId"),
                         rs.getBoolean("isEnabled"),
-                        if (pattern.isBlank()) null else pattern,
+                        pattern.ifBlank { null },
                         rs.getBoolean("isSelfRoleable"),
                         rs.getBoolean("limitToOneRole"),
                         rs.getBoolean("requiresPermission"),
@@ -41,7 +41,6 @@ class SelfRoleGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager)
             it.resume(list)
         }, guildId)
     }
-
 
     fun set(
         guildId: Long,

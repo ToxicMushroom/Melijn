@@ -11,7 +11,6 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 
-
 class PingCommand : AbstractCommand("command.ping") {
 
     init {
@@ -56,11 +55,9 @@ class PingCommand : AbstractCommand("command.ping") {
         }
     }
 
-
     private fun replacePart2(string: String, restPing: Long, sendMessagePing: Long): String = string
         .withVariable("restPing", "$restPing")
         .withVariable("sendMessagePing", "$sendMessagePing")
-
 
     private fun replacePart3(string: String, editMessagePing: Long): String = string
         .withVariable("editMessagePing", "$editMessagePing")

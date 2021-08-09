@@ -5,7 +5,6 @@ import me.melijn.melijnbot.internals.translation.OSU_URL
 import net.dv8tion.jda.api.utils.data.DataArray
 import org.slf4j.LoggerFactory
 
-
 class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
     private val logger = LoggerFactory.getLogger(OsuApi::class.java)
 
@@ -13,8 +12,8 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
     // u - specify a user_id or a username to return best scores from (required).
     // m - mode (0 = osu!, 1 = Taiko, 2 = CtB, 3 = osu!mania). Optional, default value is 0.
     // type - specify if u is a user_id or a username. Use string for usernames or id for user_ids. Optional, default behavior is automatic recognition (may be problematic for usernames made up of digits only).
-    suspend fun getUserInfo(name: String, gameMode: Int = 0): OsuUser? {
-        val urlString = "$OSU_URL/get_user?k=$apiKey&u=$name&type=string&m=$gameMode"
+    suspend fun getUserInfo(name: String, mode: OsuMode): OsuUser? {
+        val urlString = "$OSU_URL/get_user?k=$apiKey&u=$name&type=string&m=${mode.id}"
         val result = httpClient.getOrNull<String>(urlString, {}, logger) ?: return null
         if (result.isEmpty()) return null
         val data = DataArray.fromJson(result)
@@ -41,8 +40,8 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
     }
 
     // limit - amount of results (range between 1 and 100 - defaults to 10).
-    suspend fun getUserTopPlays(name: String): List<OsuRankedScoreResult>? {
-        val urlString = "$OSU_URL/get_user_best?k=$apiKey&u=$name&type=string&limit=25"
+    suspend fun getUserTopPlays(name: String, mode: OsuMode): List<OsuRankedScoreResult>? {
+        val urlString = "$OSU_URL/get_user_best?k=$apiKey&u=$name&type=string&limit=25&m=${mode.id}"
         val result = httpClient.getOrNull<String>(urlString, {}, logger) ?: return null
 
         if (result.isEmpty()) return null
@@ -103,8 +102,8 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
             beatMapJson.getString("creator"), // User who uploaded the map
             beatMapJson.getString("creator_id").toLong(),
             beatMapJson.getString("difficultyrating").toFloat(), // amount of stars
-            beatMapJson.getString("diff_aim").toFloat(), // aim diff
-            beatMapJson.getString("diff_speed").toFloat(), // speed diff
+            beatMapJson.getString("diff_aim", null)?.toFloat(), // aim diff
+            beatMapJson.getString("diff_speed", null)?.toFloat(), // speed diff
             beatMapJson.getString("diff_size").toFloat(), // size diff
             beatMapJson.getString("diff_approach").toFloat(), // approach diff
             beatMapJson.getString("diff_drain").toFloat(), // drain diff
@@ -124,7 +123,7 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
             beatMapJson.getString("count_normal").toLong(),
             beatMapJson.getString("count_slider").toLong(),
             beatMapJson.getString("count_spinner").toLong(),
-            beatMapJson.getString("max_combo").toLong(),
+            beatMapJson.getString("max_combo", null)?.toLong(),
             beatMapJson.getString("storyboard").toBoolean(),
             beatMapJson.getString("video").toBoolean(),
             beatMapJson.getString("download_unavailable").toBoolean(), // really old maps
@@ -133,8 +132,8 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
 
     }
 
-    suspend fun getUserRecentPlays(user: String): List<OsuScoreResult>? {
-        val urlString = "$OSU_URL/get_user_recent?k=$apiKey&u=$user&type=string&limit=25"
+    suspend fun getUserRecentPlays(user: String, mode: OsuMode): List<OsuScoreResult>? {
+        val urlString = "$OSU_URL/get_user_recent?k=$apiKey&u=$user&type=string&limit=25&m=${mode.id}"
         val result = httpClient.getOrNull<String>(urlString, {}, logger) ?: return null
         if (result.isEmpty()) return null
 
@@ -169,6 +168,14 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
     }
 }
 
+/** pathValue is the value it would need to be valid in a https://osu.ppy.sh/scores/%pathValue%/433702840 link **/
+enum class OsuMode(val id: Int, val pathValue: String) {
+    OSU(0, "osu"),
+    MANIA(3, "mania"),
+    TAIKO(1, "taiko"),
+    CATCH_THE_BEAT(2, "fruits")
+}
+
 data class OsuBeatMap(
     val approved: Int,
     val submitDate: String,
@@ -181,8 +188,8 @@ data class OsuBeatMap(
     val creator: String,
     val creatorId: Long,
     val difficulty: Float,
-    val aimDifficulty: Float,
-    val speedDifficulty: Float,
+    val aimDifficulty: Float?,
+    val speedDifficulty: Float?,
     val sizeDifficulty: Float,
     val approachDifficulty: Float,
     val drainDifficulty: Float,
@@ -200,7 +207,7 @@ data class OsuBeatMap(
     val normalCount: Long,
     val sliderCount: Long,
     val spinnerCount: Long,
-    val maxCombo: Long,
+    val maxCombo: Long?,
     val story: Boolean,
     val video: Boolean,
     val noDownload: Boolean,
@@ -225,7 +232,33 @@ data class OsuRankedScoreResult(
     val rank: String,
     val pp: Float,
     val replay: Boolean
-)
+) : OsuMutuableResult {
+    override fun toMutual(): MutualOsuScoreResult {
+        return MutualOsuScoreResult(
+            beatmapId,
+            scoreId,
+            score,
+            maxCombo,
+            count50,
+            count100,
+            count300,
+            countMiss,
+            countKatu,
+            countGeki,
+            perfect,
+            mods,
+            userId,
+            date,
+            rank,
+            pp,
+            replay
+        )
+    }
+}
+
+interface OsuMutuableResult {
+    fun toMutual(): MutualOsuScoreResult
+}
 
 data class OsuScoreResult(
     val beatmapId: Long,
@@ -242,7 +275,52 @@ data class OsuScoreResult(
     val userId: Long,
     val date: String,
     val rank: String
-)
+) : OsuMutuableResult {
+    override fun toMutual(): MutualOsuScoreResult {
+        return MutualOsuScoreResult(
+            beatmapId,
+            null,
+            score,
+            maxCombo,
+            count50,
+            count100,
+            count300,
+            countMiss,
+            countKatu,
+            countGeki,
+            perfect,
+            mods,
+            userId,
+            date,
+            rank,
+            null,
+            null
+        )
+    }
+}
+
+data class MutualOsuScoreResult(
+    val beatmapId: Long,
+    val scoreId: Long?,
+    val score: Long,
+    val maxCombo: Long,
+    val count50: Long,
+    val count100: Long,
+    val count300: Long,
+    val countMiss: Long,
+    val countKatu: Long,
+    val countGeki: Long,
+    val perfect: Boolean,
+    val mods: Int,
+    val userId: Long,
+    val date: String,
+    val rank: String,
+    val pp: Float?,
+    val replay: Boolean?
+) {
+    val accuracy = (count300 * 300 + count100 * 100 + count50 * 50) * 100.0 /
+        ((count300 + count100 + count50 + countMiss) * 300.0).toFloat()
+}
 
 data class OsuUser(
     val id: String,

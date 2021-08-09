@@ -10,7 +10,6 @@ import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 
-
 class GifInfoCommand : AbstractCommand("command.gifinfo") {
 
     init {

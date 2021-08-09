@@ -7,10 +7,8 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Role
-
 
 class TakeRoleCommand : AbstractCommand("command.takerole") {
 
@@ -21,12 +19,8 @@ class TakeRoleCommand : AbstractCommand("command.takerole") {
         discordPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
-
     override suspend fun execute(context: ICommandContext) {
-        if (context.args.size < 2) {
-            sendSyntax(context)
-            return
-        }
+        if (argSizeCheckFailed(context, 1)) return
 
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
         val role = (getRoleByArgsNMessage(context, 1, true, canInteract = true)) ?: return
@@ -40,10 +34,7 @@ class TakeRoleCommand : AbstractCommand("command.takerole") {
             return
         }
 
-        if (member.roles.none { memberRole: Role ->
-                memberRole.idLong == role.idLong
-            }
-        ) {
+        if (member.roles.none { memberRole: Role -> memberRole.idLong == role.idLong }) {
             val msg = context.getTranslation("$root.missingrole")
                 .withSafeVariable("user", member.asTag)
             sendRsp(context, msg)

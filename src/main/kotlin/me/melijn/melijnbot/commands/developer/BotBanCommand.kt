@@ -46,7 +46,6 @@ class BotBanCommand : AbstractCommand("command.botban") {
         }
     }
 
-
     class AddServerArg(parent: String) : AbstractCommand("$parent.addserver") {
 
         init {
@@ -75,7 +74,6 @@ class BotBanCommand : AbstractCommand("command.botban") {
             sendRsp(context, "Banned ${user.asTag} from using the bot, reason:\n```$reason```")
         }
     }
-
 
     class InfoArg(parent: String) : AbstractCommand("$parent.info") {
 

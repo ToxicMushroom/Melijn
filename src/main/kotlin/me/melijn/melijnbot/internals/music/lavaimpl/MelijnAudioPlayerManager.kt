@@ -106,12 +106,24 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
         throw IllegalArgumentException("ugly, don't call")
     }
 
+    override fun loadItem(reference: AudioReference?, resultHandler: AudioLoadResultHandler?): Future<Void> {
+        TODO("Not yet implemented")
+    }
+
     override fun loadItemOrdered(
         orderingKey: Any?,
         identifier: String?,
         resultHandler: AudioLoadResultHandler?
     ): Future<Void> {
         throw IllegalArgumentException("ugly, don't call")
+    }
+
+    override fun loadItemOrdered(
+        orderingKey: Any?,
+        reference: AudioReference?,
+        resultHandler: AudioLoadResultHandler?
+    ): Future<Void> {
+        TODO("Not yet implemented")
     }
 
     suspend fun loadItemOrdered(orderingKey: Any, identifier: String, resultHandler: SuspendingAudioLoadResultHandler) {

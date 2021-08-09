@@ -13,7 +13,6 @@ class FilterGroupWrapper(private val filterGroupDao: FilterGroupDao) {
         }
         if (cached != null) return cached
 
-
         val list = filterGroupDao.get(guildId)
         filterGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
         return list

@@ -14,7 +14,6 @@ class EmbedDisabledWrapper(private val embedDisabledDao: EmbedDisabledDao) {
         }
     }
 
-
     fun setDisabled(guildId: Long, disabledState: Boolean) {
         if (disabledState && !embedDisabledCache.contains(guildId)) {
             embedDisabledCache.add(guildId)

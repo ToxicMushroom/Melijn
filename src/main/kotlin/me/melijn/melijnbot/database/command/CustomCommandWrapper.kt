@@ -5,9 +5,7 @@ import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.objectMapper
 
-
 class CustomCommandWrapper(private val customCommandDao: CustomCommandDao) {
-
 
     suspend fun getList(guildId: Long): List<CustomCommand> {
         val cached = customCommandDao.getCacheEntry(guildId, HIGHER_CACHE)?.let {

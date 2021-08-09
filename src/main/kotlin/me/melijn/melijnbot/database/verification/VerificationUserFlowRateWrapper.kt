@@ -5,7 +5,6 @@ import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class VerificationUserFlowRateWrapper(private val verificationUserFlowRateDao: VerificationUserFlowRateDao) {
 
-
     suspend fun getFlowRate(guildId: Long): Long {
         val cached = verificationUserFlowRateDao.getCacheEntry(guildId, HIGHER_CACHE)?.toLong()
         if (cached != null) return cached

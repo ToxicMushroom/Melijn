@@ -65,7 +65,6 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         }
     }
 
-
     private suspend fun checkRockPaperScissors(event: PrivateMessageReceivedEvent) {
         val author = event.author
         val rpsWrapper = container.daoManager.rpsWrapper
@@ -85,7 +84,6 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         rpsWrapper.addGame(game)
     }
 
-
     val tags = arrayOf("<@${container.settings.botInfo.id}>", "<@!${container.settings.botInfo.id}>")
     private suspend fun handleSimpleMelijnPing(event: MessageReceivedEvent) {
         if (event.author.isBot) return
@@ -96,7 +94,6 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val helpCmd = container.commandMap.values.firstOrNull { cmd ->
             cmd is HelpCommand
         } ?: return
-
 
         if (event.isFromGuild && !event.textChannel.canTalk()) {
             try {
@@ -132,7 +129,6 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             guild.getAndVerifyChannelByType(dao, ChannelType.VERIFICATION, Permission.MESSAGE_MANAGE)
                 ?: return
         if (verificationChannel.idLong != textChannel.idLong) return
-
 
         val unverifiedRole = VerificationUtils.getUnverifiedRoleN(event.channel, dao) ?: return
         if (!dao.unverifiedUsersWrapper.contains(
@@ -180,7 +176,6 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         container.botDeletedMessageIds.add(event.messageIdLong)
         event.message.delete().reason("verification channel").queue({}, {})
     }
-
 
     private suspend fun handleAttachmentLog(event: GuildMessageReceivedEvent) {
         if (event.author.isBot) return

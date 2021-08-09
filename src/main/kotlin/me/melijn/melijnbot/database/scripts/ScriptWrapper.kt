@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.scripts
 
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.database.getValueFromCache
 import me.melijn.melijnbot.objectMapper
 
 class ScriptWrapper(private val scriptDao: ScriptDao) {

@@ -16,7 +16,6 @@ object FullCommandsResponseHandler {
 
     var cmds = ""
 
-
     suspend fun handleFullCommandsResponse(context: RequestContext) {
         if (cmds.isEmpty()) {
             val dataObject = DataObject.empty()

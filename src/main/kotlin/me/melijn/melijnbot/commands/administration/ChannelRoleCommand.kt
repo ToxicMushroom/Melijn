@@ -66,7 +66,6 @@ class ChannelRoleCommand : AbstractCommand("command.channelrole") {
                     return
                 }
 
-
                 val sb = StringBuilder(
                     "```ini\n" +
                         "[channelId] - [channelName]:\n" +

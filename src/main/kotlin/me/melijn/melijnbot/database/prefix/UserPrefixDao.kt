@@ -8,7 +8,7 @@ import kotlin.coroutines.suspendCoroutine
 class UserPrefixDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "userPrefixes"
-    override val tableStructure: String = "userId bigint, prefixes varchar(1024)"
+    override val tableStructure: String = "userId bigint, prefixes text"
     override val primaryKey: String = "userId"
 
     override val cacheName: String = "prefixes:user"

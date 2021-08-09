@@ -13,9 +13,10 @@ import kotlin.coroutines.suspendCoroutine
 class TwitterDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "twitter_webhooks"
-    override val tableStructure: String = "guild_id bigint, webhook_url varchar(256), excluded_tweet_types varchar(16)," +
-        " handle varchar(16), twitter_user_id bigint, monthly_tweet_count bigint, last_tweet_id bigint," +
-        " last_tweet_time bigint, month_start bigint, enabled boolean"
+    override val tableStructure: String =
+        "guild_id bigint, webhook_url varchar(256), excluded_tweet_types varchar(16)," +
+            " handle varchar(16), twitter_user_id bigint, monthly_tweet_count bigint, last_tweet_id bigint," +
+            " last_tweet_time bigint, month_start bigint, enabled boolean"
     override val primaryKey: String = "guild_id, handle"
 
     override val cacheName: String = "twitter"
@@ -89,6 +90,14 @@ class TwitterDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
         driverManager.executeUpdate(
             "DELETE FROM $table WHERE guild_id = ? AND handle = ?",
             guildId, handle
+        )
+    }
+
+    fun resetMonths() {
+        val month = 30 * 24 * 60 * 60 * 1000L
+        driverManager.executeUpdate(
+            "UPDATE $table SET month_start = ?, monthly_tweet_count = ? WHERE month_start < ?",
+            System.currentTimeMillis(), 0, System.currentTimeMillis() - month
         )
     }
 }

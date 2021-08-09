@@ -20,7 +20,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-
 val DISCORD_ID = Regex("\\d{17,20}") // ID
 val FULL_USER_REF = Regex("(\\S.{0,30}\\S)\\s*#(\\d{4})") // $1 -> username, $2 -> discriminator
 val USER_MENTION = Regex("<@!?(\\d{17,20})>") // $1 -> ID
@@ -104,7 +103,6 @@ suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
     )
 }
 
-
 suspend fun <T> RestAction<T>.async(success: suspend (T) -> Unit, failure: suspend (Throwable) -> Unit) {
     this.queue(
         { t -> TaskManager.async { success(t) } },
@@ -119,7 +117,6 @@ suspend fun <T> RestAction<T>.async(success: suspend (T) -> Unit, failure: suspe
 fun <T> RestAction<T>.async(success: suspend (T) -> Unit) {
     this.queue { t -> TaskManager.async { success(t) } }
 }
-
 
 fun getUserByArgsN(context: ICommandContext, index: Int): User? {//With null
     val shardManager = context.shardManager
@@ -224,7 +221,6 @@ suspend fun retrieveUserByArgsNMessage(context: ICommandContext, index: Int): Us
     return possibleUser
 }
 
-
 fun getRoleByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boolean = true): Role? {
     var role: Role? = null
 
@@ -266,7 +262,6 @@ suspend fun getTextChannelsByArgsNMessage(
     return roles
 }
 
-
 suspend fun getRolesByArgsNMessage(
     context: ICommandContext,
     indexFrom: Int,
@@ -281,7 +276,6 @@ suspend fun getRolesByArgsNMessage(
     }
     return roles
 }
-
 
 suspend fun getRoleByArgsNMessage(
     context: ICommandContext,
@@ -327,8 +321,13 @@ suspend fun getImageUrlFromArgsNMessage(
                     return Pair(true, "https://cdn.discordapp.com/emojis/$emoteId.$emoteType?v=1")
                 }
                 else -> {
-                    val msg = "The text you provided `${MarkdownSanitizer.sanitize(arg)}` is not a valid url"
-                    sendRsp(context, msg)
+                    val user = retrieveUserByArgsN(context, index)
+                    if (user != null) {
+                        return Pair(true, user.effectiveAvatarUrl)
+                    } else {
+                        val msg = "The text you provided `${MarkdownSanitizer.sanitize(arg)}` is not a valid url"
+                        sendRsp(context, msg)
+                    }
                 }
             }
         }
@@ -417,28 +416,17 @@ suspend fun getEmotejiByArgsNMessage(
     return emoteji
 }
 
-
 suspend fun getEmotejiByArgsN(
     context: ICommandContext,
     index: Int,
     sameGuildAsContext: Boolean = false
 ): Pair<LiteEmote?, String?>? {
     if (argSizeCheckFailed(context, index)) return null
-    val arg = context.args[index]
-    val emoji = if (SupportedDiscordEmoji.helpMe.contains(arg)) {
-        arg
-    } else {
-        null
-    }
+    val arg = context.args[index].take(10)
 
-    val emote = if (emoji == null) {
-        getEmoteByArgsN(context, index, sameGuildAsContext)?.toLite()
-    } else null
-
-    if (emoji == null && emote == null) {
-        return null
-    }
-    return Pair(emote, emoji)
+    val emote = getEmoteByArgsN(context, index, sameGuildAsContext)?.toLite()
+    if (emote == null) return emote to arg
+    return emote to null
 }
 
 suspend fun getEmoteByArgsNMessage(context: ICommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
@@ -451,7 +439,6 @@ suspend fun getEmoteByArgsNMessage(context: ICommandContext, index: Int, sameGui
     }
     return emote
 }
-
 
 suspend fun getEmoteByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
     if (argSizeCheckFailed(context, index)) return null
@@ -540,7 +527,6 @@ suspend fun getColorFromArgNMessage(context: ICommandContext, index: Int): Color
     return color
 }
 
-
 fun getChannelByArgsN(
     context: ICommandContext,
     index: Int,
@@ -593,7 +579,6 @@ suspend fun getChannelByArgsNMessage(
     return channel
 }
 
-
 fun getCategoryByArgsN(
     context: ICommandContext,
     index: Int,
@@ -634,7 +619,6 @@ suspend fun getCategoryByArgsNMessage(
     }
     return category
 }
-
 
 fun getTextChannelByArgsN(
     context: ICommandContext,
@@ -679,7 +663,6 @@ suspend fun getTextChannelByArgsNMessage(
     return textChannel
 }
 
-
 fun getVoiceChannelByArgsN(context: ICommandContext, index: Int, sameGuildAsContext: Boolean = true): VoiceChannel? {
     var channel: VoiceChannel? = null
     if (!context.isFromGuild && sameGuildAsContext) return channel
@@ -717,7 +700,6 @@ suspend fun getVoiceChannelByArgNMessage(
     return voiceChannel
 }
 
-
 suspend fun retrieveMemberByArgsN(guild: Guild, arg: String): Member? {
     val user = retrieveUserByArgsN(guild, arg)
 
@@ -725,11 +707,10 @@ suspend fun retrieveMemberByArgsN(guild: Guild, arg: String): Member? {
     else guild.retrieveMember(user).awaitOrNull()
 }
 
-
 suspend fun retrieveMemberByArgsNMessage(
     context: ICommandContext,
     index: Int,
-    interactable: Boolean = false,
+    intractable: Boolean = false,
     botAllowed: Boolean = true
 ): Member? {
     if (!context.isFromGuild) throw IllegalStateException("Trying to get members in dms")
@@ -749,7 +730,7 @@ suspend fun retrieveMemberByArgsNMessage(
         return null
     }
 
-    if (interactable && !member.guild.selfMember.canInteract(member)) {
+    if (intractable && !member.guild.selfMember.canInteract(member)) {
         val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
             .withSafeVariable(PLACEHOLDER_USER, member.asTag)
         sendRsp(context, msg)
@@ -763,15 +744,19 @@ suspend fun retrieveMemberByArgsNMessage(
         return null
     }
 
-
     return member
 }
-
 
 suspend fun notEnoughPermissionsAndMessage(
     context: ICommandContext,
     channel: GuildChannel,
     vararg perms: Permission
+): Boolean = notEnoughPermissionsAndMessage(context, channel, perms.toList())
+
+suspend fun notEnoughPermissionsAndMessage(
+    context: ICommandContext,
+    channel: GuildChannel,
+    perms: Collection<Permission>
 ): Boolean {
     val member = channel.guild.selfMember
     val result = notEnoughPermissions(member, channel, perms.toList())
@@ -799,6 +784,7 @@ suspend fun notEnoughPermissionsAndMessage(
     return false
 }
 
+
 fun notEnoughPermissions(
     member: Member,
     channel: GuildChannel,
@@ -810,7 +796,6 @@ fun notEnoughPermissions(
     }
     return Pair(missingPerms, emptyList())
 }
-
 
 fun getTimespanFromArgNMessage(context: ICommandContext, beginIndex: Int): Pair<Long, Long> {
     return when (context.getRawArgPart(beginIndex, -1)) {
@@ -893,7 +878,6 @@ fun listeningMembers(vc: VoiceChannel, alwaysListeningUser: Long = -1L): Int {
             !isBotBanned(EntityType.USER, member.idLong)
     }
 }
-
 
 suspend fun getTimeFromArgsNMessage(
     context: ICommandContext,

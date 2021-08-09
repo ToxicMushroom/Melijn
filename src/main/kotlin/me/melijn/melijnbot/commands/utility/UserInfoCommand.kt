@@ -5,13 +5,15 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER_ID
-import me.melijn.melijnbot.internals.utils.asLongLongGMTString
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.utils.TimeFormat
+import net.dv8tion.jda.api.utils.Timestamp
+import java.time.OffsetDateTime
 
 class UserInfoCommand : AbstractCommand("command.userinfo") {
 
@@ -69,11 +71,10 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
         .withVariable("nickname", member.nickname ?: "/")
         .withVariable("roleCount", member.roles.size.toString())
         .withVariable("isOwner", if (member.isOwner) yes else no)
-        .withVariable("joinTime", member.timeJoined.asLongLongGMTString())
-        .withVariable("boostTime", member.timeBoosted?.asLongLongGMTString() ?: "/")
+        .withVariable("joinTime", TimeFormat.DATE_TIME_SHORT.atDate(member.timeJoined))
+        .withVariable("boostTime", member.timeBoosted?.let { TimeFormat.DATE_TIME_SHORT.atDate(it) } ?: "/")
         .withVariable("voiceStatus", getVoiceStatus(member))
         .withVariable("canMelijnInteract", if (member.guild.selfMember.canInteract(member)) yes else no)
-
 
     private fun getVoiceStatus(member: Member): String {
         if (member.voiceState == null) return "disconnected"
@@ -101,5 +102,9 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
             .withVariable("isBot", if (user.isBot) yes else no)
             .withVariable("supportsMelijn", if (isSupporter) yes else no)
             .withVariable("avatarUrl", user.effectiveAvatarUrl)
-            .withVariable("creationTime", user.timeCreated.asLongLongGMTString())
+            .withVariable("creationTime", TimeFormat.DATE_TIME_SHORT.atDate(user.timeCreated))
+}
+
+fun TimeFormat.atDate(date: OffsetDateTime): Timestamp {
+    return this.atInstant(date.toInstant())
 }

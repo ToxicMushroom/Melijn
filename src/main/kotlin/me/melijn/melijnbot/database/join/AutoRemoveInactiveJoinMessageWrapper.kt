@@ -5,7 +5,6 @@ import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class AutoRemoveInactiveJoinMessageWrapper(private val autoRemoveInactiveJoinMessageDao: AutoRemoveInactiveJoinMessageDao) {
 
-
     fun set(guildId: Long, duration: Long) {
         autoRemoveInactiveJoinMessageDao.setCacheEntry(guildId, duration, NORMAL_CACHE)
         return autoRemoveInactiveJoinMessageDao.set(guildId, duration)

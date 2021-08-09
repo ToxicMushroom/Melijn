@@ -1,5 +1,8 @@
 package me.melijn.melijnbot.commands.utility
 
+import com.freya02.emojis.Emojis
+import com.freya02.emojis.Fritzpatrick
+import com.freya02.emojis.TwemojiType
 import me.melijn.melijnbot.database.statesync.LiteEmote
 import me.melijn.melijnbot.database.statesync.getEmote
 import me.melijn.melijnbot.database.statesync.toLite
@@ -10,6 +13,7 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import net.dv8tion.jda.api.utils.TimeFormat
 
 class EmoteCommand : AbstractCommand("command.emote") {
 
@@ -65,12 +69,26 @@ class EmoteCommand : AbstractCommand("command.emote") {
             sendRsp(context, msg)
 
         } else {
-            val msg = context.getTranslation("$root.notanemote")
-                .withSafeVariable(PLACEHOLDER_ARG, arg)
-            sendRsp(context, msg)
+            val emoji = Emojis.ofUnicode(arg) ?: Emojis.ofShortcode(arg)
+            if (emoji != null) {
+                val msg = "**Emoji** ${emoji.unicode()} `${emoji.unicode()}`\n" +
+                    "**Shortcodes** `${emoji.shortcodes().joinToString(",") { ":$it:" }}`\n" +
+                    "**UTF16** `${emoji.utF16.joinToString("")}`\n" +
+                    (if (emoji.doesSupportFitzpatrick()) {
+                        val patricks = Fritzpatrick.values().joinToString { emoji.unicodeWithFritzpatrick(it) }
+                        "**Fitzpatrick Variants** $patricks\n"
+                    } else "") +
+                    "**URL** ${emoji.getTwemojiImageUrl(TwemojiType.X72)}"
+
+                sendRsp(context, msg)
+                return
+            } else {
+                val msg = context.getTranslation("$root.notanemote")
+                    .withSafeVariable(PLACEHOLDER_ARG, arg)
+                sendRsp(context, msg)
+            }
         }
     }
-
 
     private suspend fun replaceMissingEmoteVars(
         string: String,
@@ -84,10 +102,9 @@ class EmoteCommand : AbstractCommand("command.emote") {
         .withVariable("isAnimated", context.getTranslation(if (animated) "yes" else "no"))
         .withVariable("url", "https://cdn.discordapp.com/emojis/$id." + (if (animated) "gif" else "png") + "?size=2048")
 
-
     private suspend fun replaceEmoteVars(string: String, context: ICommandContext, emote: LiteEmote): String =
         replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
-            .withVariable("creationTime", snowflakeToEpochMillis(emote.id).asEpochMillisToDateTimeMillis(context.getTimeZoneId()))
+            .withVariable("creationTime", TimeFormat.DATE_TIME_SHORT.atTimestamp(snowflakeToEpochMillis(emote.id)))
 
 }
 

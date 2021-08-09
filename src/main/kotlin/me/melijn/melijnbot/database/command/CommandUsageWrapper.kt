@@ -2,15 +2,13 @@ package me.melijn.melijnbot.database.command
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.command.AbstractCommand
-import java.util.*
 import java.util.Map.Entry.comparingByValue
 import kotlin.collections.Map.Entry
 import kotlin.math.max
 
 class CommandUsageWrapper(private val commandUsageDao: CommandUsageDao) {
 
-
-    suspend fun addUse(commandId: Int) {
+    fun addUse(commandId: Int) {
         commandUsageDao.addUse(commandId)
     }
 

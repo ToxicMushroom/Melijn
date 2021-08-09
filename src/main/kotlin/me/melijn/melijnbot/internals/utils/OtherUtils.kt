@@ -19,7 +19,6 @@ import java.time.Year
 import java.util.*
 import java.util.regex.Pattern
 
-
 val linuxUptimePattern: Pattern = Pattern.compile(
     "([0-9]+)(?:\\.[0-9]+)? [0-9]+(?:\\.[0-9]+)?" // 11105353.49 239988480.98
 )
@@ -122,7 +121,6 @@ fun Color.toHex(): String {
     return "#$redHex$greenHex$blueHex"
 }
 
-
 inline fun <reified T : Enum<*>> enumValueOrNull(name: String): T? =
     T::class.java.enumConstants.firstOrNull {
         it.name.equals(name, true)
@@ -165,7 +163,6 @@ suspend inline fun <T> getObjectFromArgN(context: ICommandContext, index: Int, m
     val arg = context.args[index]
     return mapper(arg)
 }
-
 
 suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: ICommandContext, index: Int): T? {
     if (argSizeCheckFailed(context, index, true)) return null
@@ -230,7 +227,6 @@ suspend fun getCommandsFromArgNMessage(context: ICommandContext, index: Int): Se
     return commands
 }
 
-
 suspend fun getLongFromArgNMessage(
     context: ICommandContext,
     index: Int,
@@ -265,7 +261,6 @@ suspend fun getLongFromArgNMessage(
     }
     return long
 }
-
 
 //Dayofyear, year
 suspend fun getBirthdayByArgsNMessage(
@@ -336,7 +331,7 @@ suspend fun getBirthdayByArgsNMessage(
             return null
         }
 
-        val localDate = LocalDate.of(2019, Month.of(birthMonth), birthday)
+        val localDate = LocalDate.of(birthYear ?: 2020, Month.of(birthMonth), birthday)
         return Pair(localDate.dayOfYear, birthYear)
     } else {
         val msg = context.getTranslation("message.unknown.birthday")
@@ -392,7 +387,6 @@ suspend fun isPremiumGuild(daoManager: DaoManager, guildId: Long): Boolean {
     return daoManager.supporterWrapper.getGuilds().contains(guildId)
 }
 
-
 suspend fun getBalanceNMessage(context: ICommandContext, index: Int): Long? {
     if (argSizeCheckFailed(context, index)) return null
     val bal = context.daoManager.balanceWrapper.getBalance(context.authorId)
@@ -413,7 +407,6 @@ suspend fun getBalanceNMessage(context: ICommandContext, index: Int): Long? {
         amount
     }
 }
-
 
 suspend fun getLongFromArgN(
     context: ICommandContext,
@@ -461,7 +454,6 @@ fun Enum<*>.toLCC(): String {
 //lowerCase
 fun Enum<*>.toLC(): String = this.toString().lowercase()
 
-
 val numberRegex = "-?\\d+".toRegex()
 val negativeNumberRegex = "-\\d+".toRegex()
 val positiveNumberRegex = "\\d+".toRegex()
@@ -496,7 +488,6 @@ fun MutableList<String>.addIfNotPresent(value: String, ignoreCase: Boolean): Boo
     }
     return false
 }
-
 
 // Any space surrounded sequence of characters is considered a word
 fun String.countWords(): Int {

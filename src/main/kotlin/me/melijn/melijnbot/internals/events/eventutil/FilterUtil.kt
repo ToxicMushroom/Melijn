@@ -26,10 +26,8 @@ object FilterUtil {
             if (member.hasPermission(channel, Permission.MESSAGE_MANAGE)) return@async
             if (!guild.selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)) return@async
 
-
             val guildId = guild.idLong
             val channelId = channel.idLong
-            val daoManager = container.daoManager
 
             // Filter groups for this channel
             val groups = getFilterGroups(container, guildId, channelId)
@@ -96,7 +94,7 @@ object FilterUtil {
                 filterGroupTriggerInfoMap[fg] = map // Put info in a map bound to its filter group for later use
                 for ((key, value) in map) { // Merge the total info with new info
                     if (value.isEmpty()) continue
-                    val currentInfo = onlyTriggerInfoMap.getOrElse(key, { emptyList() })
+                    val currentInfo = onlyTriggerInfoMap.getOrElse(key) { emptyList() }
                     onlyTriggerInfoMap[key] = currentInfo + value
                 }
 

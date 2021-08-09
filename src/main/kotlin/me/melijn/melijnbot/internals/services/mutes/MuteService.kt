@@ -76,20 +76,8 @@ class MuteService(
         mute: Mute
     ) {
         val language = getLanguage(daoManager, -1, guild.idLong)
-//        val zoneId = getZoneId(daoManager, guild.idLong)
         val privZoneId = getZoneId(daoManager, guild.idLong, mutedUser?.idLong)
-//        val msg = getUnmuteMessage(language, zoneId, guild, mutedUser, muteAuthor, unmuteAuthor, mute)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNMUTE) ?: return
-
-//        var success = false
-//        if (mutedUser?.isBot == false) {
-//
-//            val privateChannel = mutedUser.openPrivateChannel().awaitOrNull()
-//            if (privateChannel != null) {
-//                sendEmbed(privateChannel, msg)
-//                success = true
-//            }
-//        }
 
         val msgLc = getUnmuteMessage(
             language,
@@ -115,20 +103,8 @@ class MuteService(
         cause: String
     ) {
         val language = getLanguage(daoManager, -1, guild.idLong)
-//        val zoneId = getZoneId(daoManager, guild.idLong)
         val privZoneId = getZoneId(daoManager, guild.idLong, mutedUser?.idLong)
-//        val msg = getUnmuteMessage(language, zoneId, guild, mutedUser, muteAuthor, unmuteAuthor, mute, failedCause = cause)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNMUTE) ?: return
-
-//        var success = false
-//        if (mutedUser?.isBot == false) {
-//
-//            val privateChannel = mutedUser.openPrivateChannel().awaitOrNull()
-//            if (privateChannel != null) {
-//                sendEmbed(privateChannel, msg)
-//                success = true
-//            }
-//        }
 
         val msgLc = getUnmuteMessage(
             language,

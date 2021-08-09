@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.utils.TimeFormat
 import kotlin.math.roundToLong
 
 class ServerInfoCommand : AbstractCommand("command.serverinfo") {
@@ -80,9 +81,7 @@ class ServerInfoCommand : AbstractCommand("command.serverinfo") {
         return context.getTranslation(path)
             .withSafeVariable("serverName", guild.name)
             .withVariable("serverId", guild.id)
-            .withVariable("creationDate", guild.timeCreated.asLongLongGMTString())
-            .withVariable("region", guild.region.toUCC())
-            .withVariable("isVip", if (guild.region.isVip) yes else no)
+            .withVariable("creationDate", TimeFormat.DATE_TIME_SHORT.atDate(guild.timeCreated))
             .withVariable("supportsMelijn", if (isSupporter) yes else no)
             .withSafeVariable("owner", guild.retrieveOwner().awaitOrNull()?.asTag ?: "NONE")
             .withVariable("verificationLevel", guild.verificationLevel.toUCC())

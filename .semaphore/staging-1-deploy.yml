@@ -18,7 +18,5 @@ blocks:
 promotions:
   - name: Staging restart compose
     pipeline_file: staging-2-deploy.yml
-    auto_promote_on:
-      - result: passed
-        branch:
-          - staging
+    auto_promote:
+      when: "result = 'passed' and branch = 'staging'"

@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.events.StatusChangeEvent
 
 class BotStartShutdownListener(container: Container) : AbstractListener(container) {
 
-
     override suspend fun onEvent(event: GenericEvent) {
         if (event is StatusChangeEvent) {
             onStatusChange(event)
@@ -45,7 +44,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
                     logger.info("Started music clients")
                 }
                 TaskManager.async {
-                    container.serviceManager.startSlowservices()
+                    container.serviceManager.startSlowServices()
                     logger.info("Slow Services ready")
                 }
             }

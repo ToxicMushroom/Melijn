@@ -47,7 +47,6 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             }
             content += "```"
 
-
             val msg = title + content
             sendRsp(context, msg)
         }
@@ -114,7 +113,6 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
         }
     }
 
-
     class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
 
         init {
@@ -140,7 +138,6 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
 
             val toRemove = list[index - 1]
             wrapper.removePrefix(context.authorId, toRemove)
-
 
             val msg = context.getTranslation("$root.removed")
                 .withSafeVariable(PLACEHOLDER_PREFIX, toRemove)

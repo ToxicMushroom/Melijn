@@ -1,15 +1,18 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.games.PokerCommand
 import me.melijn.melijnbot.commands.games.RockPaperScissorsGame
+import me.melijn.melijnbot.commands.utility.HelpCommand
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.VerificationType
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.SelfRoleUtil
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.music.DONATE_QUEUE_LIMIT
 import me.melijn.melijnbot.internals.music.MusicPlayerManager
 import me.melijn.melijnbot.internals.music.QUEUE_LIMIT
@@ -19,14 +22,16 @@ import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.internals.utils.message.Pagination
+import me.melijn.melijnbot.internals.utils.message.StoringPagination
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
 import net.dv8tion.jda.api.events.message.priv.react.PrivateMessageReactionAddEvent
 import java.awt.Color
@@ -40,13 +45,58 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         if (event is PrivateMessageReactionAddEvent) {
             onPrivateMessageReactionAdd(event)
         }
+        if (event is ButtonClickEvent) {
+            onButtonClick(event)
+        }
+    }
+
+    private fun onButtonClick(event: ButtonClickEvent) = TaskManager.async(event.channel) {
+        searchMenuHandler(event)
+        commandListHandler(event)
+        paginationHandler(event)
+    }
+
+    private suspend fun paginationHandler(event: ButtonClickEvent) {
+        val button = event.button ?: return
+        val entry = container.paginationMap.entries.firstOrNull { (_, info) ->
+            info.messageId == event.messageIdLong && info.authorId == event.user.idLong
+        }
+        if (entry != null) {
+            val (_, info) = entry
+            val pagination = info.toPagination()
+
+            val message = pagination.navigate(button) ?: return
+            info.currentPage = pagination.currentPage
+            event.editMessage(message).queue()
+        }
+
+        val modularEntry = container.modularPaginationMap.entries.firstOrNull { (_, info) ->
+            info.messageId == event.messageIdLong && info.authorId == event.user.idLong
+        }
+        if (modularEntry != null) {
+            val (_, info) = modularEntry
+            val pagination = info.toPagination()
+
+            val message = pagination.navigate(button) ?: return
+            info.currentPage = pagination.currentPage
+            event.editMessage(message).queue()
+        }
+    }
+
+    private fun commandListHandler(event: ButtonClickEvent) {
+        val textChannel = if (event.isFromGuild) event.textChannel else null
+        if (event.button?.id == "help_list")
+            event.deferReply(true)
+                .addEmbeds(
+                    HelpCommand.ListArg.getHelpListMessage(container, textChannel, event.user, null).build()
+                )
+                .queue()
     }
 
     private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = TaskManager.async(event.channel) {
         paginationHandler(event)
         handleRPSReaction(event)
     }
-
 
     private suspend fun handleRPSReaction(event: PrivateMessageReactionAddEvent) {
         val author = event.channel.user
@@ -84,10 +134,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
             val newIndex = min(
-                pagination.messageList.size - 1, max(
+                pagination.storage.size - 1, max(
                     0, when (emoji) {
                         "⏪" -> 0
-                        "⏩" -> pagination.messageList.size - 1
+                        "⏩" -> pagination.storage.size - 1
                         "◀️" -> pagination.currentPage - 1
                         "▶️" -> pagination.currentPage + 1
                         else -> return
@@ -95,8 +145,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 )
             )
 
-            if (newIndex != pagination.currentPage)
-                message.editMessage(pagination.messageList[newIndex]).queue()
+            if (newIndex != pagination.storage.size)
+                message.editMessage(pagination.storage[newIndex]).queue()
 
             pagination.currentPage = newIndex
             container.paginationMap[entry.key] = pagination
@@ -116,10 +166,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
             val newIndex = min(
-                pagination.messageList.size - 1, max(
+                pagination.storage.size - 1, max(
                     0, when (emoji) {
                         "⏪" -> 0
-                        "⏩" -> pagination.messageList.size - 1
+                        "⏩" -> pagination.storage.size - 1
                         "◀️" -> pagination.currentPage - 1
                         "▶️" -> pagination.currentPage + 1
                         else -> return
@@ -128,7 +178,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             )
 
             if (newIndex != pagination.currentPage) {
-                val msg = pagination.messageList[newIndex].toMessage()
+                val msg = pagination.storage[newIndex].toMessage()
                     ?: throw IllegalArgumentException("cannot transform message")
                 message.editMessage(msg).queue()
             }
@@ -153,7 +203,6 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             selfRoleHandler(event)
             postReactionAddedLog(event)
             verificationHandler(event)
-            searchMenuHandler(event)
             paginationHandler(event)
             pokerHandler(event)
             starboardHandler(event)
@@ -166,13 +215,13 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         val starboardSettings = container.daoManager.starboardSettingsWrapper
         val starboardMessageWrapper = container.daoManager.starboardMessageWrapper
-        val sbchannel = event.guild.getAndVerifyChannelByType(
+        val sbChannel = event.guild.getAndVerifyChannelByType(
             container.daoManager,
             ChannelType.STARBOARD,
             Permission.MESSAGE_WRITE,
             Permission.MESSAGE_EMBED_LINKS
-        )
-            ?: return
+        ) ?: return
+
         val msg = starboardMessageWrapper.getStarboardInfo(event.messageIdLong)
         if (msg == null) {
             if (event.channel.isNSFW) return
@@ -182,9 +231,30 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val settings = starboardSettings.getStarboardSettings(event.guild.idLong)
             if (reactions >= settings.minStars) {
                 val starboardMessage =
-                    getSendableStarboardMessage(event, reactions, ogMessage.author, event.channel) ?: return
-                val message = sbchannel.sendMessage(starboardMessage).await()
-                message.addReaction("⭐").queue()
+                    getSendableStarboardMessage(
+                        event,
+                        reactions,
+                        ogMessage.author,
+                        ogMessage,
+                        event.channel.idLong,
+                        true
+                    )
+                val sendAction = sbChannel.sendMessage(starboardMessage)
+                if (ogMessage.attachments.isNotEmpty()) {
+                    ogMessage.attachments.firstOrNull { it.isVideo }?.let { video ->
+                        sendAction.addFile(
+                            video.retrieveInputStream().await(),
+                            video.fileName + "." + video.fileExtension
+                        )
+                    }
+                }
+                val message = sendAction.await()
+                if (ogMessage.guild.selfMember.hasPermission(sbChannel, Permission.MESSAGE_ADD_REACTION)) {
+                    message.addReaction("⭐").await()
+                }
+                if (starboardMessageWrapper.getStarboardInfo(event.messageIdLong) != null) {
+                    message.delete().reason("Fix race condition starboard").queue()
+                }
                 starboardMessageWrapper.setStarboardInfo(
                     event.guild.idLong, event.channel.idLong, ogMessage.author.idLong, event.messageIdLong,
                     message.idLong, reactions, false, System.currentTimeMillis()
@@ -193,8 +263,11 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         } else {
             if (msg.deleted) return
-            val sbReactionUsers = sbchannel.retrieveReactionUsersById(msg.starboardMessageId, "⭐").awaitOrNull()
-                ?.filter { !it.isBot }?.map { it.idLong } ?: return
+            val sbReactionUsers = sbChannel.retrieveReactionUsersById(msg.starboardMessageId, "⭐")
+                .awaitOrNull()
+                ?.filter { !it.isBot }
+                ?.map { it.idLong } ?: return
+
             val partStars1 = sbReactionUsers.size
             val ogChannel = event.guild.getTextChannelById(msg.ogChannelId)
             val partStars2N = ogChannel
@@ -202,16 +275,14 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 ?.awaitOrNull()
                 ?.filter { !it.isBot && !sbReactionUsers.contains(it.idLong) }
                 ?.size
-            if (partStars2N == null) {
-                starboardMessageWrapper.updateChannel(msg.ogMessageId, 0)
-            }
 
             val partStars2 = partStars2N ?: 0
             val newStarCount = partStars1 + partStars2
             if (newStarCount != msg.stars) {
-                val message = sbchannel.retrieveMessageById(msg.starboardMessageId).await()
+                val message = sbChannel.retrieveMessageById(msg.starboardMessageId).await()
                 val author = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull()
-                val newContent = getSendableStarboardMessage(event, newStarCount, author, ogChannel)
+                val newContent =
+                    getSendableStarboardMessage(event, newStarCount, author, message, msg.ogChannelId, false)
                 starboardMessageWrapper.setStarboardInfo(
                     event.guild.idLong,
                     msg.ogChannelId,
@@ -222,26 +293,26 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                     msg.deleted,
                     msg.moment
                 )
-                newContent?.let { message.editMessage(it).queue() }
+                message.editMessage(newContent).queue()
             }
         }
     }
 
-    private suspend fun getSendableStarboardMessage(
+    private fun getSendableStarboardMessage(
         event: GuildMessageReactionAddEvent,
         stars: Int,
         author: User?,
-        channel: TextChannel?
-    ): Message? {
-        val ogMessage = event.channel.retrieveMessageById(event.messageIdLong).await() ?: return null
-
+        message: Message,
+        ogChannelId: Long,
+        append: Boolean
+    ): Message {
         val eb = Embedder(
             container.daoManager, event.guild.idLong, author?.idLong
                 ?: -1
-        )
-            .setAuthor(author?.asTag ?: "deleted_user#0000", ogMessage.jumpUrl, author?.effectiveAvatarUrl)
-        if (ogMessage.embeds.size > 0) {
-            val embed = ogMessage.embeds[0]
+        ).setAuthor(author?.asTag ?: "deleted_user#0000", null, author?.effectiveAvatarUrl)
+
+        if (message.embeds.size > 0) {
+            val embed = message.embeds[0]
             eb.setTitle(embed.title, embed.url)
                 .setDescription(embed.description)
                 .setColor(embed.color)
@@ -254,18 +325,19 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 eb.addField(field.name, field.value, field.isInline)
             }
         } else {
-            eb.setDescription(ogMessage.contentRaw.replace("[", "\\["))
+            eb.setDescription(message.contentRaw.replace("[", "\\["))
         }
+        if (append) eb.appendDescription("\n[`jump`](${message.jumpUrl})")
 
-        for (attachment in ogMessage.attachments) {
+        for (attachment in message.attachments) {
             if (attachment.isImage) {
                 eb.setImage(attachment.url)
             }
         }
 
         val messageBuilder = MessageBuilder()
-            .setContent("`$stars⭐` message by ${author?.asMention ?: "`deleted_user#0000`"} in ${channel?.asMention ?: "`#deleted_channel`"}")
-            .setEmbed(eb.build())
+            .setContent("`$stars⭐` message by ${author?.asMention ?: "`deleted_user#0000`"} in <#$ogChannelId>")
+            .setEmbeds(eb.build())
 
         return messageBuilder.build()
     }
@@ -308,10 +380,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
             val newIndex = min(
-                pagination.messageList.size - 1, max(
+                pagination.storage.size - 1, max(
                     0, when (emoji) {
                         "⏪" -> 0
-                        "⏩" -> pagination.messageList.size - 1
+                        "⏩" -> pagination.storage.size - 1
                         "◀️" -> pagination.currentPage - 1
                         "▶️" -> pagination.currentPage + 1
                         else -> return
@@ -319,8 +391,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 )
             )
 
-            if (newIndex != pagination.currentPage)
-                message.editMessage(pagination.messageList[newIndex]).queue()
+            if (newIndex != pagination.storage.size)
+                message.editMessage(pagination.storage[newIndex]).queue()
 
             pagination.currentPage = newIndex
             container.paginationMap[entry.key] = pagination
@@ -343,10 +415,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             val channel = event.channel
             val message = channel.retrieveMessageById(pagination.messageId).await()
             val newIndex = min(
-                pagination.messageList.size - 1, max(
+                pagination.storage.size - 1, max(
                     0, when (emoji) {
                         "⏪" -> 0
-                        "⏩" -> pagination.messageList.size - 1
+                        "⏩" -> pagination.storage.size - 1
                         "◀️" -> pagination.currentPage - 1
                         "▶️" -> pagination.currentPage + 1
                         else -> return
@@ -355,7 +427,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             )
 
             if (newIndex != pagination.currentPage) {
-                val msg = pagination.messageList[newIndex].toMessage()
+                val msg = pagination.storage[newIndex].toMessage()
                     ?: throw IllegalArgumentException("cannot transform message")
                 message.editMessage(msg).queue()
             }
@@ -379,9 +451,9 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         }
     }
 
-    private suspend fun searchMenuHandler(event: GuildMessageReactionAddEvent) {
-        if (event.reactionEmote.isEmote || event.user.isBot) return
-        val guild = event.guild
+    private suspend fun searchMenuHandler(event: ButtonClickEvent) {
+        if (event.user.isBot) return
+        val guild = event.guild ?: return
         val guildPlayer = MusicPlayerManager.guildMusicPlayers[guild.idLong] ?: return
         val menus = guildPlayer.searchMenus
         val menu = menus.getOrElse(event.messageIdLong) {
@@ -392,18 +464,17 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         if (event.user.idLong != (tracks.first().userData as TrackUserData).userId) return
 
-        val track: AudioTrack? = when (event.reactionEmote.emoji) {
-            "1⃣" -> tracks.getOrElse(0) { return }
-            "2⃣" -> tracks.getOrElse(1) { return }
-            "3⃣" -> tracks.getOrElse(2) { return }
-            "4⃣" -> tracks.getOrElse(3) { return }
-            "5⃣" -> tracks.getOrElse(4) { return }
-            "❌" -> null
+        val track: AudioTrack? = when (event.componentId) {
+            "1" -> tracks.getOrElse(0) { return }
+            "2" -> tracks.getOrElse(1) { return }
+            "3" -> tracks.getOrElse(2) { return }
+            "4" -> tracks.getOrElse(3) { return }
+            "5" -> tracks.getOrElse(4) { return }
+            "cancel" -> null
             else -> return
         }
 
         guildPlayer.searchMenus.remove(event.messageIdLong)
-        val message = event.channel.retrieveMessageById(event.messageIdLong).await() ?: return
         val language = getLanguage(container.daoManager, event.user.idLong, guild.idLong)
         when {
             track == null -> {
@@ -412,10 +483,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong)
                     .setTitle(title)
                     .setDescription(desc)
-                message.editMessage(eb.build()).queue()
+                event.editMessage(MessageBuilder().setEmbeds(eb.build()).build()).queue()
             }
             guildPlayer.safeQueueSilent(container.daoManager, track, menu.nextPosition) -> {
-                event.guild.selfMember.voiceState?.channel?.let {
+                guild.selfMember.voiceState?.channel?.let {
                     LogUtils.addMusicPlayerNewTrack(container.daoManager, container.lavaManager, it, event.user, track)
                 }
 
@@ -431,14 +502,13 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong)
                 eb.setTitle(title)
                 eb.setDescription(description)
-                message.editMessage(eb.build()).queue()
-
+                event.editMessage(MessageBuilder().setEmbeds(eb.build()).build()).queue()
             }
             else -> {
                 val msg = i18n.getTranslation(language, "message.music.queuelimit")
                     .withVariable("amount", QUEUE_LIMIT.toString())
                     .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
-                message.editMessage(msg).queue()
+                event.editMessage(MessageBuilder().setContent(msg).build()).queue()
             }
         }
     }
@@ -503,7 +573,6 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val botLogState = dao.botLogStateWrapper.shouldLog(event.guild.idLong)
         if (!botLogState && event.member.user.isBot) return
 
-
         val zoneId = getZoneId(dao, event.guild.idLong)
 
         val language = getLanguage(dao, -1, event.guild.idLong)
@@ -555,4 +624,11 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             }
         }
     }
+}
+
+private fun StoragePaginationInfo.toPagination(): Pagination {
+    return StoringPagination(this.storage.map { ModularMessage(it) }, currentPage)
+}
+private fun ModularStoragePaginationInfo.toPagination(): Pagination {
+    return StoringPagination(this.storage.map { it }, currentPage)
 }

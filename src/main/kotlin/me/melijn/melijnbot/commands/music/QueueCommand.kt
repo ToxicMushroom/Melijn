@@ -29,9 +29,7 @@ class QueueCommand : AbstractCommand("command.queue") {
     override suspend fun execute(context: ICommandContext) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
 
-
         var description = ""
-
 
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
         if (cTrack == null) {
@@ -60,7 +58,6 @@ class QueueCommand : AbstractCommand("command.queue") {
                 t.sendInGuild(context, shouldSend = true, extra = (track.duration.toString() + "" + track.info))
             }
         }
-
 
         val title = context.getTranslation("$root.title")
 

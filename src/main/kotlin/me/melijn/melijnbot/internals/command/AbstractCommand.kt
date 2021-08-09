@@ -311,7 +311,6 @@ private fun getStateFromEntry(
     return null
 }
 
-
 suspend fun hasPermission(context: ICommandContext, permission: String, required: Boolean? = null): Boolean {
     val commandOrder = context.commandOrder
     val rootCommand = commandOrder.first()
@@ -326,7 +325,6 @@ suspend fun hasPermission(context: ICommandContext, permission: String, required
             lowestCommand.runConditions.contains(explicit))
     )
 }
-
 
 suspend fun hasPermission(
     container: Container,
@@ -368,7 +366,6 @@ suspend fun hasPermission(
     var roleResult = PermState.DEFAULT
     var channelRoleResult = PermState.DEFAULT
 
-
     // Permission checking for roles
     for (roleId in (member.roles.map { role -> role.idLong } + guild.publicRole.idLong)) {
         val channelPermMap =
@@ -385,7 +382,6 @@ suspend fun hasPermission(
     if (channelRoleResult != PermState.DEFAULT) {
         roleResult = channelRoleResult
     }
-
 
     return if (
         category == CommandCategory.ADMINISTRATION ||

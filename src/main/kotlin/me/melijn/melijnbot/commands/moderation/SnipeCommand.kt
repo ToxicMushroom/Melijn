@@ -22,23 +22,16 @@ class SnipeCommand : AbstractCommand("command.snipe") {
         val guildId = context.guildId
         when (context.args.size) {
             1 -> {
-                amount = if (context.args[0] == "all") {
-                    10
-                } else {
-                    getIntegerFromArgN(context, 0, 1, 10) ?: return
-                }
+                amount = if (context.args[0] == "all") 10
+                else getIntegerFromArgN(context, 0, 1, 10) ?: return
 
                 channelId = context.channelId
             }
             2 -> {
-                amount = if (context.args[0] == "all") {
-                    10
-                } else {
-                    getIntegerFromArgN(context, 0, 1, 10) ?: return
-                }
+                amount = if (context.args[0] == "all") 10
+                else getIntegerFromArgN(context, 0, 1, 10) ?: return
 
                 channelId = getTextChannelByArgsN(context, 1, true)?.idLong ?: return
-
 
             }
             else -> {
@@ -73,7 +66,6 @@ class SnipeCommand : AbstractCommand("command.snipe") {
                 .appendLine(key.content.escapeMarkdown())
         }
         sendRsp(context, sb.toString())
-
 
     }
 }

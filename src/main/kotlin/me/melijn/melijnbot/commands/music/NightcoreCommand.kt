@@ -22,7 +22,6 @@ class NightcoreCommand : AbstractCommand("command.nightcore") {
         commandCategory = CommandCategory.MUSIC
     }
 
-
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer

@@ -5,7 +5,6 @@ enum class ChannelType {
     LEAVE,
     KICKED,
     BANNED,
-    SELFROLE,
     VERIFICATION,
     BIRTHDAY,
     PRE_VERIFICATION_JOIN,

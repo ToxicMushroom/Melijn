@@ -29,7 +29,6 @@ class PollCommand : AbstractCommand("command.poll") {
         return
     }
 
-
     class AddTimedArg(parent: String) : AbstractCommand("$parent.addtimed") {
 
         init {

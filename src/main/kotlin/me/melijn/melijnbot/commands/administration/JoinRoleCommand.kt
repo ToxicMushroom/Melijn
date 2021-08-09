@@ -190,7 +190,6 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             }
         }
 
-
         class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
 
             init {
@@ -219,7 +218,6 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 sendRsp(context, msg)
             }
         }
-
 
         class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
 
@@ -286,12 +284,10 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             }
         }
 
-
         override suspend fun execute(context: ICommandContext) {
             sendSyntax(context)
         }
     }
-
 
     class AddArg(parent: String) : AbstractCommand("$parent.add") {
 
@@ -329,7 +325,6 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
         }
     }
 
-
     class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
 
         init {
@@ -358,7 +353,6 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             sendRsp(context, msg)
         }
     }
-
 
     class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
 

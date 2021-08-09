@@ -11,7 +11,6 @@ import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -30,10 +29,7 @@ class MassUnbanCommand : AbstractCommand("command.massunban") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        if (context.args.size < 2) {
-            sendSyntax(context)
-            return
-        }
+        if (argSizeCheckFailed(context, 1)) return
 
         val guild = context.guild
         val daoManager = context.daoManager

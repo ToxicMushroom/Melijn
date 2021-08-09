@@ -25,15 +25,14 @@ class StarboardMessageWrapper(private val starboardMessageDao: StarboardMessageD
         ), NORMAL_CACHE)
     }
 
-    fun updateChannel(messageId: Long, newChannelId: Int) {
-        starboardMessageDao.updateChannel(messageId, newChannelId)
-    }
-
     fun updateDeleted(messageId: Long, deleted: Boolean) {
+        starboardMessageDao.removeCacheEntry(messageId)
         starboardMessageDao.updateDeleted(messageId, deleted)
     }
 
-    fun delete(messageId: Long) {
-        starboardMessageDao.delete(messageId)
+    fun delete(info: StarboardInfo) {
+        starboardMessageDao.removeCacheEntry(info.ogMessageId)
+        starboardMessageDao.removeCacheEntry(info.starboardMessageId)
+        starboardMessageDao.delete(info.ogMessageId)
     }
 }

@@ -17,6 +17,8 @@ import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.objectMapper
 import net.dv8tion.jda.api.MessageBuilder
+import net.dv8tion.jda.api.MessageBuilder.SplitPolicy
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.internal.entities.DataMessage
 import net.dv8tion.jda.internal.entities.UserImpl
@@ -37,7 +39,6 @@ suspend fun getSyntax(context: ICommandContext, translationPath: String): String
 fun getSyntax(lang: String, translationPath: String): String {
     return "%prefix%" + i18n.getTranslation(lang, translationPath)
 }
-
 
 fun escapeForLog(string: String): String {
     return string
@@ -111,7 +112,6 @@ suspend fun sendRsp(context: ICommandContext, msg: String) {
     }
 }
 
-
 fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
     require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
 
@@ -134,7 +134,6 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
     }
 }
 
-
 suspend fun sendRsp(textChannel: MessageChannel, context: ICommandContext, msg: ModularMessage) {
     if (textChannel is TextChannel && canResponse(textChannel, context.daoManager.supporterWrapper)) {
         sendRsp(textChannel, context.webManager.proxiedHttpClient, context.daoManager, msg)
@@ -151,7 +150,7 @@ suspend fun sendRspOrMsg(textChannel: TextChannel, daoManager: DaoManager, msg: 
     }
 }
 
-fun sendRsp(channel: TextChannel, httpClient: HttpClient, daoManager: DaoManager, msg: ModularMessage) {
+suspend fun sendRsp(channel: TextChannel, httpClient: HttpClient, daoManager: DaoManager, msg: ModularMessage) {
     val message: Message? = msg.toMessage()
     when {
         message == null -> sendRspAttachments(daoManager, httpClient, channel, msg.attachments)
@@ -166,27 +165,42 @@ fun sendRsp(channel: TextChannel, httpClient: HttpClient, daoManager: DaoManager
     }
 }
 
-fun sendRsp(channel: TextChannel, daoManager: DaoManager, message: Message) {
+suspend fun sendRsp(channel: TextChannel, daoManager: DaoManager, message: Message) {
     require(channel.canTalk()) {
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
 
-    var action = if (message.contentRaw.isNotBlank()) {
-        channel.sendMessage(message.contentRaw)
-    } else {
-        null
-    }
-
-    for (embed in message.embeds) {
-        if (action == null) action = channel.sendMessage(embed)
-        else action.embed(embed)
-    }
-
-    TaskManager.async(channel) {
-        val msg = action?.awaitOrNull() ?: return@async
+    if ((channel.guild.selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS) &&
+            !daoManager.embedDisabledWrapper.embedDisabledCache.contains(channel.guild.idLong)) ||
+        message.embeds.isEmpty()
+    ) {
+        val msg = try {
+            channel.sendMessage(message).await()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            return
+        }
 
         handleRspDelete(daoManager, msg)
+    } else {
+        val mb = MessageBuilder(message)
+            .setEmbeds(emptyList())
+
+        val stringed = "\n" + message.embeds.joinToString("\n\n") { it.toMessage() }
+        mb.append(stringed)
+        val messages = mb.buildAll(
+            SplitPolicy { i: Int, b: MessageBuilder -> (i + Message.MAX_CONTENT_LENGTH).coerceAtMost(b.length()) }
+        )
+        for (noEmbedMsg in messages) {
+            sendRsp(channel, daoManager, noEmbedMsg)
+        }
     }
+}
+
+suspend fun sendRsp(channel: PrivateChannel, daoManager: DaoManager, message: Message) {
+    val msg = channel.sendMessage(message).awaitOrNull() ?: return
+
+    handleRspDelete(daoManager, msg)
 }
 
 suspend fun sendMsgAwaitN(privateChannel: PrivateChannel, httpClient: HttpClient, msg: ModularMessage): Message? {
@@ -313,7 +327,6 @@ suspend fun sendMsgAwaitEL(context: ICommandContext, msg: String): List<Message>
     }
 }
 
-
 suspend fun sendMsgAwaitEL(channel: TextChannel, msg: String): List<Message> {
     require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
 
@@ -390,7 +403,7 @@ fun sendMsg(
     if (msg.contentRaw.isNotBlank()) mb.setContent(msg.contentRaw)
 
     for (embed in msg.embeds) {
-        mb.setEmbed(embed)
+        mb.setEmbeds(embed)
     }
     if (msg is DataMessage) {
         mb.setAllowedMentions(msg.allowedMentions)
@@ -404,36 +417,21 @@ suspend fun sendMsgAwaitN(channel: TextChannel, msg: Message): Message? {
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
 
-    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
-    for (embed in msg.embeds) {
-        if (action == null) action = channel.sendMessage(embed)
-        else action.embed(embed)
-    }
+    val action = channel.sendMessage(msg)
+    if (msg is DataMessage)
+        action.allowedMentions(msg.allowedMentions)
 
-    if (msg is DataMessage) {
-        action?.allowedMentions(msg.allowedMentions)
-    }
-
-    return action?.awaitOrNull()
+    return action.awaitOrNull()
 }
 
 suspend fun sendMsgAwaitN(channel: PrivateChannel, msg: Message): Message? {
     if (channel.user.isBot) return null
 
-    var action = if (msg.contentRaw.isNotBlank()) {
-        channel.sendMessage(msg.contentRaw)
-    } else null
+    val action = channel.sendMessage(msg)
+    if (msg is DataMessage)
+        action.allowedMentions(msg.allowedMentions)
 
-    for (embed in msg.embeds) {
-        if (action == null) action = channel.sendMessage(embed)
-        else action.embed(embed)
-    }
-
-    if (msg is DataMessage) {
-        action?.allowedMentions(msg.allowedMentions)
-    }
-
-    return action?.awaitOrNull()
+    return action.awaitOrNull()
 }
 
 suspend fun sendFeatureRequiresPremiumMessage(
@@ -487,7 +485,7 @@ suspend fun handleRspDelete(daoManager: DaoManager, msgList: MutableList<Message
 
     channel.deleteMessagesByIds(
         msgIds.map { it.toString() }
-    ).queue(null, { Container.instance.botDeletedMessageIds.removeAll(msgIds) })
+    ).queue(null) { Container.instance.botDeletedMessageIds.removeAll(msgIds) }
 
 }
 
@@ -499,5 +497,5 @@ suspend fun handleRspDelete(daoManager: DaoManager, message: Message) {
     delay(seconds * 1000L)
     Container.instance.botDeletedMessageIds.add(message.idLong)
 
-    message.delete().queue(null, { Container.instance.botDeletedMessageIds.remove(message.idLong) })
+    message.delete().queue(null) { Container.instance.botDeletedMessageIds.remove(message.idLong) }
 }

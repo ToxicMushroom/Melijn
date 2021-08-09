@@ -124,7 +124,6 @@ object AnimeCommandUtil {
         executeAbs(context, type, authorMember.effectiveName, target.asMention)
     }
 
-
     private suspend fun executeAbs(
         context: ICommandContext, type: String, apiOrder: Array<WeebApi.Type>, author: Role, target: Role
     ) {
@@ -143,7 +142,6 @@ object AnimeCommandUtil {
         val title = context.getTranslation(path)
             .withVariable("author", author)
             .withVariable("target", target)
-
 
         val eb = Embedder(context)
             .setDescription(title)

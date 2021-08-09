@@ -118,7 +118,6 @@ class CommandDao(driverManager: DriverManager) : Dao(driverManager) {
     )
 }
 
-
 class IntObj(var i: Int) {
 
     fun incAndGet(): Int {

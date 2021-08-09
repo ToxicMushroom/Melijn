@@ -1,19 +1,23 @@
 package me.melijn.melijnbot.internals.utils.message
 
 import io.ktor.client.request.*
+import io.sentry.Scope
+import io.sentry.Sentry
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.toUCC
 import me.melijn.melijnbot.internals.utils.withVariable
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.nio.ByteBuffer
 import java.util.*
-
 
 fun Throwable.sendInGuild(
     context: ICommandContext,
@@ -59,6 +63,7 @@ suspend fun Throwable.sendInGuildSuspend(
     val sb = StringBuilder()
 
     sb.append("**CaseID**: `").append(caseId).appendLine("`")
+    sb.append("**PodID**: `").append(PodInfo.podId).appendLine("`")
     if (guild != null) {
         sb.append("**Guild**: ").append(guild.name).append(" | ").appendLine(guild.id)
     }
@@ -92,6 +97,23 @@ suspend fun Throwable.sendInGuildSuspend(
             t.printStackTrace()
         }
     }
+    Sentry.configureScope { scope: Scope ->
+        scope.setTag("pod-id", PodInfo.podId.toString())
+        val status = when {
+            MelijnBot.shardManager.shards.all { it.status == JDA.Status.CONNECTED } -> "connected"
+            MelijnBot.shardManager.shards.any { it.status == JDA.Status.CONNECTED } -> "partially-connected"
+            MelijnBot.shardManager.shards.all { it.status == JDA.Status.DISCONNECTED } -> "disconnected"
+            else -> "reconnecting"
+        }
+        scope.setTag("status", status)
+        if (author != null) {
+            val user = io.sentry.protocol.User()
+            user.id = author.id
+            user.username = author.name + "#" + author.discriminator
+            scope.user = user
+        }
+    }
+    Sentry.captureException(this, PodInfo.podId)
 
     if (shouldSend && channel != null && (channel !is TextChannel || channel.canTalk()) && (channel is TextChannel || channel is PrivateChannel)) {
         val lang = getLanguage(Container.instance.daoManager, author?.idLong ?: -1, guild?.idLong ?: -1)

@@ -5,7 +5,6 @@ import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class VerificationPasswordWrapper(private val verificationPasswordDao: VerificationPasswordDao) {
 
-
     suspend fun getPassword(guildId: Long): String {
         val cached = verificationPasswordDao.getCacheEntry(guildId, HIGHER_CACHE)
         if (cached == null) {

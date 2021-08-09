@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.music
 
-
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.llklient.player.IPlayer
 import me.melijn.llklient.player.LavaplayerPlayerWrapper
@@ -13,7 +12,6 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.VoiceChannel
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
 
 class LavaManager(
     val lavalinkEnabled: Boolean,
@@ -92,7 +90,6 @@ class LavaManager(
         }
     }
 
-
     private suspend fun closeConnectionLite(guildId: Long) {
         val guild = MelijnBot.shardManager.getGuildById(guildId)
 
@@ -115,7 +112,6 @@ class LavaManager(
             )
         }
     }
-
 
     fun getConnectedChannel(guild: Guild): VoiceChannel? = guild.selfMember.voiceState?.channel
 

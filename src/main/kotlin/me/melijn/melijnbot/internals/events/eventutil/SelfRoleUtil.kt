@@ -53,7 +53,6 @@ object SelfRoleUtil {
             return null
         }
 
-
         val roles = mutableListOf<Role>()
         val selfRoles = daoManager.selfRoleWrapper.getMap(guildId)
         for (group in selfRoleGroupMatches) {
@@ -66,7 +65,6 @@ object SelfRoleUtil {
 
                 val emotejiEntry = dataEntry.getString(0)
                 if (emotejiEntry != emoteji) continue
-
 
                 val hasPermission = hasPermission(
                     container,
@@ -107,7 +105,6 @@ object SelfRoleUtil {
                         }
                     }
                 }
-
 
                 for (j in 0 until roleDataArr.length()) {
                     val roleData = roleDataArr.getArray(j)

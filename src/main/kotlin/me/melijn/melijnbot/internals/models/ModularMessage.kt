@@ -6,21 +6,23 @@ import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.utils.escapeCodeblockMarkdown
+import me.melijn.melijnbot.internals.utils.message.MessageSplitter
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 import java.time.Instant
 import java.util.*
 
-
 data class ModularMessage(
     var messageContent: String? = null,
     var embed: MessageEmbed? = null,
     var attachments: Map<String, String> = emptyMap(), // url -> name
+    var actionRows: List<ActionRow> = emptyList(),
     var extra: Map<String, String> = emptyMap()
 ) {
 
@@ -66,8 +68,7 @@ data class ModularMessage(
 
     fun toMessage(): Message? {
         var membed = embed
-        if (messageContent == null && (membed == null || membed.isEmpty || !membed.isSendable)) return null
-
+        if (messageContent == null && (membed == null || !membed.isSendable)) return null
 
         // Timestamp handler
         if (membed != null && extra.containsKey("currentTimestamp")) {
@@ -77,8 +78,12 @@ data class ModularMessage(
         }
 
         val mb = MessageBuilder()
-            .setEmbed(membed)
             .setContent(messageContent)
+        if (membed?.isSendable == true) {
+            mb.setEmbeds(membed)
+        }
+
+        mb.setActionRows(actionRows)
 
         // Timestamp handler
         if (extra.containsKey("isPingable")) {
@@ -92,8 +97,12 @@ data class ModularMessage(
         return try {
             mb.build()
         } catch (t: IllegalStateException) { // Fixes: Cannot build a Message with no content
-            mb.setContent("This message had no content. (This is placeholder text for empty messages)")
+            if (!mb.isEmpty) {
+                t.printStackTrace()
+                mb.setContent("This message has errors, report this to my devs").build()
+            } else mb.setContent("This message had no content. (This is placeholder text for empty messages)")
                 .build()
+
         }
     }
 
@@ -102,7 +111,7 @@ data class ModularMessage(
         function: suspend (s: String?) -> String?
     ): ModularMessage {
         return try {
-            mapAllStringFields(function).run {
+            mapAllStringFields(function, null).first().run {
                 if (this.isEmpty()) this.messageContent = "empty message"
                 this
             }
@@ -113,18 +122,31 @@ data class ModularMessage(
         }
     }
 
-    private suspend fun mapAllStringFields(function: suspend (s: String?) -> String?): ModularMessage {
-        val mappedModularMsg = ModularMessage()
+    suspend fun mapAllStringFieldsSafeSplitting(
+        infoAppend: String? = null,
+        messageSplitter: MessageSplitter? = null,
+        function: suspend (s: String?) -> String?
+    ): List<ModularMessage> {
+        return try {
+            mapAllStringFields(function, messageSplitter)
+        } catch (t: UserFriendlyException) {
+            var msg = t.getUserFriendlyMessage()
+            if (infoAppend != null) msg += infoAppend
+            listOf(ModularMessage(msg))
+        }
+    }
+
+    private suspend fun mapAllStringFields(function: suspend (s: String?) -> String?, splitter: MessageSplitter?): List<ModularMessage> {
+        val done = mutableListOf<ModularMessage>()
+        var mappedModularMsg = ModularMessage()
         mappedModularMsg.messageContent = this.messageContent?.let { function(it) }
         this.embed?.let { embed ->
-            val mappedEmbed = EmbedBuilder()
+            var mappedEmbed = EmbedBuilder()
+                .setColor(embed.color)
             embed.title?.let {
                 val url = function(embed.url)
                 EmbedEditor.urlCheck("Title Url", url)
                 mappedEmbed.setTitle(function(it), url)
-            }
-            embed.description?.let {
-                mappedEmbed.setDescription(function(it))
             }
             embed.author?.let {
                 val iconUrl = function(it.iconUrl)
@@ -132,11 +154,6 @@ data class ModularMessage(
                 EmbedEditor.urlCheck("Author IconUrl", iconUrl)
                 EmbedEditor.urlCheck("Author Url", url)
                 mappedEmbed.setAuthor(function(it.name), url, iconUrl)
-            }
-            embed.footer?.let {
-                val iconUrl = function(it.iconUrl)
-                EmbedEditor.urlCheck("Footer IconUrl", iconUrl)
-                mappedEmbed.setFooter(function(it.text), iconUrl)
             }
             embed.image?.let {
                 val image = function(it.url)
@@ -148,13 +165,40 @@ data class ModularMessage(
                 EmbedEditor.urlCheck("Thumbnail", thumbnail)
                 mappedEmbed.setThumbnail(thumbnail)
             }
+            embed.description?.let {
+                val filledDesc = function(it)
+                if (splitter != null && filledDesc != null && filledDesc.length > MessageEmbed.DESCRIPTION_MAX_LENGTH) {
+                    val parts = splitter.split(filledDesc)
+                    mappedEmbed.setDescription(parts.first())
+                    mappedModularMsg.embed = mappedEmbed.build()
+                    done.add(mappedModularMsg)
+
+                    mappedModularMsg = ModularMessage()
+                    mappedEmbed = EmbedBuilder().setColor(embed.color)
+
+                    for (part in parts.drop(1).dropLast(1)){
+                        mappedEmbed.setDescription(parts.first())
+                        mappedModularMsg.embed = mappedEmbed.build()
+                        done.add(mappedModularMsg)
+
+                        mappedModularMsg = ModularMessage()
+                        mappedEmbed = EmbedBuilder().setColor(embed.color)
+                    }
+
+                    mappedEmbed.setDescription(parts.last())
+                } else mappedEmbed.setDescription(filledDesc)
+            }
             embed.fields.forEach { field ->
                 val name = function(field.name)
                 val value = function(field.value)
                 if (name != null && value != null)
                     mappedEmbed.addField(name, value, field.isInline)
             }
-            mappedEmbed.setColor(embed.color)
+            embed.footer?.let {
+                val iconUrl = function(it.iconUrl)
+                EmbedEditor.urlCheck("Footer IconUrl", iconUrl)
+                mappedEmbed.setFooter(function(it.text), iconUrl)
+            }
             mappedEmbed.setTimestamp(embed.timestamp)
 
             mappedModularMsg.embed = mappedEmbed.build()
@@ -168,10 +212,11 @@ data class ModularMessage(
                 }
             }
         }
+        mappedModularMsg.actionRows = actionRows
         mappedModularMsg.attachments = mappedAttachments
         mappedModularMsg.extra = extra
 
-        return mappedModularMsg
+        return listOf(mappedModularMsg)
     }
 
     companion object {
@@ -214,14 +259,15 @@ data class ModularMessage(
                         extra[extraObj.getString(0)] = extraObj.getString(1)
                     }
                 }
-                return ModularMessage(content, embed, attachments, extra)
+
+
+                return ModularMessage(content, embed, attachments, emptyList(), extra)
             } catch (e: Exception) {
                 e.printStackTrace()
                 throw IllegalArgumentException("Invalid JSON structure")
             }
         }
     }
-
 
     class ModularMessageDeserializer : StdDeserializer<ModularMessage>(ModularMessage::class.java) {
 

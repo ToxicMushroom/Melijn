@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.role
 
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.database.getValueFromCache
 import me.melijn.melijnbot.enums.ChannelRoleState
 import me.melijn.melijnbot.internals.utils.addIfNotPresent
 

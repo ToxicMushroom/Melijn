@@ -54,7 +54,6 @@ class UrbanCommand : AbstractCommand("command.urban") {
             val actualExample =
                 if (second == null || second.isEmpty()) "/" else second.substring(0, min(1000, second.length))
 
-
             val desc = "$meaning\n$actualMeaning\n\n$example\n$actualExample"
             val eb = Embedder(context)
                 .setTitle(context.rawArg)

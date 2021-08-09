@@ -6,7 +6,6 @@ import me.melijn.melijnbot.database.DaoManager
 import net.dv8tion.jda.api.entities.Member
 import java.util.function.Supplier
 
-
 val BIRTHDAY_PARSER_SUPPLIER: Supplier<Parser> = Supplier {
     JagTag()
         .newDefaultBuilder()

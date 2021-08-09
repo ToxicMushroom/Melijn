@@ -5,7 +5,6 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import net.dv8tion.jda.api.events.Event
 import net.dv8tion.jda.api.events.GenericEvent
 
-
 class EventWaiter : SuspendListener() {
 
     private val eventHandlers = mutableMapOf<Class<*>, Set<EventHandler<GenericEvent>>>()
@@ -40,7 +39,6 @@ class EventWaiter : SuspendListener() {
             block(instance)
         }
     }
-
 
     override suspend fun onEvent(event: GenericEvent) {
         val found = eventHandlers[event::class.java] ?: return
