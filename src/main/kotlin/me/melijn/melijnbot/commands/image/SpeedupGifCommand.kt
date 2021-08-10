@@ -9,7 +9,7 @@ import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
 import kotlin.math.max
 
-class SpeedupGif : AbstractCommand("command.speedupgif") {
+class SpeedupGifCommand : AbstractCommand("command.speedupgif") {
 
     init {
         name = "speedupGif"

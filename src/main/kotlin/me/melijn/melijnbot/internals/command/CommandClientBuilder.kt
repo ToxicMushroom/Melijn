@@ -280,7 +280,7 @@ class CommandClientBuilder(private val container: Container) {
         BlurpleCommand(),
         BotBanCommand(),
         VintageCommand(),
-        SpeedupGif(),
+        SpeedupGifCommand(),
         BrightnessCommand(),
         JPGCommand(),
         PNGCommand(),
