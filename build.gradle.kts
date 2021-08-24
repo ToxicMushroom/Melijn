@@ -5,14 +5,14 @@ plugins {
     id("application")
     id("com.apollographql.apollo") version "2.5.9"
     id("com.github.johnrengelman.shadow") version "7.0.0"
-    kotlin("jvm") version "1.5.21"
+    kotlin("jvm") version "1.5.30"
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
 group = "me.melijn.melijnbot"
 version = "2.1.0"
 
-configure<JavaPluginConvention> {
+configure<JavaPluginExtension> {
     sourceCompatibility = JavaVersion.VERSION_15
     targetCompatibility = JavaVersion.VERSION_15
 }
@@ -49,12 +49,12 @@ val jackson = "2.12.4" // https://mvnrepository.com/artifact/com.fasterxml.jacks
 val ktor = "1.6.2"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.9" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.5.1" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-val kotlin = "1.5.21"
+val kotlin = "1.5.30"
 val scrimage = "4.2.0.109-SNAPSHOT"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_307") {
+    implementation("net.dv8tion:JDA:4.3.0_310") {
         exclude("opus-java")
     }
 
