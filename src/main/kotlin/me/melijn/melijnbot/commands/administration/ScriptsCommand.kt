@@ -142,7 +142,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
             }
 
             val scripts = context.daoManager.scriptWrapper.getScripts(context.guildId)
-            if (scripts.size > SCRIPTS_LIMIT && !isPremiumUser(context)) {
+            if (scripts.size > SCRIPTS_LIMIT && !isPremiumGuild(context)) {
                 val replaceMap = mapOf(
                     "limit" to "$SCRIPTS_LIMIT",
                     "premiumLimit" to "$PREMIUM_SCRIPTS_LIMIT"
