@@ -531,7 +531,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val eb = Embedder(context)
             .setTitle(title)
             .setDescription(menu)
-        return MessageBuilder().setEmbed(eb.build())
+        return MessageBuilder().setEmbeds(eb.build())
     }
 
     suspend fun loadNewTrack(

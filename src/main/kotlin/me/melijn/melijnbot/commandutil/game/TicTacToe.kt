@@ -122,8 +122,8 @@ object TicTacToe {
             }
         }
 
-        pc1.sendMessage(msg1).queue()
-        pc2.sendMessage(msg2).queue()
+        pc1.sendMessageEmbeds(msg1).queue()
+        pc2.sendMessageEmbeds(msg2).queue()
     }
 
     private fun getTurns(lang1: String, lang2: String, turnOne: Boolean): Pair<String, String> {

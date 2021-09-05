@@ -116,7 +116,7 @@ suspend fun sendEmbedAwaitEL(privateChannel: PrivateChannel, embed: MessageEmbed
     if (privateChannel.user.isBot) {
         return emptyList()
     }
-    val msg = privateChannel.sendMessage(embed).awaitOrNull()
+    val msg = privateChannel.sendMessageEmbeds(embed).awaitOrNull()
     return msg?.let { listOf(it) } ?: emptyList()
 }
 

@@ -84,7 +84,7 @@ class WarnCommand : AbstractCommand("command.warn") {
 
         context.daoManager.warnWrapper.addWarn(warn)
 
-        warningMessage?.editMessage(
+        warningMessage?.editMessageEmbeds(
             warnedMessageDm
         )?.override(true)?.queue()
 
