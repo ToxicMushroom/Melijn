@@ -1,0 +1,19 @@
+package me.melijn.melijnbot.commands.utility
+
+import io.ktor.client.request.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.ICommandContext
+
+class MavenCentralCommand : AbstractCommand("command.mavencentral") {
+
+    init {
+        name = "mavenCentral"
+        commandCategory = CommandCategory.UTILITY
+    }
+
+    override suspend fun execute(context: ICommandContext) {
+        context.webManager.httpClient.get<String>("https://search.maven.org/solrsearch/select?q=guice&rows=20&wt=json")
+        // {"responseHeader":{"status":0,"QTime":0,"params":{"q":"guice","core":"","defType":"dismax","indent":"off","qf":"text^20 g^5 a^10","spellcheck":"true","fl":"id,g,a,latestVersion,p,ec,repositoryId,text,timestamp,versionCount","start":"","sort":"score desc,timestamp desc,g asc,a asc","spellcheck.count":"5","rows":"5","wt":"json","version":"2.2"}},"response":{"numFound":890,"start":0,"docs":[{"id":"io.forestframework:guice","g":"io.forestframework","a":"guice","latestVersion":"5.0.1.1","repositoryId":"central","p":"jar","timestamp":1622975695000,"versionCount":1,"text":["io.forestframework","guice","-sources.jar","-javadoc.jar","-test-sources.jar",".jar","-tests.jar","-classes.jar",".pom"],"ec":["-sources.jar","-javadoc.jar","-test-sources.jar",".jar","-tests.jar","-classes.jar",".pom"]},{"id":"org.xbib:guice","g":"org.xbib","a":"guice","latestVersion":"4.4.2.0","repositoryId":"central","p":"jar","timestamp":1622846179000,"versionCount":4,"text":["org.xbib","guice",".module.asc.sha256",".jar.sha512",".jar.sha256",".pom.asc.sha512",".pom.sha256","-sources.jar.sha256","-javadoc.jar.asc.sha512",".module.asc.sha512",".pom","-sources.jar.asc.sha256",".jar.asc.sha256",".pom.asc.sha256","-javadoc.jar","-sources.jar",".jar.asc.sha512",".jar",".module","-javadoc.jar.asc.sha256","-javadoc.jar.sha512","-sources.jar.sha512",".module.sha512",".module.sha256","-sources.jar.asc.sha512",".pom.sha512","-javadoc.jar.sha256"],"ec":[".module.asc.sha256",".jar.sha512",".jar.sha256",".pom.asc.sha512",".pom.sha256","-sources.jar.sha256","-javadoc.jar.asc.sha512",".module.asc.sha512",".pom","-sources.jar.asc.sha256",".jar.asc.sha256",".pom.asc.sha256","-javadoc.jar","-sources.jar",".jar.asc.sha512",".jar",".module","-javadoc.jar.asc.sha256","-javadoc.jar.sha512","-sources.jar.sha512",".module.sha512",".module.sha256","-sources.jar.asc.sha512",".pom.sha512","-javadoc.jar.sha256"]},{"id":"com.tomtom.speedtools:guice","g":"com.tomtom.speedtools","a":"guice","latestVersion":"3.2.23","repositoryId":"central","p":"jar","timestamp":1618822785000,"versionCount":51,"text":["com.tomtom.speedtools","guice","-sources.jar","-javadoc.jar",".jar",".pom"],"ec":["-sources.jar","-javadoc.jar",".jar",".pom"]},{"id":"ca.stellardrift.guice-backport:guice","g":"ca.stellardrift.guice-backport","a":"guice","latestVersion":"5.0.1","repositoryId":"central","p":"jar","timestamp":1616993397000,"versionCount":1,"text":["ca.stellardrift.guice-backport","guice","-javadoc.jar","-sources.jar","-test-sources.jar","-tests.jar",".jar",".pom"],"ec":["-javadoc.jar","-sources.jar","-test-sources.jar","-tests.jar",".jar",".pom"]},{"id":"com.google.inject:guice","g":"com.google.inject","a":"guice","latestVersion":"5.0.1","repositoryId":"central","p":"jar","timestamp":1614380510000,"versionCount":18,"text":["com.google.inject","guice","-javadoc.jar","-sources.jar","-test-sources.jar","-tests.jar",".jar","-classes.jar",".pom"],"ec":["-javadoc.jar","-sources.jar","-test-sources.jar","-tests.jar",".jar","-classes.jar",".pom"]}]},"spellcheck":{"suggestions":[]}}
+    }
+}
