@@ -43,12 +43,12 @@ class PingCommand : AbstractCommand("command.ping") {
 
         val timeStamp3 = System.currentTimeMillis()
         eb.appendDescription(replacePart2(part2, restPing, msgPing))
-        val editedMessage = message[0].editMessage(eb.build()).await()
+        val editedMessage = message[0].editMessageEmbeds(eb.build()).await()
         val timeStamp4 = System.currentTimeMillis()
         val eMsgPing = timeStamp4 - timeStamp3
 
         eb.appendDescription(replacePart3(part3, eMsgPing))
-        editedMessage.editMessage(eb.build()).queue { c ->
+        editedMessage.editMessageEmbeds(eb.build()).queue { c ->
             TaskManager.async(context) {
                 handleRspDelete(context.daoManager, c)
             }

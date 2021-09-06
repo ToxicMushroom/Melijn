@@ -71,7 +71,7 @@ object LogUtils {
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
-        logChannel.sendMessage(eb.build()).queue()
+        logChannel.sendMessageEmbeds(eb.build()).queue()
     }
 
     suspend fun sendHitVerificationThroughputLimitLog(daoManager: DaoManager, member: Member) {
@@ -370,7 +370,7 @@ object LogUtils {
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
-        logChannel.sendMessage(eb.build()).queue()
+        logChannel.sendMessageEmbeds(eb.build()).queue()
     }
 
     fun sendRemovedRoleLog(
@@ -393,7 +393,7 @@ object LogUtils {
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
-        logChannel.sendMessage(eb.build()).queue()
+        logChannel.sendMessageEmbeds(eb.build()).queue()
     }
 
     suspend fun sendMessageFailedToRemoveRoleFromMember(daoManager: DaoManager, member: Member, role: Role) {
@@ -522,7 +522,7 @@ object LogUtils {
 
         val pc = message.author.openPrivateChannel().awaitOrNull()
         if (pc != null) {
-            val success = pc.sendMessage(eb.build()).awaitBool()
+            val success = pc.sendMessageEmbeds(eb.build()).awaitBool()
             if (!success) {
                 val dm = i18n.getTranslation(language, "logging.punishmentpoints.description.extra.dmfailed")
                 lcBody += dm
@@ -593,7 +593,7 @@ object LogUtils {
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
-        logChannel.sendMessage(eb.build()).queue()
+        logChannel.sendMessageEmbeds(eb.build()).queue()
     }
 
     suspend fun sendPurgeLog(context: ICommandContext, messages: List<Message>) {

@@ -86,7 +86,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
                 .withVariable("slot2", slotEmoteMention)
                 .withVariable("slot3", slotEmoteMention)
         )
-        msg.editMessage(eb.build()).queue()
+        msg.editMessageEmbeds(eb.build()).queue()
 
         delay(1_000)
         eb.setDescription(
@@ -95,7 +95,7 @@ class SlotsCommand : AbstractCommand("command.slots") {
                 .withVariable("slot2", slot2)
                 .withVariable("slot3", slotEmoteMention)
         )
-        msg.editMessage(eb.build()).queue()
+        msg.editMessageEmbeds(eb.build()).queue()
 
         delay(1_000)
 

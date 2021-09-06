@@ -137,7 +137,7 @@ class MuteCommand : AbstractCommand("command.mute") {
                 .reason("(mute) ${context.author.asTag}: " + mute.reason)
                 .await()
 
-            mutingMessage?.editMessage(
+            mutingMessage?.editMessageEmbeds(
                 mutedMessageDm
             )?.override(true)?.async { context.daoManager.muteWrapper.setMute(mute) }
 

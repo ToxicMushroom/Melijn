@@ -211,9 +211,9 @@ object VotedResponseHandler {
 
 fun getBotListTimeOut(botList: BotList): Long {
     return when (botList) {
-        BotList.TOP_GG -> 12 * 3600_000
-        BotList.DISCORD_BOT_LIST_COM -> 12 * 3600_000
-        BotList.DISCORD_BOATS -> 12 * 3600_000
+        BotList.TOP_GG -> 12 * 3600_000L
+        BotList.DISCORD_BOT_LIST_COM -> 12 * 3600_000L
+        BotList.DISCORD_BOATS -> 12 * 3600_000L
         BotList.BOTS_FOR_DISCORD_COM -> {
             val cDate = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
             cDate.timeInMillis = System.currentTimeMillis()

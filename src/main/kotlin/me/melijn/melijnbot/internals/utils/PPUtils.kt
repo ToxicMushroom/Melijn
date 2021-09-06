@@ -344,7 +344,7 @@ object PPUtils {
             member.user.isBot,
             kickingMessage != null
         )
-        kickingMessage?.editMessage(kickMessageDM)?.override(true)?.queue()
+        kickingMessage?.editMessageEmbeds(kickMessageDM)?.override(true)?.queue()
 
         val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.KICK) ?: return
         sendEmbed(daoManager.embedDisabledWrapper, channel, kickMessageLog)
@@ -369,7 +369,7 @@ object PPUtils {
 
         val warnMessageDM = getWarnMessage(lang, privZoneId, guild, member.user, jda.selfUser, warn)
         val pc = member.user.openPrivateChannel().awaitOrNull()
-        val kickedMessage = pc?.sendMessage(warnMessageDM)?.awaitOrNull()
+        val kickedMessage = pc?.sendMessageEmbeds(warnMessageDM)?.awaitOrNull()
 
         val warnMessageLog = getWarnMessage(
             lang,
