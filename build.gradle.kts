@@ -48,13 +48,13 @@ repositories {
 val jackson = "2.12.5" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
 val ktor = "1.6.3"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.9" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
-val kotlinX = "1.5.1" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
+val kotlinX = "1.5.2-native-mt" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 val kotlin = "1.5.30"
 val scrimage = "4.0.22"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_323") {
+    implementation("net.dv8tion:JDA:4.3.0_324") {
         exclude("opus-java")
     }
 
