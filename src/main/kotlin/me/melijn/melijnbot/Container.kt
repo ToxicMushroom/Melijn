@@ -29,7 +29,7 @@ val objectMapper: ObjectMapper = jacksonObjectMapper()
 
 class Container {
 
-    var voteReq: Boolean = true
+    var voteReq: Boolean = false
     var logToDiscord: Boolean = true
     lateinit var podInfo: PodInfo
 
