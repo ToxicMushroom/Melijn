@@ -172,7 +172,7 @@ class CommandClientBuilder(private val container: Container) {
         SupportCommand(),
         VoteSkipCommand(),
         RerenderGifCommand(),
-        LyricsCommand(),
+//        LyricsCommand(),
         AppendReverseGifCommand(),
         GlobalRecolorCommand(),
         MoveCommand(),

@@ -37,6 +37,7 @@ class MassUnbanCommand : AbstractCommand("command.massunban") {
         var offset = 0
         val size = context.args.size
         val users = mutableListOf<User>()
+        val failedUsers = mutableListOf<User>()
 
         for (i in 0 until size) {
             if (context.args[i] == "-r") {
@@ -58,6 +59,8 @@ class MassUnbanCommand : AbstractCommand("command.massunban") {
         val zoneId = getZoneId(daoManager, guild.idLong)
 
         var firstBan: Ban? = null
+
+
         for (targetUser in users) {
             val activeBan: Ban? = daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
             val ban = (activeBan ?: Ban(
@@ -86,17 +89,18 @@ class MassUnbanCommand : AbstractCommand("command.massunban") {
                     daoManager.banWrapper.setBan(ban)
                 } else {
                     failed++
-                    users.remove(targetUser)
+                    failedUsers.add(targetUser)
                 }
             } else {
                 failed++
-                users.remove(targetUser)
+                failedUsers.add(targetUser)
 
                 if (activeBan != null) {
                     daoManager.banWrapper.setBan(ban)
                 }
             }
         }
+        users.removeAll(failedUsers)
 
         val msg = context.getTranslation("$root.unbanned.${if (failed == 0) "success" else "ok"}")
             .withVariable("success", success)
