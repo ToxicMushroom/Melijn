@@ -54,11 +54,11 @@ val scrimage = "4.0.22"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_333") {
+    implementation("net.dv8tion:JDA:4.3.0_334") {
         exclude("opus-java")
     }
 
-    implementation("io.sentry:sentry:5.1.2")
+    implementation("io.sentry:sentry:5.2.1")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
     implementation("club.minnced:discord-webhooks:0.7.2")
