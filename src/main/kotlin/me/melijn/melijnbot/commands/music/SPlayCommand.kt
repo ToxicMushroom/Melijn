@@ -14,7 +14,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
         name = "splay"
         aliases = arrayOf("sp", "search", "searchPlay")
         children = arrayOf(
-            YTArg(root),
+//            YTArg(root),
             SCArg(root)
         )
         runConditions = arrayOf(RunCondition.VC_BOT_OR_USER_DJ, RunCondition.VOTED)

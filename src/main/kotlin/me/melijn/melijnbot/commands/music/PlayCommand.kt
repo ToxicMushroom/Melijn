@@ -23,7 +23,7 @@ class PlayCommand : AbstractCommand("command.play") {
         name = "play"
         aliases = arrayOf("p")
         children = arrayOf(
-            YTArg(root),
+//            YTArg(root),
             SCArg(root),
             AttachmentArg(root)
         )
