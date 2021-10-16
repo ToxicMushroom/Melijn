@@ -297,7 +297,8 @@ class CommandClientBuilder(private val container: Container) {
         ManiaCommand(),
         TaikoCommand(),
         CatchTheBeatCommand(),
-        YoshiCommand()
+        YoshiCommand(),
+        MonoCommand()
     )
 
     fun build(): CommandClient {
