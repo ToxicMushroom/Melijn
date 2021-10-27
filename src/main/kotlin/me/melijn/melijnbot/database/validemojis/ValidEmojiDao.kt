@@ -14,7 +14,7 @@ class ValidEmojiDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     fun set(emoji: String) {
         driverManager.executeUpdate("INSERT INTO $table (emoji, data) VALUES (?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
-            emoji)
+            emoji, "")
     }
 
     suspend fun isValid(emoji: String): Boolean = suspendCoroutine {
