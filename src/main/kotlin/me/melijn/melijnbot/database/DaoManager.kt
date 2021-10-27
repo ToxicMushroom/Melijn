@@ -74,6 +74,8 @@ import me.melijn.melijnbot.database.supporter.SupporterDao
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.time.TimeZoneDao
 import me.melijn.melijnbot.database.time.TimeZoneWrapper
+import me.melijn.melijnbot.database.validemojis.ValidEmojiDao
+import me.melijn.melijnbot.database.validemojis.ValidEmojiWrapper
 import me.melijn.melijnbot.database.verification.*
 import me.melijn.melijnbot.database.votes.VoteDao
 import me.melijn.melijnbot.database.votes.VoteReminderDao
@@ -223,6 +225,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
 
     val rateLimitWrapper: RatelimitWrapper
 
+    val validEmojiWrapper: ValidEmojiWrapper
+
     var driverManager: DriverManager
 
     init {
@@ -351,6 +355,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
         inactiveJMWrapper = InactiveJMWrapper(InactiveJMDao(driverManager))
 
         rateLimitWrapper = RatelimitWrapper(driverManager)
+
+        validEmojiWrapper = ValidEmojiWrapper(ValidEmojiDao(driverManager))
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {

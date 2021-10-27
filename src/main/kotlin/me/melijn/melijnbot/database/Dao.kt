@@ -34,7 +34,7 @@ interface CacheUtil {
 
     fun setCacheEntry(key: Any, value: Any, ttl: Int? = null, timeUnit: TimeUnit = TimeUnit.MINUTES) {
         if (value is String || value is Int || value is Long || value is Double || value is Byte || value is Short ||
-            value is Short || value is Enum<*>
+            value is Short || value is Enum<*> || value is Boolean
         ) {
             driverManager.setCacheEntry("$cacheName:$key", value.toString(), ttl, timeUnit)
         } else {
@@ -52,6 +52,7 @@ interface CacheUtil {
     suspend fun getLongFromCache(key: Any, ttlM: Int? = null): Long? = getCacheEntry(key, ttlM)?.toLongOrNull()
     suspend fun getDoubleFromCache(key: Any, ttlM: Int? = null): Double? = getCacheEntry(key, ttlM)?.toDoubleOrNull()
     suspend fun getFloatFromCache(key: Any, ttlM: Int? = null): Float? = getCacheEntry(key, ttlM)?.toFloatOrNull()
+    suspend fun getBooleanFromCache(key: Any, ttlM: Int? = null): Boolean? = getCacheEntry(key, ttlM)?.lowercase()?.toBooleanStrictOrNull()
 
     fun removeCacheEntry(key: Any) =
         driverManager.removeCacheEntry("$cacheName:$key")
