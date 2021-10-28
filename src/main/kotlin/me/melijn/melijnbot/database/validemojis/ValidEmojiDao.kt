@@ -12,7 +12,6 @@ class ValidEmojiDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     override val primaryKey: String = "emoji"
     override val cacheName: String = "valid_emojis"
 
-
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
