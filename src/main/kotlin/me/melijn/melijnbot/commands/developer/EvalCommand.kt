@@ -81,13 +81,14 @@ class EvalCommand : AbstractCommand("command.eval") {
         if (context.commandParts[1] == "globaleval") {
             val sb = StringBuilder()
             for (podId in 0 until PodInfo.podCount) {
-                sb.append("[Pod-${PodInfo.podId}]: ")
+                sb.append("[Pod-${podId}]: ")
                 if (podId == PodInfo.podId){
                     sb.appendLine(evaluateGlobal(code))
                 } else {
                     val hostPattern = context.container.settings.botInfo.hostPattern
-                    val url = hostPattern.replace("{podId}", 0) + "/eval"
+                    val url = hostPattern.replace("{podId}", podId) + "/eval"
                     val response = context.webManager.httpClient.post<String>(url) {
+                        header("Authorization", context.container.settings.restServer.token)
                         body = code
                     }
                     sb.appendLine(response)
