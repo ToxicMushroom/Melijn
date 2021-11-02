@@ -21,6 +21,7 @@ import me.melijn.melijnbot.internals.web.rest.codes.VerificationCodeResponseHand
 import me.melijn.melijnbot.internals.web.rest.commands.CommandMapResponseHandler
 import me.melijn.melijnbot.internals.web.rest.commands.FullCommandsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.convert.UpgradeGuildsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.eval.EvalResponseHandler
 import me.melijn.melijnbot.internals.web.rest.info.GetGuildResponseHandler
 import me.melijn.melijnbot.internals.web.rest.info.PostGuildResponseHandler
 import me.melijn.melijnbot.internals.web.rest.member.MemberInfoResponseHandler
@@ -152,6 +153,10 @@ class RestServer(container: Container) {
 
             post("/voted") {
                 VotedResponseHandler.handleVotedResponse(RequestContext(call, container))
+            }
+
+            post("/eval") {
+                EvalResponseHandler.handle(RequestContext(call, container))
             }
 
             post("/senddm/{userId}/{extra}") {
