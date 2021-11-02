@@ -78,7 +78,7 @@ class EvalCommand : AbstractCommand("command.eval") {
     override suspend fun execute(context: ICommandContext) {
         requireNotNull(engine)
         val code = context.rawArg.removePrefix("```kt\n").removePrefix("```").removeSuffix("```").trim()
-        if (context.commandParts[0] == "globaleval") {
+        if (context.commandParts[1] == "globaleval") {
             val sb = StringBuilder()
             for (podId in 0 until PodInfo.podCount) {
                 sb.append("[Pod-${PodInfo.podId}]: ")
