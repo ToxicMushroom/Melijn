@@ -13,6 +13,7 @@ import me.melijn.melijnbot.database.audio.SongCacheWrapper
 import me.melijn.melijnbot.enums.SearchType
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.threading.SafeList
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.SC_SELECTOR
@@ -225,7 +226,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                     || track.info.title.contains(title, true)
                 ) {
                     track.userData = TrackUserData(context.author)
-                    if (player.safeQueue(context, track, nextPos)) {
+                    val success = when (silent) {
+                        true -> player.safeQueueSilent(context.daoManager, track, nextPos)
+                        false -> player.safeQueue(context, track, nextPos)
+                    }
+                    if (success) {
                         if (!silent) {
                             sendMessageAddedTrack(context, track)
                         }
@@ -248,7 +253,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                         || track.info.title.contains(title, true)
                     ) {
                         track.userData = TrackUserData(context.author)
-                        if (player.safeQueue(context, track, nextPos)) {
+                        val success = when (silent) {
+                            true -> player.safeQueueSilent(context.daoManager, track, nextPos)
+                            false -> player.safeQueue(context, track, nextPos)
+                        }
+                        if (success) {
                             if (!silent) {
                                 sendMessageAddedTrack(context, track)
                             }
@@ -287,7 +296,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                     || track.info.title.contains(title, true)
                 ) {
                     track.userData = TrackUserData(context.author)
-                    if (player.safeQueue(context, track, nextPos)) {
+                    val success = when (silent) {
+                        true -> player.safeQueueSilent(context.daoManager, track, nextPos)
+                        false -> player.safeQueue(context, track, nextPos)
+                    }
+                    if (success) {
                         if (!silent) {
                             sendMessageAddedTrack(context, track)
                         }
@@ -356,8 +369,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val limit = if (isPremiumGuild(context)) QUEUE_LIMIT else DONATE_QUEUE_LIMIT
         val slotsLeft = limit - context.getGuildMusicPlayer().guildTrackManager.trackSize()
 
-        val loadedTracks = mutableListOf<Track>()
-        val failedTracks = mutableListOf<Track>()
+        val loadedTracks = SafeList<Track>()
+        val failedTracks = SafeList<Track>()
         val msg = context.getTranslation("command.play.loadingtrack" + if (tracks.size > 1) "s" else "")
             .withVariable(
                 "trackCount",
@@ -366,12 +379,17 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
         val message = sendRspAwaitEL(context, msg)
         for (track in tracks.take(slotsLeft)) {
-            loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true, nextPos) {
-                if (it) {
-                    loadedTracks.add(track)
-                } else {
-                    failedTracks.add(track)
-                }
+            loadSpotifyTrack(
+                context,
+                YT_SELECTOR + track.name,
+                track.artists,
+                track.durationMs,
+                true,
+                nextPos
+            ) { success ->
+                if (success) loadedTracks.add(track)
+                else failedTracks.add(track)
+
                 if (loadedTracks.size + failedTracks.size == tracks.size) {
                     val newMsg = context.getTranslation("command.play.loadedtrack" + if (tracks.size > 1) "s" else "")
                         .withVariable("loadedCount", loadedTracks.size.toString())
@@ -390,8 +408,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val limit = if (isPremiumGuild(context)) QUEUE_LIMIT else DONATE_QUEUE_LIMIT
         val slotsLeft = limit - context.getGuildMusicPlayer().guildTrackManager.trackSize()
 
-        val loadedTracks = mutableListOf<TrackSimplified>()
-        val failedTracks = mutableListOf<TrackSimplified>()
+        val loadedTracks = SafeList<TrackSimplified>()
+        val failedTracks = SafeList<TrackSimplified>()
         val msg = context.getTranslation("command.play.loadingtrack" + if (simpleTracks.size > 1) "s" else "")
             .withVariable(
                 "trackCount",
@@ -400,12 +418,17 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
         val message = sendRspAwaitEL(context, msg)
         for (track in simpleTracks.take(slotsLeft)) {
-            loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true, nextPos) {
-                if (it) {
-                    loadedTracks.add(track)
-                } else {
-                    failedTracks.add(track)
-                }
+            loadSpotifyTrack(
+                context,
+                YT_SELECTOR + track.name,
+                track.artists,
+                track.durationMs,
+                true,
+                nextPos
+            ) { success ->
+                if (success) loadedTracks.add(track)
+                else failedTracks.add(track)
+
                 if (loadedTracks.size + failedTracks.size == simpleTracks.size) {
                     val newMsg =
                         context.getTranslation("command.play.loadedtrack" + if (simpleTracks.size > 1) "s" else "")
