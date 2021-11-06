@@ -58,10 +58,11 @@ dependencies {
         exclude("opus-java")
     }
 
-    implementation("io.sentry:sentry:5.2.4")
+    implementation("io.sentry:sentry:5.3.0")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
     implementation("club.minnced:discord-webhooks:0.7.2")
+
     // https://github.com/freya022/JEmojis
     implementation("com.github.ToxicMushroom:JEmojis:a8c82848f166893f67251c741579c74c80fbb2dd")
 
@@ -69,7 +70,7 @@ dependencies {
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://github.com/sedmelluq/lavaplayer
-    implementation("com.sedmelluq:lavaplayer:1.3.78")
+    implementation("com.github.walkyst:lavaplayer-fork:1.3.96")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fllklient%2FLavalink-Klient
     implementation("me.melijn.llklient:Lavalink-Klient:2.2.3")

@@ -135,7 +135,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 } else {
                     sendMessageNoMatches(context, rawInput)
                 }
-            }, { //LLDisabledAndNotYTSearch
+            }, { // LLDisabledAndNotYTSearch
                 audioPlayerManager.loadItemOrdered(guildMusicPlayer, source, resultHandler)
             }, resultHandler)
         } catch (t: Throwable) {
