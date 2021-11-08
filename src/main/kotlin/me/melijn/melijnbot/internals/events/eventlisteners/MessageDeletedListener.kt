@@ -78,6 +78,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
         val messageIds = event.messageIds.map { it.toLong() }
         val msgs = container.daoManager.messageHistoryWrapper.getMessagesByIds(messageIds)
+        if (msgs.isEmpty()) return false
 
         val msgDeleteTime = OffsetDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
 
