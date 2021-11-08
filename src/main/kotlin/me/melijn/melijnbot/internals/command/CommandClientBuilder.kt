@@ -298,7 +298,9 @@ class CommandClientBuilder(private val container: Container) {
         TaikoCommand(),
         CatchTheBeatCommand(),
         YoshiCommand(),
-        MonoCommand()
+        MonoCommand(),
+        CloneRolePermissionsCommand(),
+        SetChannelOverrideCommand()
     )
 
     fun build(): CommandClient {
