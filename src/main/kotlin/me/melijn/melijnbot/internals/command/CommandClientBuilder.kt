@@ -300,7 +300,8 @@ class CommandClientBuilder(private val container: Container) {
         YoshiCommand(),
         MonoCommand(),
         CloneRolePermissionsCommand(),
-        SetChannelOverrideCommand()
+        SetChannelOverrideCommand(),
+        OenkCommand()
     )
 
     fun build(): CommandClient {
