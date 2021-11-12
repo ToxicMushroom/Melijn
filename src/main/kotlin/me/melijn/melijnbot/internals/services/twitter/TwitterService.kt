@@ -286,7 +286,7 @@ class TwitterService(
         }
 
         val newestTweetId = metaInfo.getString("newest_id", null)?.toLongOrNull() ?: list.firstOrNull()?.id
-        val author = users.first { it.id == twitterWebhook.twitterUserId }
+        val author = users.firstOrNull { it.id == twitterWebhook.twitterUserId } ?: return null
         return Tweets(author, newestTweetId, list)
     }
 
