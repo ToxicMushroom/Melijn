@@ -36,7 +36,7 @@ class EmotesCommand : AbstractCommand("command.emotes") {
             }
             sb.append(emotes.size).append("/").append(context.guild.maxEmotes)
 
-            val msgs = StringUtils.splitMessage(sb.toString())
+            val msgs = StringUtils.splitMessage(sb.toString(), 1800, 1900)
             val modularMessages = msgs.withIndex()
                 .map { (index, content) ->
                     ModularMessage("$content\nPage ${index + 1}/${msgs.size}")

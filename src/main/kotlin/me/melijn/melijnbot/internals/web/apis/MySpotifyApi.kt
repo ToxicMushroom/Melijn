@@ -3,6 +3,7 @@ package me.melijn.melijnbot.internals.web.apis
 import com.neovisionaries.i18n.CountryCode
 import com.wrapper.spotify.SpotifyApi
 import com.wrapper.spotify.exceptions.SpotifyWebApiException
+import com.wrapper.spotify.exceptions.detailed.NotFoundException
 import com.wrapper.spotify.model_objects.specification.Track
 import com.wrapper.spotify.model_objects.specification.TrackSimplified
 import kotlinx.coroutines.future.await
@@ -67,6 +68,8 @@ class MySpotifyApi(spotifySettings: Settings.Api.Spotify) {
         } catch (ignored: IOException) {
             error.invoke(ignored)
         } catch (ignored: SpotifyWebApiException) {
+            error.invoke(ignored)
+        } catch (ignored: NotFoundException) {
             error.invoke(ignored)
         } catch (ignored: IllegalArgumentException) {
             error.invoke(ignored)

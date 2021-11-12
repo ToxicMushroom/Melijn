@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.music
 
+import com.wrapper.spotify.exceptions.detailed.NotFoundException
 import me.melijn.melijnbot.internals.command.*
 import me.melijn.melijnbot.internals.music.AudioLoader
 import me.melijn.melijnbot.internals.music.LavaManager
@@ -231,15 +232,23 @@ class PlayCommand : AbstractCommand("command.play") {
                 audioLoader.loadSpotifyAlbum(context, simpleTrackList, nextPos)
             },
             { error ->
-                if (error is IllegalArgumentException) {
-                    val msg = context.getTranslation("message.spotify.unknownlink")
-                        .withVariable("url", MarkdownSanitizer.escape(context.fullArg))
-                    sendRsp(context, msg)
-                } else {
-                    val msg = context.getTranslation("message.spotify.down")
-                        .replacePrefix(context)
-                    sendRsp(context, msg)
-                    error.sendInGuild(context)
+                when (error) {
+                    is NotFoundException -> {
+                        val msg = context.getTranslation("message.spotify.notfound")
+                            .withVariable("url", MarkdownSanitizer.escape(context.fullArg))
+                        sendRsp(context, msg)
+                    }
+                    is IllegalArgumentException -> {
+                        val msg = context.getTranslation("message.spotify.unknownlink")
+                            .withVariable("url", MarkdownSanitizer.escape(context.fullArg))
+                        sendRsp(context, msg)
+                    }
+                    else -> {
+                        val msg = context.getTranslation("message.spotify.down")
+                            .replacePrefix(context)
+                        sendRsp(context, msg)
+                        error.sendInGuild(context)
+                    }
                 }
             }
         )
