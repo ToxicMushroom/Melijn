@@ -3,9 +3,6 @@ package me.melijn.melijnbot.internals.music
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import com.wrapper.spotify.model_objects.specification.ArtistSimplified
-import com.wrapper.spotify.model_objects.specification.Track
-import com.wrapper.spotify.model_objects.specification.TrackSimplified
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
@@ -28,6 +25,9 @@ import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.Component
+import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified
+import se.michaelthelin.spotify.model_objects.specification.Track
+import se.michaelthelin.spotify.model_objects.specification.TrackSimplified
 import java.lang.Integer.min
 
 const val QUEUE_LIMIT = 500

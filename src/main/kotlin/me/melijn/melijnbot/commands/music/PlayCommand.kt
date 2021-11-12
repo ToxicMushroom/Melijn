@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.music
 
-import com.wrapper.spotify.exceptions.detailed.NotFoundException
 import me.melijn.melijnbot.internals.command.*
 import me.melijn.melijnbot.internals.music.AudioLoader
 import me.melijn.melijnbot.internals.music.LavaManager
@@ -14,6 +13,7 @@ import me.melijn.melijnbot.internals.utils.replacePrefix
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
+import se.michaelthelin.spotify.exceptions.detailed.NotFoundException
 
 val spotifyURIRegex = Regex("spotify:(\\w+):(\\w+)")
 

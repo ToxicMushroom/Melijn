@@ -1,14 +1,14 @@
 package me.melijn.melijnbot.internals.web.apis
 
 import com.neovisionaries.i18n.CountryCode
-import com.wrapper.spotify.SpotifyApi
-import com.wrapper.spotify.exceptions.SpotifyWebApiException
-import com.wrapper.spotify.exceptions.detailed.NotFoundException
-import com.wrapper.spotify.model_objects.specification.Track
-import com.wrapper.spotify.model_objects.specification.TrackSimplified
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
+import se.michaelthelin.spotify.SpotifyApi
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException
+import se.michaelthelin.spotify.exceptions.detailed.NotFoundException
+import se.michaelthelin.spotify.model_objects.specification.Track
+import se.michaelthelin.spotify.model_objects.specification.TrackSimplified
 import java.io.IOException
 import kotlin.math.min
 
