@@ -5,7 +5,7 @@ plugins {
     id("application")
     id("com.apollographql.apollo") version "2.5.10"
     id("com.github.johnrengelman.shadow") version "7.1.0"
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.6.0"
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
@@ -46,10 +46,10 @@ repositories {
 }
 
 val jackson = "2.13.0" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-val ktor = "1.6.4"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
+val ktor = "1.6.5"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.10" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.5.2-native-mt" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-val kotlin = "1.5.31"
+val kotlin = "1.6.0"
 val scrimage = "4.0.22"
 
 dependencies {
