@@ -47,10 +47,10 @@ repositories {
 
 val jackson = "2.13.0" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
 val ktor = "1.6.5"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
-val apollo = "2.5.10" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
+val apollo = "2.5.11" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.5.2-native-mt" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 val kotlin = "1.6.0"
-val scrimage = "4.0.22"
+val scrimage = "4.0.23"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
@@ -58,7 +58,7 @@ dependencies {
         exclude("opus-java")
     }
 
-    implementation("io.sentry:sentry:5.3.0")
+    implementation("io.sentry:sentry:5.4.0")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
     implementation("club.minnced:discord-webhooks:0.7.2")
@@ -104,7 +104,7 @@ dependencies {
     implementation("se.michaelthelin.spotify:spotify-web-api-java:7.0.0")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-    implementation("ch.qos.logback:logback-classic:1.2.6")
+    implementation("ch.qos.logback:logback-classic:1.2.7")
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     implementation("com.fasterxml.jackson.core:jackson-core:$jackson")
