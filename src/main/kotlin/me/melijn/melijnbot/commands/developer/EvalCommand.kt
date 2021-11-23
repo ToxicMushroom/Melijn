@@ -19,7 +19,7 @@ class EvalCommand : AbstractCommand("command.eval") {
     init {
         id = 22
         name = "eval"
-        aliases = arrayOf("evaluate", "globaleval")
+        aliases = arrayOf("evaluate", "globalEval")
         commandCategory = CommandCategory.DEVELOPER
     }
 
@@ -46,7 +46,6 @@ class EvalCommand : AbstractCommand("command.eval") {
 
             var code1 = code
             val imports = code1.lines().takeWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
-
 
             code1 = """$evalImports
                 ${imports.joinToString("\n\t\t\t")}
@@ -78,7 +77,7 @@ class EvalCommand : AbstractCommand("command.eval") {
     override suspend fun execute(context: ICommandContext) {
         requireNotNull(engine)
         val code = context.rawArg.removePrefix("```kt\n").removePrefix("```").removeSuffix("```").trim()
-        if (context.commandParts[1] == "globaleval") {
+        if (context.commandParts[1].equals("globaleval", true)) {
             val sb = StringBuilder()
             for (podId in 0 until PodInfo.podCount) {
                 sb.append("[Pod-${podId}]: ")

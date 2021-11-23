@@ -301,7 +301,8 @@ class CommandClientBuilder(private val container: Container) {
         MonoCommand(),
         CloneRolePermissionsCommand(),
         SetChannelOverrideCommand(),
-        OenkCommand()
+        OenkCommand(),
+        MusicPlayerCommand()
     )
 
     fun build(): CommandClient {
