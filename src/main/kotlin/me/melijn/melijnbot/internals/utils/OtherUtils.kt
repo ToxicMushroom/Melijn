@@ -15,6 +15,7 @@ import java.awt.Color
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Month
+import java.time.MonthDay
 import java.time.Year
 import java.util.*
 import java.util.regex.Pattern
@@ -97,15 +98,13 @@ fun getWindowsUptime(): Long {
         ins.bufferedReader().use { br ->
             for (line in br.readLines()) {
                 if (line.startsWith("Statistieken vanaf")) {
-                    val format = SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss") //Dutch windows version
+                    val format = SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss") // Dutch windows version
                     val bootTime = format.parse(line.remove("?"))
                     return System.currentTimeMillis() - bootTime.time
-
                 } else if (line.startsWith("Statistics since")) {
-                    val format = SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss") //English windows version
+                    val format = SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss") // English windows version
                     val bootTime = format.parse(line.remove("?"))
                     return System.currentTimeMillis() - bootTime.time
-
                 }
             }
         }
@@ -302,37 +301,38 @@ suspend fun getBirthdayByArgsNMessage(
             }
         }
 
-        val birthday = list[birthdayIndex]
-        if (birthday < 1 || birthday > 31) {
-            val msg = context.getTranslation("message.number.notinrange")
-                .withSafeVariable(PLACEHOLDER_ARG, "$birthday")
-                .withVariable("start", "1")
-                .withVariable("end", "31")
-            sendRsp(context, msg)
-            return null
-        }
-        val birthMonth = list[monthIndex]
-        if (birthMonth < 1 || birthMonth > 12) {
-            val msg = context.getTranslation("message.number.notinrange")
-                .withSafeVariable(PLACEHOLDER_ARG, "$birthMonth")
-                .withVariable("start", "1")
-                .withVariable("end", "12")
-            sendRsp(context, msg)
-            return null
+        suspend fun <T> Int.keepWithin(low: Int, high: Int, map: (Int) -> T?): T? {
+            if (this !in low..high) {
+                sendRsp(
+                    context,
+                    context.getTranslation("message.number.notinrange")
+                        .withSafeVariable(PLACEHOLDER_ARG, "$this")
+                        .withVariable("start", low.toString())
+                        .withVariable("end", high.toString())
+                )
+                return null
+            }
+
+            return map(this)
         }
 
-        val birthYear = if (list.size > 2) list[yearIndex] else null
-        if (birthYear != null && (birthYear < 1900 || birthYear > Year.now().value - 12)) {
-            val msg = context.getTranslation("message.number.notinrange")
-                .withSafeVariable(PLACEHOLDER_ARG, "$birthYear")
-                .withVariable("start", "1900")
-                .withVariable("end", "2008")
-            sendRsp(context, msg)
-            return null
+        val birthYear = list.getOrNull(yearIndex)?.let {
+            it.keepWithin(1900, Year.now().value - 12) { year ->
+                Year.of(year)
+            } ?: return null
+        } ?: Year.now()
+
+        val birthMonth = list[monthIndex].let {
+            it.keepWithin(1, 12) { month ->
+                Month.of(month)
+            } ?: return null
         }
 
-        val localDate = LocalDate.of(birthYear ?: 2020, Month.of(birthMonth), birthday)
-        return Pair(localDate.dayOfYear, birthYear)
+        val birthday = list[birthdayIndex].let {
+            it.keepWithin(1, birthMonth.length(birthYear.isLeap)) { it } ?: return null
+        }
+
+        return birthYear.atMonthDay(MonthDay.of(birthMonth, birthday)).dayOfYear to birthYear.value
     } else {
         val msg = context.getTranslation("message.unknown.birthday")
             .withSafeVariable(PLACEHOLDER_ARG, context.args[index])
@@ -341,7 +341,7 @@ suspend fun getBirthdayByArgsNMessage(
     }
 }
 
-//Dayofyear, year
+// Dayofyear, year
 fun getBirthdayByArgsN(arg: String): Pair<Int, Int?>? {
     val list: List<Int> = arg.split("/", "-")
         .map { value ->
@@ -431,27 +431,27 @@ fun getIntegerFromArgN(context: ICommandContext, index: Int, min: Int = Int.MIN_
     return number
 }
 
-//UpperCamelCase
+// UpperCamelCase
 fun Enum<*>.toUCC(): String {
     return this
         .toUCSC()
         .remove(" ")
 }
 
-//UpperCamelSpaceCase
+// UpperCamelSpaceCase
 fun Enum<*>.toUCSC(): String {
     return toString()
         .replace("_", " ")
         .toUpperWordCase()
 }
 
-//lowerCamelCase
+// lowerCamelCase
 fun Enum<*>.toLCC(): String {
     val uCC = this.toUCC()
     return uCC[0].lowercase() + uCC.substring(1)
 }
 
-//lowerCase
+// lowerCase
 fun Enum<*>.toLC(): String = this.toString().lowercase()
 
 val numberRegex = "-?\\d+".toRegex()
