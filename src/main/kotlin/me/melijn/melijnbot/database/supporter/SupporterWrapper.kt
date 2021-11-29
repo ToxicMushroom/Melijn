@@ -3,6 +3,7 @@ package me.melijn.melijnbot.database.supporter
 import com.fasterxml.jackson.module.kotlin.readValue
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objectMapper
+import java.util.concurrent.TimeUnit
 
 class SupporterWrapper(private val supporterDao: SupporterDao) {
 
@@ -18,10 +19,31 @@ class SupporterWrapper(private val supporterDao: SupporterDao) {
         }
     }
 
-    suspend fun getUsers(): List<Long> {
-        return supporterDao.getCacheEntry("users")?.let {
-            objectMapper.readValue<List<Long>>(it)
-        } ?: supporterDao.getSupporters().map { it.userId }
+    var cacheTime = System.currentTimeMillis()
+    var localUsers = HashSet<Long>()
+    var localGuilds = HashSet<Long>()
+    suspend fun getUsers(): HashSet<Long> {
+        val cacheDiff = System.currentTimeMillis() - cacheTime
+        if (cacheDiff > TimeUnit.MILLISECONDS.convert(3L, TimeUnit.SECONDS)) {
+            val fetchedUsers = supporterDao.getCacheEntry("users")?.let {
+                objectMapper.readValue<List<Long>>(it)
+            } ?: supporterDao.getSupporters().map { it.userId }
+            localUsers = HashSet(fetchedUsers)
+            cacheTime = System.currentTimeMillis()
+        }
+        return localUsers
+    }
+
+    suspend fun getGuilds(): HashSet<Long> {
+        val cacheDiff = System.currentTimeMillis() - cacheTime
+        if (cacheDiff > TimeUnit.MILLISECONDS.convert(3L, TimeUnit.SECONDS)) {
+            val fetchedGuilds = supporterDao.getCacheEntry("guilds")?.let {
+                objectMapper.readValue<List<Long>>(it)
+            } ?: supporterDao.getSupporters().map { it.guildId }
+            localGuilds = HashSet(fetchedGuilds)
+            cacheTime = System.currentTimeMillis()
+        }
+        return localGuilds
     }
 
     suspend fun add(userId: Long) {
@@ -65,10 +87,5 @@ class SupporterWrapper(private val supporterDao: SupporterDao) {
 
     suspend fun getSupporter(supporterId: Long): Supporter? {
         return supporterDao.getCacheEntry(supporterId)?.let { objectMapper.readValue<Supporter>(it) }
-    }
-
-    suspend fun getGuilds(): List<Long> {
-        return supporterDao.getCacheEntry("guilds")?.let { objectMapper.readValue<List<Long>>(it) }
-            ?: supporterDao.getSupporters().map { it.guildId }
     }
 }

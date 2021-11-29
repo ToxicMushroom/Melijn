@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.internals.services.voice
 
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil.checkShouldDisconnectAndApply
 import me.melijn.melijnbot.internals.music.MusicPlayerManager
 import me.melijn.melijnbot.internals.services.Service
@@ -37,6 +38,12 @@ class VoiceScoutService(
                     guildMusicPlayer.removeTrackManagerListener()
                     iterator.remove()
                 }
+            }
+
+            val iter = VoiceUtil.disconnectQueue.iterator()
+            while (iter.hasNext()) {
+                val it = iter.next()
+                if (it.value.isDone) iter.remove()
             }
         }
     }

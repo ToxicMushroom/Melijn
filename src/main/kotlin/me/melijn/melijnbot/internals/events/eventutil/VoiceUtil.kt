@@ -81,9 +81,12 @@ object VoiceUtil {
 
     suspend fun checkShouldDisconnectAndApply(botChannel: VoiceChannel, daoManager: DaoManager) {
         val guildId = botChannel.guild.idLong
+        val validPremium = botChannel.members.any {
+            daoManager.supporterWrapper.getUsers().contains(it.idLong)
+        } || isPremiumGuild(daoManager, guildId)
         if (
             MusicPlayerManager.guildMusicPlayers[guildId] != null &&
-            listeningMembers(botChannel) == 0 &&
+            (listeningMembers(botChannel) == 0 || !validPremium) &&
             !(daoManager.music247Wrapper.is247Mode(guildId) && isPremiumGuild(daoManager, guildId))
         ) {
             val queued = disconnectQueue[guildId]
