@@ -19,35 +19,38 @@ class SupporterWrapper(private val supporterDao: SupporterDao) {
         }
     }
 
-    var cacheTime = System.currentTimeMillis()
+    var userCacheTime = System.currentTimeMillis()
+    var serverCacheTime = System.currentTimeMillis()
     var localUsers = HashSet<Long>()
     var localGuilds = HashSet<Long>()
     suspend fun getUsers(): HashSet<Long> {
-        val cacheDiff = System.currentTimeMillis() - cacheTime
+        val cacheDiff = System.currentTimeMillis() - userCacheTime
         if (cacheDiff > TimeUnit.MILLISECONDS.convert(3L, TimeUnit.SECONDS)) {
-            val fetchedUsers = supporterDao.getCacheEntry("users")?.let {
-                objectMapper.readValue<List<Long>>(it)
-            } ?: supporterDao.getSupporters().map { it.userId }
+            val fetchedUsers = getUsersNoLocalCache()
             localUsers = HashSet(fetchedUsers)
-            cacheTime = System.currentTimeMillis()
+            userCacheTime = System.currentTimeMillis()
         }
         return localUsers
     }
 
+    private suspend fun getUsersNoLocalCache() = supporterDao.getCacheEntry("users")?.let {
+        objectMapper.readValue<List<Long>>(it)
+    } ?: supporterDao.getSupporters().map { it.userId }
+
     suspend fun getGuilds(): HashSet<Long> {
-        val cacheDiff = System.currentTimeMillis() - cacheTime
+        val cacheDiff = System.currentTimeMillis() - serverCacheTime
         if (cacheDiff > TimeUnit.MILLISECONDS.convert(3L, TimeUnit.SECONDS)) {
             val fetchedGuilds = supporterDao.getCacheEntry("guilds")?.let {
                 objectMapper.readValue<List<Long>>(it)
             } ?: supporterDao.getSupporters().map { it.guildId }
             localGuilds = HashSet(fetchedGuilds)
-            cacheTime = System.currentTimeMillis()
+            serverCacheTime = System.currentTimeMillis()
         }
         return localGuilds
     }
 
     suspend fun add(userId: Long) {
-        val currentUsers = getUsers()
+        val currentUsers = getUsersNoLocalCache()
         if (!currentUsers.contains(userId)) {
             val addTime = System.currentTimeMillis()
             val newUser = Supporter(userId, -1, addTime, 0)
