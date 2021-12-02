@@ -55,14 +55,13 @@ class LavaManager(
      */
     suspend fun tryToConnectToVCNMessage(context: ICommandContext, channel: VoiceChannel, groupId: String): Boolean {
         if (notEnoughPermissionsAndMessage(context, channel, Permission.VOICE_CONNECT)) return false
-        val channelNotFull = channel.userLimit == 0 || channel.userLimit > channel.members.size
-        val hasPremiumUsers = hasPremiumUserElseMessage(context, channel)
-        val canMove = !notEnoughPermissionsAndMessage(
+        val canJoin = (channel.userLimit == 0 || channel.userLimit > channel.members.size) || !notEnoughPermissionsAndMessage(
             context,
             channel,
             Permission.VOICE_MOVE_OTHERS
         )
-        return if (hasPremiumUsers && (channelNotFull || canMove)) {
+        val hasPremiumUsers = hasPremiumUserElseMessage(context, channel)
+        return if (hasPremiumUsers && canJoin) {
             openConnection(channel, groupId)
             true
         } else {
