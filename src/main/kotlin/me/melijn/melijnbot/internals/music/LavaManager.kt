@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.utils.isPremiumGuild
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
 import me.melijn.melijnbot.internals.utils.replacePrefix
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.VoiceChannel
@@ -60,7 +61,7 @@ class LavaManager(
             channel,
             Permission.VOICE_MOVE_OTHERS
         )
-        val hasPremiumUsers = hasPremiumUserElseMessage(context, channel)
+        val hasPremiumUsers = hasPremiumOrBelowLimitUserElseMessage(context, channel)
         return if (hasPremiumUsers && canJoin) {
             openConnection(channel, groupId)
             true
@@ -90,16 +91,20 @@ class LavaManager(
         }
     }
 
-    private suspend fun hasPremiumUserElseMessage(
+    private suspend fun hasPremiumOrBelowLimitUserElseMessage(
         context: ICommandContext,
         channel: VoiceChannel
     ): Boolean {
+        val sum = context.lavaManager.jdaLavaLink?.nodeMap?.get("normal")?.sumOf { it.stats?.playingPlayers ?: 0 } ?: 0
+        if (sum <= FREE_PLAYER_LIMIT) return true
+
         val dao = context.daoManager
         val isPremium = isPremiumGuild(dao, channel.guild.idLong) || channel.members.any {
             dao.supporterWrapper.getUsers().contains(it.user.idLong)
         }
         if (!isPremium) sendRsp(context, i18n.getTranslation(context, "music.requires.premium")
-            .replacePrefix(context))
+            .replacePrefix(context)
+            .withVariable("queueLimit", FREE_PLAYER_LIMIT))
         return isPremium
     }
 

@@ -4,6 +4,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelRoleState
+import me.melijn.melijnbot.internals.music.FREE_PLAYER_LIMIT
 import me.melijn.melijnbot.internals.music.MusicPlayerManager
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.awaitBool
@@ -47,11 +48,11 @@ object VoiceUtil {
 
         if (
             musicChannel.id == botChannel?.id &&
-            channelUpdate.id == botChannel.id &&
+            channelUpdate.id == botChannel?.id &&
             MusicPlayerManager.guildMusicPlayers[guild.idLong]?.guildTrackManager?.playingTrack != null
         ) {
             return
-        } else if (musicChannel.id == botChannel?.id && channelUpdate.id == botChannel.id) {
+        } else if (musicChannel.id == botChannel?.id && channelUpdate.id == botChannel?.id) {
             if (listeningMembers(musicChannel, container.settings.botInfo.id) > 0) {
                 audioLoader.loadNewTrack(
                     daoManager,
@@ -81,9 +82,12 @@ object VoiceUtil {
 
     suspend fun checkShouldDisconnectAndApply(botChannel: VoiceChannel, daoManager: DaoManager) {
         val guildId = botChannel.guild.idLong
-        val validPremium = botChannel.members.any {
-            daoManager.supporterWrapper.getUsers().contains(it.idLong)
-        } || isPremiumGuild(daoManager, guildId)
+        val validPremium = if (FREE_PLAYER_LIMIT == 0) {
+            botChannel.members.any {
+                daoManager.supporterWrapper.getUsers().contains(it.idLong)
+            } || isPremiumGuild(daoManager, guildId)
+        } else true
+
         if (
             MusicPlayerManager.guildMusicPlayers[guildId] != null &&
             (listeningMembers(botChannel) == 0 || !validPremium) &&

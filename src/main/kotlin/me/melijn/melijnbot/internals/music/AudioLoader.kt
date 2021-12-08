@@ -32,6 +32,7 @@ import java.lang.Integer.min
 
 const val QUEUE_LIMIT = 500
 const val DONATE_QUEUE_LIMIT = 5000
+var FREE_PLAYER_LIMIT = 100
 
 class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
