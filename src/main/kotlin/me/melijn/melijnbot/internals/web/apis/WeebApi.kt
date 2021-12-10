@@ -69,7 +69,7 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
             false -> "images"
         }
 
-        val url = "https://shiro.gg/api/$endpoint/$type"
+        val url = "https://api.dbot.dev/$endpoint/$type"
         val xigResponse = httpClient.getOrNull<XigResponse>(url, logger = logger)
         return xigResponse?.url
     }
