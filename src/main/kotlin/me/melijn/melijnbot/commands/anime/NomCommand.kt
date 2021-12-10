@@ -15,6 +15,6 @@ class NomCommand : AbstractCommand("command.nom") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        AnimeCommandUtil.execute(context, "nom", arrayOf(WeebApi.Type.XIG))
+        AnimeCommandUtil.execute(context, "nom", arrayOf(WeebApi.Type.SHIRO))
     }
 }

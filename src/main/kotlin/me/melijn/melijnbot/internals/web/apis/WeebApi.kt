@@ -27,7 +27,7 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
         for (api in apiOrder + Type.values().filterNot { apiOrder.contains(it) }) {
             val url = when (api) {
                 Type.WEEBSH -> getWeebshUrl(type, nsfw)
-                Type.XIG, Type.XIG_NSFW -> getXigUrl(type, nsfw)
+                Type.SHIRO, Type.SHIRO_NSFW -> getShiroUrl(type, nsfw)
                 Type.MIKI -> getMikiUrl(type, nsfw)
             }
             if (url != null) return url
@@ -38,9 +38,9 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
 
     var rotate = 0
     suspend fun getUrlRandom(type: String, nsfw: Boolean = false): String {
-        val xigTypes = if (nsfw) arrayOf(Type.XIG, Type.XIG_NSFW) else arrayOf(Type.XIG)
+        val shiroTypes = if (nsfw) arrayOf(Type.SHIRO, Type.SHIRO_NSFW) else arrayOf(Type.SHIRO)
         val url = when (rotate % 3) {
-            0 -> getUrlWaterfall(type, nsfw, xigTypes)
+            0 -> getUrlWaterfall(type, nsfw, shiroTypes)
             1 -> getUrlWaterfall(type, nsfw, arrayOf(Type.WEEBSH))
             2 -> getUrlWaterfall(type, nsfw, arrayOf(Type.MIKI))
             else -> throw IllegalStateException("shouldn't reach this")
@@ -60,9 +60,9 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
         return mikiResponse?.url
     }
 
-    private suspend fun getXigUrl(type: String, nsfw: Boolean): String? {
-        if (nsfw && !nsfwXigList.contains(type)) return null
-        if (!nsfw && !xigList.contains(type)) return null
+    private suspend fun getShiroUrl(type: String, nsfw: Boolean): String? {
+        if (nsfw && !nsfwShiroList.contains(type)) return null
+        if (!nsfw && !shiroList.contains(type)) return null
 
         val endpoint = when (nsfw) {
             true -> "images/nsfw"
@@ -70,8 +70,8 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
         }
 
         val url = "https://api.dbot.dev/$endpoint/$type"
-        val xigResponse = httpClient.getOrNull<XigResponse>(url, logger = logger)
-        return xigResponse?.url
+        val shiroResponse = httpClient.getOrNull<ShiroResponse>(url, logger = logger)
+        return shiroResponse?.url
     }
 
     private suspend fun getWeebshUrl(type: String, nsfw: Boolean): String? {
@@ -111,22 +111,28 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
             "adore"
         )
 
-        private val xigList = listOf(
+        private val shiroList = listOf(
             "avatars",
             "blush",
             "cry",
             "hug",
             "kiss",
+            "lick",
             "neko",
             "nom",
             "pat",
+            "poke",
             "pout",
+            "punch",
             "slap",
             "smug",
+            "sleep",
+            "tickle",
+            "trap",
             "wallpapers"
         )
 
-        private val nsfwXigList = listOf(
+        private val nsfwShiroList = listOf(
             "bondage",
             "hentai",
             "thighs"
@@ -135,12 +141,12 @@ class WeebApi(val httpClient: HttpClient, val settings: Settings) {
 
     enum class Type {
         WEEBSH,
-        XIG,
-        XIG_NSFW,
+        SHIRO,
+        SHIRO_NSFW,
         MIKI
     }
 
-    data class XigResponse(
+    data class ShiroResponse(
         val code: Int,
         val url: String
     )
