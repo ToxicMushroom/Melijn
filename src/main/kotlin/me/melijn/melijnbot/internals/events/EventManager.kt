@@ -72,7 +72,7 @@ class EventManager(val container: Container) : IEventManager {
     }
 
     override fun handle(event: GenericEvent) {
-        if (container.shuttingDown) return
+        if (container.shuttingDown || container.ratelimiting) return
         if (event is RawGatewayEvent) {
             eventCountMap[event.type] = eventCountMap.getOrDefault(event.type, 0) + 1
             return

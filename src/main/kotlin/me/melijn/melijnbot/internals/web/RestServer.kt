@@ -36,6 +36,7 @@ import me.melijn.melijnbot.internals.web.rest.settings.starboard.PostStarboardSe
 import me.melijn.melijnbot.internals.web.rest.shutdown.ShutdownResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.EventStatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.PublicStatsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.stats.RatelimitInfoHandler
 import me.melijn.melijnbot.internals.web.rest.stats.StatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.voted.VotedResponseHandler
 import me.melijn.melijnbot.objectMapper
@@ -90,6 +91,14 @@ class RestServer(container: Container) {
             get("/stats") {
                 try {
                     StatsResponseHandler.handleStatsResponse(RequestContext(call, container))
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                    call.respondText { t.message + "\n" + t.stackTraceToString() }
+                }
+            }
+            get("/ratelimitinfo") {
+                try {
+                    RatelimitInfoHandler.handleStatsResponse(RequestContext(call, container))
                 } catch (t: Throwable) {
                     t.printStackTrace()
                     call.respondText { t.message + "\n" + t.stackTraceToString() }

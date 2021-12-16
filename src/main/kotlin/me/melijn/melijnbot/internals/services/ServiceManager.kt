@@ -4,7 +4,6 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.services.bans.BanService
 import me.melijn.melijnbot.internals.services.bans.BotBanService
-import me.melijn.melijnbot.internals.services.birthday.BirthdayService
 import me.melijn.melijnbot.internals.services.donator.DonatorService
 import me.melijn.melijnbot.internals.services.games.RSPService
 import me.melijn.melijnbot.internals.services.games.TTTService
@@ -13,12 +12,12 @@ import me.melijn.melijnbot.internals.services.messagedeletion.MessageDeletionSer
 import me.melijn.melijnbot.internals.services.music.SpotifyService
 import me.melijn.melijnbot.internals.services.mutes.MuteService
 import me.melijn.melijnbot.internals.services.ppexpiry.PPExpireService
+import me.melijn.melijnbot.internals.services.ratelimits.RatelimitService
 import me.melijn.melijnbot.internals.services.reddit.RedditAboutService
 import me.melijn.melijnbot.internals.services.reddit.RedditService
 import me.melijn.melijnbot.internals.services.reminders.ReminderService
 import me.melijn.melijnbot.internals.services.roles.RolesService
 import me.melijn.melijnbot.internals.services.statesync.EmoteCacheService
-import me.melijn.melijnbot.internals.services.twitter.TwitterService
 import me.melijn.melijnbot.internals.services.voice.VoiceScoutService
 import me.melijn.melijnbot.internals.services.votes.VoteReminderService
 import me.melijn.melijnbot.internals.web.WebManager
@@ -40,29 +39,31 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         val podInfo = container.podInfo
         slowServices.add(BanService(shardManager, daoManager, podInfo, webManager.proxiedHttpClient))
         slowServices.add(MuteService(shardManager, daoManager, podInfo))
-        slowServices.add(BirthdayService(shardManager, webManager.proxiedHttpClient, daoManager))
+//        slowServices.add(BirthdayService(shardManager, webManager.proxiedHttpClient, daoManager))
 
         // TODO: create microservice for proper ratelimits
         webManager.spotifyApi?.let { spotifyApi ->
             services.add(SpotifyService(spotifyApi))
         }
 
+        slowServices.add(RatelimitService(shardManager))
         slowServices.add(VoiceScoutService(container, shardManager))
         slowServices.add(RolesService(daoManager.tempRoleWrapper, shardManager))
         slowServices.add(BotBanService(shardManager, daoManager))
         slowServices.add(EmoteCacheService(daoManager.emoteCache, shardManager))
 
         services.add(MessageDeletionService(shardManager))
-        slowServices.add(
-            TwitterService(
-                webManager.proxiedHttpClient,
-                container.settings.api.twitter.bearerToken,
-                daoManager.twitterWrapper,
-                daoManager.supporterWrapper,
-                shardManager,
-                podInfo
-            )
-        )
+        services.add(RatelimitService(shardManager))
+//        slowServices.add(
+//            TwitterService(
+//                webManager.proxiedHttpClient,
+//                container.settings.api.twitter.bearerToken,
+//                daoManager.twitterWrapper,
+//                daoManager.supporterWrapper,
+//                shardManager,
+//                podInfo
+//            )
+//        )
 
         // Some conditional services
         if (podInfo.minShardId == 0) {

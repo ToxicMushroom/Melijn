@@ -52,6 +52,9 @@ class Container {
             field = value
         }
 
+    var ratelimiting: Boolean = false
+
+
     var startTime = System.currentTimeMillis()
 
     var settings: Settings = Settings.initSettings()
