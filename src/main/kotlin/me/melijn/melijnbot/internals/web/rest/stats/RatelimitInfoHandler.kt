@@ -11,7 +11,7 @@ object RatelimitInfoHandler {
     suspend fun handleStatsResponse(context: RequestContext) {
         val dataObject = DataObject.empty()
             .put("errorCounts", objectMapper.writeValueAsString(RatelimitService.lastMinuteErrorCounts))
-            .put("pathErrorCounts", objectMapper.writeValueAsString(RatelimitService.lastMinuteErrorCounts))
+            .put("pathErrorCounts", objectMapper.writeValueAsString(RatelimitService.lastMinuteRouteErrorCounts))
 
         context.call.respondJson(dataObject)
     }
