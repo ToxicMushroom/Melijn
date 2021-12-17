@@ -38,11 +38,11 @@ class RatelimitService(val shardManager: ShardManager) : Service("ratelimit-hand
 
     private fun ratelimitOn(errorCount: Int, successCount: Int) {
         Container.instance.ratelimiting = true
-        logger.error("lots of errors! errors: ${errorCount}, success: $successCount")
+        logger.error("lots of errors! errors: ${errorCount}, success: $successCount, limit: ${errorLimit}/minute")
     }
 
     private fun ratelimitOff(errorCount: Int, successCount: Int) {
         Container.instance.ratelimiting = false
-        logger.warn("switching rate-limiting off. errors:${errorCount}, success: $successCount")
+        logger.warn("switching rate-limiting off. errors: ${errorCount}, success: $successCount, limit: ${errorLimit}/minute")
     }
 }
