@@ -18,6 +18,7 @@ class RedisCommand : AbstractCommand("command.redis") {
             sendRsp(context, "Redis not initizialized")
             return
         }
+
         when (context.args[0]) {
             "flush" -> {
                 commands
