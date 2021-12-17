@@ -46,7 +46,6 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
             services.add(SpotifyService(spotifyApi))
         }
 
-        slowServices.add(RatelimitService(shardManager))
         slowServices.add(VoiceScoutService(container, shardManager))
         slowServices.add(RolesService(daoManager.tempRoleWrapper, shardManager))
         slowServices.add(BotBanService(shardManager, daoManager))
