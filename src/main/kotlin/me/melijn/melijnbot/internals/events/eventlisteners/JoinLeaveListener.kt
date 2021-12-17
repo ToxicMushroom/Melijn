@@ -1,6 +1,10 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
+import io.ktor.client.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.events.AbstractListener
@@ -13,6 +17,7 @@ import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.audit.ActionType
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
@@ -55,119 +60,86 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         return channel == null
     }
 
-    private fun onGuildMemberLeave(event: GuildMemberRemoveEvent) = TaskManager.async(event.user, event.guild) {
+    private fun onGuildMemberLeave(event: GuildMemberRemoveEvent): Job = TaskManager.async(event.user, event.guild) {
+        val guild = event.guild
         val daoManager = container.daoManager
         val user = event.user
 
         val proxiedHttp = container.webManager.proxiedHttpClient
-        if (!daoManager.unverifiedUsersWrapper.contains(event.guild.idLong, user.idLong)) {
-            if (event.guild.selfMember.hasPermission(Permission.BAN_MEMBERS, Permission.VIEW_AUDIT_LOGS)) {
-                val stateAction: suspend () -> Boolean =
-                    { daoManager.bannedOrKickedTriggersLeaveWrapper.shouldTrigger(event.guild.idLong) }
-                val ban = event.guild.retrieveBan(user).awaitOrNull()
-                if (ban == null) {
-                    val auditKick = if (event.guild.selfMember.hasPermission(
-                            Permission.BAN_MEMBERS,
+        val welcomeContext = WelcomeContext(daoManager, proxiedHttp, guild, user)
+
+        val guildId = guild.idLong
+        val userId = user.idLong
+
+        if (!daoManager.unverifiedUsersWrapper.contains(guildId, userId)) {
+            if (guild.selfMember.hasPermission(Permission.VIEW_AUDIT_LOGS)) {
+                val stateAction: suspend () -> Boolean = {
+                    daoManager.bannedOrKickedTriggersLeaveWrapper.shouldTrigger(guildId)
+                }
+                delay(3000) // wait for ban event to come through :)
+                val isBanned = daoManager.bannedUsers.contains(userId, guildId) // ban event will inject this
+                if (!isBanned) {
+                    val auditKick = if (guild.selfMember.hasPermission(
                             Permission.VIEW_AUDIT_LOGS
                         )
                     ) {
-                        event.guild.retrieveAuditLogs()
+                        guild.retrieveAuditLogs()
                             .type(ActionType.KICK)
                             .limit(5)
                             .awaitOrNull()
                     } else null
 
                     if (auditKick == null) {
-                        JoinLeaveUtil.postWelcomeMessage(
-                            daoManager,
-                            proxiedHttp,
-                            event.guild,
-                            user,
-                            ChannelType.LEAVE,
-                            MessageType.LEAVE
-                        )
+                        postWelcome(welcomeContext, ChannelType.LEAVE)
                     } else {
-                        var kicked = false
-                        for (entry in auditKick) {
-                            if (entry.targetIdLong == user.idLong) {
-                                if (OffsetDateTime.now(ZoneOffset.UTC).until(entry.timeCreated, ChronoUnit.SECONDS) < 3) {
-                                    kicked = true
-                                    break
-                                }
-                            }
+                        val now = OffsetDateTime.now(ZoneOffset.UTC)
+                        val kicked = auditKick.any { entry ->
+                            if (entry.targetIdLong != userId) return@any false
+                            return@any now.until(entry.timeCreated, ChronoUnit.SECONDS) < 3
                         }
 
                         if (kicked) {
-                            JoinLeaveUtil.postWelcomeMessage(
-                                daoManager,
-                                proxiedHttp,
-                                event.guild,
-                                user,
-                                ChannelType.KICKED,
-                                MessageType.KICKED
-                            )
+                            postWelcome(welcomeContext, ChannelType.KICKED)
                             if (stateAction()) {
-                                JoinLeaveUtil.postWelcomeMessage(
-                                    daoManager,
-                                    proxiedHttp,
-                                    event.guild,
-                                    user,
-                                    ChannelType.LEAVE,
-                                    MessageType.LEAVE
-                                )
+                                postWelcome(welcomeContext, ChannelType.LEAVE)
                             }
                         } else {
-                            JoinLeaveUtil.postWelcomeMessage(
-                                daoManager,
-                                proxiedHttp,
-                                event.guild,
-                                user,
-                                ChannelType.LEAVE,
-                                MessageType.LEAVE
-                            )
+                            postWelcome(welcomeContext, ChannelType.LEAVE)
                         }
                     }
                 } else {
-                    JoinLeaveUtil.postWelcomeMessage(
-                        daoManager,
-                        proxiedHttp,
-                        event.guild,
-                        user,
-                        ChannelType.BANNED,
-                        MessageType.BANNED
-                    )
+                    postWelcome(welcomeContext, ChannelType.BANNED)
                     if (stateAction()) {
-                        JoinLeaveUtil.postWelcomeMessage(
-                            daoManager,
-                            proxiedHttp,
-                            event.guild,
-                            user,
-                            ChannelType.LEAVE,
-                            MessageType.LEAVE
-                        )
+                        postWelcome(welcomeContext, ChannelType.LEAVE)
                     }
                 }
             } else {
-                JoinLeaveUtil.postWelcomeMessage(
-                    daoManager,
-                    proxiedHttp,
-                    event.guild,
-                    user,
-                    ChannelType.LEAVE,
-                    MessageType.LEAVE
-                )
-
+                postWelcome(welcomeContext, ChannelType.LEAVE)
             }
 
-        } else if (!guildHasNoVerification(event.guild)) {
-            JoinLeaveUtil.postWelcomeMessage(
-                daoManager,
-                proxiedHttp,
-                event.guild,
-                user,
-                ChannelType.PRE_VERIFICATION_LEAVE,
-                MessageType.PRE_VERIFICATION_LEAVE
-            )
+        } else if (!guildHasNoVerification(guild)) {
+            postWelcome(welcomeContext, ChannelType.PRE_VERIFICATION_LEAVE)
         }
     }
+
+    suspend fun postWelcome(welcomeContext: WelcomeContext, cType: ChannelType) {
+        val messageType = when (cType) {
+            ChannelType.PRE_VERIFICATION_LEAVE -> MessageType.PRE_VERIFICATION_LEAVE
+            ChannelType.LEAVE -> MessageType.LEAVE
+            ChannelType.BANNED -> MessageType.BANNED
+            ChannelType.KICKED -> MessageType.KICKED
+            else -> return
+        }
+        JoinLeaveUtil.postWelcomeMessage(
+            welcomeContext.daoManager, welcomeContext.httpClient, welcomeContext.guild,
+            welcomeContext.user, cType, messageType
+        )
+    }
+
+    data class WelcomeContext(
+        val daoManager: DaoManager,
+        val httpClient: HttpClient,
+        val guild: Guild,
+        val user: User
+    )
 }

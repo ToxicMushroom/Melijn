@@ -32,6 +32,7 @@ class EventManager(val container: Container) : IEventManager {
         val voiceJoinListener = VoiceJoinListener(container)
         val voiceLeaveListener = VoiceLeaveListener(container)
         val voiceMoveListener = VoiceMoveListener(container)
+        val bannedEventListener = BannedEventListener(container)
         val joinLeaveListener = JoinLeaveListener(container)
 //        val roleAddedListener = RoleAddedListener(container)
 //        val roleRemovedListener = RoleRemovedListener(container)
@@ -41,7 +42,7 @@ class EventManager(val container: Container) : IEventManager {
             .loadCommands()
             .build()
 
-        // ORDER WILL AFFECT ORDER IN WICH EVENTS ARE CALLED
+        // ORDER WILL AFFECT ORDER IN WHICH EVENTS ARE CALLED
         eventListeners.add(container.eventWaiter)
         eventListeners.add(commandListener)
         eventListeners.add(messageReceivedListener)
@@ -51,6 +52,7 @@ class EventManager(val container: Container) : IEventManager {
         eventListeners.add(botJoinLeaveListener)
         eventListeners.add(botStartShutdownListener)
         eventListeners.add(messageUpdateListener)
+        eventListeners.add(bannedEventListener)
         eventListeners.add(joinLeaveListener)
         eventListeners.add(voiceJoinListener)
         eventListeners.add(voiceLeaveListener)

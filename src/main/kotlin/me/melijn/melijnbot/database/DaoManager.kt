@@ -106,6 +106,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
         val afterTableFunctions = mutableListOf<() -> Unit>()
     }
 
+    val bannedUsers: BannedUserCacheDao
     val emoteCache: EmoteCacheDao
     val tracksWrapper: TracksWrapper
     val playlistWrapper: PlaylistWrapper
@@ -236,6 +237,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
             dbVersion = driverManager.getDBVersion()
             connectorVersion = driverManager.getConnectorVersion()
         }
+
+        bannedUsers = BannedUserCacheDao(driverManager)
 
         emoteCache = EmoteCacheDao(driverManager)
         tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
