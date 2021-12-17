@@ -5,7 +5,6 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.translation.KSOFT_SI
 import me.melijn.melijnbot.internals.utils.RunConditionUtil
 import me.melijn.melijnbot.internals.utils.countWords
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -14,6 +13,8 @@ import me.melijn.melijnbot.internals.utils.remove
 import me.melijn.melijnbot.internals.utils.withVariable
 import me.melijn.melijnbot.internals.web.WebUtils
 import net.dv8tion.jda.api.entities.MessageEmbed
+
+const val GENIUS: String = "https://api.genius.com"
 
 class LyricsCommand : AbstractCommand("command.lyrics") {
 
@@ -68,14 +69,15 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
         author: String?
     ): Pair<String, String>? {
         val json = WebUtils.getJsonFromUrl(context.webManager.proxiedHttpClient,
-            "$KSOFT_SI/lyrics/search",
+            "$GENIUS/search",
             mutableMapOf(
                 Pair("q", title + (author?.let { " $author" } ?: "")),
                 Pair("limit", "1")
             ),
-            mutableMapOf(Pair("Authorization", context.container.settings.tokens.kSoftApi))
+            mutableMapOf(Pair("Authorization", context.container.settings.tokens.geniusApi))
         ) ?: return null
 
+        println(json)
         val res = try {
             json.getArray("data")
         } catch (t: Throwable) {
