@@ -32,6 +32,7 @@ class KillerInterceptor : Interceptor {
                     .replace("/webhooks/ID/.*/messages.*", "/webhooks/ID/WEBHOOK_ID/messages")
                 val current = map[route] ?: mutableMapOf()
                 current[response.code] = (current[response.code] ?: 0) + 1
+                map[route] = current
                 errorCounters[response.code] = (errorCounters[response.code] ?: 0) + 1
             }
 
