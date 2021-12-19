@@ -62,7 +62,7 @@ class SupporterDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     }
 
     fun addUser(supporter: Supporter) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, guildId, startDate, lastServerPickTime) VALUES (?, ?, ?, ?)",
+        driverManager.executeUpdate("INSERT INTO $table (userId, guildId, startDate, lastServerPickTime) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
             supporter.userId, supporter.guildId, supporter.startMillis, supporter.lastServerPickTime)
     }
 

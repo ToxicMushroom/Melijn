@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.utility
 
+import com.sksamuel.scrimage.color.RGBColor
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -34,15 +35,26 @@ class ColorCommand : AbstractCommand("command.color") {
         val decTitle = context.getTranslation("$root.eb.dec.title")
         val hsbTitle = context.getTranslation("$root.eb.hsb.title")
 
+        val rgb = RGBColor(color.red, color.green, color.blue, color.transparency)
+        val grayscale = rgb.toGrayscale()
+        val hsl = rgb.toHSL()
+        val cmyk = rgb.toCMYK()
         val hsbArr = Color.RGBtoHSB(color.red, color.green, color.blue, FloatArray(3))
         val hsbFormat = "(${(hsbArr[0] * 360).toInt()}, ${(hsbArr[1] * 100).toInt()}%, ${(hsbArr[2] * 100).toInt()}%)"
 
         val eb = Embedder(context)
             .setColor(color)
             .addField(hexTitle, color.toHex(), true)
-            .addField(rgbTitle, "(${color.red}, ${color.green}, ${color.blue})", true)
+            .addField(rgbTitle, "rgb(${color.red}, ${color.green}, ${color.blue})", true)
             .addField(decTitle, color.rgb.toString(), true)
             .addField(hsbTitle, hsbFormat, true)
+            .addField("HSL info", "${hsl.hue.toInt()}, ${(hsl.saturation * 100).toInt()}%, ${(hsl.lightness * 100).toInt()}%", true)
+            .addField(
+                "CMYK info",
+                "${(cmyk.c * 100).toInt()}, ${(cmyk.m * 100).toInt()}, ${(cmyk.y * 100).toInt()}, ${(cmyk.k * 100).toInt()}",
+                true
+            )
+            .addField("Grayscale info", "${grayscale.gray}%", true)
             .setThumbnail("attachment://file.png")
 
         val bais = ByteArrayOutputStream()
@@ -50,7 +62,7 @@ class ColorCommand : AbstractCommand("command.color") {
             ImageIO.write(ImageUtils.createPlane(64, color.rgb), "png", it)
         }
 
-        context.channel.sendMessage(eb.build())
+        context.channel.sendMessageEmbeds(eb.build())
             .addFile(bais.toByteArray(), "file.png")
             .queue()
     }

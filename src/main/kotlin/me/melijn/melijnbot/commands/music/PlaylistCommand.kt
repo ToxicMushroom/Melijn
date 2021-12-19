@@ -12,7 +12,6 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendPaginationModularMsg
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import net.dv8tion.jda.api.Permission
 
 const val tracksLimit = 25
 const val playlistLimit = 3
@@ -196,16 +195,9 @@ class PlaylistCommand : AbstractCommand("command.playlist") {
                         context.getLanguage()
                     )
                 ) return
-                val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
-                if (notEnoughPermissionsAndMessage(
-                        context,
-                        vc,
-                        Permission.VOICE_SPEAK,
-                        Permission.VOICE_CONNECT
-                    )
-                ) return
-
-                context.lavaManager.openConnection(vc, context.getGuildMusicPlayer().groupId)
+                val vc = context.member.voiceState?.channel
+                    ?: throw IllegalStateException("prob race condition")
+                if (!context.lavaManager.tryToConnectToVCNMessage(context, vc, guildMusicPlayer.groupId)) return
             }
 
             val tracks = playlist.encodedTracks.toSortedMap().map {

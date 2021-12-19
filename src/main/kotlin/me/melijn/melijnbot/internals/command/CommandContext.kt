@@ -14,7 +14,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.ZoneId
 import java.util.*
-import kotlin.collections.ArrayList
 
 class CommandContext(
     override val message: Message,
@@ -175,7 +174,7 @@ class CommandContext(
         require(!(isFromGuild && !selfMember.hasPermission(textChannel, Permission.MESSAGE_WRITE))) {
             "No MESSAGE_WRITE permission"
         }
-        channel.sendMessage(embed).queue()
+        channel.sendMessageEmbeds(embed).queue()
     }
 
     override suspend fun getLanguage(): String = me.melijn.melijnbot.internals.translation.getLanguage(this)

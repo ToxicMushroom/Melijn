@@ -7,6 +7,7 @@ import club.minnced.discord.webhook.send.WebhookEmbedBuilder
 import club.minnced.discord.webhook.send.WebhookMessageBuilder
 import io.ktor.client.*
 import io.ktor.client.request.*
+import io.sentry.Sentry
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.socialmedia.TwitterWebhook
@@ -112,9 +113,14 @@ class TwitterService(
 
             val orderedMentions = tweet.mentions.sortedBy { it.end }.reversed()
             for ((start, end, handle) in orderedMentions) {
-                val p1 = content.substring(0, start)
-                val p2 = content.substring(end, content.length)
-                content = p1 + "[@" + handle + "](https://twitter.com/${handle})" + p2
+                try {
+                    val p1 = content.substring(0, start)
+                    val p2 = content.substring(end, content.length)
+                    content = p1 + "[@" + handle + "](https://twitter.com/${handle})" + p2
+                } catch (t: Throwable) {
+                    val blub = IllegalStateException("Twitter does the stinky XD, ${content}\n${tweet.mentions}")
+                    Sentry.captureException(blub)
+                }
             }
 
             content = StringEscapeUtils.unescapeHtml4(content)
@@ -286,7 +292,7 @@ class TwitterService(
         }
 
         val newestTweetId = metaInfo.getString("newest_id", null)?.toLongOrNull() ?: list.firstOrNull()?.id
-        val author = users.first { it.id == twitterWebhook.twitterUserId }
+        val author = users.firstOrNull { it.id == twitterWebhook.twitterUserId } ?: return null
         return Tweets(author, newestTweetId, list)
     }
 

@@ -123,7 +123,7 @@ class MassKickCommand : AbstractCommand("command.masskick") {
 
         if (kickSuccess) {
             val kickedMessageDm = getKickMessage(language, privZoneId, guild, targetMember.user, author, kick)
-            kickingMessage?.editMessage(kickedMessageDm)?.override(true)?.queue()
+            kickingMessage?.editMessageEmbeds(kickedMessageDm)?.override(true)?.queue()
         } else {
             val failedMsg = context.getTranslation("message.kicking.failed")
             kickingMessage?.editMessage(failedMsg)?.queue()

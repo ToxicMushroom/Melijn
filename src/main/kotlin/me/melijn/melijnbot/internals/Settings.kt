@@ -100,7 +100,8 @@ data class Settings(
         var kSoftApi: String,
         var osu: String,
         var hot: String,
-        val tenor: String
+        val tenor: String,
+        val geniusApi: String
     )
 
     data class Database(
@@ -224,6 +225,7 @@ data class Settings(
                     get("token.osuApi"),
                     get("token.hot"),
                     get("token.tenor"),
+                    get("token.geniusApi"),
                 ),
                 Database(
                     get("database.database"),

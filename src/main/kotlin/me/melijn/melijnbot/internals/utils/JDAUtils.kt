@@ -254,6 +254,7 @@ suspend fun getTextChannelsByArgsNMessage(
     indexTo: Int,
     sameGuildAsContext: Boolean = true
 ): List<TextChannel>? {
+    if (argSizeCheckFailed(context, indexFrom)) return null
     val roles = mutableListOf<TextChannel>()
     for (i in indexFrom until indexTo) {
         val channel = getTextChannelByArgsNMessage(context, i, sameGuildAsContext) ?: return null

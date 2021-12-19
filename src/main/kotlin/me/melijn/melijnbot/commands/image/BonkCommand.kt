@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.image
 
-import com.wrapper.spotify.Base64
 import io.lettuce.core.SetArgs
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.DiscordSize
@@ -16,6 +15,7 @@ import me.melijn.melijnbot.internals.utils.withSafeVariable
 import net.dv8tion.jda.api.Permission
 import org.w3c.dom.NamedNodeMap
 import org.w3c.dom.Node
+import se.michaelthelin.spotify.Base64
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream

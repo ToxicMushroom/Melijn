@@ -4,6 +4,7 @@ import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.threading.TaskManager.async
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.awaitOrNull
@@ -75,8 +76,9 @@ suspend fun sendRspCodeBlocks(
             }
         }.toMutableList()
 
-
-        val message = textChannel.sendMessage(paginatedParts[0]).awaitOrNull() ?: return
+        val modular = paginatedParts.map { ModularMessage(it) }
+        val stored = StoringPagination(modular, 0)
+        val message = textChannel.sendMessage(stored.getPage(0)).awaitOrNull() ?: return
         registerPaginationMessage(textChannel, authorId, message, paginatedParts, 0)
 
         val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
@@ -159,14 +161,21 @@ suspend fun sendMsgCodeBlocks(
             }
         }.toMutableList()
 
-        val message = messageChannel.sendMessage(paginatedParts[0]).awaitOrNull()
-        message?.let {
-            if (messageChannel is TextChannel) {
-                registerPaginationMessage(messageChannel, authorId, it, paginatedParts, 0)
-            } else if (messageChannel is PrivateChannel) {
-                registerPaginationMessage(messageChannel, authorId, it, paginatedParts, 0)
-            }
+        val modular = paginatedParts.map { ModularMessage(it) }
+        val stored = StoringPagination(modular, 0)
+
+        if (messageChannel is TextChannel) {
+            val message = sendMsgAwaitN(messageChannel, stored.getPage(0))
+            if (message != null)
+                registerPaginationMessage(messageChannel, authorId, message, paginatedParts, 0)
+
+        } else if (messageChannel is PrivateChannel) {
+            val message = sendMsgAwaitN(messageChannel, stored.getPage(0))
+            if (message != null)
+                registerPaginationMessage(messageChannel, authorId, message, paginatedParts, 0)
+
         }
+
     } else {
         parts.forEachIndexed { index, msgPart ->
             messageChannel.sendMessage(

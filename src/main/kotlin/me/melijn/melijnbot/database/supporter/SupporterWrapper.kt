@@ -3,6 +3,7 @@ package me.melijn.melijnbot.database.supporter
 import com.fasterxml.jackson.module.kotlin.readValue
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objectMapper
+import java.util.concurrent.TimeUnit
 
 class SupporterWrapper(private val supporterDao: SupporterDao) {
 
@@ -18,14 +19,38 @@ class SupporterWrapper(private val supporterDao: SupporterDao) {
         }
     }
 
-    suspend fun getUsers(): List<Long> {
-        return supporterDao.getCacheEntry("users")?.let {
-            objectMapper.readValue<List<Long>>(it)
-        } ?: supporterDao.getSupporters().map { it.userId }
+    var userCacheTime = System.currentTimeMillis()
+    var serverCacheTime = System.currentTimeMillis()
+    var localUsers = HashSet<Long>()
+    var localGuilds = HashSet<Long>()
+    suspend fun getUsers(): HashSet<Long> {
+        val cacheDiff = System.currentTimeMillis() - userCacheTime
+        if (cacheDiff > TimeUnit.MILLISECONDS.convert(3L, TimeUnit.SECONDS)) {
+            val fetchedUsers = getUsersNoLocalCache()
+            localUsers = HashSet(fetchedUsers)
+            userCacheTime = System.currentTimeMillis()
+        }
+        return localUsers
+    }
+
+    private suspend fun getUsersNoLocalCache() = supporterDao.getCacheEntry("users")?.let {
+        objectMapper.readValue<List<Long>>(it)
+    } ?: supporterDao.getSupporters().map { it.userId }
+
+    suspend fun getGuilds(): HashSet<Long> {
+        val cacheDiff = System.currentTimeMillis() - serverCacheTime
+        if (cacheDiff > TimeUnit.MILLISECONDS.convert(3L, TimeUnit.SECONDS)) {
+            val fetchedGuilds = supporterDao.getCacheEntry("guilds")?.let {
+                objectMapper.readValue<List<Long>>(it)
+            } ?: supporterDao.getSupporters().map { it.guildId }
+            localGuilds = HashSet(fetchedGuilds)
+            serverCacheTime = System.currentTimeMillis()
+        }
+        return localGuilds
     }
 
     suspend fun add(userId: Long) {
-        val currentUsers = getUsers()
+        val currentUsers = getUsersNoLocalCache()
         if (!currentUsers.contains(userId)) {
             val addTime = System.currentTimeMillis()
             val newUser = Supporter(userId, -1, addTime, 0)
@@ -65,10 +90,5 @@ class SupporterWrapper(private val supporterDao: SupporterDao) {
 
     suspend fun getSupporter(supporterId: Long): Supporter? {
         return supporterDao.getCacheEntry(supporterId)?.let { objectMapper.readValue<Supporter>(it) }
-    }
-
-    suspend fun getGuilds(): List<Long> {
-        return supporterDao.getCacheEntry("guilds")?.let { objectMapper.readValue<List<Long>>(it) }
-            ?: supporterDao.getSupporters().map { it.guildId }
     }
 }

@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.jda.MelijnSessionController
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.toLCC
+import me.melijn.melijnbot.internals.web.rest.KillerInterceptor
 import net.dv8tion.jda.api.GatewayEncoding
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
@@ -20,6 +21,7 @@ import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.cache.CacheFlag
+import okhttp3.OkHttpClient
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import java.net.URI
@@ -102,6 +104,7 @@ object MelijnBot {
             .setBulkDeleteSplittingEnabled(false)
             .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }
+            .setHttpClientBuilder(OkHttpClient.Builder().addInterceptor(KillerInterceptor()))
             .setGatewayEncoding(GatewayEncoding.ETF)
 
         if (!container.settings.lavalink.enabled) {

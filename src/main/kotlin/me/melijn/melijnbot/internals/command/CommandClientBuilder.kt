@@ -280,7 +280,7 @@ class CommandClientBuilder(private val container: Container) {
         BlurpleCommand(),
         BotBanCommand(),
         VintageCommand(),
-        SpeedupGif(),
+        SpeedupGifCommand(),
         BrightnessCommand(),
         JPGCommand(),
         PNGCommand(),
@@ -297,7 +297,12 @@ class CommandClientBuilder(private val container: Container) {
         ManiaCommand(),
         TaikoCommand(),
         CatchTheBeatCommand(),
-        YoshiCommand()
+        YoshiCommand(),
+        MonoCommand(),
+        CloneRolePermissionsCommand(),
+        SetChannelOverrideCommand(),
+        OenkCommand(),
+        MusicPlayerCommand()
     )
 
     fun build(): CommandClient {

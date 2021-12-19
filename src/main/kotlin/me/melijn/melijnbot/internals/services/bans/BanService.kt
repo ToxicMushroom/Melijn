@@ -47,14 +47,10 @@ class BanService(
             val guild = shardManager.getGuildById(ban.guildId) ?: continue
 
             //If ban exists, unban and send log messages
-            val guildBan = guild.retrieveBanById(ban.bannedId).awaitOrNull() ?: continue
-            val bannedUser = shardManager.retrieveUserById(guildBan.user.idLong).awaitOrNull() ?: continue
+            val bannedUser = shardManager.retrieveUserById(ban.bannedId).awaitOrNull() ?: continue
             val banAuthorId = ban.banAuthorId
-            val banAuthor = if (banAuthorId == null) {
-                null
-            } else {
-                shardManager.retrieveUserById(banAuthorId).awaitOrNull()
-            }
+            val banAuthor = if (banAuthorId == null) null
+            else shardManager.retrieveUserById(banAuthorId).awaitOrNull()
 
             val exception = guild.unban(bannedUser).awaitEX()
             if (exception != null) {

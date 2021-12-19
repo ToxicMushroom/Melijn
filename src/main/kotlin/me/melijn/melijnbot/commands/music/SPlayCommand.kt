@@ -14,11 +14,11 @@ class SPlayCommand : AbstractCommand("command.splay") {
         name = "splay"
         aliases = arrayOf("sp", "search", "searchPlay")
         children = arrayOf(
-            YTArg(root),
+//            YTArg(root),
             SCArg(root)
         )
         runConditions = arrayOf(RunCondition.VC_BOT_OR_USER_DJ, RunCondition.VOTED)
-        discordChannelPermissions = arrayOf(Permission.MESSAGE_ADD_REACTION)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS)
         commandCategory = CommandCategory.MUSIC
     }
 

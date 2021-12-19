@@ -113,6 +113,7 @@ object ImageCommandUtil {
             }
 
             val temp = baos.toByteArray()
+            deleteLoadingMessage(message)
             if (temp.size > Message.MAX_FILE_SIZE) {
                 sendMsgMaxFilesizeHit(context, image)
                 return null

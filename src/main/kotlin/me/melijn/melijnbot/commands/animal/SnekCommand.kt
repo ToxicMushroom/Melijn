@@ -24,11 +24,11 @@ class SnekCommand : AbstractCommand("command.snek") {
 
         val eb = Embedder(context)
             .setTitle(title)
-            .setImage(getRandomPossumUrl(web, context.container.settings.api.imgHoard.token))
+            .setImage(getRandomSnakeUrl(web, context.container.settings.api.imgHoard.token))
         sendEmbedRsp(context, eb.build())
     }
 
-    private suspend fun getRandomPossumUrl(webManager: WebManager, token: String): String {
+    private suspend fun getRandomSnakeUrl(webManager: WebManager, token: String): String {
         val reply = WebUtils.getJsonFromUrl(
             webManager.httpClient, "https://api.miki.bot/images/random?tags=snake",
             headers = mapOf(Pair("Authorization", token))

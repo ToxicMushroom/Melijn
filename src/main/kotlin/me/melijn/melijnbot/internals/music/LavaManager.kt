@@ -3,10 +3,16 @@ package me.melijn.melijnbot.internals.music
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.llklient.player.IPlayer
 import me.melijn.llklient.player.LavaplayerPlayerWrapper
+import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.isPremiumGuild
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
+import me.melijn.melijnbot.internals.utils.replacePrefix
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.VoiceChannel
@@ -50,12 +56,13 @@ class LavaManager(
      */
     suspend fun tryToConnectToVCNMessage(context: ICommandContext, channel: VoiceChannel, groupId: String): Boolean {
         if (notEnoughPermissionsAndMessage(context, channel, Permission.VOICE_CONNECT)) return false
-        return if (channel.userLimit == 0 || channel.userLimit > channel.members.size || !notEnoughPermissionsAndMessage(
-                context,
-                channel,
-                Permission.VOICE_MOVE_OTHERS
-            )
-        ) {
+        val canJoin = (channel.userLimit == 0 || channel.userLimit > channel.members.size) || !notEnoughPermissionsAndMessage(
+            context,
+            channel,
+            Permission.VOICE_MOVE_OTHERS
+        )
+        val hasPremiumUsers = hasPremiumOrBelowLimitUserElseMessage(context, channel)
+        return if (hasPremiumUsers && canJoin) {
             openConnection(channel, groupId)
             true
         } else {
@@ -63,22 +70,42 @@ class LavaManager(
         }
     }
 
-    fun tryToConnectToVCSilent(voiceChannel: VoiceChannel, groupId: String): Boolean {
-        val guild: Guild = voiceChannel.guild
-        if (!guild.selfMember.hasPermission(voiceChannel, Permission.VOICE_CONNECT)) {
-            return false
+    suspend fun tryToConnectToVCSilent(channel: VoiceChannel, groupId: String): Boolean {
+        val guild: Guild = channel.guild
+        if (!guild.selfMember.hasPermission(channel, Permission.VOICE_CONNECT)) return false
+        val dao = Container.instance.daoManager
+        val channelNotFull = channel.userLimit == 0 || channel.userLimit > channel.members.size
+        val hasPremiumUsers = isPremiumGuild(dao, channel.guild.idLong) || channel.members.any {
+            dao.supporterWrapper.getUsers().contains(it.user.idLong)
         }
+        val canMove = guild.selfMember.hasPermission(
+            channel,
+            Permission.VOICE_MOVE_OTHERS
+        )
 
-        return if (voiceChannel.userLimit == 0 || voiceChannel.userLimit > voiceChannel.members.size || guild.selfMember.hasPermission(
-                voiceChannel,
-                Permission.VOICE_MOVE_OTHERS
-            )
-        ) {
-            openConnection(voiceChannel, groupId)
+        return if (hasPremiumUsers && (channelNotFull || canMove)) {
+            openConnection(channel, groupId)
             true
         } else {
             false
         }
+    }
+
+    private suspend fun hasPremiumOrBelowLimitUserElseMessage(
+        context: ICommandContext,
+        channel: VoiceChannel
+    ): Boolean {
+        val sum = context.lavaManager.jdaLavaLink?.nodeMap?.get("normal")?.sumOf { it.stats?.playingPlayers ?: 0 } ?: 0
+        if (sum <= FREE_PLAYER_LIMIT) return true
+
+        val dao = context.daoManager
+        val isPremium = isPremiumGuild(dao, channel.guild.idLong) || channel.members.any {
+            dao.supporterWrapper.getUsers().contains(it.user.idLong)
+        }
+        if (!isPremium) sendRsp(context, i18n.getTranslation(context, "music.requires.premium")
+            .replacePrefix(context)
+            .withVariable("queueLimit", FREE_PLAYER_LIMIT))
+        return isPremium
     }
 
     // run with VOICE_SAFE pls

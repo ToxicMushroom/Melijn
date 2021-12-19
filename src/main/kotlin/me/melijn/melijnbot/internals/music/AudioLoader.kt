@@ -3,9 +3,6 @@ package me.melijn.melijnbot.internals.music
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import com.wrapper.spotify.model_objects.specification.ArtistSimplified
-import com.wrapper.spotify.model_objects.specification.Track
-import com.wrapper.spotify.model_objects.specification.TrackSimplified
 import kotlinx.coroutines.delay
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
@@ -13,6 +10,7 @@ import me.melijn.melijnbot.database.audio.SongCacheWrapper
 import me.melijn.melijnbot.enums.SearchType
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.threading.SafeList
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.SC_SELECTOR
@@ -27,10 +25,14 @@ import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.Component
+import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified
+import se.michaelthelin.spotify.model_objects.specification.Track
+import se.michaelthelin.spotify.model_objects.specification.TrackSimplified
 import java.lang.Integer.min
 
 const val QUEUE_LIMIT = 500
 const val DONATE_QUEUE_LIMIT = 5000
+var FREE_PLAYER_LIMIT = 400
 
 class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
@@ -134,7 +136,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 } else {
                     sendMessageNoMatches(context, rawInput)
                 }
-            }, { //LLDisabledAndNotYTSearch
+            }, { // LLDisabledAndNotYTSearch
                 audioPlayerManager.loadItemOrdered(guildMusicPlayer, source, resultHandler)
             }, resultHandler)
         } catch (t: Throwable) {
@@ -225,7 +227,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                     || track.info.title.contains(title, true)
                 ) {
                     track.userData = TrackUserData(context.author)
-                    if (player.safeQueue(context, track, nextPos)) {
+                    val success = when (silent) {
+                        true -> player.safeQueueSilent(context.daoManager, track, nextPos)
+                        false -> player.safeQueue(context, track, nextPos)
+                    }
+                    if (success) {
                         if (!silent) {
                             sendMessageAddedTrack(context, track)
                         }
@@ -248,7 +254,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                         || track.info.title.contains(title, true)
                     ) {
                         track.userData = TrackUserData(context.author)
-                        if (player.safeQueue(context, track, nextPos)) {
+                        val success = when (silent) {
+                            true -> player.safeQueueSilent(context.daoManager, track, nextPos)
+                            false -> player.safeQueue(context, track, nextPos)
+                        }
+                        if (success) {
                             if (!silent) {
                                 sendMessageAddedTrack(context, track)
                             }
@@ -287,7 +297,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                     || track.info.title.contains(title, true)
                 ) {
                     track.userData = TrackUserData(context.author)
-                    if (player.safeQueue(context, track, nextPos)) {
+                    val success = when (silent) {
+                        true -> player.safeQueueSilent(context.daoManager, track, nextPos)
+                        false -> player.safeQueue(context, track, nextPos)
+                    }
+                    if (success) {
                         if (!silent) {
                             sendMessageAddedTrack(context, track)
                         }
@@ -356,8 +370,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val limit = if (isPremiumGuild(context)) QUEUE_LIMIT else DONATE_QUEUE_LIMIT
         val slotsLeft = limit - context.getGuildMusicPlayer().guildTrackManager.trackSize()
 
-        val loadedTracks = mutableListOf<Track>()
-        val failedTracks = mutableListOf<Track>()
+        val loadedTracks = SafeList<Track>()
+        val failedTracks = SafeList<Track>()
         val msg = context.getTranslation("command.play.loadingtrack" + if (tracks.size > 1) "s" else "")
             .withVariable(
                 "trackCount",
@@ -366,12 +380,17 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
         val message = sendRspAwaitEL(context, msg)
         for (track in tracks.take(slotsLeft)) {
-            loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true, nextPos) {
-                if (it) {
-                    loadedTracks.add(track)
-                } else {
-                    failedTracks.add(track)
-                }
+            loadSpotifyTrack(
+                context,
+                YT_SELECTOR + track.name,
+                track.artists,
+                track.durationMs,
+                true,
+                nextPos
+            ) { success ->
+                if (success) loadedTracks.add(track)
+                else failedTracks.add(track)
+
                 if (loadedTracks.size + failedTracks.size == tracks.size) {
                     val newMsg = context.getTranslation("command.play.loadedtrack" + if (tracks.size > 1) "s" else "")
                         .withVariable("loadedCount", loadedTracks.size.toString())
@@ -390,8 +409,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val limit = if (isPremiumGuild(context)) QUEUE_LIMIT else DONATE_QUEUE_LIMIT
         val slotsLeft = limit - context.getGuildMusicPlayer().guildTrackManager.trackSize()
 
-        val loadedTracks = mutableListOf<TrackSimplified>()
-        val failedTracks = mutableListOf<TrackSimplified>()
+        val loadedTracks = SafeList<TrackSimplified>()
+        val failedTracks = SafeList<TrackSimplified>()
         val msg = context.getTranslation("command.play.loadingtrack" + if (simpleTracks.size > 1) "s" else "")
             .withVariable(
                 "trackCount",
@@ -400,12 +419,17 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
         val message = sendRspAwaitEL(context, msg)
         for (track in simpleTracks.take(slotsLeft)) {
-            loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true, nextPos) {
-                if (it) {
-                    loadedTracks.add(track)
-                } else {
-                    failedTracks.add(track)
-                }
+            loadSpotifyTrack(
+                context,
+                YT_SELECTOR + track.name,
+                track.artists,
+                track.durationMs,
+                true,
+                nextPos
+            ) { success ->
+                if (success) loadedTracks.add(track)
+                else failedTracks.add(track)
+
                 if (loadedTracks.size + failedTracks.size == simpleTracks.size) {
                     val newMsg =
                         context.getTranslation("command.play.loadedtrack" + if (simpleTracks.size > 1) "s" else "")
@@ -531,7 +555,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val eb = Embedder(context)
             .setTitle(title)
             .setDescription(menu)
-        return MessageBuilder().setEmbed(eb.build())
+        return MessageBuilder().setEmbeds(eb.build())
     }
 
     suspend fun loadNewTrack(

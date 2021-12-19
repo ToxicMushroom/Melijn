@@ -212,7 +212,8 @@ class HelpCommand : AbstractCommand("command.help") {
                 .setEmbeds(embedder.build())
                 .setActionRows(
                     ActionRow.of(
-                        Button.primary("help_list", "command list")
+                        Button.primary("help_list", "command list"),
+                        Button.link("https://melijn.com/legal", "Privacy Policy")
                     )
                 )
             sendRsp(context, messageBuilder.build())

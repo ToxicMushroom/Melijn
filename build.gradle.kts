@@ -3,16 +3,16 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("application")
-    id("com.apollographql.apollo") version "2.5.9"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
-    kotlin("jvm") version "1.5.21"
+    id("com.apollographql.apollo") version "2.5.11"
+    id("com.github.johnrengelman.shadow") version "7.1.0"
+    kotlin("jvm") version "1.6.10"
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
 group = "me.melijn.melijnbot"
 version = "2.1.0"
 
-configure<JavaPluginConvention> {
+configure<JavaPluginExtension> {
     sourceCompatibility = JavaVersion.VERSION_15
     targetCompatibility = JavaVersion.VERSION_15
 }
@@ -45,23 +45,24 @@ repositories {
     maven("https://nexus.melijn.com/repository/jitpack/") // pooppack mirror
 }
 
-val jackson = "2.12.4" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-val ktor = "1.6.2"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
-val apollo = "2.5.9" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
-val kotlinX = "1.5.1" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-val kotlin = "1.5.21"
-val scrimage = "4.2.0.109-SNAPSHOT"
+val jackson = "2.13.0" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+val ktor = "1.6.7"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
+val apollo = "2.5.11" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
+val kotlinX = "1.5.2-native-mt" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
+val kotlin = "1.6.10"
+val scrimage = "4.0.23"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.3.0_307") {
+    implementation("net.dv8tion:JDA:4.4.0_351") {
         exclude("opus-java")
     }
 
-    implementation("io.sentry:sentry:5.0.1")
+    implementation("io.sentry:sentry:5.4.3")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
-    implementation("club.minnced:discord-webhooks:0.5.8")
+    implementation("club.minnced:discord-webhooks:0.7.4")
+
     // https://github.com/freya022/JEmojis
     implementation("com.github.ToxicMushroom:JEmojis:a8c82848f166893f67251c741579c74c80fbb2dd")
 
@@ -69,10 +70,10 @@ dependencies {
     implementation("com.sedmelluq:jda-nas:1.1.0")
 
     // https://github.com/sedmelluq/lavaplayer
-    implementation("com.sedmelluq:lavaplayer:1.3.78")
+    implementation("com.github.walkyst:lavaplayer-fork:1.3.96")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fllklient%2FLavalink-Klient
-    implementation("me.melijn.llklient:Lavalink-Klient:2.2.3")
+    implementation("me.melijn.llklient:Lavalink-Klient:2.2.4")
 
     api("org.jetbrains.kotlin:kotlin-script-util:$kotlin")
     api("org.jetbrains.kotlin:kotlin-compiler:$kotlin")
@@ -88,7 +89,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.0")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.2.23")
+    implementation("org.postgresql:postgresql:42.3.1")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinX")
@@ -100,10 +101,10 @@ dependencies {
     implementation("me.duncte123:weebJava:3.0.1_4")
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation("se.michaelthelin.spotify:spotify-web-api-java:6.5.4")
+    implementation("se.michaelthelin.spotify:spotify-web-api-java:7.0.0")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-    implementation("ch.qos.logback:logback-classic:1.2.5")
+    implementation("ch.qos.logback:logback-classic:1.2.8")
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     implementation("com.fasterxml.jackson.core:jackson-core:$jackson")
@@ -135,7 +136,7 @@ dependencies {
     implementation("com.apollographql.apollo:apollo-coroutines-support:$apollo")
 
     // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
-    implementation("io.lettuce:lettuce-core:6.1.4.RELEASE")
+    implementation("io.lettuce:lettuce-core:6.1.5.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")

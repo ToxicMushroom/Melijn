@@ -80,7 +80,7 @@ suspend fun sendPrivateMessageExtra(
     embedEditor: EmbedEditor,
     extra: String
 ): Boolean {
-    return user.openPrivateChannel().awaitOrNull()?.sendMessage(embedEditor.build())?.awaitOrNull()?.run {
+    return user.openPrivateChannel().awaitOrNull()?.sendMessageEmbeds(embedEditor.build())?.awaitOrNull()?.run {
         if (extra == "RPS") {
             this.addReaction(RockPaperScissorsGame.RPS.ROCK.unicode).queue() // rock 🪨
             this.addReaction(RockPaperScissorsGame.RPS.PAPER.unicode).queue() // paper 📰

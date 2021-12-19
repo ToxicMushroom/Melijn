@@ -21,6 +21,7 @@ import me.melijn.melijnbot.internals.web.rest.codes.VerificationCodeResponseHand
 import me.melijn.melijnbot.internals.web.rest.commands.CommandMapResponseHandler
 import me.melijn.melijnbot.internals.web.rest.commands.FullCommandsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.convert.UpgradeGuildsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.eval.EvalResponseHandler
 import me.melijn.melijnbot.internals.web.rest.info.GetGuildResponseHandler
 import me.melijn.melijnbot.internals.web.rest.info.PostGuildResponseHandler
 import me.melijn.melijnbot.internals.web.rest.member.MemberInfoResponseHandler
@@ -35,6 +36,7 @@ import me.melijn.melijnbot.internals.web.rest.settings.starboard.PostStarboardSe
 import me.melijn.melijnbot.internals.web.rest.shutdown.ShutdownResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.EventStatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.stats.PublicStatsResponseHandler
+import me.melijn.melijnbot.internals.web.rest.stats.RatelimitInfoHandler
 import me.melijn.melijnbot.internals.web.rest.stats.StatsResponseHandler
 import me.melijn.melijnbot.internals.web.rest.voted.VotedResponseHandler
 import me.melijn.melijnbot.objectMapper
@@ -89,6 +91,14 @@ class RestServer(container: Container) {
             get("/stats") {
                 try {
                     StatsResponseHandler.handleStatsResponse(RequestContext(call, container))
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                    call.respondText { t.message + "\n" + t.stackTraceToString() }
+                }
+            }
+            get("/ratelimitinfo") {
+                try {
+                    RatelimitInfoHandler.handleStatsResponse(RequestContext(call, container))
                 } catch (t: Throwable) {
                     t.printStackTrace()
                     call.respondText { t.message + "\n" + t.stackTraceToString() }
@@ -152,6 +162,10 @@ class RestServer(container: Container) {
 
             post("/voted") {
                 VotedResponseHandler.handleVotedResponse(RequestContext(call, container))
+            }
+
+            post("/eval") {
+                EvalResponseHandler.handle(RequestContext(call, container))
             }
 
             post("/senddm/{userId}/{extra}") {

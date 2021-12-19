@@ -13,6 +13,7 @@ import me.melijn.melijnbot.internals.utils.replacePrefix
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
+import se.michaelthelin.spotify.exceptions.detailed.NotFoundException
 
 val spotifyURIRegex = Regex("spotify:(\\w+):(\\w+)")
 
@@ -23,7 +24,7 @@ class PlayCommand : AbstractCommand("command.play") {
         name = "play"
         aliases = arrayOf("p")
         children = arrayOf(
-            YTArg(root),
+//            YTArg(root),
             SCArg(root),
             AttachmentArg(root)
         )
@@ -231,15 +232,23 @@ class PlayCommand : AbstractCommand("command.play") {
                 audioLoader.loadSpotifyAlbum(context, simpleTrackList, nextPos)
             },
             { error ->
-                if (error is IllegalArgumentException) {
-                    val msg = context.getTranslation("message.spotify.unknownlink")
-                        .withVariable("url", MarkdownSanitizer.escape(context.fullArg))
-                    sendRsp(context, msg)
-                } else {
-                    val msg = context.getTranslation("message.spotify.down")
-                        .replacePrefix(context)
-                    sendRsp(context, msg)
-                    error.sendInGuild(context)
+                when (error) {
+                    is NotFoundException -> {
+                        val msg = context.getTranslation("message.spotify.notfound")
+                            .withVariable("url", MarkdownSanitizer.escape(context.fullArg))
+                        sendRsp(context, msg)
+                    }
+                    is IllegalArgumentException -> {
+                        val msg = context.getTranslation("message.spotify.unknownlink")
+                            .withVariable("url", MarkdownSanitizer.escape(context.fullArg))
+                        sendRsp(context, msg)
+                    }
+                    else -> {
+                        val msg = context.getTranslation("message.spotify.down")
+                            .replacePrefix(context)
+                        sendRsp(context, msg)
+                        error.sendInGuild(context)
+                    }
                 }
             }
         )

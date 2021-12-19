@@ -1,8 +1,8 @@
 package me.melijn.melijnbot.internals.utils
 
-import com.wrapper.spotify.Base64
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import se.michaelthelin.spotify.Base64
 import java.nio.ByteBuffer
 import kotlin.math.pow
 
