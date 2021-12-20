@@ -26,7 +26,7 @@ class EvalCommand : AbstractCommand("command.eval") {
     companion object {
         var paginateGE = true
         val engine: ScriptEngine? = ScriptEngineManager().getEngineByName("kotlin")
-        val evalImports = """
+        private val evalImports = """
                 import me.melijn.melijnbot.internals.utils.*
                 import me.melijn.melijnbot.internals.threading.*
                 import me.melijn.melijnbot.internals.command.*
@@ -41,34 +41,44 @@ class EvalCommand : AbstractCommand("command.eval") {
                 import javax.imageio.ImageIO
                 import kotlinx.coroutines.*""".trimIndent()
 
-        suspend fun evaluateGlobal(code: String): String {
-            if (engine == null) return "ScriptEngine is null"
 
+        suspend fun runCode(code: String, context: ICommandContext? = null): String {
+            val global = context == null
+            if (engine == null) return "ScriptEngine is null"
             var code1 = code
             val imports = code1.lines().takeWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
-
-            code1 = """$evalImports
-                ${imports.joinToString("\n\t\t\t")}
-                fun exec(): Deferred<Any?> {
+            val script = code1.lines().dropWhile { imports.contains(it) }
+                .joinToString("\n\t\t\t\t\t")
+                .replace("return ", "return@evalTaskValueNAsync ")
+            val globalVars = if (global) {
+                """
                     val shardManager = MelijnBot.shardManager
                     val container = Container.instance
+                """.trimIndent()
+            } else ""
+            val functionName = "exec"
+            val functionDefinition =
+                "fun $functionName(${if (global) "" else "context: ICommandContext"}): Deferred<Pair<Any?, String>> {"
+            code1 = """$evalImports
+                ${imports.joinToString("\n\t\t\t")}
+                $functionDefinition
+                    $globalVars
                     return TaskManager.evalTaskValueNAsync {
-                        ${
-                code1.lines().dropWhile { imports.contains(it) }
-                    .joinToString("\n\t\t\t\t\t")
-                    .replace("return ", "return@evalTaskValueNAsync ")
-            }
+                        $script
                     }
                 }""".trimIndent()
-
-            try {
+            return try {
                 engine.eval(code1)
                 val se = engine as KotlinJsr223JvmLocalScriptEngine
-                val resp: Deferred<Any?> = se.invokeFunction("exec") as Deferred<Any?>
-                return resp.await().toString()
 
+                val resp =
+                    (if (global) se.invokeFunction(functionName) else se.invokeFunction(functionName, context))
+                            as Deferred<Pair<Any?, String>>
+
+                val (result, error) = resp.await()
+                result?.toString() ?: "ERROR:\n```${error}```"
             } catch (t: Throwable) {
-                return "ERROR:\n```${t.message}```"
+                "ERROR:\n```${t.message}```"
             }
         }
     }
@@ -81,8 +91,8 @@ class EvalCommand : AbstractCommand("command.eval") {
             val sb = StringBuilder()
             for (podId in 0 until PodInfo.podCount) {
                 sb.append("[Pod-${podId}]: ")
-                if (podId == PodInfo.podId){
-                    sb.appendLine(evaluateGlobal(code))
+                if (podId == PodInfo.podId) {
+                    sb.appendLine(runCode(code))
                 } else {
                     val hostPattern = context.container.settings.botInfo.hostPattern
                     val url = hostPattern.replace("{podId}", podId) + "/eval"
@@ -95,38 +105,8 @@ class EvalCommand : AbstractCommand("command.eval") {
             }
             sendRspCodeBlock(context, "```INI\n${sb.toString().escapeMarkdown()}```", "INI", paginateGE)
         } else {
-            val result = evaluateCommand(context, code)
+            val result = runCode(code, context)
             sendRsp(context, result)
-        }
-    }
-
-    private suspend fun evaluateCommand(
-        context: ICommandContext,
-        code: String
-    ): String {
-        if (engine == null) return "ScriptEngine is null"
-        var code1 = code
-        val imports = code1.lines().takeWhile { it.startsWith("import ") || it.startsWith("\nimport ") }
-        code1 = """$evalImports
-                ${imports.joinToString("\n\t\t\t")}
-                fun exec(context: ICommandContext): Deferred<Any?> {
-                    return TaskManager.evalTaskValueNAsync {
-                        ${
-            code1.lines().dropWhile { imports.contains(it) }
-                .joinToString("\n\t\t\t\t\t")
-                .replace("return ", "return@evalTaskValueNAsync ")
-        }
-                    }
-                }""".trimIndent()
-
-        try {
-            engine.eval(code1)
-            val se = engine as KotlinJsr223JvmLocalScriptEngine
-            val resp: Deferred<Any?> = se.invokeFunction("exec", context) as Deferred<Any?>
-            return resp.await().toString()
-
-        } catch (t: Throwable) {
-            return "ERROR:\n```${t.message}```"
         }
     }
 }

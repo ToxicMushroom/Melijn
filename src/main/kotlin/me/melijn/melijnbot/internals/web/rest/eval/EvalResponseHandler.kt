@@ -16,9 +16,7 @@ object EvalResponseHandler {
 
         val code = context.call.receiveText()
         context.call.respondText(status = HttpStatusCode.OK) {
-            EvalCommand.evaluateGlobal(code)
+            EvalCommand.runCode(code)
         }
-
-
     }
 }

@@ -49,7 +49,7 @@ object TaskManager {
         }.run()
     }
 
-    fun <T> evalTaskValueNAsync(block: suspend CoroutineScope.() -> T?): Deferred<T?> = coroutineScope.async {
+    fun <T> evalTaskValueNAsync(block: suspend CoroutineScope.() -> T?): Deferred<Pair<T?, String>> = coroutineScope.async {
         EvalDeferredNTask {
             block.invoke(this)
         }.run()

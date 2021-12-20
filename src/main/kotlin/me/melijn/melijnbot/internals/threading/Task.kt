@@ -29,10 +29,13 @@ class DeferredNTask<T>(private val func: suspend () -> T?) : DeferredNKTRunnable
     }
 }
 
-class EvalDeferredNTask<T>(private val func: suspend () -> T?) : DeferredNKTRunnable<T> {
-
-    override suspend fun run(): T? {
-        return func()
+class EvalDeferredNTask<T>(private val func: suspend () -> T?) : DeferredNKTRunnable<Pair<T?, String>> {
+    override suspend fun run(): Pair<T?, String> {
+        return try {
+            func() to ""
+        } catch (t: Throwable) {
+            null to (t.message ?: "unknown")
+        }
     }
 }
 
