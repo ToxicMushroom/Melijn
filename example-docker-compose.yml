@@ -2,14 +2,14 @@ version: "3.9"
 # info: ports and volumes use host:container format
 services:
   melijn-redis:
-    image: redis:6.2.4
+    image: redis:6.2.6
     container_name: "melijn-redis"
     restart: always
     ports:
       - 6379:6379
     command: redis-server --requirepass replacethiswithasecurepassword # Replace the replacethiswithasecurepassword with a secure password
   melijn-postgres:
-    image: postgres:13.3
+    image: postgres:13.5
     container_name: "melijn-postgres"
     restart: always
     ports:
@@ -19,11 +19,11 @@ services:
 #      - /c/Data/melijn-postgresql:/var/lib/postgresql/data # windows (also google how to enable /c/ sharing in docker desktop)
     env_file:
       - postgres.env
-  melijn:
+  melijn: # comment this service out if you just want to run the database and redis in docker-compose and run the bot in intellij
     image: toxicmushroom/melijn:test # replace this image with the latest one or an image you created (check the readme for more info).
     container_name: "melijn"
     working_dir: /opt/melijn
-    network_mode: host # I recommend to change this if you know how to use ports or docker networks.
+    network_mode: host # I recommend changing this if you know how to use ports or docker networks.
     depends_on:
       - melijn-postgres
       - melijn-redis
