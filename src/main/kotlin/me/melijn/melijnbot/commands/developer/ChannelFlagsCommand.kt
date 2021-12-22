@@ -14,7 +14,7 @@ class ChannelFlagsCommand : AbstractCommand("command.channelflags") {
         name = "channelFlags"
         aliases = arrayOf("flags")
         runConditions = arrayOf(RunCondition.GUILD)
-        commandCategory = CommandCategory.ADMINISTRATION
+        commandCategory = CommandCategory.DEVELOPER
     }
 
     override suspend fun execute(context: ICommandContext) {
