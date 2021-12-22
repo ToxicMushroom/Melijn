@@ -20,11 +20,9 @@ class SetVerificationPasswordCommand : AbstractCommand("command.setverificationp
         val wrapper = context.daoManager.verificationPasswordWrapper
         if (context.args.isEmpty()) {
             val password = wrapper.getPassword(context.guildId)
-            val part = if (password.isBlank()) {
-                "unset"
-            } else {
-                "set"
-            }
+            val part = if (password.isBlank()) "unset"
+            else "set"
+
 
             val msg = context.getTranslation("$root.show.$part")
                 .withVariable("password", password)
@@ -36,9 +34,10 @@ class SetVerificationPasswordCommand : AbstractCommand("command.setverificationp
             wrapper.remove(context.guildId)
             context.getTranslation("$root.unset")
         } else {
-            wrapper.set(context.guildId, context.rawArg)
+            val pwd = context.rawArg.take(128)
+            wrapper.set(context.guildId, pwd)
             context.getTranslation("$root.set")
-                .withVariable(PLACEHOLDER_ARG, context.rawArg)
+                .withVariable(PLACEHOLDER_ARG, pwd)
         }
 
         sendRsp(context, msg)
