@@ -2,6 +2,7 @@ package me.melijn.melijnbot.internals.events
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.command.CommandClientBuilder
+import me.melijn.melijnbot.internals.command.SlashCommandClient
 import me.melijn.melijnbot.internals.events.eventlisteners.*
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendInGuild

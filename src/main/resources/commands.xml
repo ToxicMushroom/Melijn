@@ -1,0 +1,63 @@
+<commands>
+    <command name="count" comment="Do, well, counting.">
+        <arg name="number" comment="blub"/>
+    </command>
+
+<!--    <command name="voicestat" comment="Get statistics on voice chat activity">-->
+<!--        <command name="me" comment="Voice stats about yourself">-->
+<!--            <arg name="channel" comment="What channel to get statistics of" type="channel" required="false"/>-->
+<!--        </command>-->
+<!--    </command>-->
+
+<!--    <category name="image">-->
+<!--        <command name="filter" comment="Apply a filter to an image or animated GIF">-->
+<!--            <command name="blur" comment="Blur an image">-->
+<!--                <arg name="percentage" comment="How much to blur the image by (0-100%)" required="false" type="integer"/>-->
+<!--            </command>-->
+<!--            <command name="bump" comment="Make an image more bumpy"/>-->
+<!--            <command name="chrome" comment="Apply a chrome filter to an image">-->
+<!--                <arg name="amount" comment="The amount of chrome" required="false" type="integer"/>-->
+<!--                <arg name="exposure" comment="The filter's exposure" required="false" type="integer"/>-->
+<!--            </command>-->
+<!--            <command name="crystallize" comment="Pixelate an image by crystallizing it">-->
+<!--                <arg name="scale" comment="The size of the crystals (>=1)" required="false" type="integer"/>-->
+<!--                <arg name="thickness" comment="The thickness of the edges (>=1)" required="false" type="integer"/>-->
+<!--                <arg name="randomness" comment="How much randomness to add to the crystallisation (>=1)" type="integer"/>-->
+<!--            </command>-->
+<!--            <command name="dither" comment="Dither an image"/>-->
+<!--            <command name="edge" comment="Perform edge detection on an image"/>-->
+<!--            <command name="emboss" comment="Emboss an image"/>-->
+<!--            <command name="glow" comment="Make an image glow more">-->
+<!--                <arg name="amount" comment="How much to make the image glow by (0-100%)" type="integer" required="false"/>-->
+<!--            </command>-->
+<!--            <command name="gotham" comment="Apply a gotham filter to an image"/>-->
+<!--            <command name="grayscale" comment="Grayscale an image"/>-->
+<!--            <command name="invert" comment="Invert the colours of an image"/>-->
+<!--            <command name="kaleidoscope" comment="Apply a kaleidoscope effect to an image">-->
+<!--                <arg name="sides" comment="The amount of sides to add (>=3)" type="integer" required="true"/>-->
+<!--            </command>-->
+<!--            <command name="offset" comment="Shift an image along its axis">-->
+<!--                <arg name="x" comment="How many pixels to offset by in the X direction" type="integer" required="false"/>-->
+<!--                <arg name="y" comment="How many pixels to offset by in the Y direction" type="integer" required="false"/>-->
+<!--            </command>-->
+<!--            <command name="pixelate" comment="Pixelate an image">-->
+<!--                <arg name="blocksize" comment="The pixel block size (1-100)" type="integer" required="false"/>-->
+<!--            </command>-->
+<!--            <command name="prewitt" comment="Apply a prewitt filter to an image"/>-->
+<!--            <command name="roberts" comment="Apply a roberts filter to an image"/>-->
+<!--            <command name="rylanders" comment="Apply a rylanders filter to an image"/>-->
+<!--            <command name="sharpen" comment="Sharpen an image">-->
+<!--                <arg name="strength" comment="How much to sharpen by" type="integer" required="false"/>-->
+<!--            </command>-->
+<!--            <command name="solarize" comment="Warp and solarize the colours of an image"/>-->
+<!--            <command name="vintage" comment="Make an image look more vintage"/>-->
+<!--        </command>-->
+<!--        <command name="scaleimage" comment="Rescales an image">-->
+<!--            <arg name="factor" type="integer" required="true" comment="The factor by which to scale by. Must be between 0% and 500%."/>-->
+<!--        </command>-->
+<!--    </category>-->
+
+<!--    <category name="economy">-->
+<!--        <command name="claim" comment="Claim your daily coins"/>-->
+<!--    </category>-->
+</commands>
