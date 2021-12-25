@@ -260,3 +260,7 @@ fun String.isInside(vararg stringList: String, ignoreCase: Boolean): Boolean {
 fun String.isInside(stringList: Collection<String>, ignoreCase: Boolean): Boolean {
     return stringList.any { it.equals(this, ignoreCase) }
 }
+
+fun String.capitalize(): String {
+    return replaceFirstChar { if (it.isLowerCase()) it.uppercase() else it.toString() }
+}

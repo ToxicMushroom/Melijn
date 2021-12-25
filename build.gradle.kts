@@ -57,6 +57,7 @@ dependencies {
     implementation("net.dv8tion:JDA:4.4.0_351") {
         exclude("opus-java")
     }
+    implementation("com.github.minndevelopment:jda-ktx:2ea26b869a380cbe79e974ee4b56ab9bd98c59fc")
 
     implementation("io.sentry:sentry:5.5.0")
 

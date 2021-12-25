@@ -30,8 +30,10 @@ val objectMapper: ObjectMapper = jacksonObjectMapper()
 
 class Container {
 
+    val slashCommands: MutableCollection<CommandData> = mutableSetOf()
     var voteReq: Boolean = true
     var logToDiscord: Boolean = true
+
     lateinit var podInfo: PodInfo
 
     //millis, info

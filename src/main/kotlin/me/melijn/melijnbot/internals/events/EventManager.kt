@@ -39,6 +39,7 @@ class EventManager(val container: Container) : IEventManager {
 //        val roleRemovedListener = RoleRemovedListener(container)
         val boostListener = BoostListener(container)
         val lavaEventListener = container.jdaLavaLink
+        val slashCommandHandler = SlashCommandClient(container)
         val commandListener = CommandClientBuilder(container)
             .loadCommands()
             .build()
@@ -46,6 +47,7 @@ class EventManager(val container: Container) : IEventManager {
         // ORDER WILL AFFECT ORDER IN WHICH EVENTS ARE CALLED
         eventListeners.add(container.eventWaiter)
         eventListeners.add(commandListener)
+        eventListeners.add(slashCommandHandler)
         eventListeners.add(messageReceivedListener)
         eventListeners.add(messageDeletedListener)
         eventListeners.add(messageReactionAddedListener)

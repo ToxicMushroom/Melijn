@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
+import dev.minn.jda.ktx.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
@@ -20,7 +21,8 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
     }
 
     private suspend fun onStatusChange(event: StatusChangeEvent) {
-        val shardManager = event.jda.shardManager
+        val jda = event.jda
+        val shardManager = jda.shardManager
         if (shardManager == null) {
             logger.info("please use sharding")
             return
@@ -29,7 +31,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
         if (event.newStatus == JDA.Status.CONNECTED) {
             val readyShards = shardManager.shards.count { jda -> jda.status == JDA.Status.CONNECTED }
             logger.info("$readyShards/${shardManager.shards.size} shards ready")
-            event.jda.emotes.forEach {
+            jda.emotes.forEach {
                 container.daoManager.emoteCache.save(it)
             }
 
@@ -47,6 +49,12 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
                     container.serviceManager.startSlowServices()
                     logger.info("Slow Services ready")
                 }
+
+                jda.getGuildById(340081887265685504L)?.updateCommands()?.run {
+                    addCommands(container.slashCommands)
+                    await()
+                }
+                logger.info("Registered test slash command!")
             }
         }
     }
