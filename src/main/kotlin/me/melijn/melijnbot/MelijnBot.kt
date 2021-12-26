@@ -1,7 +1,6 @@
 package me.melijn.melijnbot
 
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory
-import dev.minn.jda.ktx.injectKTX
 import io.sentry.Sentry
 import kotlinx.coroutines.runBlocking
 import me.melijn.llklient.io.jda.JDALavalink
@@ -107,7 +106,7 @@ object MelijnBot {
             .setEventManagerProvider { eventManager }
             .setHttpClientBuilder(OkHttpClient.Builder().addInterceptor(KillerInterceptor()))
             .setGatewayEncoding(GatewayEncoding.ETF)
-            .injectKTX()
+//            .injectKTX()
 
         if (!container.settings.lavalink.enabled) {
             defaultShardManagerBuilder.setAudioSendFactory(NativeAudioSendFactory())

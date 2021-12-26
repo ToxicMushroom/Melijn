@@ -62,7 +62,7 @@ class SlashCommandContext(val event: SlashCommandEvent) : CommandOptions, L10n {
             OptionType.CHANNEL -> option.asGuildChannel
             OptionType.ROLE -> option.asRole
             OptionType.MENTIONABLE -> TODO()
-            OptionType.NUMBER -> TODO()
+            OptionType.NUMBER -> option.asDouble
         }
     }
 

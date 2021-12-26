@@ -1,7 +1,9 @@
 <commands>
-    <command name="count" comment="Do, well, counting.">
-        <arg name="number" comment="blub"/>
-    </command>
+    <category name="utility">
+        <command name="count" comment="Do, well, counting.">
+            <arg name="number" type="NUMBER" comment="blub updated" required="true"/>
+        </command>
+    </category>
 
 <!--    <command name="voicestat" comment="Get statistics on voice chat activity">-->
 <!--        <command name="me" comment="Voice stats about yourself">-->

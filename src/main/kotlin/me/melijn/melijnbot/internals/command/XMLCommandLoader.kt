@@ -100,6 +100,7 @@ class XMLCommandLoader private constructor() : DefaultHandler() {
             }
             val toTry = arrayOf(
                 "${base}Command",
+                "${base}SlashCommand",
                 base
             )
 

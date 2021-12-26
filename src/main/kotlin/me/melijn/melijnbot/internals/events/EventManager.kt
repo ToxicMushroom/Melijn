@@ -88,6 +88,7 @@ class EventManager(val container: Container) : IEventManager {
                     eventListener.onEvent(event)
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
                 when (event) {
                     is GenericGuildMessageEvent -> e.sendInGuild(event.guild, event.channel)
                     is GenericPrivateMessageEvent -> e.sendInGuild(channel = event.channel)
