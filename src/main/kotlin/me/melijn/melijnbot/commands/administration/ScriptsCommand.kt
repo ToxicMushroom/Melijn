@@ -47,9 +47,27 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
         }
 
         override suspend fun execute(context: ICommandContext) {
-            val trigger = getStringFromArgsNMessage(context, 0, 1, 128) ?: return
-            val script = context.daoManager.scriptWrapper.getScripts(context.guildId)
-                .firstOrNull { it.trigger.equals(trigger, true) }
+            val script = getScriptByArgsNMessage(context, 0) ?: return
+            val blub = "```" + script.trigger + script.commands.values.joinToString(" ", " ") {
+                "\"" + it.first + it.second.joinToString(" ", " ") + "\""
+            } + "```"
+
+            sendRsp(context, blub)
+        }
+
+        private suspend fun getScriptByArgsNMessage(context: ICommandContext, i: Int): Script? {
+            val trigger = getStringFromArgsNMessage(context, i, 1, 128) ?: return null
+            val scripts = context.daoManager.scriptWrapper.getScripts(context.guildId)
+            if (trigger.isPositiveNumber()) {
+                val index = trigger.toInt()
+                if (index <= scripts.size && index > 0)
+                    return scripts.sortedBy { it.trigger }[trigger.toInt() - 1]
+            }
+
+
+            val script = scripts.firstOrNull {
+                it.trigger.equals(trigger, true)
+            }
             if (script == null) {
                 sendRsp(
                     context,
@@ -58,13 +76,9 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
                         context.usedPrefix
                     )
                 )
-                return
+                return null
             }
-
-            val blub = "```" + script.trigger + script.commands.values.joinToString(" ", " ") {
-                "\"" + it.first + it.second.joinToString(" ", " ") + "\""
-            } + "```"
-            sendRsp(context, blub)
+            return script
         }
     }
 
@@ -117,7 +131,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
                 return
             }
             var msg = "Script list:```INI\n" +
-                "# id - [trigger] - commandCount"
+                    "# id - [trigger] - commandCount"
 
             var i = 1
             for ((_, trigger, commands) in scripts) {
@@ -169,7 +183,7 @@ class ScriptsCommand : AbstractCommand("command.scripts") {
                 var scriptArgPartStarted = false
                 for (scriptArg in parts) {
                     if (!scriptArgPartStarted && (scriptArgRegex.matches(scriptArg) || scriptLineRegex.matches(scriptArg) ||
-                            scriptLineArgRegex.matches(scriptArg))
+                                scriptLineArgRegex.matches(scriptArg))
                     ) {
                         scriptArgPartStarted = true
                     }
