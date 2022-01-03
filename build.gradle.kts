@@ -54,14 +54,14 @@ val scrimage = "4.0.23"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.4.0_351") {
+    implementation("net.dv8tion:JDA:4.4.0_352") {
         exclude("opus-java")
     }
 
     implementation("io.sentry:sentry:5.5.0")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
-    implementation("club.minnced:discord-webhooks:0.7.4")
+    implementation("club.minnced:discord-webhooks:0.7.5")
 
     // https://github.com/freya022/JEmojis
     implementation("com.github.ToxicMushroom:JEmojis:a8c82848f166893f67251c741579c74c80fbb2dd")
