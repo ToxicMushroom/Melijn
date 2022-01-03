@@ -14,6 +14,7 @@ class VoiceScoutService(
     val shardManager: ShardManager
 ) : Service("VoiceScout", 30, 30, TimeUnit.SECONDS) {
 
+
     override val service = RunnableTask {
 
         val gmp = MusicPlayerManager.guildMusicPlayers
@@ -23,6 +24,7 @@ class VoiceScoutService(
             val guildMusicPlayer = iterator.next().value
             val guild = shardManager.getGuildById(guildMusicPlayer.guildId)
             if (guild == null) {
+                logger.info("Fast destroying due to guild disappearance ${guildMusicPlayer.guildId}")
                 guildMusicPlayer.guildTrackManager.stopAndDestroy(false)
                 guildMusicPlayer.removeTrackManagerListener()
                 iterator.remove()
@@ -34,6 +36,7 @@ class VoiceScoutService(
                 botChannel?.let {
                     checkShouldDisconnectAndApply(it, daoManager)
                 } ?: run {
+                    logger.info("Fast destroying ${guild.id} ${botChannel?.idLong}, #${guild.selfMember.voiceState?.channel?.name}")
                     guildMusicPlayer.guildTrackManager.stopAndDestroy(false)
                     guildMusicPlayer.removeTrackManagerListener()
                     iterator.remove()
