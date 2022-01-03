@@ -540,25 +540,21 @@ fun getChannelByArgsN(
     val arg = context.args[index]
 
     channel = if (DISCORD_ID.matches(arg)) {
-        if (sameGuildAsContext) {
-            context.guild.getCategoryById(arg)
-        } else {
-            context.shardManager.getGuildChannelById(arg)
-        }
-    } else if (context.isFromGuild && context.guild.getTextChannelsByName(arg, true).size > 0) {
+        context.shardManager.getGuildChannelById(arg)
+    } else if (context.isFromGuild && context.guild.getTextChannelsByName(arg, true).isNotEmpty()) {
         context.guild.getTextChannelsByName(arg, true)[0]
 
-    } else if (context.isFromGuild && context.guild.getVoiceChannelsByName(arg, true).size > 0) {
+    } else if (context.isFromGuild && context.guild.getVoiceChannelsByName(arg, true).isNotEmpty()) {
         context.guild.getVoiceChannelsByName(arg, true)[0]
 
-    } else if (context.isFromGuild && context.guild.getStoreChannelsByName(arg, true).size > 0) {
+    } else if (context.isFromGuild && context.guild.getStoreChannelsByName(arg, true).isNotEmpty()) {
         context.guild.getStoreChannelsByName(arg, true)[0]
-
+    } else if (context.isFromGuild && context.guild.getCategoriesByName(arg, true).isNotEmpty()) {
+        context.guild.getCategoriesByName(arg, true).first()
     } else if (CHANNEL_MENTION.matches(arg)) {
         val id = (CHANNEL_MENTION.find(arg) ?: return null).groupValues[1]
         context.message.mentionedChannels.firstOrNull { it.id == id }
             ?: context.shardManager.getGuildChannelById(id)
-
     } else channel
 
     if (sameGuildAsContext && !context.guild.channels.contains(channel)) return null
