@@ -26,17 +26,27 @@ val linuxUptimePattern: Pattern = Pattern.compile(
 
 // Thx xavin
 val linuxRamPattern: Pattern = Pattern.compile("Mem.*:\\s+([0-9]+) kB")
+val os: OS
+    get() {
+        val s = System.getProperty("os.name").lowercase()
+        return when {
+            s.contains("win") -> OS.WIN
+            s.contains("web_binariesaa/mac") || s.contains("nix") || s.contains("nux") || s.contains("aix") -> OS.UNIX
+            else -> OS.OTHER
+        }
+    }
+
+enum class OS {
+    WIN, UNIX, OTHER
+}
 
 fun getSystemUptime(): Long {
     return try {
-        var uptime: Long = -1
-        val os = System.getProperty("os.name").lowercase()
-        if (os.contains("win")) {
-            uptime = getWindowsUptime()
-        } else if (os.contains("web_binariesaa/mac") || os.contains("nix") || os.contains("nux") || os.contains("aix")) {
-            uptime = getUnixUptime()
+        when (os) {
+            OS.WIN -> getWindowsUptime()
+            OS.UNIX -> getUnixUptime()
+            OS.OTHER -> -1
         }
-        uptime
     } catch (e: Exception) {
         -1
     }
@@ -125,7 +135,11 @@ inline fun <reified T : Enum<*>> enumValueOrNull(name: String): T? =
         it.name.equals(name, true)
     }
 
-suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: ICommandContext, index: Int, path: String): T? {
+suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(
+    context: ICommandContext,
+    index: Int,
+    path: String
+): T? {
     if (argSizeCheckFailed(context, index)) return null
     val enumName = context.args[index]
     val enum = T::class.java.enumConstants.firstOrNull {
@@ -508,6 +522,7 @@ operator fun DataObject.set(key: String, value: Any) = this.put(key, value)
 fun DataObject.getObjectN(key: String): DataObject? {
     return if (this.hasKey(key)) getObject(key) else null
 }
+
 fun DataObject.getArrayN(key: String): DataArray? {
     return if (this.hasKey(key)) getArray(key) else null
 }

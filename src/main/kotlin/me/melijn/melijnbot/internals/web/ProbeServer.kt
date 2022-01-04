@@ -8,13 +8,15 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.internals.utils.OS
+import me.melijn.melijnbot.internals.utils.os
 import me.melijn.melijnbot.internals.web.rest.shutdown.ShutdownResponseHandler
 import net.dv8tion.jda.api.JDA
 import java.util.concurrent.TimeUnit
 
 class ProbeServer(container: Container) {
 
-    private val server: NettyApplicationEngine = embeddedServer(Netty, 1180) {
+    private val server: NettyApplicationEngine = embeddedServer(Netty, if (os == OS.WIN) 11180 else 1180) { // HAHAHAAAAAHAAAAHAAHHAHAAHAHAHAHAAAAAAAA L:FDSFSAFSDfsdklhjnfsdjkflsdfgkljdsaljkfg fyu
         routing {
             get("/shutdown") {
                 ShutdownResponseHandler.handleShutdownResponse(RequestContext(call, container), false)
