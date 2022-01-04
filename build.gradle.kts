@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("application")
     id("com.apollographql.apollo") version "2.5.11"
-    id("com.github.johnrengelman.shadow") version "7.1.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     kotlin("jvm") version "1.6.10"
 }
 
@@ -73,7 +73,7 @@ dependencies {
     implementation("com.github.walkyst:lavaplayer-fork:1.3.96")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fllklient%2FLavalink-Klient
-    implementation("me.melijn.llklient:Lavalink-Klient:2.2.4")
+    implementation("me.melijn.llklient:Lavalink-Klient:2.2.5")
 
     api("org.jetbrains.kotlin:kotlin-script-util:$kotlin")
     api("org.jetbrains.kotlin:kotlin-compiler:$kotlin")
