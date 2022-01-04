@@ -27,7 +27,7 @@ class PngsToGifCommand : AbstractCommand("command.pngstogif") {
 
         val argOffset = if (parsedImages.usedArgument) 1 else 0
         val iterations = context.optional(argOffset, 0) { getIntegerFromArgNMessage(context, argOffset) } ?: return
-        val delay = context.optional(argOffset + 1, 300) { getIntegerFromArgNMessage(context, argOffset) } ?: return
+        val delay = context.optional(argOffset + 1, 300) { getIntegerFromArgNMessage(context, argOffset + 1) } ?: return
 
         val baos = ByteArrayOutputStream()
         ImageIO.createImageOutputStream(baos).use { ios ->

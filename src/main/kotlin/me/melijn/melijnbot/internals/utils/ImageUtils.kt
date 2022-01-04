@@ -257,6 +257,7 @@ object ImageUtils {
                     )
                 }
             }
+            return ParsedImages(namedImgList, false)
         } else if (args.size > index) {
             val arg = args[index]
             val urls = arg.replace("\n", " ").split(SPACE_PATTERN)
