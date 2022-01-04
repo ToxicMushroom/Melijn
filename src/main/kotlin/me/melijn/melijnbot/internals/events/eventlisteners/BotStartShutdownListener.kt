@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
+import kotlinx.coroutines.delay
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
@@ -39,6 +40,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
                 shardManager.setStatus(OnlineStatus.ONLINE)
                 shardManager.setActivity(Activity.listening("commands | ${container.settings.botInfo.prefix}help"))
                 TaskManager.async {
+                    delay(5_000)
                     logger.info("Starting music clients..")
                     VoiceUtil.resumeMusic(event, container)
                     logger.info("Started music clients")
