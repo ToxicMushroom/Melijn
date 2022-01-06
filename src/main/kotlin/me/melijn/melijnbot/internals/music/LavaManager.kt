@@ -73,11 +73,8 @@ class LavaManager(
     suspend fun tryToConnectToVCSilent(channel: VoiceChannel, groupId: String): Boolean {
         val guild: Guild = channel.guild
         if (!guild.selfMember.hasPermission(channel, Permission.VOICE_CONNECT)) return false
-        val dao = Container.instance.daoManager
         val channelNotFull = channel.userLimit == 0 || channel.userLimit > channel.members.size
-        val hasPremiumUsers = isPremiumGuild(dao, channel.guild.idLong) || channel.members.any {
-            dao.supporterWrapper.getUsers().contains(it.user.idLong)
-        }
+        val hasPremiumUsers = hasPremiumOrBelowLimitUser(channel)
         val canMove = guild.selfMember.hasPermission(
             channel,
             Permission.VOICE_MOVE_OTHERS
@@ -95,16 +92,22 @@ class LavaManager(
         context: ICommandContext,
         channel: VoiceChannel
     ): Boolean {
-        val sum = context.lavaManager.jdaLavaLink?.nodeMap?.get("normal")?.sumOf { it.stats?.playingPlayers ?: 0 } ?: 0
-        if (sum <= FREE_PLAYER_LIMIT) return true
-
-        val dao = context.daoManager
-        val isPremium = isPremiumGuild(dao, channel.guild.idLong) || channel.members.any {
-            dao.supporterWrapper.getUsers().contains(it.user.idLong)
-        }
+        val isPremium = hasPremiumOrBelowLimitUser(channel)
         if (!isPremium) sendRsp(context, i18n.getTranslation(context, "music.requires.premium")
             .replacePrefix(context)
             .withVariable("queueLimit", FREE_PLAYER_LIMIT))
+        return isPremium
+    }
+
+    private suspend fun hasPremiumOrBelowLimitUser(channel: VoiceChannel): Boolean {
+        val container = Container.instance
+        val sum = container.lavaManager.jdaLavaLink?.nodeMap?.get("normal")?.sumOf { it.stats?.playingPlayers ?: 0 } ?: 0
+        if (sum <= FREE_PLAYER_LIMIT) return true
+
+        val dao = container.daoManager
+        val isPremium = isPremiumGuild(dao, channel.guild.idLong) || channel.members.any {
+            dao.supporterWrapper.getUsers().contains(it.user.idLong)
+        }
         return isPremium
     }
 
