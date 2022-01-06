@@ -23,6 +23,7 @@ class KillerInterceptor : Interceptor {
     private val callbackInteraction = "interactions/ID/.*/callback".toRegex()
     private val webhookMessage = "/webhooks/ID/.*/messages.*".toRegex()
     private val reactionsRegex = "/reactions/(.+)".toRegex()
+    private val attachmentsRegex = "/attachments/ID/ID/(.+)".toRegex()
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
@@ -38,6 +39,7 @@ class KillerInterceptor : Interceptor {
                     .replace(callbackInteraction, "/interactions/ID/INTERACTION_ID/callback")
                     .replace(webhookMessage, "/webhooks/ID/WEBHOOK_ID/messages")
                     .replace(reactionsRegex, "/reactions/EMOJI")
+                    .replace(attachmentsRegex, "/attachments/ID/ID/NAME.EXT")
                 val current = map[route] ?: mutableMapOf()
                 current[response.code] = (current[response.code] ?: 0) + 1
                 map[route] = current
