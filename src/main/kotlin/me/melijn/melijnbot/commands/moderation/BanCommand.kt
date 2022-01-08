@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.commandutil.moderation.ModUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.Ban
+import me.melijn.melijnbot.database.ban.TempPunishment
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -123,8 +124,8 @@ class BanCommand : AbstractCommand("command.ban") {
         val author = context.author
         val lang = context.getLanguage()
         val daoManager = context.daoManager
-        val bannedMessageDm = getBanMessage(lang, daoManager, guild, targetUser, author, ban, msgType = MessageType.BAN)
-        val bannedMessageLc = getBanMessage(
+        val bannedMessageDm = getTempPunishMessage(lang, daoManager, guild, targetUser, author, ban, msgType = MessageType.BAN)
+        val bannedMessageLc = getTempPunishMessage(
             lang, daoManager, guild, targetUser, author, ban, true,
             banningMessage != null, MessageType.BAN_LOG
         )
@@ -156,32 +157,33 @@ class BanCommand : AbstractCommand("command.ban") {
     }
 }
 
-
-suspend fun getBanMessage(
+suspend fun getTempPunishMessage(
     language: String,
     daoManager: DaoManager,
     guild: Guild,
-    bannedUser: User,
-    banAuthor: User,
-    ban: Ban,
+    punished: User,
+    punishAuthor: User,
+    punishment: TempPunishment,
     lc: Boolean = false,
     received: Boolean = true,
     msgType: MessageType
 ): ModularMessage {
-    val isBot = bannedUser.isBot
+    val isBot = punished.isBot
     val extraDesc = if (!received || isBot)
         i18n.getTranslation(language, "message.punishment.extra." + if (isBot) "bot" else "dm")
     else "null"
 
-    val banDm = daoManager.linkedMessageWrapper.getMessage(guild.idLong, msgType)?.let {
-        daoManager.messageWrapper.getMessage(guild.idLong, it)
-    } ?: BanCommand.getDefaultMessage(lc)
+    val linkedMessageName = daoManager.linkedMessageWrapper.getMessage(guild.idLong, msgType)
+    val banDm = linkedMessageName?.let { daoManager.messageWrapper.getMessage(guild.idLong, it) }
+        ?: msgType.getDefaultMsg()
 
-    val zoneId = getZoneId(daoManager, guild.idLong, if (lc) bannedUser.idLong else null)
-    val args = PunishJagTagParserArgs(
-        banAuthor, bannedUser, null, daoManager, ban.reason, ban.unbanReason,
-        ban.startTime, ban.endTime, ban.banId, extraDesc, zoneId, guild
-    )
+    val zoneId = getZoneId(daoManager, guild.idLong, if (lc) punished.idLong else null)
+    val args = punishment.run {
+        PunishJagTagParserArgs(
+            punishAuthor, punished, null, daoManager, reason, dePunishReason,
+            startTime, endTime, punishId, extraDesc, zoneId, guild
+        )
+    }
 
     val message = banDm.mapAllStringFieldsSafe {
         if (it != null) PunishmentJagTagParser.parseJagTag(args, it)
@@ -189,6 +191,42 @@ suspend fun getBanMessage(
     }
 
     return message
+}
+
+fun MessageType.getDefaultMsg(): ModularMessage {
+    return when (this) {
+        MessageType.PRE_VERIFICATION_JOIN -> TODO()
+        MessageType.PRE_VERIFICATION_LEAVE -> TODO()
+        MessageType.JOIN -> TODO()
+        MessageType.LEAVE -> TODO()
+        MessageType.BANNED -> TODO()
+        MessageType.KICKED -> TODO()
+        MessageType.BIRTHDAY -> TODO()
+        MessageType.BOOST -> TODO()
+        MessageType.BAN -> BanCommand.getDefaultMessage(false)
+        MessageType.TEMP_BAN -> BanCommand.getDefaultMessage(false)
+        MessageType.MASS_BAN -> BanCommand.getDefaultMessage(false)
+        MessageType.SOFT_BAN -> SoftBanCommand.getDefaultMessage(false)
+        MessageType.UNBAN -> UnbanCommand.getDefaultMessage(false)
+        MessageType.MUTE -> MuteCommand.getDefaultMessage(false)
+        MessageType.TEMP_MUTE -> MuteCommand.getDefaultMessage(false)
+        MessageType.UNMUTE -> UnmuteCommand.getDefaultMessage(false)
+        MessageType.MASS_KICK -> TODO()
+        MessageType.KICK -> TODO()
+        MessageType.WARN -> TODO()
+        MessageType.MASS_BAN_LOG -> MassBanCommand.getDefaultMessage()
+        MessageType.BAN_LOG -> BanCommand.getDefaultMessage(true)
+        MessageType.TEMP_BAN_LOG -> BanCommand.getDefaultMessage(true)
+        MessageType.SOFT_BAN_LOG -> SoftBanCommand.getDefaultMessage(true)
+        MessageType.UNBAN_LOG -> UnbanCommand.getDefaultMessage(true)
+        MessageType.MUTE_LOG -> MuteCommand.getDefaultMessage(true)
+        MessageType.TEMP_MUTE_LOG -> MuteCommand.getDefaultMessage(true)
+        MessageType.UNMUTE_LOG -> UnmuteCommand.getDefaultMessage(true)
+        MessageType.MASS_KICK_LOG -> TODO()
+        MessageType.KICK_LOG -> TODO()
+        MessageType.WARN_LOG -> TODO()
+        else -> throw IllegalArgumentException("Default message for ${this} not implemented")
+    }
 }
 
 fun getAtLeastNCodePointsAfterName(user: User): String {

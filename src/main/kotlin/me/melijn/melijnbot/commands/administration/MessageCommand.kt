@@ -1,9 +1,6 @@
 package me.melijn.melijnbot.commands.administration
 
-import me.melijn.melijnbot.commands.moderation.BanCommand
-import me.melijn.melijnbot.commands.moderation.MassBanCommand
-import me.melijn.melijnbot.commands.moderation.SoftBanCommand
-import me.melijn.melijnbot.commands.moderation.UnbanCommand
+import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.commandutil.administration.MessageUtil
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.enums.MessageTemplate
@@ -89,6 +86,12 @@ class MessageCommand : AbstractCommand("command.message") {
                     MessageTemplate.MASS_BAN_LOG -> MassBanCommand.getDefaultMessage()
                     MessageTemplate.SOFT_BAN_LOG -> SoftBanCommand.getDefaultMessage(true)
                     MessageTemplate.UNBAN_LOG -> UnbanCommand.getDefaultMessage(true)
+                    MessageTemplate.MUTE -> MuteCommand.getDefaultMessage(false)
+                    MessageTemplate.TEMP_MUTE -> MuteCommand.getDefaultMessage(false)
+                    MessageTemplate.MUTE_LOG -> MuteCommand.getDefaultMessage(true)
+                    MessageTemplate.TEMP_MUTE_LOG -> MuteCommand.getDefaultMessage(true)
+                    MessageTemplate.UNMUTE -> UnmuteCommand.getDefaultMessage(false)
+                    MessageTemplate.UNMUTE_LOG ->  UnmuteCommand.getDefaultMessage(true)
                 }
                 return modular
             }

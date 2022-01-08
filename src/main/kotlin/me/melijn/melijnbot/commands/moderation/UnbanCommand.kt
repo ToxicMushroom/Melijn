@@ -2,6 +2,7 @@ package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.Ban
+import me.melijn.melijnbot.database.ban.TempPunishment
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -57,51 +58,50 @@ class UnbanCommand : AbstractCommand("command.unban") {
         ban.active = false
 
         val banAuthor = ban.banAuthorId?.let { context.shardManager.retrieveUserById(it).awaitOrNull() }
-
-        try {
-            guild.retrieveBan(targetUser).await()
-            try {
-                guild
-                    .unban(targetUser)
-                    .reason("(unban) ${context.author.asTag}: " + unbanReason)
-                    .await()
-
-                daoManager.banWrapper.setBan(ban)
-
-                val msgLc = getUnbanMessage(language, context.daoManager, context.guild, targetUser,
-                    banAuthor, context.author, ban, true)
-
-                val privateChannel =
-                    if (context.guild.isMember(targetUser)) targetUser.openPrivateChannel().awaitOrNull()
-                    else null
-
-                privateChannel?.let {
-                    try {
-                        val msg = sendMsgAwaitN(it, context.webManager.proxiedHttpClient, msgLc)
-                        continueUnbanning(context, targetUser, ban, banAuthor, msg)
-                    } catch (t: Throwable) {
-                        continueUnbanning(context, targetUser, ban, banAuthor, null)
-                    }
-                } ?: continueUnbanning(context, targetUser, ban, banAuthor, null)
-
-            } catch (t: Throwable) {
-                // Sum ting wrong
-                val msg = context.getTranslation("$root.failure")
-                    .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-                    .withSafeVariable("cause", t.message ?: "/")
-                sendRsp(context, msg)
-            }
-        } catch (t: Throwable) {
-            // Not banned anymore
-
+        val discordBan = guild.retrieveBan(targetUser).awaitOrNull()
+        if (discordBan == null) {
+            // Not banned, clear active bans
             val msg = context.getTranslation("$root.notbanned")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
             sendRsp(context, msg)
 
-            if (activeBan != null) {
-                context.daoManager.banWrapper.setBan(ban)
+            if (activeBan != null) daoManager.banWrapper.setBan(ban)
+        }
+
+        val unbanError = guild
+            .unban(targetUser)
+            .reason("(unban) ${context.author.asTag}: " + unbanReason)
+            .awaitEX()
+
+        if (unbanError != null) {
+            // failed to unban, show error to user
+            val msg = context.getTranslation("$root.failure")
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withSafeVariable("cause", unbanError.message ?: "/")
+            sendRsp(context, msg)
+        }
+
+        daoManager.banWrapper.setBan(ban)
+
+        // get and send unban messages (messages are customizable)
+        val msgLc = getUnTempPunishMessage(
+            language, context.daoManager, context.guild, targetUser,
+            banAuthor, context.author, ban, true, msgType = MessageType.UNBAN_LOG
+        )
+
+        val privateChannel =
+            if (context.guild.isMember(targetUser)) targetUser.openPrivateChannel().awaitOrNull()
+            else null
+
+        val msg = privateChannel?.let {
+            try {
+                sendMsgAwaitN(it, context.webManager.proxiedHttpClient, msgLc)
+            } catch (t: Throwable) {
+                null
             }
         }
+
+        continueUnbanning(context, targetUser, ban, banAuthor, msg)
     }
 
     companion object {
@@ -119,6 +119,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
             Unbanned: {punishedUserTag}
             Unbanned Id: {punishedUserId}
             Reason: {reason}
+            Unban Reason: {unPunishReason}
             Duration: {timeDuration}
             Start of ban: {startTime:${if (logChannel) "null" else "{punishedUserId}"}}
             End of ban: {endTime:${if (logChannel) "null" else "{punishedUserId}"}}
@@ -129,6 +130,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
             }.build())
         }
     }
+
     private suspend fun continueUnbanning(
         context: ICommandContext,
         targetUser: User,
@@ -141,8 +143,10 @@ class UnbanCommand : AbstractCommand("command.unban") {
         val daoManager = context.daoManager
         val language = context.getLanguage()
         val received = unbanningMessage != null
-        val lcMsg = getUnbanMessage(language, daoManager, guild, targetUser, banAuthor, unbanAuthor, ban,
-            true, received)
+        val lcMsg = getUnTempPunishMessage(
+            language, daoManager, guild, targetUser, banAuthor, unbanAuthor, ban,
+            true, received, MessageType.UNBAN_LOG
+        )
 
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNBAN)
         logChannel?.let { it1 -> sendMsg(it1, context.webManager.proxiedHttpClient, lcMsg) }
@@ -154,34 +158,43 @@ class UnbanCommand : AbstractCommand("command.unban") {
     }
 }
 
-suspend fun getUnbanMessage(
+suspend fun getUnTempPunishMessage(
     language: String,
     daoManager: DaoManager,
     guild: Guild,
-    bannedUser: User,
-    banAuthor: User?,
-    unbanAuthor: User,
-    ban: Ban,
+    punishedAuthor: User,
+    punishAuthor: User?,
+    unpunishAuthor: User,
+    tempPunishment: TempPunishment,
     lc: Boolean = false,
-    received: Boolean = true
+    received: Boolean = true,
+    msgType: MessageType,
+    failureCause: String? = null
 ): ModularMessage {
-    val isBot = bannedUser.isBot
-    val extraDesc = if (!received || isBot)
-        i18n.getTranslation(language, "message.punishment.extra." + if (isBot) "bot" else "dm")
-    else "null"
+    val isBot = punishedAuthor.isBot
+    var extraDesc = ""
 
-    val msgType = if (lc) MessageType.UNBAN_LOG else MessageType.UNBAN
-    val banDm = daoManager.linkedMessageWrapper.getMessage(guild.idLong, msgType)?.let {
+    if (!received || isBot)
+       extraDesc += i18n.getTranslation(language, "message.punishment.extra." + if (isBot) "bot" else "dm")
+    if (failureCause != null)
+        extraDesc += i18n.getTranslation(language, "message.punishment.extra.failed")
+            .withSafeVariable("cause", failureCause)
+
+    if (extraDesc.isEmpty()) extraDesc = "null"
+
+    val dm = daoManager.linkedMessageWrapper.getMessage(guild.idLong, msgType)?.let {
         daoManager.messageWrapper.getMessage(guild.idLong, it)
-    } ?: UnbanCommand.getDefaultMessage(lc)
+    } ?: msgType.getDefaultMsg()
 
-    val zoneId = getZoneId(daoManager, guild.idLong, if (lc) bannedUser.idLong else null)
-    val args = PunishJagTagParserArgs(
-        banAuthor, bannedUser, unbanAuthor,daoManager,  ban.reason, ban.unbanReason,
-        ban.startTime, ban.endTime, ban.banId, extraDesc, zoneId, guild
-    )
+    val zoneId = getZoneId(daoManager, guild.idLong, if (lc) punishedAuthor.idLong else null)
+    val args = tempPunishment.run {
+        PunishJagTagParserArgs(
+            punishAuthor, punishedAuthor, unpunishAuthor, daoManager, reason, dePunishReason,
+            startTime, endTime, punishId, extraDesc, zoneId, guild
+        )
+    }
 
-    val message = banDm.mapAllStringFieldsSafe {
+    val message = dm.mapAllStringFieldsSafe {
         if (it != null) PunishmentJagTagParser.parseJagTag(args, it)
         else null
     }

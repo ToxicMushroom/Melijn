@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.mute
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.database.ban.TempPunishment
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.utils.StringUtils.toBase64
 import kotlin.coroutines.resume
@@ -11,9 +12,9 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "mutes"
     override val tableStructure: String = "muteId varchar(16), " +
-        "guildId bigint, mutedId bigint, muteAuthorId bigint," +
-        " unmuteAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint," +
-        " unmuteReason varchar(2048), active boolean"
+            "guildId bigint, mutedId bigint, muteAuthorId bigint," +
+            " unmuteAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint," +
+            " unmuteReason varchar(2048), active boolean"
     override val primaryKey: String = "muteId"
     override val uniqueKey: String = "guildId, mutedId, startTime"
 
@@ -25,7 +26,7 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         mute.apply {
             driverManager.executeUpdate(
                 "INSERT INTO $table (muteId, guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                    " ON CONFLICT ($primaryKey) DO UPDATE SET endTime = ?, muteAuthorId = ?, reason = ?, unmuteAuthorId = ?, unmuteReason = ?, active = ?",
+                        " ON CONFLICT ($primaryKey) DO UPDATE SET endTime = ?, muteAuthorId = ?, reason = ?, unmuteAuthorId = ?, unmuteReason = ?, active = ?",
                 muteId,
                 guildId,
                 mutedId,
@@ -48,36 +49,38 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun getUnmuteableMutes(podInfo: PodInfo): List<Mute> = suspendCoroutine {
         val clause = podInfo.shardList.joinToString(", ") { "?" }
-        driverManager.executeQuery("SELECT * FROM $table WHERE active = ? AND endTime < ? AND ((guildId >> 22) % ${podInfo.shardCount}) IN ($clause)", { rs ->
-            val mutes = ArrayList<Mute>()
-            while (rs.next()) {
-                mutes.add(
-                    Mute(
-                        rs.getLong("guildId"),
-                        rs.getLong("mutedId"),
-                        rs.getLong("muteAuthorId"),
-                        rs.getString("reason"),
-                        rs.getLong("unmuteAuthorId"),
-                        rs.getString("unmuteReason"),
-                        rs.getLong("startTime"),
-                        rs.getLong("endTime"),
-                        true,
-                        rs.getString("muteId")
+        driverManager.executeQuery(
+            "SELECT * FROM $table WHERE active = ? AND endTime < ? AND ((guildId >> 22) % ${podInfo.shardCount}) IN ($clause)",
+            { rs ->
+                val mutes = ArrayList<Mute>()
+                while (rs.next()) {
+                    mutes.add(
+                        Mute(
+                            rs.getLong("guildId"),
+                            rs.getLong("mutedId"),
+                            rs.getLong("muteAuthorId"),
+                            rs.getString("reason"),
+                            rs.getLong("unmuteAuthorId"),
+                            rs.getString("unmuteReason"),
+                            rs.getLong("startTime"),
+                            rs.getLong("endTime"),
+                            true,
+                            rs.getString("muteId")
+                        )
                     )
-                )
-            }
-            it.resume(mutes)
-        }, true,
+                }
+                it.resume(mutes)
+            },
+            true,
             System.currentTimeMillis(),
             *podInfo.shardList.toTypedArray()
         )
     }
 
-    fun getActiveMute(guildId: Long, mutedId: Long): Mute? {
-        var mute: Mute? = null
+    suspend fun getActiveMute(guildId: Long, mutedId: Long): Mute? = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND mutedId = ? AND active = ?", { rs ->
-            while (rs.next()) {
-                mute = Mute(
+            if (rs.next()) {
+                val mute = Mute(
                     guildId,
                     mutedId,
                     rs.getLong("muteAuthorId"),
@@ -89,9 +92,11 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
                     true,
                     rs.getString("muteId")
                 )
+                it.resume(mute)
+            } else {
+                it.resume(null)
             }
         }, guildId, mutedId, true)
-        return mute
     }
 
     suspend fun getMutes(guildId: Long, mutedId: Long): List<Mute> = suspendCoroutine {
@@ -117,9 +122,9 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, mutedId)
     }
 
-    fun getMutes(muteId: String): List<Mute> {
-        val mutes = ArrayList<Mute>()
+    suspend fun getMutes(muteId: String): List<Mute> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE muteId = ?", { rs ->
+            val mutes = ArrayList<Mute>()
             while (rs.next()) {
                 mutes.add(
                     Mute(
@@ -136,8 +141,8 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
                     )
                 )
             }
+            it.resume(mutes)
         }, muteId)
-        return mutes
     }
 
     fun clearHistory(guildId: Long, mutedId: Long) {
@@ -163,14 +168,25 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
 }
 
 data class Mute(
-    var guildId: Long,
+    override var guildId: Long,
     var mutedId: Long,
     var muteAuthorId: Long?,
-    var reason: String = "/",
+    override var reason: String = "/",
     var unmuteAuthorId: Long? = null,
     var unmuteReason: String? = null,
-    var startTime: Long = System.currentTimeMillis(),
-    var endTime: Long? = null,
-    var active: Boolean = true,
+    override var startTime: Long = System.currentTimeMillis(),
+    override var endTime: Long? = null,
+    override var active: Boolean = true,
     var muteId: String = System.nanoTime().toBase64()
+) : TempPunishment(
+    guildId,
+    mutedId,
+    muteAuthorId,
+    reason,
+    unmuteAuthorId,
+    unmuteReason,
+    startTime,
+    endTime,
+    active,
+    muteId
 )

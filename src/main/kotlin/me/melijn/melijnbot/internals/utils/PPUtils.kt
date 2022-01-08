@@ -1,7 +1,10 @@
 package me.melijn.melijnbot.internals.utils
 
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.commands.moderation.*
+import me.melijn.melijnbot.commands.moderation.getKickMessage
+import me.melijn.melijnbot.commands.moderation.getSoftBanMessage
+import me.melijn.melijnbot.commands.moderation.getTempPunishMessage
+import me.melijn.melijnbot.commands.moderation.getWarnMessage
 import me.melijn.melijnbot.database.autopunishment.ExpireTime
 import me.melijn.melijnbot.database.autopunishment.Points
 import me.melijn.melijnbot.database.autopunishment.PunishGroup
@@ -19,6 +22,7 @@ import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyRoleByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import me.melijn.melijnbot.internals.utils.message.sendMsg
+import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitN
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
@@ -214,8 +218,8 @@ object PPUtils {
 
         val banType = if (duration == null) MessageType.BAN else MessageType.TEMP_BAN
         val banLogType = if (duration == null) MessageType.BAN_LOG else MessageType.TEMP_BAN_LOG
-        val banMessageDM = getBanMessage(lang, daoManager, guild, banned, banAuthor, ban, msgType = banType)
-        val banMessageLog = getBanMessage(lang, daoManager, guild, banned, banAuthor, ban, true,
+        val banMessageDM = getTempPunishMessage(lang, daoManager, guild, banned, banAuthor, ban, msgType = banType)
+        val banMessageLog = getTempPunishMessage(lang, daoManager, guild, banned, banAuthor, ban, true,
             banningMessage != null, banLogType)
 
         banningMessage?.editMessage(banMessageDM)?.override(true)?.queue()
@@ -265,9 +269,8 @@ object PPUtils {
         val jda = member.jda
         val guild = member.guild
         val daoManager = container.daoManager
-        val zoneId = getZoneId(daoManager, guild.idLong)
-        val privZoneId = getZoneId(daoManager, guild.idLong, member.idLong)
         val lang = getLanguage(daoManager, member.idLong, guild.idLong)
+        val httpClient = container.webManager.proxiedHttpClient
 
         val mute = Mute(
             guild.idLong,
@@ -285,25 +288,25 @@ object PPUtils {
         val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE, true) ?: return
         guild.addRoleToMember(member, muteRole).reason("muted").await()
 
-        val muteMessageDM = getMuteMessage(lang, privZoneId, guild, member.user, jda.selfUser, mute)
+        val muteMessageDM = getTempPunishMessage(lang, daoManager, guild, member.user, jda.selfUser, mute, msgType = MessageType.MUTE)
         val pc = member.user.openPrivateChannel().awaitOrNull()
-        val mutedMessage = pc?.sendMessageEmbeds(muteMessageDM)?.awaitOrNull()
+        val mutedMessage = pc?.let { sendMsgAwaitN(it, httpClient, muteMessageDM) }
 
-        val muteMessageLog = getMuteMessage(
+        val muteMessageLog = getTempPunishMessage(
             lang,
-            zoneId,
+            daoManager,
             guild,
             member.user,
             jda.selfUser,
             mute,
             true,
-            member.user.isBot,
-            mutedMessage != null
+            mutedMessage != null,
+            MessageType.MUTE_LOG
         )
 
         val lcType = if (duration == null) LogChannelType.PERMANENT_MUTE else LogChannelType.TEMP_MUTE
-        val channel = guild.getAndVerifyLogChannelByType(daoManager, lcType) ?: return
-        sendEmbed(daoManager.embedDisabledWrapper, channel, muteMessageLog)
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, lcType) ?: return
+        sendMsg(logChannel, httpClient, muteMessageLog)
     }
 
     private suspend fun applyKick(member: Member, punishment: Punishment, container: Container) {

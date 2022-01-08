@@ -17,7 +17,7 @@ class MuteWrapper(private val muteDao: MuteDao): PunishMapProvider<Mute> {
         muteDao.setMute(newMute)
     }
 
-    fun getActiveMute(guildId: Long, mutedId: Long): Mute? {
+    suspend fun getActiveMute(guildId: Long, mutedId: Long): Mute? {
         return muteDao.getActiveMute(guildId, mutedId)
     }
 

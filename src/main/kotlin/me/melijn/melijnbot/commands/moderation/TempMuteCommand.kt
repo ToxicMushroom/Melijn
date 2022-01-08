@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.commandutil.moderation.ModUtil
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -10,12 +11,11 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
-import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
 
@@ -120,36 +120,31 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val author = context.author
         val language = context.getLanguage()
         val daoManager = context.daoManager
-        val zoneId = getZoneId(daoManager, guild.idLong)
-        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
-        val mutedMessageDm = getMuteMessage(language, privZoneId, guild, targetUser, author, mute)
-        val mutedMessageLc = getMuteMessage(
-            language,
-            zoneId,
-            guild,
-            targetUser,
-            author,
-            mute,
-            true,
-            targetUser.isBot,
-            mutingMessage != null
+        val mutedMessageDm =
+            getTempPunishMessage(language, daoManager, guild, targetUser, author, mute, msgType = MessageType.MUTE)
+        val mutedMessageLc = getTempPunishMessage(
+            language, daoManager, guild, targetUser, author, mute,
+            true, targetUser.isBot, MessageType.MUTE_LOG
         )
 
         val targetMember = guild.retrieveMember(targetUser).awaitOrNull()
 
-        if (targetMember == null) {
-            death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)
-            daoManager.muteWrapper.setMute(mute)
-            return
-        }
-
         try {
-            guild.addRoleToMember(targetMember, muteRole)
-                .reason("(tempMute) ${context.author.asTag}: " + mute.reason)
-                .async { daoManager.muteWrapper.setMute(mute) }
+            if (targetMember != null) {
+                guild.addRoleToMember(targetMember, muteRole)
+                    .reason("(tempMute) ${context.author.asTag}: " + mute.reason)
+                    .async { daoManager.muteWrapper.setMute(mute) }
+            } else daoManager.muteWrapper.setMute(mute)
 
-            death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)
+            mutingMessage?.editMessage(mutedMessageDm)?.override(true)?.queue()
+            val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.TEMP_MUTE)
+            logChannel?.let { it1 -> sendMsg(it1, context.webManager.proxiedHttpClient, mutedMessageLc) }
 
+            val msg = context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
+                .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withVariable("endTime", mute.endTime?.asEpochMillisToDateTime(context.getTimeZoneId()) ?: "none")
+                .withSafeVarInCodeblock("reason", mute.reason)
+            sendRsp(context, msg)
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.muting.failed")
             mutingMessage?.editMessage(failedMsg)?.queue()
@@ -159,29 +154,6 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
                 .withSafeVarInCodeblock("cause", t.message ?: "/")
             sendRsp(context, msg)
         }
-    }
-
-    private suspend fun death(
-        mutingMessage: Message?,
-        mutedMessageDm: MessageEmbed,
-        context: ICommandContext,
-        mutedMessageLc: MessageEmbed,
-        activeMute: Mute?,
-        mute: Mute,
-        targetUser: User
-    ) {
-        mutingMessage?.editMessageEmbeds(
-            mutedMessageDm
-        )?.override(true)?.queue()
-        val daoManager = context.daoManager
-        val logChannel = context.guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.TEMP_MUTE)
-        logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
-
-        val msg = context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
-            .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
-            .withVariable("endTime", mute.endTime?.asEpochMillisToDateTime(context.getTimeZoneId()) ?: "none")
-            .withSafeVarInCodeblock("reason", mute.reason)
-        sendRsp(context, msg)
     }
 }
 
