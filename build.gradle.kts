@@ -58,7 +58,7 @@ dependencies {
         exclude("opus-java")
     }
 
-    implementation("io.sentry:sentry:5.5.0")
+    implementation("io.sentry:sentry:5.5.1")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
     implementation("club.minnced:discord-webhooks:0.7.5")
