@@ -3,25 +3,23 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.commandutil.moderation.ModUtil
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyRoleByType
-import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
-import java.time.ZoneId
 
 class UnmuteCommand : AbstractCommand("command.unmute") {
 
@@ -30,6 +28,33 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         name = "unmute"
         commandCategory = CommandCategory.MODERATION
         discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
+    }
+
+    companion object {
+        fun getDefaultMessage(logChannel: Boolean): ModularMessage {
+            return ModularMessage(null, EmbedEditor().apply {
+                setAuthor("{unPunishAuthorTag}{titleSpaces:{unPunishAuthorTag}}", null, "{unPunishAuthorAvatarUrl}")
+                setColor(Color.GREEN)
+                setThumbnail("{punishedUserAvatarUrl}")
+                setDescription("```LDIF\n")
+                if (!logChannel) appendDescription("Server: {serverName}\nServer Id: {serverId}\n")
+                appendDescription(
+                    """
+            Unmute Author: {unPunishAuthorTag}
+            Unmute Author Id: {unPunishAuthorId}
+            UnMuted: {punishedUserTag}
+            UnMuted Id: {punishedUserId}
+            Reason: {reason}
+            Unmute Reason: {unPunishReason}
+            Duration: {timeDuration}
+            Start of muted: {startTime:${if (logChannel) "null" else "{punishedUserId}"}}
+            End of mute: {endTime:${if (logChannel) "null" else "{punishedUserId}"}}
+            Case Id: {punishId}{if:{extraLcInfo}|=|null|then:|else:{extraLcInfo}}
+        """.trimIndent()
+                )
+                appendDescription("```")
+            }.build())
+        }
     }
 
     override suspend fun execute(context: ICommandContext) {
@@ -47,14 +72,8 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
             unmuteReason = "/"
         }
 
-        val activeMute: Mute? = daoManager.muteWrapper.getActiveMute(context.guildId, targetUser.idLong)
-        val mute: Mute = activeMute
-            ?: Mute(
-                context.guildId,
-                targetUser.idLong,
-                null,
-                "/"
-            )
+        val activeMute = daoManager.muteWrapper.getActiveMute(context.guildId, targetUser.idLong)
+        val mute = activeMute ?: Mute(guild.idLong, targetUser.idLong, null, "/")
 
         mute.unmuteAuthorId = context.authorId
         mute.unmuteReason = unmuteReason
@@ -114,41 +133,33 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         val daoManager = context.daoManager
         val language = context.getLanguage()
         daoManager.muteWrapper.setMute(mute)
-        val zoneId = getZoneId(daoManager, guild.idLong)
-        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
+        val unpunishAuthor = context.author
 
-        //Normal success path
-        val msg = getUnmuteMessage(language, zoneId, guild, targetUser, muteAuthor, context.author, mute)
-        val privateChannel = if (context.guild.isMember(targetUser)) {
-            targetUser.openPrivateChannel().awaitOrNull()
-        } else {
-            null
-        }
+        // Normal success path
+        val unmuteMsgDm = getUnTempPunishMessage(
+            language, daoManager, guild, targetUser, muteAuthor,
+            unpunishAuthor, mute, msgType = MessageType.UNMUTE
+        )
+        val privateChannel = if (context.guild.isMember(targetUser)) targetUser.openPrivateChannel().awaitOrNull()
+        else null
+
 
         val success = try {
             privateChannel?.let {
-                sendEmbed(it, msg)
+                sendMsg(it, context.webManager.proxiedHttpClient, unmuteMsgDm)
                 true
             } ?: false
         } catch (t: Throwable) {
             false
         }
 
-        val msgLc = getUnmuteMessage(
-            language,
-            privZoneId,
-            guild,
-            targetUser,
-            muteAuthor,
-            context.author,
-            mute,
-            true,
-            targetUser.isBot,
-            success
+        val lcMsg = getUnTempPunishMessage(
+            language, daoManager, guild, targetUser, muteAuthor,
+            unpunishAuthor, mute, true, success, MessageType.UNMUTE_LOG
         )
 
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNMUTE)
-        logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, msgLc) }
+        logChannel?.let { it1 -> sendMsg(it1, context.webManager.proxiedHttpClient, lcMsg) }
 
         val successMsg = context.getTranslation("$root.success")
             .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
@@ -156,76 +167,4 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
 
         sendRsp(context, successMsg)
     }
-}
-
-fun getUnmuteMessage(
-    language: String,
-    zoneId: ZoneId,
-    guild: Guild,
-    mutedUser: User?,
-    muteAuthor: User?,
-    unmuteAuthor: User,
-    mute: Mute,
-    lc: Boolean = false,
-    isBot: Boolean = false,
-    received: Boolean = true,
-    failedCause: String? = null
-): MessageEmbed {
-    val muteDuration = mute.endTime?.let { endTime ->
-        getDurationString((endTime - mute.startTime))
-    } ?: i18n.getTranslation(language, "infinite")
-
-    var description = "```LDIF\n"
-    if (!lc) {
-        description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withSafeVarInCodeblock("serverName", guild.name)
-            .withVariable("serverId", guild.id)
-    }
-
-    val deletedAccount = i18n.getTranslation(language, "message.deleted.user")
-    description += i18n.getTranslation(language, "message.punishment.unmute.description")
-        .withSafeVarInCodeblock("muteAuthor", muteAuthor?.asTag ?: deletedAccount)
-        .withVariable("muteAuthorId", mute.muteAuthorId.toString())
-        .withVariable("unMuteAuthorId", mute.unmuteAuthorId.toString())
-        .withSafeVarInCodeblock("unMuted", mutedUser?.asTag ?: deletedAccount)
-        .withVariable("unMutedId", mute.mutedId.toString())
-        .withSafeVarInCodeblock("muteReason", mute.reason)
-        .withSafeVarInCodeblock("unmuteReason", mute.unmuteReason ?: "/")
-        .withVariable("duration", muteDuration)
-        .withVariable("startTime", (mute.startTime.asEpochMillisToDateTime(zoneId)))
-        .withVariable("endTime", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
-        .withVariable("muteId", mute.muteId)
-
-    var extraDesc: String = if (!received || isBot) {
-        i18n.getTranslation(
-            language,
-            if (isBot) {
-                "message.punishment.extra.bot"
-            } else {
-                "message.punishment.extra.dm"
-            }
-        )
-    } else {
-        ""
-    }
-    if (failedCause != null) {
-        extraDesc += i18n.getTranslation(
-            language,
-            "message.punishment.extra.failed"
-        ).withSafeVarInCodeblock("cause", failedCause)
-    }
-
-    description += extraDesc
-    description += "```"
-
-    val author = i18n.getTranslation(language, "message.punishment.unmute.author")
-        .withSafeVariable(PLACEHOLDER_USER, unmuteAuthor.asTag)
-        .withSafeVariable("spaces", getAtLeastNCodePointsAfterName(unmuteAuthor) + "\u200B")
-
-    return EmbedBuilder()
-        .setAuthor(author, null, unmuteAuthor.effectiveAvatarUrl)
-        .setDescription(description)
-        .setThumbnail(mutedUser?.effectiveAvatarUrl)
-        .setColor(Color.GREEN)
-        .build()
 }

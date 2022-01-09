@@ -126,7 +126,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
         val author = context.author
         val language = context.getLanguage()
         val daoManager = context.daoManager
-        val bannedMessageDm = getBanMessage(
+        val bannedMessageDm = getTempPunishMessage(
             language, daoManager, guild, targetUser, author, ban,
             msgType = MessageType.BAN
         )

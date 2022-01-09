@@ -3,22 +3,24 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.commandutil.moderation.ModUtil
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
-import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.Role
+import net.dv8tion.jda.api.entities.User
 import java.awt.Color
-import java.time.ZoneId
 
 class MuteCommand : AbstractCommand("command.mute") {
 
@@ -28,6 +30,51 @@ class MuteCommand : AbstractCommand("command.mute") {
         aliases = arrayOf("m")
         commandCategory = CommandCategory.MODERATION
         discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
+    }
+
+    companion object {
+        /** Helper function to create a ban object based on active ban, or just create a new one.
+         *  @returns created ban object AND boolean == based on the active ban?
+         **/
+        suspend fun createMuteFromActiveOrNew(
+            context: ICommandContext,
+            muted: User,
+            reason: String
+        ): Pair<Mute, Boolean> {
+            val activeMute = context.daoManager.muteWrapper.getActiveMute(context.guildId, muted.idLong)
+            val mute = Mute(context.guildId, muted.idLong, context.authorId, reason, null)
+            if (activeMute != null) {
+                mute.muteId = activeMute.muteId
+                mute.startTime = activeMute.startTime
+            }
+            return mute to (activeMute != null)
+        }
+
+        fun getDefaultMessage(logChannel: Boolean): ModularMessage {
+            val embed = EmbedEditor().apply {
+                setAuthor("{punishAuthorTag}{titleSpaces:{punishAuthorTag}}", null, "{punishAuthorAvatarUrl}")
+                setColor(Color.BLUE)
+                setThumbnail("{punishedUserAvatarUrl}")
+                setDescription("```LDIF\n")
+                if (!logChannel) appendDescription("Server: {serverName}\nServer Id: {serverId}\n")
+                appendDescription(
+                    """
+            Mute Author: {punishAuthorTag}
+            Mute Author Id: {punishAuthorId}
+            Muted: {punishedUserTag}
+            Muted Id: {punishedUserId}
+            Reason: {reason}
+            Duration: {timeDuration}
+            Start of mute: {startTime:${if (logChannel) "null" else "{punishedUserId}"}}
+            End of mute: {endTime:${if (logChannel) "null" else "{punishedUserId}"}}
+            Case Id: {punishId}{if:{extraLcInfo}|=|null|then:|else:{extraLcInfo}}
+        """.trimIndent()
+                )
+                appendDescription("```")
+            }.build()
+            return ModularMessage(null, embed)
+        }
+
     }
 
     override suspend fun execute(context: ICommandContext) {
@@ -73,34 +120,14 @@ class MuteCommand : AbstractCommand("command.mute") {
     }
 
     private suspend fun muteRoleAquired(context: ICommandContext, targetUser: User, reason: String, muteRole: Role) {
-        val activeMute: Mute? = context.daoManager.muteWrapper.getActiveMute(context.guildId, targetUser.idLong)
-        val mute = Mute(
-            context.guildId,
-            targetUser.idLong,
-            context.authorId,
-            reason,
-            null,
-            endTime = null
-        )
-
-        if (activeMute != null) {
-            mute.muteId = activeMute.muteId
-            mute.startTime = activeMute.startTime
-        }
-
+        val (mute, isActive) = createMuteFromActiveOrNew(context, targetUser, reason)
         val muting = context.getTranslation("message.muting")
 
-        val privateChannel = if (context.guild.isMember(targetUser)) {
-            targetUser.openPrivateChannel().awaitOrNull()
-        } else {
-            null
-        }
+        val pc = if (context.guild.isMember(targetUser)) targetUser.openPrivateChannel().awaitOrNull()
+        else null
 
-        val message: Message? = privateChannel?.let {
-            sendMsgAwaitEL(it, muting)
-        }?.firstOrNull()
-
-        continueMuting(context, muteRole, targetUser, mute, activeMute, message)
+        val message = pc?.let { sendMsgAwaitEL(it, muting) }?.firstOrNull()
+        continueMuting(context, muteRole, targetUser, mute, isActive, message)
     }
 
     private suspend fun continueMuting(
@@ -108,43 +135,32 @@ class MuteCommand : AbstractCommand("command.mute") {
         muteRole: Role,
         targetUser: User,
         mute: Mute,
-        activeMute: Mute?,
+        isActive: Boolean,
         mutingMessage: Message?
     ) {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
         val daoManager = context.daoManager
-        val zoneId = getZoneId(daoManager, guild.idLong)
-        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
-        val mutedMessageDm = getMuteMessage(language, privZoneId, guild, targetUser, author, mute)
-        val mutedMessageLc = getMuteMessage(
-            language,
-            zoneId,
-            guild,
-            targetUser,
-            author,
-            mute,
-            true,
-            targetUser.isBot,
-            mutingMessage != null
-        )
+        val mutedMessageDm = getTempPunishMessage(language, daoManager, guild, targetUser, author, mute, msgType = MessageType.MUTE)
+        val mutedMessageLc = getTempPunishMessage(language, daoManager, guild, targetUser, author, mute,
+            true, targetUser.isBot, MessageType.MUTE_LOG)
 
-        val targetMember = guild.retrieveMember(targetUser).awaitOrNull() ?: return
+        val targetMember = guild.retrieveMember(targetUser).awaitOrNull()
 
         val msg = try {
-            guild.addRoleToMember(targetMember, muteRole)
-                .reason("(mute) ${context.author.asTag}: " + mute.reason)
-                .await()
+            if (targetMember != null) {
+                guild.addRoleToMember(targetMember, muteRole)
+                    .reason("(mute) ${context.author.asTag}: " + mute.reason)
+                    .async { daoManager.muteWrapper.setMute(mute) }
+            } else daoManager.muteWrapper.setMute(mute)
 
-            mutingMessage?.editMessageEmbeds(
-                mutedMessageDm
-            )?.override(true)?.async { context.daoManager.muteWrapper.setMute(mute) }
+            mutingMessage?.editMessage(mutedMessageDm)?.override(true)?.queue()
 
-            val logChannel = guild.getAndVerifyLogChannelByType(context.daoManager, LogChannelType.PERMANENT_MUTE)
-            logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
+            val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.PERMANENT_MUTE)
+            logChannel?.let { it1 -> sendMsg(it1, context.webManager.proxiedHttpClient, mutedMessageLc) }
 
-            context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
+            context.getTranslation("$root.success" + if (isActive) ".updated" else "")
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 .withSafeVarInCodeblock("reason", mute.reason)
         } catch (t: Throwable) {
@@ -158,64 +174,4 @@ class MuteCommand : AbstractCommand("command.mute") {
         }
         sendRsp(context, msg)
     }
-}
-
-fun getMuteMessage(
-    language: String,
-    zoneId: ZoneId,
-    guild: Guild,
-    mutedUser: User,
-    muteAuthor: User,
-    mute: Mute,
-    lc: Boolean = false,
-    isBot: Boolean = false,
-    received: Boolean = true
-): MessageEmbed {
-    val muteDuration = mute.endTime?.let { endTime ->
-        getDurationString((endTime - mute.startTime))
-    } ?: i18n.getTranslation(language, "infinite")
-
-    var description = "```LDIF\n"
-    if (!lc) {
-        description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withSafeVarInCodeblock("serverName", guild.name)
-            .withVariable("serverId", guild.id)
-    }
-
-    description += i18n.getTranslation(language, "message.punishment.mute.description")
-        .withSafeVarInCodeblock("muteAuthor", muteAuthor.asTag)
-        .withVariable("muteAuthorId", muteAuthor.id)
-        .withSafeVarInCodeblock("muted", mutedUser.asTag)
-        .withVariable("mutedId", mutedUser.id)
-        .withSafeVarInCodeblock("reason", mute.reason)
-        .withVariable("duration", muteDuration)
-        .withVariable("startTime", (mute.startTime.asEpochMillisToDateTime(zoneId)))
-        .withVariable("endTime", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
-        .withVariable("muteId", mute.muteId)
-
-    val extraDesc: String = if (!received || isBot) {
-        i18n.getTranslation(
-            language,
-            if (isBot) {
-                "message.punishment.extra.bot"
-            } else {
-                "message.punishment.extra.dm"
-            }
-        )
-    } else {
-        ""
-    }
-    description += extraDesc
-    description += "```"
-
-    val author = i18n.getTranslation(language, "message.punishment.mute.author")
-        .withSafeVariable(PLACEHOLDER_USER, muteAuthor.asTag)
-        .withVariable("spaces", getAtLeastNCodePointsAfterName(muteAuthor) + "\u200B")
-
-    return EmbedBuilder()
-        .setAuthor(author, null, muteAuthor.effectiveAvatarUrl)
-        .setDescription(description)
-        .setThumbnail(mutedUser.effectiveAvatarUrl)
-        .setColor(Color.BLUE)
-        .build()
 }

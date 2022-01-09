@@ -41,7 +41,9 @@ enum class MessageType(val base: String) {
 
     MASS_KICK_LOG("MassKickLog"),
     KICK_LOG("KickLog"),
-    WARN_LOG("WarnLog");
+    WARN_LOG("WarnLog"),
+
+    VERIFICATION_LOG("VerificationLog");
 
 
     val text: String = "${base}Message"
