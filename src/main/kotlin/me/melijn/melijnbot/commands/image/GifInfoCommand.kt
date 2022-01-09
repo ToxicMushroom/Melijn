@@ -15,6 +15,7 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
     init {
         id = 131
         name = "gifInfo"
+        aliases = arrayOf("gi", "gifi")
         commandCategory = CommandCategory.IMAGE
     }
 
@@ -31,6 +32,7 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
         val index = context.optional(offset, 0) { getIntegerFromArgNMessage(context, 1, 0, frames - 1) } ?: return
         val delay = gif.getDelay(index)
         val transparency = ImmutableImage.wrapAwt(gif.getFrame(index)).hasTransparency()
+        val size = StringUtils.humanReadableByteCountBin(image.bytes.size)
 
         val eb = Embedder(context)
             .setDescription(
@@ -38,6 +40,7 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
                     |```INI
                     |[Gif Info]``````LDIF
                     |Width x Height: $width x $height
+                    |Size: $size
                     |Frame Count: $frames
                     |Repetitions: $repetitions
                     |Color Depth: $colorDepth

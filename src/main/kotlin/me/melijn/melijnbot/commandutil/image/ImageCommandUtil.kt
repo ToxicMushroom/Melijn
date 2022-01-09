@@ -1,7 +1,9 @@
 package me.melijn.melijnbot.commandutil.image
 
-import at.dhyan.open_imaging.GifDecoder
 import com.sksamuel.scrimage.ImmutableImage
+import com.sksamuel.scrimage.nio.AnimatedGif
+import com.sksamuel.scrimage.nio.AnimatedGifReader
+import com.sksamuel.scrimage.nio.ImageSource
 import com.sksamuel.scrimage.nio.PngWriter
 import me.melijn.melijnbot.commands.image.GifSequenceWriter
 import me.melijn.melijnbot.commands.image.UserImageException
@@ -37,11 +39,11 @@ object ImageCommandUtil {
         image: ParsedImageByteArray,
         modifications: (src: BufferedImage, dst: BufferedImage) -> Unit
     ) {
-        val bytes = writeModificationsToNewGifNMessage(context, image) { index, gifWriter, gif ->
-            val src = gif.getFrame(index)
-            val dst = ImmutableImage.wrapAwt(src).copy().awt()
+        val bytes = writeModificationsToNewGifNMessage(context, image, -1) { index, gifWriter, gif ->
+            val src = gif.getFrame(index).awt()
+            val dst = gif.getFrame(index).copy().awt()
             modifications(src, dst)
-            gifWriter.writeToSequence(dst, gif.getDelay(index) * 10)
+            gifWriter.writeToSequence(dst, gif.getDelay(index).toMillis().toInt())
             true
         } ?: return
 
@@ -67,13 +69,14 @@ object ImageCommandUtil {
         image: ParsedImageByteArray,
         modification: (img: ImmutableImage) -> Unit,
         delayFunction: ((current: Int) -> Int)? = null,
+        repeats: Int = -1,
         message: String? = null,
         extension: String = "gif"
     ) {
-        val bytes = writeModificationsToNewGifNMessage(context, image) { index, gifWriter, gif ->
-            val src = ImmutableImage.wrapAwt(gif.getFrame(index))
+        val bytes = writeModificationsToNewGifNMessage(context, image, repeats) { index, gifWriter, gif ->
+            val src = gif.getFrame(index)
             modification(src)
-            val ogDelay = gif.getDelay(index)
+            val ogDelay = (gif.getDelay(index).toMillis() / 10).toInt()
             val delay = delayFunction?.invoke(ogDelay) ?: ogDelay
             gifWriter.writeToSequence(src.awt(), delay * 10)
             true
@@ -86,12 +89,14 @@ object ImageCommandUtil {
     /**
      * GIF modification Helper function that handles, loading chat message while applying effects, checks size of resulting image for good error response.
      * Safely parses the gif, or send good error response
+     * @param repeats | if -1 -> infinite, 0 -> no repeats, 1 -> 1 repeat ect. <-1 -> current gif repeat count
      * @param frameEditor | multi parameter function that should be used to write the modified gif frames to the gifWriter, return true if successful, return false to abort (make sure you send a message)
      * **/
     private suspend fun writeModificationsToNewGifNMessage(
         context: ICommandContext,
         image: ParsedImageByteArray,
-        frameEditor: suspend (index: Int, gifWriter: GifSequenceWriter, gif: GifDecoder.GifImage) -> Boolean
+        repeats: Int,
+        frameEditor: suspend (index: Int, gifWriter: GifSequenceWriter, gif: AnimatedGif) -> Boolean
     ): ByteArray? {
         val message = sendRspAwaitEL(context, "<a:loading:867394725938331658> Applying image effects")
         fun deleteLoadingMessage(message: List<Message>) {
@@ -99,9 +104,13 @@ object ImageCommandUtil {
         }
         try {
             val gif = getSafeGifImageNMessage(image, context) ?: return null
+            val gifRepeats = when (repeats) {
+                -1 -> gif.loopCount
+                else -> repeats
+            }
             val baos = ByteArrayOutputStream()
             ImageIO.createImageOutputStream(baos).use { ios ->
-                GifSequenceWriter(ios, gif.repetitions).use { gifWriter ->
+                GifSequenceWriter(ios, gifRepeats).use { gifWriter ->
                     for (index in 0 until gif.frameCount) {
                         val ok = frameEditor(index, gifWriter, gif)
                         if (!ok) {
@@ -127,21 +136,24 @@ object ImageCommandUtil {
     }
 
 
-    private suspend fun sendMsgMaxFilesizeHit(context: ICommandContext, image: ParsedImageByteArray) {
+    suspend fun sendMsgMaxFilesizeHit(context: ICommandContext, image: ParsedImageByteArray) {
         val max = StringUtils.humanReadableByteCountBin(Message.MAX_FILE_SIZE)
         if (image.bytes.size > Message.MAX_FILE_SIZE) {
             sendRsp(context, "The source image ${image.url} is bigger then what I can send to discord (`${max}`)")
         } else {
-            sendRsp(context, "The resulting image after applying effects is bigger then what I can send to discord (`${max}`) :/")
+            sendRsp(
+                context,
+                "The resulting image after applying effects is bigger then what I can send to discord (`${max}`) :/"
+            )
         }
     }
 
     private suspend fun getSafeGifImageNMessage(
         image: ParsedImageByteArray,
         context: ICommandContext
-    ): GifDecoder.GifImage? {
+    ): AnimatedGif? {
         return try {
-            GifDecoder.read(image.bytes)
+            AnimatedGifReader.read(ImageSource.of(image.bytes))
         } catch (t: IOException) {
             sendRsp(context, "Not a valid gif")
             null
@@ -175,15 +187,15 @@ object ImageCommandUtil {
         message: String? = null,
         extension: String = "gif"
     ) {
-        val bytes = writeModificationsToNewGifNMessage(context, image) { index, gifWriter, gif ->
-            val src = ImmutableImage.wrapAwt(gif.getFrame(index))
+        val bytes = writeModificationsToNewGifNMessage(context, image, -1) { index, gifWriter, gif ->
+            val src = gif.getFrame(index)
             val new = try {
                 modification(src)
             } catch (t: UserImageException) {
                 sendRsp(context, t.getUserFriendlyMessage())
                 return@writeModificationsToNewGifNMessage false
             }
-            val ogDelay = gif.getDelay(index)
+            val ogDelay = gif.getDelay(index).toMillis().toInt() / 10
             val delay = delayFunction?.invoke(ogDelay) ?: ogDelay
             gifWriter.writeToSequence(new.awt(), delay * 10)
             true
