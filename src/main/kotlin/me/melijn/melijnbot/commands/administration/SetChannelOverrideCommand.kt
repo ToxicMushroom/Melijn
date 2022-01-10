@@ -37,12 +37,13 @@ class SetChannelOverrideCommand : AbstractCommand("command.setchanneloverride") 
         }
 
         var action = channel.upsertPermissionOverride(role)
-        for (perm in Permission.values()) {
-            val hasPerm = role.permissions.contains(perm)
+        for (offset in 0 until 64) {
+            val rawPerm = 1L shl offset
+            val hasPerm = (role.permissionsRaw and rawPerm) != 0L
             action = when (mapper(hasPerm)) {
-                TriState.TRUE -> action.grant(perm.rawValue)
-                TriState.DEFAULT -> action.clear(perm.rawValue)
-                TriState.FALSE -> action.deny(perm.rawValue)
+                TriState.TRUE -> action.grant(rawPerm)
+                TriState.DEFAULT -> action.clear(rawPerm)
+                TriState.FALSE -> action.deny(rawPerm)
             }
         }
         action.reason("(${context.author.asTag}): setChannelOverride").await()
