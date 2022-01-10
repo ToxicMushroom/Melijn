@@ -6,6 +6,7 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.models.TriState
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendMelijnMissingChannelPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
 
@@ -21,12 +22,20 @@ class SetChannelOverrideCommand : AbstractCommand("command.setchanneloverride") 
     override suspend fun execute(context: ICommandContext) {
         if (argSizeCheckFailed(context, 1)) return
 
-        val role = getRoleByArgsNMessage(context, 0, true, true) ?: return
+        val role = getRoleByArgsNMessage(context, 0, sameGuildAsContext = true, canInteract = true) ?: return
         val channel = getChannelByArgsNMessage(context, 1, true) ?: return
+
+        // channel permission checks
+        val missing = discordChannelPermissions.toSet().filter {
+            !context.guild.selfMember.hasPermission(channel, it)
+        }
+        if (missing.isNotEmpty()) sendMelijnMissingChannelPermissionMessage(context, missing)
+
+        // init logic
         var triState1 = TriState.TRUE
         var triState2 = TriState.DEFAULT
 
-        if (context.args.size >  3) {
+        if (context.args.size > 3) {
             triState1 = getEnumFromArgNMessage(context, 2, MESSAGE_UNKNOWN_TRISTATE) ?: return
             triState2 = getEnumFromArgNMessage(context, 3, MESSAGE_UNKNOWN_TRISTATE) ?: return
         }
@@ -48,6 +57,9 @@ class SetChannelOverrideCommand : AbstractCommand("command.setchanneloverride") 
         }
         action.reason("(${context.author.asTag}): setChannelOverride").await()
 
-        sendRsp(context, "Successfully created the override on ${channel.asTag} for **@${role.name}** with mappings `on -> $triState1` and `off -> $triState2`")
+        sendRsp(
+            context,
+            "Successfully created the override on ${channel.asTag} for **@${role.name}** with mappings `on -> $triState1` and `off -> $triState2`"
+        )
     }
 }
