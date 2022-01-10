@@ -11,7 +11,7 @@ class LoopQueueCommand : AbstractCommand("command.loopqueue") {
     init {
         id = 91
         name = "loopQueue"
-        aliases = arrayOf("repeatQueue", "queueRepeat", "loopQueue", "queueLoop")
+        aliases = arrayOf("repeatQueue", "queueRepeat", "lq", "queueLoop")
         runConditions =
             arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
         commandCategory = CommandCategory.MUSIC
@@ -21,11 +21,8 @@ class LoopQueueCommand : AbstractCommand("command.loopqueue") {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         trackManager.loopedQueue = !trackManager.loopedQueue
 
-        val extra = if (trackManager.loopedQueue) {
-            "looped"
-        } else {
-            "unlooped"
-        }
+        val extra = if (trackManager.loopedQueue) "looped"
+        else "unlooped"
 
         val msg = context.getTranslation("$root.$extra")
         sendRsp(context, msg)

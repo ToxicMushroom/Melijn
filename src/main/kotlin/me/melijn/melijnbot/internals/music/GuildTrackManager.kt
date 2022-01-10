@@ -10,6 +10,7 @@ import me.melijn.llklient.player.event.AudioEventAdapterWrapped
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commands.music.NextSongPosition
+import me.melijn.melijnbot.commands.music.SkipType
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.threading.SafeList
@@ -240,8 +241,23 @@ class GuildTrackManager(
         }.run()
     }
 
-    suspend fun skip(amount: Int) {
-        val nextTrack: AudioTrack? = tracks.removeFirstAndGetNextOrNull(amount)
+    suspend fun skip(amount: Int, skipType: SkipType = SkipType.HARD) {
+        val queueSize = tracks.size
+        var nextPos = amount
+
+        if (skipType == SkipType.SOFT && loopedQueue) {
+            nextPos = when (amount) {
+                in 0..queueSize + 1 -> amount
+                else -> amount % (queueSize + 1)
+            }
+
+            if (playingTrack == null) return
+            if (nextPos == 0) nextPos = queueSize + 1
+            val toQueue = listOf(playingTrack!!) + tracks.take(nextPos - 1)
+            tracks.addAll(toQueue)
+        }
+
+        val nextTrack: AudioTrack? = tracks.removeFirstAndGetNextOrNull(nextPos)
 
         if (nextTrack == null) {
             stopAndDestroy()
