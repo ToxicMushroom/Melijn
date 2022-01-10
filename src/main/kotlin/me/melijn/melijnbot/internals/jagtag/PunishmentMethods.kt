@@ -26,6 +26,7 @@ object PunishmentMethods {
                 Method("punishId", { env -> getArgs(env).punishId }),
                 Method("reason", { env -> getArgs(env).punishReason }),
                 Method("unPunishReason", { env -> getArgs(env).unPunishReason.toString() }),
+                Method("moment", { env -> getArgs(env).start.toString() }),
                 Method("start", { env -> getArgs(env).start.toString() }),
                 Method("end", { env -> getArgs(env).end.toString() }),
                 Method("duration", { env -> getArgs(env).end?.let { end -> end - getArgs(env).start }?.toString() ?: "-1" }),

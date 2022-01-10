@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.commandutil.moderation.ModUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.Ban
+import me.melijn.melijnbot.database.ban.TempPunishment
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -99,12 +100,13 @@ class MassBanCommand : AbstractCommand("command.massban") {
         val ban = Ban(context.guildId, -1, context.authorId, reason, null)
 
         val bannedMessageLc =
-            getMassBanMessage(
+            getMassPunishMessages(
                 context.daoManager,
                 context.guild,
                 users.keys,
                 context.author,
-                ban
+                ban,
+                MessageType.MASS_BAN
             )
         val doaManager = context.daoManager
         val logChannel = context.guild.getAndVerifyLogChannelByType(doaManager, LogChannelType.MASS_BAN)
@@ -126,7 +128,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
         val author = context.author
         val language = context.getLanguage()
         val daoManager = context.daoManager
-        val bannedMessageDm = getTempPunishMessage(
+        val bannedMessageDm = getPunishMessage(
             language, daoManager, guild, targetUser, author, ban,
             msgType = MessageType.BAN
         )
@@ -144,32 +146,6 @@ class MassBanCommand : AbstractCommand("command.massban") {
             false
         }
     }
-
-    private suspend fun getMassBanMessage(
-        daoManager: DaoManager,
-        guild: Guild,
-        bannedUsers: Set<User>,
-        banAuthor: User,
-        ban: Ban
-    ): List<ModularMessage> {
-        val banDm = daoManager.linkedMessageWrapper.getMessage(guild.idLong, MessageType.MASS_BAN_LOG)?.let {
-            daoManager.messageWrapper.getMessage(guild.idLong, it)
-        } ?: getDefaultMessage()
-
-        val zoneId = getZoneId(daoManager, guild.idLong, null)
-        val args = MassPunishJagTagParserArgs(
-            banAuthor, bannedUsers, null, daoManager, ban.reason, ban.unbanReason,
-            ban.startTime, ban.endTime, ban.banId, zoneId, guild
-        )
-
-        val message = banDm.mapAllStringFieldsSafeSplitting(messageSplitter = MessageSplitter.EmbedLdif) {
-            if (it != null) MassPunishmentJagTagParser.parseJagTag(args, it)
-            else null
-        }
-
-        return message
-    }
-
 
     companion object {
         fun getDefaultMessage(): ModularMessage {
@@ -197,3 +173,28 @@ class MassBanCommand : AbstractCommand("command.massban") {
 }
 
 
+suspend fun getMassPunishMessages(
+    daoManager: DaoManager,
+    guild: Guild,
+    bannedUsers: Set<User>,
+    banAuthor: User,
+    ban: TempPunishment,
+    msgType: MessageType
+): List<ModularMessage> {
+    val dm = daoManager.linkedMessageWrapper.getMessage(guild.idLong, msgType)?.let {
+        daoManager.messageWrapper.getMessage(guild.idLong, it)
+    } ?: msgType.getDefaultMsg()
+
+    val zoneId = getZoneId(daoManager, guild.idLong, null)
+    val args = MassPunishJagTagParserArgs(
+        banAuthor, bannedUsers, null, daoManager, ban.reason, ban.dePunishReason,
+        ban.startTime, ban.endTime, ban.punishId, zoneId, guild
+    )
+
+    val message = dm.mapAllStringFieldsSafeSplitting(messageSplitter = MessageSplitter.EmbedLdif) {
+        if (it != null) MassPunishmentJagTagParser.parseJagTag(args, it)
+        else null
+    }
+
+    return message
+}

@@ -97,8 +97,8 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val lang = context.getLanguage()
         val daoManager = context.daoManager
         val bannedMessageDm =
-            getTempPunishMessage(lang, daoManager, guild, targetUser, author, ban, msgType = MessageType.TEMP_BAN)
-        val bannedMessageLc = getTempPunishMessage(lang, daoManager, guild, targetUser, author, ban, true,
+            getPunishMessage(lang, daoManager, guild, targetUser, author, ban, msgType = MessageType.TEMP_BAN)
+        val bannedMessageLc = getPunishMessage(lang, daoManager, guild, targetUser, author, ban, true,
             banningMessage != null, MessageType.TEMP_BAN_LOG)
 
         val msg = try {

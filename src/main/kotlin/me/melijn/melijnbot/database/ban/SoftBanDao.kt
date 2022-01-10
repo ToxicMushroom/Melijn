@@ -86,10 +86,10 @@ class SoftBanDao(driverManager: DriverManager) : Dao(driverManager) {
 }
 
 data class SoftBan(
-    var guildId: Long,
+    override var guildId: Long,
     var softBannedId: Long,
     var softBanAuthorId: Long,
-    var reason: String = "/",
+    override var reason: String = "/",
     var moment: Long = System.currentTimeMillis(),
     val softBanId: String = System.nanoTime().toBase64()
-)
+) : TempPunishment(guildId, softBannedId, softBanAuthorId, reason, null, null, moment, null, false, softBanId)

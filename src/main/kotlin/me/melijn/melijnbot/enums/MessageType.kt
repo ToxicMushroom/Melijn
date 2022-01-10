@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.enums
 
-enum class MessageType(val base: String) {
+enum class MessageType(val base: String, val messageTemplate: MessageTemplate? = null) {
 
     // Join/Leave things
     PRE_VERIFICATION_JOIN("PreVerificationJoin"),
@@ -15,11 +15,11 @@ enum class MessageType(val base: String) {
     BOOST("Boost"),
 
     // Punishments
-    BAN("Ban"),
-    TEMP_BAN("TempBan"),
-    MASS_BAN("MassBan"),
-    SOFT_BAN("SoftBan"),
-    UNBAN("Unban"),
+    BAN("Ban", MessageTemplate.BAN),
+    TEMP_BAN("TempBan", MessageTemplate.TEMP_BAN),
+    MASS_BAN("MassBan", MessageTemplate.MASS_BAN),
+    SOFT_BAN("SoftBan", MessageTemplate.SOFT_BAN),
+    UNBAN("Unban", MessageTemplate.UNBAN),
 
     MUTE("Mute"),
     TEMP_MUTE("TempMute"),

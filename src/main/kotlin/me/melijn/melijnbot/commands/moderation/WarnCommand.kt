@@ -1,22 +1,30 @@
 package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.commandutil.moderation.ModUtil
+import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.database.ban.TempPunishment
 import me.melijn.melijnbot.database.warn.Warn
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.jagtag.PunishJagTagParserArgs
+import me.melijn.melijnbot.internals.jagtag.PunishmentJagTagParser
+import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
-import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.User
 import java.awt.Color
-import java.time.ZoneId
 
 class WarnCommand : AbstractCommand("command.warn") {
 
@@ -24,6 +32,31 @@ class WarnCommand : AbstractCommand("command.warn") {
         id = 32
         name = "warn"
         commandCategory = CommandCategory.MODERATION
+    }
+
+    companion object {
+        fun getDefaultMessage(logChannel: Boolean): ModularMessage {
+            val embed = EmbedEditor().apply {
+                setAuthor("{punishAuthorTag}{titleSpaces:{punishAuthorTag}}", null, "{punishAuthorAvatarUrl}")
+                setColor(Color.YELLOW)
+                setThumbnail("{punishedUserAvatarUrl}")
+                setDescription("```LDIF\n")
+                if (!logChannel) appendDescription("Server: {serverName}\nServer Id: {serverId}\n")
+                appendDescription(
+                    """
+            Warn Author: {punishAuthorTag}
+            Warn Author Id: {punishAuthorId}
+            Warned: {punishedUserTag}
+            Warned Id: {punishedUserId}
+            Reason: {reason}
+            Moment of Warn: {moment:${if (logChannel) "null" else "{punishedUserId}"}}
+            Case Id: {punishId}{if:{extraLcInfo}|=|null|then:|else:{extraLcInfo}}
+        """.trimIndent()
+                )
+                appendDescription("```")
+            }.build()
+            return ModularMessage(null, embed)
+        }
     }
 
     override suspend fun execute(context: ICommandContext) {
@@ -66,32 +99,29 @@ class WarnCommand : AbstractCommand("command.warn") {
         val guild = context.guild
         val author = context.author
         val daoManager = context.daoManager
-        val zoneId = getZoneId(daoManager, guild.idLong)
-        val privZoneId = getZoneId(daoManager, guild.idLong, targetMember.idLong)
+
         val language = context.getLanguage()
-        val warnedMessageDm = getWarnMessage(language, privZoneId, guild, targetMember.user, author, warn)
-        val warnedMessageLc = getWarnMessage(
+        val warnedMessageDm =
+            getPunishMessage(language, daoManager, guild, targetMember.user, author, warn, msgType = MessageType.WARN)
+        val warnedMessageLc = getPunishMessage(
             language,
-            zoneId,
+            daoManager,
             guild,
             targetMember.user,
             author,
             warn,
             true,
-            targetMember.user.isBot,
-            warningMessage != null
+            warningMessage != null, msgType = MessageType.WARN_LOG
         )
 
         context.daoManager.warnWrapper.addWarn(warn)
 
-        warningMessage?.editMessageEmbeds(
+        warningMessage?.editMessage(
             warnedMessageDm
         )?.override(true)?.queue()
 
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.WARN)
-        logChannel?.let { it1 ->
-            sendEmbed(daoManager.embedDisabledWrapper, it1, warnedMessageLc)
-        }
+        logChannel?.let { it1 -> sendMsg(it1, context.webManager.proxiedHttpClient, warnedMessageLc) }
 
         val msg = context.getTranslation("$root.success")
             .withSafeVariable(PLACEHOLDER_USER, targetMember.asTag)
@@ -100,56 +130,36 @@ class WarnCommand : AbstractCommand("command.warn") {
     }
 }
 
-fun getWarnMessage(
+suspend fun getPunishMessage(
     language: String,
-    zoneId: ZoneId,
+    daoManager: DaoManager,
     guild: Guild,
     warnedUser: User,
     warnAuthor: User,
-    warn: Warn,
+    punishment: TempPunishment,
     lc: Boolean = false,
-    isBot: Boolean = false,
-    received: Boolean = true
-): MessageEmbed {
-    var description = "```LDIF\n"
-    if (!lc) {
-        description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .withSafeVarInCodeblock("serverName", guild.name)
-            .withVariable("serverId", guild.id)
+    received: Boolean = true,
+    msgType: MessageType
+): ModularMessage {
+    val isBot = warnedUser.isBot
+    val extraDesc = if (!received || isBot)
+        i18n.getTranslation(language, "message.punishment.extra." + if (isBot) "bot" else "dm")
+    else "null"
+
+    val dm = daoManager.linkedMessageWrapper.getMessage(guild.idLong, msgType)?.let {
+        daoManager.messageWrapper.getMessage(guild.idLong, it)
+    } ?: msgType.getDefaultMsg()
+
+    val zoneId = getZoneId(daoManager, guild.idLong, if (lc) warnedUser.idLong else null)
+    val args = PunishJagTagParserArgs(
+        warnAuthor, warnedUser, null, daoManager, punishment.reason, punishment.dePunishReason,
+        punishment.startTime, punishment.endTime, punishment.punishId, extraDesc, zoneId, guild
+    )
+
+    val message = dm.mapAllStringFieldsSafe {
+        if (it != null) PunishmentJagTagParser.parseJagTag(args, it)
+        else null
     }
 
-    description += i18n.getTranslation(language, "message.punishment.warn.description")
-        .withSafeVarInCodeblock("warnAuthor", warnAuthor.asTag)
-        .withVariable("warnAuthorId", warnAuthor.id)
-        .withSafeVarInCodeblock("warned", warnedUser.asTag)
-        .withVariable("warnedId", warnedUser.id)
-        .withSafeVarInCodeblock("reason", warn.reason.take(1600))
-        .withVariable("moment", (warn.moment.asEpochMillisToDateTime(zoneId)))
-        .withVariable("warnId", warn.warnId)
-
-    val extraDesc: String = if (!received || isBot) {
-        i18n.getTranslation(
-            language,
-            if (isBot) {
-                "message.punishment.extra.bot"
-            } else {
-                "message.punishment.extra.dm"
-            }
-        )
-    } else {
-        ""
-    }
-    description += extraDesc
-    description += "```"
-
-    val author = i18n.getTranslation(language, "message.punishment.warn.author")
-        .withSafeVariable(PLACEHOLDER_USER, warnAuthor.asTag)
-        .withVariable("spaces", getAtLeastNCodePointsAfterName(warnAuthor) + "\u200B")
-
-    return EmbedBuilder()
-        .setAuthor(author, null, warnAuthor.effectiveAvatarUrl)
-        .setDescription(description)
-        .setThumbnail(warnedUser.effectiveAvatarUrl)
-        .setColor(Color.YELLOW)
-        .build()
+    return message
 }

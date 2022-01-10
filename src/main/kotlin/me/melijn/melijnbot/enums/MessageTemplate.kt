@@ -17,5 +17,13 @@ enum class MessageTemplate {
     MUTE_LOG,
     TEMP_MUTE_LOG,
     UNMUTE,
-    UNMUTE_LOG;
+    UNMUTE_LOG,
+
+    KICK,
+    MASS_KICK,
+    MASS_KICK_LOG,
+    KICK_LOG,
+
+    WARN,
+    WARN_LOG;
 }

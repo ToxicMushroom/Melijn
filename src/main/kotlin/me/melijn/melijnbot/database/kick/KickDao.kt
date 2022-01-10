@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.kick
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.database.ban.TempPunishment
 import me.melijn.melijnbot.internals.utils.StringUtils.toBase64
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -96,10 +97,10 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
 }
 
 data class Kick(
-    val guildId: Long,
+    override val guildId: Long,
     val kickedId: Long,
     val kickAuthorId: Long,
-    val reason: String,
+    override val reason: String,
     val moment: Long = System.currentTimeMillis(),
     val kickId: String = System.nanoTime().toBase64()
-)
+): TempPunishment(guildId, kickedId, kickAuthorId, reason, null, null, moment, null, false, kickId)

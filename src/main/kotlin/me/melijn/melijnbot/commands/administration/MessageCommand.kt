@@ -86,12 +86,20 @@ class MessageCommand : AbstractCommand("command.message") {
                     MessageTemplate.MASS_BAN_LOG -> MassBanCommand.getDefaultMessage()
                     MessageTemplate.SOFT_BAN_LOG -> SoftBanCommand.getDefaultMessage(true)
                     MessageTemplate.UNBAN_LOG -> UnbanCommand.getDefaultMessage(true)
+
                     MessageTemplate.MUTE -> MuteCommand.getDefaultMessage(false)
                     MessageTemplate.TEMP_MUTE -> MuteCommand.getDefaultMessage(false)
                     MessageTemplate.MUTE_LOG -> MuteCommand.getDefaultMessage(true)
                     MessageTemplate.TEMP_MUTE_LOG -> MuteCommand.getDefaultMessage(true)
                     MessageTemplate.UNMUTE -> UnmuteCommand.getDefaultMessage(false)
                     MessageTemplate.UNMUTE_LOG ->  UnmuteCommand.getDefaultMessage(true)
+
+                    MessageTemplate.KICK -> KickCommand.getDefaultMessage(false)
+                    MessageTemplate.MASS_KICK -> KickCommand.getDefaultMessage(false)
+                    MessageTemplate.KICK_LOG -> KickCommand.getDefaultMessage(true)
+                    MessageTemplate.MASS_KICK_LOG -> MassKickCommand.getDefaultMessage()
+                    MessageTemplate.WARN -> WarnCommand.getDefaultMessage(false)
+                    MessageTemplate.WARN_LOG -> WarnCommand.getDefaultMessage(true)
                 }
                 return modular
             }

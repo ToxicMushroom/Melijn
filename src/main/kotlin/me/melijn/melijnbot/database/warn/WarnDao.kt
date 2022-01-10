@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.warn
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.database.ban.TempPunishment
 import me.melijn.melijnbot.internals.utils.StringUtils.toBase64
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -96,10 +97,10 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
 }
 
 data class Warn(
-    val guildId: Long,
+    override val guildId: Long,
     val warnedId: Long,
     val warnAuthorId: Long,
-    val reason: String,
+    override val reason: String,
     val moment: Long = System.currentTimeMillis(),
     val warnId: String = System.nanoTime().toBase64()
-)
+) : TempPunishment(guildId, warnedId, warnAuthorId, reason, null, null, moment, null, false, warnId)

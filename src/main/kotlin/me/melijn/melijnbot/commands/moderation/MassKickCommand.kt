@@ -3,21 +3,21 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.commandutil.moderation.ModUtil
 import me.melijn.melijnbot.database.kick.Kick
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.models.EmbedEditor
+import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
-import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.Message
 import java.awt.Color
-import java.time.ZoneId
 
 class MassKickCommand : AbstractCommand("command.masskick") {
 
@@ -26,6 +26,29 @@ class MassKickCommand : AbstractCommand("command.masskick") {
         aliases = arrayOf("mk")
         commandCategory = CommandCategory.MODERATION
         discordChannelPermissions = arrayOf(Permission.KICK_MEMBERS)
+    }
+
+    companion object {
+        fun getDefaultMessage(): ModularMessage {
+            val embed = EmbedEditor().apply {
+                setAuthor("{punishAuthorTag}{titleSpaces:{punishAuthorTag}}", null, "{punishAuthorAvatarUrl}")
+                setColor(Color(0xDA31FC))
+                setDescription("```LDIF\n")
+                appendDescription(
+                    """
+            Kick Author: {punishAuthorTag}
+            Kick Author Id: {punishAuthorId}
+            KickedList: {punishList}
+            Reason: {reason}
+            Duration: {timeDuration}
+            Moment of kick: {startTime:null}
+            Case Id: {punishId}{if:{extraLcInfo}|=|null|then:|else:{extraLcInfo}}
+        """.trimIndent()
+                )
+                appendDescription("```")
+            }.build()
+            return ModularMessage(null, embed)
+        }
     }
 
     override suspend fun execute(context: ICommandContext) {
@@ -52,6 +75,7 @@ class MassKickCommand : AbstractCommand("command.masskick") {
 
         var success = 0
         var failed = 0
+        val daoManager = context.daoManager
 
         for (targetMember in users) {
 
@@ -79,18 +103,18 @@ class MassKickCommand : AbstractCommand("command.masskick") {
             reason
         )
 
-        val warnedMessagesLc = getMassKickMessage(
-            context.getLanguage(),
-            context.getTimeZoneId(),
+        val warnedMessagesLc = getMassPunishMessages(
+            daoManager,
             context.guild,
-            users,
+            users.map { it.user }.toSet(),
             context.author,
             kick,
+            MessageType.WARN_LOG
         )
 
         context.guild.getAndVerifyLogChannelByType(context.daoManager, LogChannelType.MASS_KICK)?.let { tc ->
             warnedMessagesLc.forEach { msg ->
-                sendEmbed(context.daoManager.embedDisabledWrapper, tc, msg)
+                sendMsg(tc, context.webManager.proxiedHttpClient, msg)
             }
         }
 
@@ -112,7 +136,6 @@ class MassKickCommand : AbstractCommand("command.masskick") {
         val author = context.author
         val language = context.getLanguage()
         val daoManager = context.daoManager
-        val privZoneId = getZoneId(daoManager, guild.idLong, targetMember.idLong)
 
         daoManager.kickWrapper.addKick(kick)
 
@@ -122,75 +145,12 @@ class MassKickCommand : AbstractCommand("command.masskick") {
         val kickSuccess = kickException == null
 
         if (kickSuccess) {
-            val kickedMessageDm = getKickMessage(language, privZoneId, guild, targetMember.user, author, kick)
-            kickingMessage?.editMessageEmbeds(kickedMessageDm)?.override(true)?.queue()
+            val kickedMessageDm = getPunishMessage(language, daoManager, guild, targetMember.user, author, kick, msgType = MessageType.MASS_KICK)
+            kickingMessage?.editMessage(kickedMessageDm)?.override(true)?.queue()
         } else {
             val failedMsg = context.getTranslation("message.kicking.failed")
             kickingMessage?.editMessage(failedMsg)?.queue()
         }
         return kickSuccess
-    }
-
-    fun getMassKickMessage(
-        language: String,
-        zoneId: ZoneId,
-        guild: Guild,
-        kickedUsers: List<Member>,
-        kickAuthor: User,
-        kick: Kick,
-        lc: Boolean = false,
-        isBot: Boolean = false,
-        received: Boolean = true
-    ): List<MessageEmbed> {
-        var description = "```LDIF\n"
-        if (!lc) {
-            description += i18n.getTranslation(language, "message.punishment.description.nlc")
-                .withSafeVarInCodeblock("serverName", guild.name)
-                .withVariable("serverId", guild.id)
-        }
-        val users = mutableListOf<User>()
-        for ((i, member) in kickedUsers.withIndex()) {
-            users.add(i, member.user)
-        }
-        val bannedList = users.joinToString(separator = "\n- ", prefix = "\n- ") { "${it.id} - [${it.asTag}]" }
-
-        description += i18n.getTranslation(language, "message.punishment.masskick.description")
-            .withSafeVarInCodeblock("kickAuthor", kickAuthor.asTag)
-            .withVariable("kickAuthorId", kickAuthor.id)
-            .withSafeVarInCodeblock("kickedList", bannedList)
-            .withSafeVarInCodeblock("reason", kick.reason)
-            .withVariable("moment", (kick.moment.asEpochMillisToDateTime(zoneId)))
-            .withVariable("kickId", kick.kickId)
-
-        val extraDesc: String = if (!received || isBot) {
-            i18n.getTranslation(
-                language,
-                if (isBot) {
-                    "message.punishment.extra.bot"
-                } else {
-                    "message.punishment.extra.dm"
-                }
-            )
-        } else {
-            ""
-        }
-        description += extraDesc
-        description += "```"
-
-        val author = i18n.getTranslation(language, "message.punishment.kick.author")
-            .withSafeVariable(PLACEHOLDER_USER, kickAuthor.asTag)
-            .withVariable("spaces", getAtLeastNCodePointsAfterName(kickAuthor) + "\u200B")
-
-        val list = StringUtils.splitMessageWithCodeBlocks(description, lang = "LDIF")
-            .withIndex()
-            .map { (index, part) ->
-                val eb = EmbedBuilder()
-                    .setDescription(part)
-                    .setColor(Color.ORANGE)
-                if (index == 0) eb.setAuthor(author, null, kickAuthor.effectiveAvatarUrl)
-                eb.build()
-            }
-
-        return list
     }
 }

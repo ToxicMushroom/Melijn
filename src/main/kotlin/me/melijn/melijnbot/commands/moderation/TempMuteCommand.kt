@@ -121,10 +121,10 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val language = context.getLanguage()
         val daoManager = context.daoManager
         val mutedMessageDm =
-            getTempPunishMessage(language, daoManager, guild, targetUser, author, mute, msgType = MessageType.MUTE)
-        val mutedMessageLc = getTempPunishMessage(
+            getPunishMessage(language, daoManager, guild, targetUser, author, mute, msgType = MessageType.TEMP_MUTE)
+        val mutedMessageLc = getPunishMessage(
             language, daoManager, guild, targetUser, author, mute,
-            true, targetUser.isBot, MessageType.MUTE_LOG
+            true, targetUser.isBot, MessageType.TEMP_MUTE_LOG
         )
 
         val targetMember = guild.retrieveMember(targetUser).awaitOrNull()

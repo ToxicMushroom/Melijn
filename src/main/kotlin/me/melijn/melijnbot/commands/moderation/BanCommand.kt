@@ -1,26 +1,20 @@
 package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.commandutil.moderation.ModUtil
-import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.Ban
-import me.melijn.melijnbot.database.ban.TempPunishment
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.jagtag.PunishJagTagParserArgs
-import me.melijn.melijnbot.internals.jagtag.PunishmentJagTagParser
 import me.melijn.melijnbot.internals.models.EmbedEditor
 import me.melijn.melijnbot.internals.models.ModularMessage
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
@@ -124,8 +118,8 @@ class BanCommand : AbstractCommand("command.ban") {
         val author = context.author
         val lang = context.getLanguage()
         val daoManager = context.daoManager
-        val bannedMessageDm = getTempPunishMessage(lang, daoManager, guild, targetUser, author, ban, msgType = MessageType.BAN)
-        val bannedMessageLc = getTempPunishMessage(
+        val bannedMessageDm = getPunishMessage(lang, daoManager, guild, targetUser, author, ban, msgType = MessageType.BAN)
+        val bannedMessageLc = getPunishMessage(
             lang, daoManager, guild, targetUser, author, ban, true,
             banningMessage != null, MessageType.BAN_LOG
         )
@@ -157,42 +151,6 @@ class BanCommand : AbstractCommand("command.ban") {
     }
 }
 
-suspend fun getTempPunishMessage(
-    language: String,
-    daoManager: DaoManager,
-    guild: Guild,
-    punished: User,
-    punishAuthor: User,
-    punishment: TempPunishment,
-    lc: Boolean = false,
-    received: Boolean = true,
-    msgType: MessageType
-): ModularMessage {
-    val isBot = punished.isBot
-    val extraDesc = if (!received || isBot)
-        i18n.getTranslation(language, "message.punishment.extra." + if (isBot) "bot" else "dm")
-    else "null"
-
-    val linkedMessageName = daoManager.linkedMessageWrapper.getMessage(guild.idLong, msgType)
-    val banDm = linkedMessageName?.let { daoManager.messageWrapper.getMessage(guild.idLong, it) }
-        ?: msgType.getDefaultMsg()
-
-    val zoneId = getZoneId(daoManager, guild.idLong, if (lc) punished.idLong else null)
-    val args = punishment.run {
-        PunishJagTagParserArgs(
-            punishAuthor, punished, null, daoManager, reason, dePunishReason,
-            startTime, endTime, punishId, extraDesc, zoneId, guild
-        )
-    }
-
-    val message = banDm.mapAllStringFieldsSafe {
-        if (it != null) PunishmentJagTagParser.parseJagTag(args, it)
-        else null
-    }
-
-    return message
-}
-
 fun MessageType.getDefaultMsg(): ModularMessage {
     return when (this) {
         MessageType.PRE_VERIFICATION_JOIN -> TODO()
@@ -211,9 +169,9 @@ fun MessageType.getDefaultMsg(): ModularMessage {
         MessageType.MUTE -> MuteCommand.getDefaultMessage(false)
         MessageType.TEMP_MUTE -> MuteCommand.getDefaultMessage(false)
         MessageType.UNMUTE -> UnmuteCommand.getDefaultMessage(false)
-        MessageType.MASS_KICK -> TODO()
-        MessageType.KICK -> TODO()
-        MessageType.WARN -> TODO()
+        MessageType.MASS_KICK -> KickCommand.getDefaultMessage(false)
+        MessageType.KICK -> KickCommand.getDefaultMessage(false)
+        MessageType.WARN -> WarnCommand.getDefaultMessage(false)
         MessageType.MASS_BAN_LOG -> MassBanCommand.getDefaultMessage()
         MessageType.BAN_LOG -> BanCommand.getDefaultMessage(true)
         MessageType.TEMP_BAN_LOG -> BanCommand.getDefaultMessage(true)
@@ -222,9 +180,9 @@ fun MessageType.getDefaultMsg(): ModularMessage {
         MessageType.MUTE_LOG -> MuteCommand.getDefaultMessage(true)
         MessageType.TEMP_MUTE_LOG -> MuteCommand.getDefaultMessage(true)
         MessageType.UNMUTE_LOG -> UnmuteCommand.getDefaultMessage(true)
-        MessageType.MASS_KICK_LOG -> TODO()
-        MessageType.KICK_LOG -> TODO()
-        MessageType.WARN_LOG -> TODO()
+        MessageType.MASS_KICK_LOG -> MassKickCommand.getDefaultMessage()
+        MessageType.KICK_LOG -> KickCommand.getDefaultMessage(true)
+        MessageType.WARN_LOG -> WarnCommand.getDefaultMessage(true)
         else -> throw IllegalArgumentException("Default message for ${this} not implemented")
     }
 }
