@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.commands.image
 
-import at.dhyan.open_imaging.GifDecoder
+import com.sksamuel.scrimage.nio.AnimatedGifReader
+import com.sksamuel.scrimage.nio.ImageSource
 import me.melijn.melijnbot.commands.utility.prependZeros
 import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -28,12 +29,12 @@ class PngsFromGifCommand : AbstractCommand("command.pngsfromgif") {
     override suspend fun execute(context: ICommandContext) {
         val acceptTypes = setOf(ImageType.GIF)
         val image = ImageUtils.getImageBytesNMessage(context, 0, DiscordSize.X1024, acceptTypes) ?: return
-        val gif = GifDecoder.read(image.bytes)
+        val gif = AnimatedGifReader.read(ImageSource.of(image.bytes))
 
         ByteArrayOutputStream().use { baos ->
             ZipOutputStream(baos).use { zos ->
                 for (i in 0 until gif.frameCount) {
-                    val coolFrame = gif.getFrame(i)
+                    val coolFrame = gif.getFrame(i).awt()
                     val zipEntry = ZipEntry("frame_${gitGud(i, gif.frameCount)}.png")
 
                     zos.putNextEntry(zipEntry)
