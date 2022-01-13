@@ -179,7 +179,7 @@ class StarboardCommand : AbstractCommand("command.starboard") {
                     .withVariable("stars", starboardSettings.minStars)
                 sendRsp(context, msg)
             } else {
-                val minStars = getIntegerFromArgNMessage(context, 0, 3, 10) ?: return
+                val minStars = getIntegerFromArgNMessage(context, 0, 1, 30) ?: return
                 val starboardSettingsWrapper = context.daoManager.starboardSettingsWrapper
                 val starboardSettings = starboardSettingsWrapper.getStarboardSettings(context.guildId)
                 starboardSettings.minStars = minStars
