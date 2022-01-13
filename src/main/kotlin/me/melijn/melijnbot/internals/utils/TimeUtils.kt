@@ -43,13 +43,13 @@ suspend fun Long.asEpochMillisToDateTime(daoManager: DaoManager?, guildId: Long?
     val guildTimezone = guildId?.let {
         val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
         if (zoneId?.isBlank() == true) null
-        else ZoneId.of(zoneId)
+        else try { ZoneId.of(zoneId) } catch (t: Throwable) { null }
     }
 
     val userTimezone = userId?.let {
         val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
         if (zoneId?.isBlank() == true) null
-        else ZoneId.of(zoneId)
+        else try { ZoneId.of(zoneId) } catch (t: Throwable) { null }
     }
 
     val timeZone = userTimezone ?: guildTimezone ?: ZoneId.of("GMT")
