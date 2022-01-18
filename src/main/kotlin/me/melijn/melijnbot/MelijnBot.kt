@@ -12,7 +12,6 @@ import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.toLCC
 import me.melijn.melijnbot.internals.web.rest.KillerInterceptor
-import net.dv8tion.jda.api.GatewayEncoding
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
@@ -105,7 +104,6 @@ object MelijnBot {
             .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }
             .setHttpClientBuilder(OkHttpClient.Builder().addInterceptor(KillerInterceptor()))
-            .setGatewayEncoding(GatewayEncoding.ETF)
 
         if (!container.settings.lavalink.enabled) {
             defaultShardManagerBuilder.setAudioSendFactory(NativeAudioSendFactory())
