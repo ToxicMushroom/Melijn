@@ -86,7 +86,7 @@ dependencies {
     implementation("me.melijn.jagtag:JagTag-Kotlin:2.2.1")
 
     // https://search.maven.org/artifact/com.zaxxer/HikariCP
-    implementation("com.zaxxer:HikariCP:5.0.0")
+    implementation("com.zaxxer:HikariCP:5.0.1")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation("org.postgresql:postgresql:42.3.1")
