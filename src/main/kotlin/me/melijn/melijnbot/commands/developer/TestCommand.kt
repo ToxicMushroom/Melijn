@@ -1,12 +1,12 @@
 package me.melijn.melijnbot.commands.developer
 
-import com.freya02.emojis.Emojis
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.command.SPACE_REGEX
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspAwaitEL
+import me.melijn.melijnbot.internals.utils.toEpochMilliseconds
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent
 import net.dv8tion.jda.api.interactions.components.ActionRow
@@ -25,7 +25,11 @@ class TestCommand : AbstractCommand("command.test") {
     val logger: Logger = LoggerFactory.getLogger(TestCommand::class.java)
 
     override suspend fun execute(context: ICommandContext) {
-        context.reply(context.fullArg.split(SPACE_REGEX).map { Emojis.ofUnicode(it)?.unicode() ?: "`missing`" })
+        val message = sendRspAwaitEL(context, "blub").first()
+        println(message.timeEdited?.toEpochMilliseconds())
+        val msg2 = message.editMessage("blub blub").await()
+        println(message.timeEdited?.toEpochMilliseconds())
+        println(msg2.timeEdited?.toEpochMilliseconds())
     }
 
     private suspend fun sendSelection(context: ICommandContext) {

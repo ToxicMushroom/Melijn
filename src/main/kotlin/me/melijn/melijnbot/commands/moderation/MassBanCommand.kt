@@ -18,6 +18,7 @@ import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.MessageSplitter
 import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspAwaitEL
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
@@ -42,10 +43,13 @@ class MassBanCommand : AbstractCommand("command.massban") {
         val size = context.args.size
         val failedRetrieves = mutableListOf<Int>() // arg indexes of failed arguments
         val users = mutableMapOf<User, Member?>()
-        for (i in 0 until size) {
-            if (context.args[i] == "-r") {
-                break
-            }
+        val stopIndex = context.args.indexOfFirst { it == "-r" }.takeIf { it > -1 } ?: size
+
+        var progressMessage = if (size > 10) {
+            sendRspAwaitEL(context, getProgressFetchingMessage(0, size)).first()
+        } else null
+
+        for (i in 0 until stopIndex) {
             offset++
             val user = retrieveUserByArgsNMessage(context, i)
             if (user == null) {
@@ -56,7 +60,8 @@ class MassBanCommand : AbstractCommand("command.massban") {
                         "Failed to retrieve: ```${
                             failedRetrieves.joinToString(", ") { context.args[it] }.escapeCodeblockMarkdown()
                         }```\n" +
-                            "Stopping massban because more then half of the checked users have failed to retrieve, please remove these users from the command and try again."
+                            "Stopping massban because more then half of the checked users have failed to retrieve," +
+                            " please remove these users from the command and try again."
                     )
                     return
                 }
@@ -68,6 +73,11 @@ class MassBanCommand : AbstractCommand("command.massban") {
             if (member != null) if (ModUtil.cantPunishAndReply(context, member)) return
 
             users[user] = member
+
+            // check to see to update progress
+            progressMessage = updateProgressMessageWhenOld(progressMessage, i, stopIndex) { m, n ->
+                getProgressFetchingMessage(m, n)
+            }
         }
 
         var reason = context.getRawArgPart(1 + offset)
@@ -79,7 +89,8 @@ class MassBanCommand : AbstractCommand("command.massban") {
         var updated = 0
         var failed = 0
 
-        for ((targetUser, member) in users) {
+        for ((index, entry) in users.entries.withIndex()) {
+            val (targetUser, member) = entry
             val (ban, updatedBan) = BanCommand.createBanFromActiveOrNew(context, targetUser, reason)
             updated += if (updatedBan) 1 else 0
 
@@ -89,6 +100,11 @@ class MassBanCommand : AbstractCommand("command.massban") {
 
             if (continueBanning(context, targetUser, ban, delDays, message)) success++
             else failed++
+
+            // check to see to update progress
+            progressMessage = updateProgressMessageWhenOld(progressMessage, index, users.size) { m, n ->
+                getProgressBanningMessage(m, n)
+            }
         }
         failed += failedRetrieves.size
 
@@ -114,6 +130,7 @@ class MassBanCommand : AbstractCommand("command.massban") {
             for (msgEb in bannedMessageLc)
                 sendMsg(it, context.webManager.proxiedHttpClient, msgEb)
         }
+        progressMessage?.delete()?.reason("(massBan): progress message removal")
         sendRsp(context, msg)
     }
 
@@ -146,6 +163,22 @@ class MassBanCommand : AbstractCommand("command.massban") {
             false
         }
     }
+
+    private fun getProgressFetchingMessage(m: Int, n: Int) = "Fetching members ${m}/${n}.."
+    private fun getProgressBanningMessage(m: Int, n: Int) = "Banning members ${m}/${n}.."
+    private suspend fun updateProgressMessageWhenOld(
+        message: Message?, m: Int, n: Int, text: (Int, Int) -> String
+    ): Message? {
+        val startFetchTime =
+            message?.timeEdited?.toEpochMilliseconds() ?: message?.timeCreated?.toEpochMilliseconds() ?: return message
+        return if (startFetchTime < System.currentTimeMillis() - 5_000) {
+            val oldText = message?.contentRaw ?: ""
+            val newText = text(m, n)
+            if (oldText != newText) message?.editMessage(newText)?.await()
+            else message
+        } else message
+    }
+
 
     companion object {
         fun getDefaultMessage(): ModularMessage {

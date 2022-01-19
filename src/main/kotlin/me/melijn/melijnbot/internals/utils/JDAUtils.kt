@@ -130,11 +130,11 @@ fun getUserByArgsN(context: ICommandContext, index: Int): User? {//With null
 
 fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String, message: Message? = null): User? {
     if (arg.isBlank()) return null
-    return if (DISCORD_ID.matches(arg)) {
+    return if (arg.toLongOrNull() != null && DISCORD_ID.matches(arg)) {
         shardManager.getUserById(arg)
     } else if (USER_MENTION.matches(arg)) {
-        val id = (USER_MENTION.find(arg) ?: return null).groupValues[1]
-        message?.mentionedUsers?.firstOrNull { it.id == id } ?: shardManager.getUserById(id)
+        val id = (USER_MENTION.find(arg) ?: return null).groupValues[1].toLongOrNull() ?: return null
+        message?.mentionedUsers?.firstOrNull { it.idLong == id } ?: shardManager.getUserById(id)
     } else if (guild != null && FULL_USER_REF.matches(arg)) {
         getUserByTag(shardManager, arg)
     } else if (guild != null && guild.getMembersByName(arg, true).isNotEmpty()) {

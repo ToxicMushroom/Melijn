@@ -39,6 +39,9 @@ suspend fun getZoneId(daoManager: DaoManager, guildId: Long? = null, userId: Lon
     return userTimezone ?: guildTimezone ?: ZoneId.of("GMT")
 }
 
+fun OffsetDateTime.toEpochMilliseconds(): Long = this.toEpochSecond() * 1000
+
+
 suspend fun Long.asEpochMillisToDateTime(daoManager: DaoManager?, guildId: Long? = null, userId: Long? = null): String {
     val guildTimezone = guildId?.let {
         val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
