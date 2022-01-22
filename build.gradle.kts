@@ -136,7 +136,7 @@ dependencies {
     implementation("com.apollographql.apollo:apollo-coroutines-support:$apollo")
 
     // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
-    implementation("io.lettuce:lettuce-core:6.1.5.RELEASE")
+    implementation("io.lettuce:lettuce-core:6.1.6.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
