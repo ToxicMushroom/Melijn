@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.utils.escapeMarkdown
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.replace
 import org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngine
@@ -73,7 +74,7 @@ class EvalCommand : AbstractCommand("command.eval") {
 
                 val resp =
                     (if (global) se.invokeFunction(functionName) else se.invokeFunction(functionName, context))
-                            as Deferred<Pair<Any?, String>>
+                        as Deferred<Pair<Any?, String>>
 
                 val (result, error) = resp.await()
                 result?.toString() ?: "ERROR:\n```${error}```"
@@ -88,6 +89,7 @@ class EvalCommand : AbstractCommand("command.eval") {
         requireNotNull(engine)
         val code = context.rawArg.removePrefix("```kt\n").removePrefix("```").removeSuffix("```").trim()
         if (context.commandParts[1].equals("globaleval", true)) {
+            val msg = sendRspAwaitEL(context, "processing..").first()
             val sb = StringBuilder()
             for (podId in 0 until PodInfo.podCount) {
                 sb.append("[Pod-${podId}]: ")
@@ -96,13 +98,18 @@ class EvalCommand : AbstractCommand("command.eval") {
                 } else {
                     val hostPattern = context.container.settings.botInfo.hostPattern
                     val url = hostPattern.replace("{podId}", podId) + "/eval"
-                    val response = context.webManager.httpClient.post<String>(url) {
-                        header("Authorization", context.container.settings.restServer.token)
-                        body = code
+                    val response = try {
+                        context.webManager.httpClient.post(url) {
+                            header("Authorization", context.container.settings.restServer.token)
+                            body = code
+                        }
+                    } catch (t: Throwable) {
+                        "err: ${t.message}"
                     }
                     sb.appendLine(response)
                 }
             }
+            msg.delete().queue()
             sendRspCodeBlock(context, "```INI\n${sb.toString().escapeMarkdown()}```", "INI", paginateGE)
         } else {
             val result = runCode(code, context)
