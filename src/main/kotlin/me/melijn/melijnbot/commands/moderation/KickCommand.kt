@@ -43,7 +43,7 @@ class KickCommand : AbstractCommand("command.kick") {
             Kicked: {punishedUserTag}
             Kicked Id: {punishedUserId}
             Reason: {reason}
-            Moment of kick: {moment:${if (logChannel) "null" else "{punishedUserId}"}}
+            Moment of kick: {moment}
             Case Id: {punishId}{if:{extraLcInfo}|=|null|then:|else:{extraLcInfo}}
         """.trimIndent()
                 )
