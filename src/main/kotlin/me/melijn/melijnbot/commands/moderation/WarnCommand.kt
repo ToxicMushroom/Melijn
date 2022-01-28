@@ -49,7 +49,7 @@ class WarnCommand : AbstractCommand("command.warn") {
             Warned: {punishedUserTag}
             Warned Id: {punishedUserId}
             Reason: {reason}
-            Moment of Warn: {moment:${if (logChannel) "null" else "{punishedUserId}"}}
+            Moment of Warn: {moment}
             Case Id: {punishId}{if:{extraLcInfo}|=|null|then:|else:{extraLcInfo}}
         """.trimIndent()
                 )
