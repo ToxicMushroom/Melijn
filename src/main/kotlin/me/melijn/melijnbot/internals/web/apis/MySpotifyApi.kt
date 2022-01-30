@@ -19,15 +19,13 @@ class MySpotifyApi(spotifySettings: Settings.Api.Spotify) {
         .setClientSecret(spotifySettings.password)
         .build()
 
-    init {
-        updateSpotifyCredentials()
+    suspend fun requestNewToken() : String? {
+        val credentialsRequest = spotifyApi.clientCredentials().build()
+        return credentialsRequest.executeAsync().await().accessToken
     }
 
-    fun updateSpotifyCredentials() {
-        val credentialsRequest = spotifyApi.clientCredentials().build()
-        TaskManager.async {
-            spotifyApi.accessToken = credentialsRequest.executeAsync().await().accessToken
-        }
+    fun setApiToken(token: String) {
+        spotifyApi.accessToken = token
     }
 
     companion object {

@@ -106,6 +106,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
         val afterTableFunctions = mutableListOf<() -> Unit>()
     }
 
+    var driverManager: DriverManager = DriverManager(dbSettings, redisSettings)
+
     val bannedUsers: BannedUserCacheDao
     val emoteCache: EmoteCacheDao
     val tracksWrapper: TracksWrapper
@@ -228,11 +230,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
 
     val validEmojiWrapper: ValidEmojiWrapper
 
-    var driverManager: DriverManager
+    val spotifyKeyWrapper = SpotifyKeyWrapper(driverManager)
 
     init {
-        driverManager = DriverManager(dbSettings, redisSettings)
-
         TaskManager.async {
             dbVersion = driverManager.getDBVersion()
             connectorVersion = driverManager.getConnectorVersion()
