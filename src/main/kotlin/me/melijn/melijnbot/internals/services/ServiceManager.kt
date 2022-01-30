@@ -43,9 +43,8 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         slowServices.add(MuteService(shardManager, daoManager, podInfo, proxiedHttpClient))
 //        slowServices.add(BirthdayService(shardManager, webManager.proxiedHttpClient, daoManager))
 
-        // TODO: create microservice for proper ratelimits
         webManager.spotifyApi?.let { spotifyApi ->
-            services.add(SpotifyService(spotifyApi))
+            services.add(SpotifyService(daoManager.spotifyKeyWrapper, spotifyApi))
         }
 
         slowServices.add(VoiceScoutService(container, shardManager))
