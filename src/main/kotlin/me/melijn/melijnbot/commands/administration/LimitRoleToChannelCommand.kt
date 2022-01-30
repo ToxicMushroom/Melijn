@@ -46,15 +46,14 @@ class LimitRoleToChannelCommand : AbstractCommand("command.limitroletochannel") 
                 var failed = 0
                 for (channel in channels) {
                     if (channel.idLong == immuneChannel.idLong) {
-                        if (context.selfMember.hasPermission(channel, Permission.MANAGE_CHANNEL)) {
+                        if (context.selfMember.hasPermission(channel, Permission.MANAGE_CHANNEL, Permission.MANAGE_PERMISSIONS)) {
                             channel.putPermissionOverride(role)
                                 .grant(Permission.VIEW_CHANNEL)
                                 .reason("(limitRoleToChannel) ${context.author.asTag}")
                                 .queue()
                         } else failed++
-                    }
-                    if (role.hasPermission(channel, Permission.VIEW_CHANNEL)) {
-                        if (context.selfMember.hasPermission(channel, Permission.MANAGE_CHANNEL)) {
+                    } else if (role.hasPermission(channel, Permission.VIEW_CHANNEL)) {
+                        if (context.selfMember.hasPermission(channel, Permission.MANAGE_CHANNEL, Permission.MANAGE_PERMISSIONS)) {
                             channel.putPermissionOverride(role)
                                 .deny(Permission.VIEW_CHANNEL)
                                 .reason("(limitRoleToChannel) ${context.author.asTag}")
