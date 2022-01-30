@@ -71,7 +71,7 @@ object LogUtils {
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
-        logChannel.sendMessageEmbeds(eb.build()).queue()
+        sendEmbed(Container.instance.daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
     suspend fun sendHitVerificationThroughputLimitLog(daoManager: DaoManager, member: Member) {
