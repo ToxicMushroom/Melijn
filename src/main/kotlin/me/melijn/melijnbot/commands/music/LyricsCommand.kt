@@ -27,6 +27,8 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
     }
 
     override suspend fun execute(context: ICommandContext) {
+        sendRsp(context, "due to frequent jvm crashes this command has been disabled until I find time to look into this.")
+        return
         if (RunConditionUtil.checkPlayingTrackNotNull(
                 context.container,
                 context.message
