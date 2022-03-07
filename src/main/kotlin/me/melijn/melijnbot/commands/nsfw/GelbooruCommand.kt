@@ -35,7 +35,7 @@ class GelbooruCommand : AbstractCommand("command.gelbooru") {
         }
 
         val eb = Embedder(context)
-            .setTitle("SafeBooru: $tags".take(MessageEmbed.TITLE_MAX_LENGTH))
+            .setTitle("Gelbooru: $tags".take(MessageEmbed.TITLE_MAX_LENGTH))
             .setImage(result.imageUrl)
             .setFooter("Requested by: " + context.authorId)
             .build()
