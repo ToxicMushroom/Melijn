@@ -57,7 +57,7 @@ class BonkCommand : AbstractCommand("command.bonk") {
             ImageIO.read(ByteArrayInputStream(Base64.decode(cachedAvatar)))
         }
 
-        val delay = getLongFromArgN(context, 1, 20) ?: 200
+        val delay = getLongFromArgN(context, 1, 20, 655_350) ?: 200
         val loops = if (getBooleanFromArgN(context, 2) == false) 1 else 0
 
         val image1 = BonkCommand::class.java.getResourceAsStream("/bonk1.png").use { ImageIO.read(it) }
