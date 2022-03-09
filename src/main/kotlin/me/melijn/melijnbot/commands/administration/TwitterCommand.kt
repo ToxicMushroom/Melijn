@@ -209,12 +209,14 @@ class TwitterCommand : AbstractCommand("command.twitter") {
 
                 sendFeatureRequiresGuildPremiumMessage(context, TWITTER_LIMIT_PATH, replaceMap)
                 return
-            } else if (twitters.size >= PREMIUM_TWITTER_LIMIT) {
+            } else if (twitters.size >= PREMIUM_TWITTER_LIMIT && context.guildId != 950974820827398235) { // hardcoded exception for a particul server
                 val msg = context.getTranslation("$root.limit.total")
                     .withVariable("limit", "$PREMIUM_TWITTER_LIMIT")
                 sendRsp(context, msg)
                 return
             }
+            // TODO: this is shit duplicate code, not extensible, needs to be fixed ^
+
 
             val eb = Embedder(context)
                 .setDescription("Whose twitter feed do you wanna track? Example: `@PixelHamster`")
