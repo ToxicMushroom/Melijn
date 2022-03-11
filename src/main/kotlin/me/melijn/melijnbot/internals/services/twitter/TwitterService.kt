@@ -71,7 +71,7 @@ class TwitterService(
 
     private suspend fun postNewTweets(twitterWebhook: TwitterWebhook, tweets: Tweets) {
         if (tweets.tweetList.isEmpty()) return
-        val selfUser = shardManager.shards.first().selfUser
+        val selfUser = shardManager.shards.firstOrNull()?.selfUser ?: return
         val builder = WebhookClientBuilder(twitterWebhook.webhookUrl.replace("discord.com/api", "discord.com/api/v8"))
 
         builder.setThreadFactory { job ->
@@ -125,8 +125,8 @@ class TwitterService(
 
             content = StringEscapeUtils.unescapeHtml4(content)
             eb.setDescription(content)
-            if (tweet.media.isNotEmpty()) {
-                eb.setImageUrl(tweet.media.first().url)
+            tweet.media.firstOrNull()?.let { mediaUrl ->
+                eb.setImageUrl(mediaUrl.url)
             }
 
             mb.addEmbeds(eb.build())
@@ -233,14 +233,14 @@ class TwitterService(
                         mention.getInt("start"),
                         mention.getInt("end"),
                         mention.getString("username"),
-                        users.first { it.handle == mention.getString("username") }
+                        users.firstOrNull { it.handle == mention.getString("username") } ?: continue
                     )
                 )
             }
             for (n in 0 until mentionedMedia.length()) {
                 val thisMentionedMediaKey = mentionedMedia.getString(n)
                 linkedMedia.add(
-                    media.first { it.key == thisMentionedMediaKey }
+                    media.firstOrNull { it.key == thisMentionedMediaKey } ?: continue
                 )
             }
 
