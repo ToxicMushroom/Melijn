@@ -72,7 +72,13 @@ class TwitterService(
     private suspend fun postNewTweets(twitterWebhook: TwitterWebhook, tweets: Tweets) {
         if (tweets.tweetList.isEmpty()) return
         val selfUser = shardManager.shards.firstOrNull()?.selfUser ?: return
-        val builder = WebhookClientBuilder(twitterWebhook.webhookUrl.replace("discord.com/api", "discord.com/api/v8"))
+        val builder = try {
+            WebhookClientBuilder(twitterWebhook.webhookUrl.replace("discord.com/api", "discord.com/api/v8"))
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            twitterWebhook.enabled = false
+            return
+        }
 
         builder.setThreadFactory { job ->
             val thread = Thread(job)

@@ -217,7 +217,6 @@ class TwitterCommand : AbstractCommand("command.twitter") {
             }
             // TODO: this is shit duplicate code, not extensible, needs to be fixed ^
 
-
             val eb = Embedder(context)
                 .setDescription("Whose twitter feed do you wanna track? Example: `@PixelHamster`")
             sendEmbedRspAwaitEL(context, eb.build())
