@@ -28,7 +28,7 @@ class PitchCommand : AbstractCommand("command.pitch") {
             return
         }
 
-        val pitch = getLongFromArgNMessage(context, 0, 0, ignore = arrayOf("%")) ?: return
+        val pitch = getLongFromArgNMessage(context, 0, 0, max = 1000, ignore = arrayOf("%")) ?: return
         val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
 
         val ts = player.filters.timescale ?: Timescale()

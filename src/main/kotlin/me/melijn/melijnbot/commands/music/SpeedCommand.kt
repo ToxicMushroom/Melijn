@@ -28,7 +28,7 @@ class SpeedCommand : AbstractCommand("command.speed") {
             return
         }
 
-        val speed = getLongFromArgNMessage(context, 0, 0, ignore = arrayOf("%")) ?: return
+        val speed = getLongFromArgNMessage(context, 0, 0, max = 1000, ignore = arrayOf("%")) ?: return
         val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
 
         val ts = player.filters.timescale ?: Timescale()
