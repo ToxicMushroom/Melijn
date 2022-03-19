@@ -15,6 +15,7 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -34,6 +35,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             RemoveArg(root),
             RemoveAtArg(root),
             SendGroupAutoArg(root),
+            UpdateGroupAutoArg(root),
             ClearArg(root),
             ListArg(root),
             GroupArg(root),
@@ -259,6 +261,150 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     break
                 }
             }
+        }
+    }
+
+    class UpdateGroupAutoArg(parent: String) : AbstractCommand("$parent.updategroupauto") {
+
+        init {
+            name = "updateGroupAuto"
+            aliases = arrayOf("uga")
+        }
+
+        override suspend fun execute(context: ICommandContext) {
+            if (argSizeCheckFailed(context, 0)) return
+
+            val wrapper = context.daoManager.selfRoleGroupWrapper
+            val wrapper2 = context.daoManager.selfRoleWrapper
+            val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+            val selfRoles = wrapper2.getMap(context.guildId)[group.groupName]
+
+            if (selfRoles == null || selfRoles.isEmpty) {
+                val msg = context.getTranslation("command.selfrole.sendgroupauto.noselfroles.forgroup")
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
+                return
+            }
+
+            val channel = context.guild.getTextChannelById(group.channelId)
+            if (channel == null) {
+                val msg = context.getTranslation("$root.cannotUpdateGroup.noChannel")
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
+                return
+            }
+
+            if (notEnoughPermissionsAndMessage(
+                    context,
+                    channel,
+                    Permission.MESSAGE_WRITE,
+                    Permission.MESSAGE_EMBED_LINKS,
+                    Permission.MESSAGE_READ,
+                    Permission.MESSAGE_ADD_REACTION,
+                    Permission.MESSAGE_HISTORY
+                )
+            ) return
+
+            val bodyFormat = group.pattern ?: context.getTranslation("command.selfrole.sendgroupauto.bodyformat")
+
+            val embedder = Embedder(context)
+
+            val emotejiList = mutableListOf<String>()
+            val entries = mutableListOf<String>()
+            val size = selfRoles.length()
+            for (i in 0 until size) {
+                val dataEntry = selfRoles.getArray(i)
+                val emoteji = dataEntry.getString(0)
+                emotejiList.add(emoteji)
+                val name = dataEntry.getString(1)
+                var roleMention = ""
+                val roleData = dataEntry.getArray(2)
+                for (j in 0 until roleData.length()) {
+                    val roleId = roleData.getArray(j).getLong(1)
+                    val role = context.guild.getRoleById(roleId)
+                    roleMention += (role?.asMention ?: "error") + ", "
+                }
+                roleMention = roleMention.removeSuffix(", ")
+
+                val emoteValue = when {
+                    emoteji.isPositiveNumber() -> getEmote(context, emoteji.toLong())?.asMention
+                    else -> emoteji
+                } ?: "error"
+                val body = bodyFormat
+                    .withVariable("name", name)
+                    .withVariable("role", roleMention)
+                    .withVariable("roleMention", roleMention) // legacy support
+                    .withVariable("enter", "\n")
+                    .withVariable("emoteji", emoteValue)
+
+                entries.add(body)
+            }
+
+            val external = AddReactionsToMessage.containsExternalEmotes(context, emotejiList)
+            if (external && notEnoughPermissionsAndMessage(context, channel, Permission.MESSAGE_EXT_EMOJI)) return
+            val messages = group.messageIds
+                .mapNotNull { channel.retrieveMessageById(it).awaitOrNull() }
+                .filter { it.author.idLong == context.selfUserId }
+            val titleFormat = context.getTranslation("command.selfrole.sendgroupauto.titleformat.part")
+
+            val entryGroups = mutableListOf<Pair<Int, String>>()
+            var progress = 0
+            var groupSize = 0
+            for (entry in entries) {
+                var body = entryGroups.getOrNull(progress)?.second ?: ""
+                if ((body + entry).length > MessageEmbed.TEXT_MAX_LENGTH) {
+                    progress++
+                    body = entry
+                } else {
+                    body += entry
+                }
+                groupSize++
+                if (progress >= entryGroups.size) {
+                    entryGroups.add(groupSize to body)
+                } else { entryGroups[progress] = groupSize to body }
+                if (groupSize == 20) {
+                    progress++
+                    groupSize = 0
+                }
+            }
+
+            if (entryGroups.size > messages.size) {
+                sendRsp(
+                    context, "Insufficient messages to do an update, add one manually " +
+                        "(must be any melijn message so melijn can edit to update) " +
+                        "`%prefix%sr g messageIds add` or use sendGroupAuto"
+                )
+                return
+            }
+
+            var dropper = 0
+            for ((index, pair) in entryGroups.withIndex()) {
+                val (count, body) = pair
+                val title = titleFormat
+                    .withVariable("group", group.groupName)
+                    .withVariable("part", index+1)
+                val embed = embedder.setTitle(title)
+                    .setDescription(body)
+                    .build()
+                messages[index].editMessage(
+                    MessageBuilder()
+                        .setEmbeds(embed)
+                        .build()
+                ).awaitOrNull()
+                messages[index].clearReactions().awaitOrNull()
+                SendGroupAutoArg.addEmotejisToMsg(emotejiList.drop(dropper).take(count), messages[index], context)
+                dropper += count
+            }
+
+            group.messageIds = messages.map { it.idLong }
+            group.channelId = channel.idLong
+
+            wrapper.insertOrUpdate(context.guildId, group)
+
+            val msg = context.getTranslation("$root.updated")
+                .withVariable("group", group.groupName)
+                .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+            sendRsp(context, msg)
         }
     }
 
@@ -1178,7 +1324,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
             val guildSelfRoles = selfRoleWrapper.getMap(context.guildId)[group.groupName]
             if (guildSelfRoles == null) {
-                sendRsp(context, "There is not selfrole entry in the " + group.groupName + " for that emoteji")
+                sendRsp(context, "There is no selfrole entry in the " + group.groupName + " for that emoteji")
                 return
             }
             val index = getIntegerFromArgNMessage(context, 1, 1, guildSelfRoles.length()) ?: return
@@ -1189,10 +1335,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val rolesIds = mutableListOf<Long>()
             val roleDataArr = dataEntry.getArray(2)
             for (j in 0 until roleDataArr.length()) {
-                dataEntry.add(roleDataArr.getArray(j).getLong(1))
+                rolesIds.add(roleDataArr.getArray(j).getLong(1))
             }
 
-            val roleString = rolesIds.joinToString(", ") { "<@&$it>" }
+            val roleString = rolesIds.joinToString(", ") { "<@&$it>" }.ifBlank { "missing role" }
             selfRoleWrapper.remove(context.guildId, group.groupName, emoteji)
 
             val msg = context.getTranslation("$root.success")
