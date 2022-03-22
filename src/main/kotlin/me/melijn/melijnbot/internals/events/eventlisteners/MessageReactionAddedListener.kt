@@ -229,6 +229,9 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 event.channel.retrieveReactionUsersById(event.messageIdLong, "⭐").await().filter { !it.isBot }.size
             val ogMessage = event.channel.retrieveMessageById(event.messageIdLong).await()
             val settings = starboardSettings.getStarboardSettings(event.guild.idLong)
+            if (settings.excludedChannelIds.splitIETEL(",").contains(event.channel.id)) {
+                return
+            }
             if (reactions >= settings.minStars) {
                 val starboardMessage =
                     getSendableStarboardMessage(
