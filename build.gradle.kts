@@ -45,12 +45,12 @@ repositories {
     maven("https://nexus.melijn.com/repository/jitpack/") // pooppack mirror
 }
 
-val jackson = "2.13.1" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+val jackson = "2.13.2" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
 val ktor = "1.6.7"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.11" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.6.0" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 val kotlin = "1.6.10"
-val scrimage = "4.0.24"
+val scrimage = "4.0.31"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
@@ -58,10 +58,10 @@ dependencies {
         exclude("opus-java")
     }
 
-    implementation("io.sentry:sentry:5.6.0")
+    implementation("io.sentry:sentry:5.6.2")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
-    implementation("club.minnced:discord-webhooks:0.7.5")
+    implementation("club.minnced:discord-webhooks:0.8.0")
 
     // https://github.com/freya022/JEmojis
     implementation("com.github.ToxicMushroom:JEmojis:a8c82848f166893f67251c741579c74c80fbb2dd")
@@ -89,7 +89,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.3.2")
+    implementation("org.postgresql:postgresql:42.3.3")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinX")
@@ -104,7 +104,7 @@ dependencies {
     implementation("se.michaelthelin.spotify:spotify-web-api-java:7.0.0")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-    implementation("ch.qos.logback:logback-classic:1.2.10")
+    implementation("ch.qos.logback:logback-classic:1.2.11")
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     implementation("com.fasterxml.jackson.core:jackson-core:$jackson")
