@@ -22,6 +22,7 @@ import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.internals.utils.message.FetchingPagination
 import me.melijn.melijnbot.internals.utils.message.Pagination
 import me.melijn.melijnbot.internals.utils.message.StoringPagination
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
@@ -75,6 +76,18 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         }
         if (modularEntry != null) {
             val (_, info) = modularEntry
+            val pagination = info.toPagination()
+
+            val message = pagination.navigate(button) ?: return
+            info.currentPage = pagination.currentPage
+            event.editMessage(message).queue()
+        }
+
+        val fetchingEntry = container.fetcherPaginationMap.entries.firstOrNull { (_, info) ->
+            info.messageId == event.messageIdLong && info.authorId == event.user.idLong
+        }
+        if (fetchingEntry != null) {
+            val (_, info) = fetchingEntry
             val pagination = info.toPagination()
 
             val message = pagination.navigate(button) ?: return
@@ -634,4 +647,7 @@ private fun StoragePaginationInfo.toPagination(): Pagination {
 }
 private fun ModularStoragePaginationInfo.toPagination(): Pagination {
     return StoringPagination(this.storage.map { it }, currentPage)
+}
+private fun FetchingPaginationInfo.toPagination(): Pagination {
+    return FetchingPagination(pages, currentPage) { ModularMessage(fetcher.invoke(it)) }
 }
