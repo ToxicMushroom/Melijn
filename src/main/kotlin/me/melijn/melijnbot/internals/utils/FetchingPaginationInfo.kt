@@ -9,7 +9,7 @@ data class FetchingPaginationInfo(
     val messageId: Long,
     val fetcher: suspend ((Int) -> String),
     var pages: Int,
-    val currentPage: Int
+    var currentPage: Int
 )
 
 data class StoragePaginationInfo(
