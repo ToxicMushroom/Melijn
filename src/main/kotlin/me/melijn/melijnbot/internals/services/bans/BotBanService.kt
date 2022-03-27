@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 
 class BotBanService(
     val shardManager: ShardManager, val daoManager: DaoManager
-) : Service("BotBan", 10, 0, TimeUnit.MINUTES) {
+) : Service("BotBan", 20, 0, TimeUnit.SECONDS) {
 
     override val service: RunnableTask = RunnableTask {
         val news = daoManager.botBannedWrapper.renew()

@@ -49,7 +49,7 @@ class BotBannedWrapper(private val botBannedDao: BotBannedDao) {
     private fun fish(all: Set<BotBanInfo>, bannedEntities: HashSet<Long>): List<BotBanInfo> {
         val newBans = all.filter { maybeNew -> bannedEntities.none { guild -> guild == maybeNew.id } }
         val removedBans = bannedEntities.filter { banned -> all.none { it.id == banned } }
-        bannedEntities.removeAll(removedBans)
+        bannedEntities.removeAll(removedBans.toSet())
         bannedEntities.addAll(newBans.map { it.id })
         return newBans
     }
