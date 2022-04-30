@@ -5,7 +5,7 @@ plugins {
     id("application")
     id("com.apollographql.apollo") version "2.5.11"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.21"
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
@@ -48,8 +48,8 @@ repositories {
 val jackson = "2.13.2" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
 val ktor = "1.6.7"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.11" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
-val kotlinX = "1.6.0" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-val kotlin = "1.6.10"
+val kotlinX = "1.6.1" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
+val kotlin = "1.6.21"
 val scrimage = "4.0.31"
 
 dependencies {
@@ -58,7 +58,7 @@ dependencies {
         exclude("opus-java")
     }
 
-    implementation("io.sentry:sentry:5.6.2")
+    implementation("io.sentry:sentry:5.7.3")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
     implementation("club.minnced:discord-webhooks:0.8.0")
@@ -89,7 +89,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.3.3")
+    implementation("org.postgresql:postgresql:42.3.4")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinX")
@@ -101,7 +101,7 @@ dependencies {
     implementation("me.duncte123:weebJava:3.0.1_4")
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation("se.michaelthelin.spotify:spotify-web-api-java:7.0.0")
+    implementation("se.michaelthelin.spotify:spotify-web-api-java:7.0.1")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation("ch.qos.logback:logback-classic:1.2.11")
@@ -129,14 +129,14 @@ dependencies {
     implementation("me.melijn.jikankt:JikanKt:1.3.2")
 
     // https://mvnrepository.com/artifact/org.mariuszgromada.math/MathParser.org-mXparser
-    implementation("org.mariuszgromada.math:MathParser.org-mXparser:4.4.2")
+    implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.0.2")
 
     // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
     implementation("com.apollographql.apollo:apollo-runtime:$apollo")
     implementation("com.apollographql.apollo:apollo-coroutines-support:$apollo")
 
     // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
-    implementation("io.lettuce:lettuce-core:6.1.6.RELEASE")
+    implementation("io.lettuce:lettuce-core:6.1.8.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
