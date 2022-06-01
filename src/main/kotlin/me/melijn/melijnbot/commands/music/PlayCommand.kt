@@ -28,6 +28,7 @@ class PlayCommand : AbstractCommand("command.play") {
             SCArg(root),
             AttachmentArg(root)
         )
+        cooldown = 10000
         runConditions = arrayOf(RunCondition.VC_BOT_OR_USER_DJ)
         commandCategory = CommandCategory.MUSIC
     }
@@ -38,6 +39,7 @@ class PlayCommand : AbstractCommand("command.play") {
             return
         }
 
+        context.initCooldown(8000)
         val member = context.member
         val senderVoiceChannel = member.voiceState?.channel
         val botChannel = context.lavaManager.getConnectedChannel(context.guild)

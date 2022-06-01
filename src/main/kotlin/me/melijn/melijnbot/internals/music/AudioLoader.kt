@@ -79,6 +79,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                     LogUtils.addMusicPlayerNewTrack(context, track)
                 }
             }
+            context.initCooldown()
             sendMessageAddedTracks(context, tracks.subList(0, tracks.size - notAdded))
         } else {
             foundSingleTrack(context, guildMusicPlayer, wrapper, tracks[0], rawInput, nextPos)

@@ -166,6 +166,6 @@ interface ICommandContext {
     suspend fun getTranslation(path: String): String
     suspend fun getTimeZoneId(): ZoneId
     fun getGuildMusicPlayer(): GuildMusicPlayer
-    fun initCooldown()
+    fun initCooldown(less: Long = 0)
     fun initArgs()
 }
