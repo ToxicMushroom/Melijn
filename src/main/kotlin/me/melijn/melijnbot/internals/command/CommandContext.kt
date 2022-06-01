@@ -214,7 +214,7 @@ class CommandContext(
     }
 
     override fun getGuildMusicPlayer() = musicPlayerManager.getGuildMusicPlayer(guild)
-    override fun initCooldown(less: Long = 0) {
+    override fun initCooldown(less: Long) {
         val idPath = commandOrder.first().id.toString() + commandOrder.drop(1).joinToString(".") { it.name }
         daoManager.globalCooldownWrapper.setLastExecuted(authorId, idPath, System.currentTimeMillis() - less)
     }
