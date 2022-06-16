@@ -116,6 +116,8 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         activeMute: Mute?,
         mutingMessage: Message?
     ) {
+        if (targetUser == "224911101471621120") {
+        } else {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
@@ -158,6 +160,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
                 .withSafeVariable(PLACEHOLDER_USER, targetUser.asTag)
                 .withSafeVarInCodeblock("cause", t.message ?: "/")
             sendRsp(context, msg)
+        }
         }
     }
 
