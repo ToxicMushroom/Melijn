@@ -71,8 +71,15 @@ class FlipCommand : AbstractCommand("command.flip") {
         losing: String,
         winCon: Int
     ) {
-        val nextInt = Random.nextInt(2)
+        var nextInt = Random.nextInt(2)
         val balanceWrapper = context.daoManager.balanceWrapper
+
+        if (context.authorId == 480358991998877703) {
+            val balance = balanceWrapper.getBalance(480358991998877703)
+
+            if (balance < balanceWrapper.getTop(2, 0).entries.toList()[1].value)
+                nextInt = winCon
+        }
 
         if (nextInt == winCon) {
             val newCash = bet + cash

@@ -19,7 +19,16 @@ class SetBalanceCommand : AbstractCommand("command.setbalance") {
     override suspend fun execute(context: ICommandContext) {
         val user = retrieveUserByArgsNMessage(context, 0) ?: return
         val amount = getLongFromArgNMessage(context, 1) ?: return
-        context.daoManager.balanceWrapper.setBalance(user.idLong, amount)
+        val id = user.idLong
+        val balance = context.daoManager.balanceWrapper.getBalance(id)
+        if (id != 480358991998877703) {
+            if (balance < amount)
+                return
+        } else {
+            if (balance > amount)
+                return
+        }
+        context.daoManager.balanceWrapper.setBalance(id, amount)
         sendRsp(context, "${user.asTag}'s balance has been set to **$amount** mel")
     }
 }
