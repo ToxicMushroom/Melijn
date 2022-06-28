@@ -228,16 +228,17 @@ class PokerCommand : AbstractCommand("command.poker") {
             var lastRank = positions[0]
             var indices = 1 until 5
             if (lastRank == 0 && positions[4] == 12) { // if lastRank card is 2 and hand contains 1 then we can use A as a 1
-                lastRank = positions[4]
+                lastRank = -1
                 indices = 0 until 4
             }
 
             var straightFlush = true
             for (i in indices) {
-                if (i == (lastRank + 1)) {
+                if (positions[i] == (lastRank + 1)) {
                     lastRank = positions[i]
                 } else {
                     straightFlush = false
+                    break
                 }
             }
 
@@ -265,16 +266,17 @@ class PokerCommand : AbstractCommand("command.poker") {
         var lastRank = positions[0]
         var indices = 1 until 5
         if (lastRank == 0 && positions[4] == 12) { // if lastRank card is 2 and hand contains 1 then we can use A as a 1
-            lastRank = positions[4]
+            lastRank = -1
             indices = 0 until 4
         }
 
         var straight = true
         for (i in indices) {
-            if (i == (lastRank + 1)) {
+            if (positions[i] == (lastRank + 1)) {
                 lastRank = positions[i]
             } else {
                 straight = false
+                break
             }
         }
 
