@@ -248,10 +248,11 @@ class PokerCommand : AbstractCommand("command.poker") {
             flush = true
         }
 
+        val occurrenceSorted = ranksOccurrenceMap.values.sortedDescending()
         if (ranksOccurrenceMap.size <= 2) {
-            if (ranksOccurrenceMap.values.sorted()[0] == 4) { // 4 of a  kind
+            if (occurrenceSorted[0] == 4) { // 4 of a  kind
                 return PokerHand("Four of a Kind", 7f)
-            } else if (ranksOccurrenceMap.values.sorted()[0] == 3) { // Full house
+            } else if (occurrenceSorted[0] == 3) { // Full house
                 return PokerHand("Full House", 5f)
             }
         }
@@ -281,7 +282,7 @@ class PokerCommand : AbstractCommand("command.poker") {
             return PokerHand("Straight", 50f)
         }
 
-        if (ranksOccurrenceMap.size == 3 && ranksOccurrenceMap.values.sorted()[0] == 2 && ranksOccurrenceMap.values.sorted()[1] == 2) { // Two Pair
+        if (ranksOccurrenceMap.size == 3 && occurrenceSorted[0] == 2 && occurrenceSorted[1] == 2) { // Two Pair
             return PokerHand("Two Pair", 2f)
         }
 
@@ -293,4 +294,3 @@ class PokerCommand : AbstractCommand("command.poker") {
         val multiplier: Float
     )
 }
-
