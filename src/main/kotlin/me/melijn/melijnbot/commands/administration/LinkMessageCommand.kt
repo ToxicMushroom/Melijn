@@ -39,7 +39,7 @@ class LinkMessageCommand : AbstractCommand("command.linkmessage") {
         suspend fun Guild.getAndVerifyMsgName(daoManager: DaoManager, messageType: MessageType): String? {
             val msg = daoManager.linkedMessageWrapper.getMessage(this.idLong, messageType) ?: return null
             val messages = daoManager.messageWrapper.getMessages(this.idLong)
-            return if (messages.contains(msg)) msg else null
+            return if (msg.isInside(messages, true)) msg else null
         }
     }
 
