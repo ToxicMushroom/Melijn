@@ -53,11 +53,12 @@ class SettingsCommand : AbstractCommand("command.settings") {
         val ec = daoManager.embedColorWrapper.getColor(guildId)
         val pec = daoManager.userEmbedColorWrapper.getColor(context.authorId)
 
-        val description = "\n**StreamUrl:** " + stringToString(daoManager.streamUrlWrapper.getUrl(guildId)) + "\n" +
-            "\n**MuteRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.MUTE)) +
+        val description = "\n**MuteRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.MUTE)) +
             "\n**UnverifiedRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.UNVERIFIED)) +
             "\n**BirthDayRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.BIRTHDAY)) +
             "\n" +
+            "\n**JoinChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.JOIN)) +
+            "\n**LeaveChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.LEAVE)) +
             "\n**VerificationChannel:** " + idToChannelMention(
             channelWrapper.getChannelId(
                 guildId,
