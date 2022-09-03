@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.games.PokerCommand
@@ -13,10 +12,6 @@ import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.SelfRoleUtil
 import me.melijn.melijnbot.internals.models.ModularMessage
-import me.melijn.melijnbot.internals.music.DONATE_QUEUE_LIMIT
-import me.melijn.melijnbot.internals.music.MusicPlayerManager
-import me.melijn.melijnbot.internals.music.QUEUE_LIMIT
-import me.melijn.melijnbot.internals.music.TrackUserData
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
@@ -52,7 +47,6 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
     }
 
     private fun onButtonClick(event: ButtonClickEvent) = TaskManager.async(event.channel) {
-        searchMenuHandler(event)
         commandListHandler(event)
         paginationHandler(event)
     }
@@ -464,68 +458,6 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 lastCheck = time
             }
 
-        }
-    }
-
-    private suspend fun searchMenuHandler(event: ButtonClickEvent) {
-        if (event.user.isBot) return
-        val guild = event.guild ?: return
-        val guildPlayer = MusicPlayerManager.guildMusicPlayers[guild.idLong] ?: return
-        val menus = guildPlayer.searchMenus
-        val menu = menus.getOrElse(event.messageIdLong) {
-            return
-        }
-
-        val tracks = menu.audioTracks
-
-        if (event.user.idLong != (tracks.first().userData as TrackUserData).userId) return
-
-        val track: AudioTrack? = when (event.componentId) {
-            "1" -> tracks.getOrElse(0) { return }
-            "2" -> tracks.getOrElse(1) { return }
-            "3" -> tracks.getOrElse(2) { return }
-            "4" -> tracks.getOrElse(3) { return }
-            "5" -> tracks.getOrElse(4) { return }
-            "cancel" -> null
-            else -> return
-        }
-
-        guildPlayer.searchMenus.remove(event.messageIdLong)
-        val language = getLanguage(container.daoManager, event.user.idLong, guild.idLong)
-        when {
-            track == null -> {
-                val title = i18n.getTranslation(language, "message.music.searchmenu")
-                val desc = i18n.getTranslation(language, "message.music.search.cancelled.description")
-                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong)
-                    .setTitle(title)
-                    .setDescription(desc)
-                event.editMessage(MessageBuilder().setEmbeds(eb.build()).build()).queue()
-            }
-            guildPlayer.safeQueueSilent(container.daoManager, track, menu.nextPosition) -> {
-                guild.selfMember.voiceState?.channel?.let {
-                    LogUtils.addMusicPlayerNewTrack(container.daoManager, container.lavaManager, it, event.user, track)
-                }
-
-                val title = i18n.getTranslation(language, "message.music.addedtrack.title")
-                    .withVariable(PLACEHOLDER_USER, event.user.asTag)
-
-                val description = i18n.getTranslation(language, "message.music.addedtrack.description")
-                    .withVariable("position", guildPlayer.guildTrackManager.getPosition(track).toString())
-                    .withVariable("title", track.info.title)
-                    .withVariable("duration", getDurationString(track.duration))
-                    .withVariable("url", track.info.uri)
-
-                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong)
-                eb.setTitle(title)
-                eb.setDescription(description)
-                event.editMessage(MessageBuilder().setEmbeds(eb.build()).build()).queue()
-            }
-            else -> {
-                val msg = i18n.getTranslation(language, "message.music.queuelimit")
-                    .withVariable("amount", QUEUE_LIMIT.toString())
-                    .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
-                event.editMessage(MessageBuilder().setContent(msg).build()).queue()
-            }
         }
     }
 

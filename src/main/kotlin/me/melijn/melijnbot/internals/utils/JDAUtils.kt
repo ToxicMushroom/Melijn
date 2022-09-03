@@ -7,6 +7,7 @@ import me.melijn.melijnbot.database.statesync.toLite
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
+import me.melijn.melijnbot.internals.utils.StringUtils.URL_PATTERN
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*

@@ -10,7 +10,6 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.eventlisteners.EventWaiter
 import me.melijn.melijnbot.internals.models.PodInfo
-import me.melijn.melijnbot.internals.music.LavaManager
 import me.melijn.melijnbot.internals.services.ServiceManager
 import me.melijn.melijnbot.internals.utils.FetchingPaginationInfo
 import me.melijn.melijnbot.internals.utils.ModularFetchingPaginationInfo
@@ -68,8 +67,6 @@ class Container {
 
     var jdaLavaLink: JDALavalink? = null
 
-    lateinit var lavaManager: LavaManager
-
     var commandMap = emptyMap<Int, AbstractCommand>()
     var commandSet = emptySet<AbstractCommand>()
 
@@ -94,12 +91,4 @@ class Container {
     companion object {
         lateinit var instance: Container
     }
-
-    fun initLava(jdaLavaLink: JDALavalink?) {
-        this.jdaLavaLink = jdaLavaLink
-        this.lavaManager = LavaManager(settings.lavalink.enabled, daoManager, jdaLavaLink)
-    }
-
-    val uptimeMillis: Long
-        get() = System.currentTimeMillis() - startTime
 }

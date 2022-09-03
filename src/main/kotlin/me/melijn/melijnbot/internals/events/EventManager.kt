@@ -62,11 +62,6 @@ class EventManager(val container: Container) : IEventManager {
         // eventListeners.add(roleAddedListener)
         // eventListeners.add(roleRemovedListener)
 
-        lavaEventListener?.let {
-            eventListeners.add(
-                Lavalistener(it)
-            )
-        }
     }
 
     companion object {

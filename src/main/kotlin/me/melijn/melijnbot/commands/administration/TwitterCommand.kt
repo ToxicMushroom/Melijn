@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.services.twitter.TweetInfo
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_TWEETTYPE
 import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.StringUtils.URL_PATTERN
 import me.melijn.melijnbot.internals.utils.message.*
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 

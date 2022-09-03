@@ -2,14 +2,16 @@ package me.melijn.melijnbot.database
 
 import me.melijn.melijnbot.database.alias.AliasDao
 import me.melijn.melijnbot.database.alias.AliasWrapper
-import me.melijn.melijnbot.database.audio.*
 import me.melijn.melijnbot.database.autopunishment.*
 import me.melijn.melijnbot.database.ban.*
 import me.melijn.melijnbot.database.birthday.BirthdayDao
 import me.melijn.melijnbot.database.birthday.BirthdayHistoryDao
 import me.melijn.melijnbot.database.birthday.BirthdayHistoryWrapper
 import me.melijn.melijnbot.database.birthday.BirthdayWrapper
-import me.melijn.melijnbot.database.channel.*
+import me.melijn.melijnbot.database.channel.ChannelDao
+import me.melijn.melijnbot.database.channel.ChannelWrapper
+import me.melijn.melijnbot.database.channel.StreamUrlDao
+import me.melijn.melijnbot.database.channel.StreamUrlWrapper
 import me.melijn.melijnbot.database.command.*
 import me.melijn.melijnbot.database.cooldown.*
 import me.melijn.melijnbot.database.disabled.ChannelCommandStateDao
@@ -46,8 +48,6 @@ import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.database.newyear.NewYearDao
 import me.melijn.melijnbot.database.newyear.NewYearWrapper
 import me.melijn.melijnbot.database.permission.*
-import me.melijn.melijnbot.database.playlist.PlaylistDao
-import me.melijn.melijnbot.database.playlist.PlaylistWrapper
 import me.melijn.melijnbot.database.prefix.GuildPrefixDao
 import me.melijn.melijnbot.database.prefix.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefix.UserPrefixDao
@@ -110,13 +110,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
 
     val bannedUsers: BannedUserCacheDao
     val emoteCache: EmoteCacheDao
-    val tracksWrapper: TracksWrapper
-    val playlistWrapper: PlaylistWrapper
-    val songCacheWrapper: SongCacheWrapper
-    val gainProfileWrapper: GainProfileWrapper
-    val music247Wrapper: Music247Wrapper
     val streamUrlWrapper: StreamUrlWrapper
-    val musicChannelWrapper: MusicChannelWrapper
     val commandWrapper: CommandWrapper
     val commandUsageWrapper: CommandUsageWrapper
     val customCommandWrapper: CustomCommandWrapper
@@ -230,7 +224,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
 
     val validEmojiWrapper: ValidEmojiWrapper
 
-    val spotifyKeyWrapper = SpotifyKeyWrapper(driverManager)
 
     init {
         TaskManager.async {
@@ -241,11 +234,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
         bannedUsers = BannedUserCacheDao(driverManager)
 
         emoteCache = EmoteCacheDao(driverManager)
-        tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
-        playlistWrapper = PlaylistWrapper(PlaylistDao(driverManager))
-        songCacheWrapper = SongCacheWrapper(SongCacheDao(driverManager))
-        gainProfileWrapper = GainProfileWrapper(GainProfileDao(driverManager))
-        music247Wrapper = Music247Wrapper(Music247Dao(driverManager))
+
 
         streamUrlWrapper = StreamUrlWrapper(StreamUrlDao(driverManager))
 
@@ -287,7 +276,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
 
         logChannelWrapper = LogChannelWrapper(LogChannelDao(driverManager))
         channelWrapper = ChannelWrapper(ChannelDao(driverManager))
-        musicChannelWrapper = MusicChannelWrapper(MusicChannelDao(driverManager))
         roleWrapper = RoleWrapper(RoleDao(driverManager))
         joinRoleWrapper = JoinRoleWrapper(JoinRoleDao(driverManager))
         joinRoleGroupWrapper = JoinRoleGroupWrapper(JoinRoleGroupDao(driverManager))

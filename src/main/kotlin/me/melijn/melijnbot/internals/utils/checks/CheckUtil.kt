@@ -8,12 +8,10 @@ import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.utils.getZoneId
 import me.melijn.melijnbot.internals.utils.toUCSC
-import me.melijn.melijnbot.internals.utils.toUpperWordCase
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.TextChannel
-import net.dv8tion.jda.api.entities.VoiceChannel
 
 const val UNKNOWN_ID_CAUSE = "unknownid"
 const val CANNOT_INTERACT_CAUSE = "cannotinteract"
@@ -114,47 +112,6 @@ suspend fun Guild.getAndVerifyChannelById(
     return textChannel
 }
 
-suspend fun Guild.getAndVerifyMusicChannel(
-    daoManager: DaoManager,
-    vararg requiredPerms: Permission
-): VoiceChannel? {
-    val channelWrapper = daoManager.musicChannelWrapper
-    val zoneId = getZoneId(daoManager, this.idLong)
-    val channelId = channelWrapper.getChannel(this.idLong)
-    val voiceChannel = getVoiceChannelById(channelId)
-    val selfMember = this.selfMember
-
-    var shouldRemove = false
-    if (channelId != -1L && voiceChannel == null) {
-        shouldRemove = true
-        val logChannel = this.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
-        val language = getLanguage(daoManager, -1, this.idLong)
-        LogUtils.sendRemovedMusicChannelLog(language, zoneId, logChannel, UNKNOWN_ID_CAUSE, channelId.toString())
-    }
-
-    for (perm in requiredPerms) {
-        if (shouldRemove || voiceChannel == null) break
-        if (!selfMember.hasPermission(voiceChannel, perm)) {
-            shouldRemove = true
-            val logChannel = this.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
-            val language = getLanguage(daoManager, -1, this.idLong)
-            LogUtils.sendRemovedMusicChannelLog(
-                language,
-                zoneId,
-                logChannel,
-                NO_PERM_CAUSE,
-                perm.toString().toUpperWordCase()
-            )
-        }
-    }
-
-    if (shouldRemove) {
-        channelWrapper.removeChannel(this.idLong)
-        return null
-    }
-
-    return voiceChannel
-}
 
 suspend fun Guild.getAndVerifyRoleByType(
     daoManager: DaoManager,

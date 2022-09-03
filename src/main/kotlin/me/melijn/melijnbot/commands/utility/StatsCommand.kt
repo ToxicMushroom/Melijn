@@ -6,7 +6,6 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.internals.models.PodInfo
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.getDurationString
@@ -32,16 +31,6 @@ class StatsCommand : AbstractCommand("command.stats") {
         val (totalMem, usedMem, totalJVMMem, usedJVMMem) = JvmUsage.current(bean)
 
         val shardManager = context.shardManager
-        val voiceChannels = VoiceUtil.getConnectedChannelsAmount(shardManager)
-        val voiceChannelsNotEmpty = VoiceUtil.getConnectedChannelsAmount(shardManager, true)
-
-        val players = context.lavaManager.musicPlayerManager.getPlayers()
-        var queuedTracks = 0
-        var musicPlayers = 0
-        for (player in players.values) {
-            if (player.guildTrackManager.iPlayer.playingTrack != null) musicPlayers++
-            queuedTracks += player.guildTrackManager.trackSize()
-        }
 
         val threadPoolExecutor = TaskManager.executorService as ForkJoinPool
         val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
@@ -56,12 +45,8 @@ class StatsCommand : AbstractCommand("command.stats") {
             PodInfo.shardsPerPod,
             shardManager.userCache.size(),
             shardManager.guildCache.size(),
-            voiceChannelsNotEmpty,
-            voiceChannels,
             threadPoolExecutor.activeThreadCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size,
             getDurationString(ManagementFactory.getRuntimeMXBean().uptime),
-            queuedTracks,
-            musicPlayers
         )
 
         val unReplaceField2 = context.getTranslation("$root.response.field2.value")
@@ -105,21 +90,14 @@ class StatsCommand : AbstractCommand("command.stats") {
         shardCount: Int,
         userCount: Long,
         guildCount: Long,
-        voiceChannelsNotEmpty: Long,
-        voiceChannels: Long,
         threadCount: Int,
         uptime: String,
-        queuedTracks: Int,
-        musicPlayers: Int
     ): String = value
         .withVariable("shardCount", shardCount.toString())
         .withVariable("userCount", userCount.toString())
         .withVariable("serverCount", guildCount.toString())
-        .withVariable("cVCCount", "$voiceChannelsNotEmpty/$voiceChannels")
         .withVariable("botThreadCount", threadCount.toString())
         .withVariable("botUptime", uptime)
-        .withVariable("queuedTracks", "$queuedTracks")
-        .withVariable("musicPlayers", "$musicPlayers")
 
     private fun replaceValue2Vars(value: String, coreCount: Int, ramUsage: String, uptime: String): String = value
         .withVariable("coreCount", coreCount.toString())

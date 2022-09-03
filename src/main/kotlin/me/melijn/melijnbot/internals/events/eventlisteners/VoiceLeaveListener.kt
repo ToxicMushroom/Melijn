@@ -15,7 +15,6 @@ class VoiceLeaveListener(container: Container) : AbstractListener(container) {
         if (event is GuildVoiceLeaveEvent) {
             if (!event.member.user.isBot && !BotBannedWrapper.isBotBanned(EntityType.GUILD, event.guild.idLong)) {
                 TaskManager.async(event.member) {
-                    VoiceUtil.channelUpdate(container, event.channelLeft)
                     VoiceUtil.handleChannelRoleLeave(container.daoManager, event.member, event.channelLeft)
                 }
             }

@@ -53,9 +53,7 @@ class SettingsCommand : AbstractCommand("command.settings") {
         val ec = daoManager.embedColorWrapper.getColor(guildId)
         val pec = daoManager.userEmbedColorWrapper.getColor(context.authorId)
 
-        val description = "MusicChannel:** " + idToChannelMention(daoManager.musicChannelWrapper.getChannel(guildId)) +
-            "\n**StreamUrl:** " + stringToString(daoManager.streamUrlWrapper.getUrl(guildId)) +
-            "\n" +
+        val description = "\n**StreamUrl:** " + stringToString(daoManager.streamUrlWrapper.getUrl(guildId)) + "\n" +
             "\n**MuteRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.MUTE)) +
             "\n**UnverifiedRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.UNVERIFIED)) +
             "\n**BirthDayRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.BIRTHDAY)) +
@@ -66,8 +64,6 @@ class SettingsCommand : AbstractCommand("command.settings") {
                 ChannelType.VERIFICATION
             )
         ) +
-            "\n**JoinChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.JOIN)) +
-            "\n**LeaveChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.LEAVE)) +
             "\n**BirthDayChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.BIRTHDAY)) +
             "\n**PreVerificationJoinChannel:** " + idToChannelMention(
             channelWrapper.getChannelId(
