@@ -8,6 +8,10 @@ class MelijnSessionController(private val ratelimitWrapper: RatelimitWrapper) : 
 
     var internalRatelimit = 0L
 
+    init {
+        setConcurrency(16)
+    }
+
     override fun getGlobalRatelimit(): Long {
         return runBlocking {
             try {
