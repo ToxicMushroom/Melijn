@@ -2,9 +2,9 @@ package me.melijn.melijnbot.internals.jda
 
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.database.ratelimit.RatelimitWrapper
-import net.dv8tion.jda.api.utils.SessionControllerAdapter
+import net.dv8tion.jda.api.utils.ConcurrentSessionController
 
-class MelijnSessionController(private val ratelimitWrapper: RatelimitWrapper) : SessionControllerAdapter() {
+class MelijnSessionController(private val ratelimitWrapper: RatelimitWrapper) : ConcurrentSessionController() {
 
     var internalRatelimit = 0L
 
