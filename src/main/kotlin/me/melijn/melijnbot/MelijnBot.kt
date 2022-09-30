@@ -78,6 +78,10 @@ object MelijnBot {
             .setAutoReconnect(true)
             .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY, CacheFlag.ONLINE_STATUS)
             .setSessionController(MelijnSessionController(container.daoManager.rateLimitWrapper))
+            .setGatewayPoolProvider { TaskManager.gatewayExecutorPool }
+            .setEventPoolProvider { TaskManager.eventExecutorPool }
+            .setRateLimitPoolProvider { TaskManager.rateLimitExecutorPool }
+            .setCallbackPoolProvider { TaskManager.callbackExecutorPool }
             .setBulkDeleteSplittingEnabled(false)
             .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }

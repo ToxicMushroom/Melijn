@@ -21,6 +21,14 @@ object TaskManager {
     private val dispatcher = executorService.asCoroutineDispatcher()
     val scheduledExecutorService: ScheduledExecutorService =
         Executors.newScheduledThreadPool(15, threadFactory.invoke("Repeater"))
+    val gatewayExecutorPool: ScheduledExecutorService =
+        Executors.newScheduledThreadPool(16, threadFactory.invoke("JDA-Gateway"))
+    val eventExecutorPool: ScheduledExecutorService =
+        Executors.newScheduledThreadPool(16, threadFactory.invoke("JDA-Event"))
+    val rateLimitExecutorPool: ScheduledExecutorService =
+        Executors.newScheduledThreadPool(16, threadFactory.invoke("JDA-Ratelimit"))
+    val callbackExecutorPool: ScheduledExecutorService =
+        Executors.newScheduledThreadPool(16, threadFactory.invoke("JDA-Callback"))
     val coroutineScope = CoroutineScope(dispatcher)
 
     fun async(block: suspend CoroutineScope.() -> Unit): Job {
@@ -49,11 +57,12 @@ object TaskManager {
         }.run()
     }
 
-    fun <T> evalTaskValueNAsync(block: suspend CoroutineScope.() -> T?): Deferred<Pair<T?, String>> = coroutineScope.async {
-        EvalDeferredNTask {
-            block.invoke(this)
-        }.run()
-    }
+    fun <T> evalTaskValueNAsync(block: suspend CoroutineScope.() -> T?): Deferred<Pair<T?, String>> =
+        coroutineScope.async {
+            EvalDeferredNTask {
+                block.invoke(this)
+            }.run()
+        }
 
     fun async(context: ICommandContext, block: suspend CoroutineScope.() -> Unit) = coroutineScope.launch {
         ContextTask(context) {
