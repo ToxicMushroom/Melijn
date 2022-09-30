@@ -20,6 +20,7 @@ import okhttp3.OkHttpClient
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import java.util.*
+import java.util.concurrent.Executors
 import kotlin.system.exitProcess
 
 object MelijnBot {
@@ -82,6 +83,7 @@ object MelijnBot {
             .setEventPoolProvider { TaskManager.eventExecutorPool }
             .setRateLimitPoolProvider { TaskManager.rateLimitExecutorPool }
             .setCallbackPoolProvider { TaskManager.callbackExecutorPool }
+            .setAudioPool(Executors.newSingleThreadScheduledExecutor())
             .setBulkDeleteSplittingEnabled(false)
             .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }
