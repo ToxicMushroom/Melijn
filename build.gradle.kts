@@ -46,7 +46,7 @@ repositories {
 }
 
 val jackson = "2.13.2" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-val ktor = "1.6.7"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
+val ktor = "1.6.8"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.11" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.6.1" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
 val kotlin = "1.6.21"
@@ -58,7 +58,7 @@ dependencies {
         exclude("opus-java")
     }
 
-    implementation("io.sentry:sentry:5.7.4")
+    implementation("io.sentry:sentry:6.4.2")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
     implementation("club.minnced:discord-webhooks:0.8.2")
@@ -117,7 +117,7 @@ dependencies {
     implementation("me.melijn.jikankt:JikanKt:1.3.2")
 
     // https://mvnrepository.com/artifact/org.mariuszgromada.math/MathParser.org-mXparser
-    implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.0.2")
+    implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.0.7")
 
     // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
     implementation("com.apollographql.apollo:apollo-runtime:$apollo")
@@ -127,7 +127,7 @@ dependencies {
     implementation("io.lettuce:lettuce-core:6.2.0.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
-    implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
+    implementation("io.github.cdimascio:dotenv-kotlin:6.3.1")
 }
 
 tasks {

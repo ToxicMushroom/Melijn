@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.internals.utils.message
 
 import io.ktor.client.request.*
+import io.sentry.Hint
 import io.sentry.Scope
 import io.sentry.Sentry
 import kotlinx.coroutines.runBlocking
@@ -113,7 +114,7 @@ suspend fun Throwable.sendInGuildSuspend(
             scope.user = user
         }
     }
-    Sentry.captureException(this, PodInfo.podId)
+    Sentry.captureException(this, Hint().apply { set("podId", PodInfo.podId) } )
 
     if (shouldSend && channel != null && (channel !is TextChannel || channel.canTalk()) && (channel is TextChannel || channel is PrivateChannel)) {
         val lang = getLanguage(Container.instance.daoManager, author?.idLong ?: -1, guild?.idLong ?: -1)
