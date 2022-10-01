@@ -14,6 +14,7 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.VerificationUtils
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
+import me.melijn.melijnbot.internals.utils.isPremiumGuild
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.audit.ActionType
 import net.dv8tion.jda.api.entities.Guild
@@ -81,7 +82,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
                 if (!isBanned) {
                     val auditKick = if (guild.selfMember.hasPermission(
                             Permission.VIEW_AUDIT_LOGS
-                        )
+                        ) && isPremiumGuild(daoManager, guildId)
                     ) {
                         guild.retrieveAuditLogs()
                             .type(ActionType.KICK)
