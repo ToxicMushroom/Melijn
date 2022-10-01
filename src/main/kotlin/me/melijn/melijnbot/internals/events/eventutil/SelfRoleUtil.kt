@@ -1,8 +1,12 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.command.hasPermission
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.utils.awaitOrNull
@@ -25,7 +29,6 @@ object SelfRoleUtil {
 
         /* INIT */
         val guild = event.guild
-        val member = event.member ?: guild.retrieveMemberById(event.userIdLong).awaitOrNull() ?: return null
         val channel = event.channel
         val channelId = channel.idLong
         val reaction = event.reaction
@@ -45,8 +48,8 @@ object SelfRoleUtil {
         val selfRoleGroups = daoManager.selfRoleGroupWrapper.getMap(guildId)
         val selfRoleGroupMatches = selfRoleGroups.filter {
             it.channelId == channelId &&
-                (it.messageIds.contains(event.messageIdLong) || it.messageIds.isEmpty())
-                && it.isEnabled
+                    (it.messageIds.contains(event.messageIdLong) || it.messageIds.isEmpty())
+                    && it.isEnabled
         }
 
         if (selfRoleGroupMatches.isEmpty()) {
@@ -55,6 +58,10 @@ object SelfRoleUtil {
 
         val roles = mutableListOf<Role>()
         val selfRoles = daoManager.selfRoleWrapper.getMap(guildId)
+        val lazyMember = TaskManager.coroutineScope.async(
+            TaskManager.executorService.asCoroutineDispatcher(),
+            CoroutineStart.LAZY
+        ) { event.member ?: event.retrieveMember().awaitOrNull() }
         for (group in selfRoleGroupMatches) {
             val groupRoles = mutableListOf<Role>()
             val groupName = group.groupName
@@ -68,7 +75,7 @@ object SelfRoleUtil {
 
                 val hasPermission = hasPermission(
                     container,
-                    member,
+                    lazyMember.await() ?: return null,
                     event.channel,
                     "rr.${groupName.lowercase()}.$emoteji",
                     null,
@@ -114,7 +121,7 @@ object SelfRoleUtil {
                         continue
                     }
 
-                    if (daoManager.forceRoleWrapper.getForceRoles(guildId)[member.idLong]?.contains(roleId) == true) continue
+                    if (daoManager.forceRoleWrapper.getForceRoles(guildId)[event.userIdLong]?.contains(roleId) == true) continue
                     val role = guild.getRoleById(roleId)
                     val language = getLanguage(daoManager, -1, guildId)
                     val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
@@ -153,6 +160,7 @@ object SelfRoleUtil {
                     var hasRoles = 0
                     for (m in 0 until roleDataArr2.length()) {
                         val roleId = roleDataArr2.getArray(m).getLong(1)
+                        val member = lazyMember.await() ?: return null
                         hasRoles += if (member.roles.any { role -> role.idLong == roleId }) 1 else 0
                     }
 

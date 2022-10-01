@@ -208,18 +208,18 @@ object LogUtils {
         logChannel.sendMessageEmbeds(eb.build()).queue()
     }
 
-    suspend fun sendMessageFailedToRemoveRoleFromMember(daoManager: DaoManager, member: Member, role: Role) {
-        val guild = member.guild
+    suspend fun sendMessageFailedToRemoveRoleFromMember(daoManager: DaoManager, user: User, role: Role) {
+        val guild = role.guild
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.VERIFICATION)
             ?: return
-        val zoneId = getZoneId(daoManager, member.guild.idLong)
+        val zoneId = getZoneId(daoManager, role.guild.idLong)
 
         val language = getLanguage(daoManager, -1, guild.idLong)
         val title = i18n.getTranslation(language, "logging.verification.failedremovingrole.title")
         val description =
             "```LDIF" + i18n.getTranslation(language, "logging.verification.failedremovingrole.description")
-                .withVariable(PLACEHOLDER_USER_ID, member.id)
-                .withSafeVariable(PLACEHOLDER_USER, member.asTag)
+                .withVariable(PLACEHOLDER_USER_ID, user.id)
+                .withSafeVariable(PLACEHOLDER_USER, user.asTag)
                 .withSafeVariable(PLACEHOLDER_ROLE, role.name)
                 .withVariable(PLACEHOLDER_ROLE_ID, role.id) + "```"
 
@@ -227,7 +227,7 @@ object LogUtils {
             .setTitle(title)
             .setColor(Color.RED)
             .setDescription(description)
-            .setThumbnail(member.user.effectiveAvatarUrl)
+            .setThumbnail(user.effectiveAvatarUrl)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())

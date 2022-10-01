@@ -176,7 +176,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
                 if (!guild.selfMember.canInteract(role) || !guild.removeRoleFromMember(member, role)
                         .reason("(forceRole remove) ${context.author.asTag}").awaitBool()
                 ) {
-                    LogUtils.sendMessageFailedToRemoveRoleFromMember(context.daoManager, member, role)
+                    LogUtils.sendMessageFailedToRemoveRoleFromMember(context.daoManager, user, role)
                     return
                 }
             }

@@ -335,7 +335,7 @@ suspend fun hasPermission(
     required: Boolean = false
 ): Boolean {
     if (member.isOwner || member.hasPermission(Permission.ADMINISTRATOR)) return true
-    val guild = member.guild
+    val guild = channel.guild
     val guildId = guild.idLong
     val authorId = member.idLong
 

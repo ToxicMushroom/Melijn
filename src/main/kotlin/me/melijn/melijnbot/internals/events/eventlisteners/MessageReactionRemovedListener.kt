@@ -25,16 +25,13 @@ class MessageReactionRemovedListener(container: Container) : AbstractListener(co
     private suspend fun selfRoleHandler(event: GuildMessageReactionRemoveEvent) {
         if (event.user?.isBot == true) return
         val guild = event.guild
-        val member = event.member ?: guild.retrieveMemberById(event.userIdLong).awaitOrNull() ?: return
-        if (member.user.isBot) return
         val roles = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
 
         for (role in roles) {
-            if (member.roles.contains(role)) {
-                val removed = guild.removeRoleFromMember(member, role).reason("unselfroled").awaitBool()
-                if (!removed) {
-                    LogUtils.sendMessageFailedToRemoveRoleFromMember(container.daoManager, member, role)
-                }
+            val removed = guild.removeRoleFromMember(event.userIdLong, role).reason("unselfroled").awaitBool()
+            if (!removed) {
+                val user = event.user ?: event.retrieveUser().awaitOrNull() ?: return
+                LogUtils.sendMessageFailedToRemoveRoleFromMember(container.daoManager, user, role)
             }
         }
     }
