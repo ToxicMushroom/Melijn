@@ -2,8 +2,8 @@ package me.melijn.melijnbot.internals.utils
 
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
-import se.michaelthelin.spotify.Base64
 import java.nio.ByteBuffer
+import java.util.*
 import kotlin.math.pow
 
 val SPACE_PATTERN = Regex("\\s+")
@@ -129,13 +129,12 @@ object StringUtils {
     }
 
     fun Long.toBase64(): String {
-        return Base64.encode(
+        return Base64.getEncoder().encodeToString(
             ByteBuffer
                 .allocate(Long.SIZE_BYTES)
                 .putLong(this)
                 .array()
-        )
-            .remove("=")
+        ).remove("=")
     }
 }
 

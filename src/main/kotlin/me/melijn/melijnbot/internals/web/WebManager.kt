@@ -46,18 +46,10 @@ class WebManager(val settings: Settings) {
         .okHttpClient(OkHttpClient())
         .build()
 
-    var spotifyApi: MySpotifyApi? = null
-
     val tenorApi: TenorApi = TenorApi(httpClient, settings.tokens.tenor)
     val rule34Api: Rule34Api = Rule34Api(httpClient)
     val imageApi: ImageApi = ImageApi(httpClient, proxiedHttpClient)
     val booruApi: BooruApi = BooruApi(httpClient)
     val osuApi: OsuApi = OsuApi(proxiedHttpClient, settings.tokens.osu)
     val weebApi: WeebApi = WeebApi(httpClient, settings)
-
-    init {
-        if (settings.api.spotify.clientId.isNotBlank() && settings.api.spotify.password.isNotBlank()) {
-            spotifyApi = MySpotifyApi(settings.api.spotify)
-        }
-    }
 }

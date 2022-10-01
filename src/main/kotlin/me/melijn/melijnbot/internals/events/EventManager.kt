@@ -37,7 +37,6 @@ class EventManager(val container: Container) : IEventManager {
 //        val roleAddedListener = RoleAddedListener(container)
 //        val roleRemovedListener = RoleRemovedListener(container)
         val boostListener = BoostListener(container)
-        val lavaEventListener = container.jdaLavaLink
         val commandListener = CommandClientBuilder(container)
             .loadCommands()
             .build()

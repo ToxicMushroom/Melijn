@@ -3,7 +3,6 @@ package me.melijn.melijnbot
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -64,8 +63,6 @@ class Container {
 
     //enabled on event
     val serviceManager by lazy { ServiceManager(daoManager, webManager) }
-
-    var jdaLavaLink: JDALavalink? = null
 
     var commandMap = emptyMap<Int, AbstractCommand>()
     var commandSet = emptySet<AbstractCommand>()
