@@ -61,19 +61,10 @@ dependencies {
     implementation("io.sentry:sentry:5.7.4")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
-    implementation("club.minnced:discord-webhooks:0.8.0")
+    implementation("club.minnced:discord-webhooks:0.8.2")
 
     // https://github.com/freya022/JEmojis
     implementation("com.github.ToxicMushroom:JEmojis:a8c82848f166893f67251c741579c74c80fbb2dd")
-
-    // https://github.com/sedmelluq/jda-nas
-    implementation("com.sedmelluq:jda-nas:1.1.0")
-
-    // https://github.com/sedmelluq/lavaplayer
-    implementation("com.github.walkyst:lavaplayer-fork:1.3.97")
-
-    // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fllklient%2FLavalink-Klient
-    implementation("me.melijn.llklient:Lavalink-Klient:2.2.5")
 
     api("org.jetbrains.kotlin:kotlin-script-util:$kotlin")
     api("org.jetbrains.kotlin:kotlin-compiler:$kotlin")
@@ -89,7 +80,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.3.5")
+    implementation("org.postgresql:postgresql:42.5.0")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinX")
@@ -99,9 +90,6 @@ dependencies {
 
     // https://duncte123.jfrog.io/ui/packages/gav:%2F%2Fme.duncte123:weebJava
     implementation("me.duncte123:weebJava:3.0.1_4")
-
-    // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation("se.michaelthelin.spotify:spotify-web-api-java:7.1.0")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation("ch.qos.logback:logback-classic:1.2.11")
@@ -136,7 +124,7 @@ dependencies {
     implementation("com.apollographql.apollo:apollo-coroutines-support:$apollo")
 
     // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
-    implementation("io.lettuce:lettuce-core:6.1.8.RELEASE")
+    implementation("io.lettuce:lettuce-core:6.2.0.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
