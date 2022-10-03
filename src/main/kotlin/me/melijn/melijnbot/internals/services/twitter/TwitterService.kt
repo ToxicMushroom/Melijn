@@ -39,7 +39,7 @@ class TwitterService(
     private val supporterWrapper: SupporterWrapper,
     val shardManager: ShardManager,
     private val podInfo: PodInfo
-) : Service("Twitter", 5, 1, TimeUnit.MINUTES) {
+) : Service("Twitter", 1, 1, TimeUnit.MINUTES) {
 
     override val service: RunnableTask = RunnableTask {
         val twitterWebhooks = twitterWrapper.getAll(podInfo)
@@ -159,34 +159,40 @@ class TwitterService(
         val currentTime = OffsetDateTime.ofInstant(
             Instant.now(), ZoneOffset.UTC
         ).format(patternFormatRFC3339)
-        val content = DataObject.fromJson(httpClient.get<String>(
-            "https://api.twitter.com/2/users/${twitterWebhook.twitterUserId}/tweets"
-        ) {
-            if (twitterWebhook.lastTweetId != 0L)
-                parameter("since_id", twitterWebhook.lastTweetId)
-            parameter("max_results", 5)
-            parameter(
-                "expansions",
-                "author_id,entities.mentions.username,attachments.media_keys,referenced_tweets.id"
-            )
-            val excludedTweetTypes = twitterWebhook.excludedTweetTypes
-            when {
-                excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) && excludedTweetTypes.contains(
-                    TweetInfo.TweetType.RETWEET
-                ) -> parameter("exclude", "replies,retweets")
-                excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) -> parameter("exclude", "replies")
-                excludedTweetTypes.contains(TweetInfo.TweetType.RETWEET) -> parameter("exclude", "retweets")
-            }
-            parameter("tweet.fields", "created_at")
-            parameter("media.fields", "preview_image_url,type,url")
-            parameter("user.fields", "profile_image_url,username")
-            parameter("start_time", lastTweetTime)
-            parameter("end_time", currentTime)
-            header("Authorization", "Bearer $twitterToken")
-        })
+        val content = try {
+            DataObject.fromJson(httpClient.get<String>(
+                "https://api.twitter.com/2/users/${twitterWebhook.twitterUserId}/tweets"
+            ) {
+                if (twitterWebhook.lastTweetId != 0L)
+                    parameter("since_id", twitterWebhook.lastTweetId)
+                parameter("max_results", 5)
+                parameter(
+                    "expansions",
+                    "author_id,entities.mentions.username,attachments.media_keys,referenced_tweets.id"
+                )
+                val excludedTweetTypes = twitterWebhook.excludedTweetTypes
+                when {
+                    excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) && excludedTweetTypes.contains(
+                        TweetInfo.TweetType.RETWEET
+                    ) -> parameter("exclude", "replies,retweets")
+
+                    excludedTweetTypes.contains(TweetInfo.TweetType.REPLY) -> parameter("exclude", "replies")
+                    excludedTweetTypes.contains(TweetInfo.TweetType.RETWEET) -> parameter("exclude", "retweets")
+                }
+                parameter("tweet.fields", "created_at")
+                parameter("media.fields", "preview_image_url,type,url")
+                parameter("user.fields", "profile_image_url,username")
+                parameter("start_time", lastTweetTime)
+                parameter("end_time", currentTime)
+                header("Authorization", "Bearer $twitterToken")
+            })
+        } catch (t: Throwable) {
+            return null
+        }
         if (!content.hasKey("meta")) {
             return null
         }
+
         val metaInfo = content.getObject("meta")
         val arrSize = metaInfo.getInt("result_count")
 
@@ -224,6 +230,7 @@ class TwitterService(
                 )
             )
         }
+
         val list = mutableListOf<TweetInfo>()
         val arr = content.getArray("data")
         for (i in 0 until arrSize) {
@@ -273,6 +280,7 @@ class TwitterService(
                         }
                     }
                 }
+
                 else -> TweetInfo.TweetType.POST
             }
 
