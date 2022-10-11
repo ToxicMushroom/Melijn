@@ -23,8 +23,8 @@ Contact me on discord for more information ToxicMushroom#0001
 4. Uncomment one of the volumes in the melijn-postgres service for persistant storage
 5. Make sure all the passwords, usernames and database names match between your `.env` file and the postgres and redis services
 6. Fill in all the fields you can in `.env`, bot token, id, name, etc... (If you don't have tokens for spotify ect then don't expect commands related to spotify to work)
-> These 2 steps are optional (see notes)
->7. You can build your own image from the source-code using `sudo docker build -t username/melijn:version .`
+> These 2 steps are optional (see notes):<br>
+>7. You can build your own image from the source-code using `sudo docker build -t username/melijn:version .`<br>
 >8. Replace `toxicmushroom/Melijn:version` in `docker-compose.yml` with your `username/melijn:version`
 9. Start docker compose with `sudo docker-compose up -d` (Make sure you're in the same folder as docker-compose.yml)
 
