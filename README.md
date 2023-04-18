@@ -1,4 +1,4 @@
-# Melijn
+# Melijn - being rewritten here https://github.com/Melijn/melijn-bot
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/60761596055e49e88d9b8db1ffa65fdf)](https://www.codacy.com/manual/ToxicMushroom/Melijn?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ToxicMushroom/Melijn&amp;utm_campaign=Badge_Grade)
 [![Discord Bots](https://discordbots.org/api/widget/servers/368362411591204865.svg?noavatar=true)](https://discordbots.org/bot/368362411591204865)
 [![Discord Bots](https://discordbots.org/api/widget/status/368362411591204865.svg?noavatar=true)](https://discordbots.org/bot/368362411591204865)
