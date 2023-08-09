@@ -35,16 +35,6 @@ object LogUtils {
         sendRemovedChannelLog(language, zoneId, channelType.toUCC(), logChannel, causePath, causeArg)
     }
 
-    fun sendRemovedMusicChannelLog(
-        language: String,
-        zoneId: ZoneId,
-        logChannel: TextChannel?,
-        causePath: String,
-        causeArg: String
-    ) {
-        sendRemovedChannelLog(language, zoneId, "Music", logChannel, causePath, causeArg)
-    }
-
     private fun sendRemovedChannelLog(
         language: String,
         zoneId: ZoneId,

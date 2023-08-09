@@ -57,7 +57,7 @@ class InfoCommand : AbstractCommand("command.info") {
     private suspend fun replaceValueOneVars(string: String, context: ICommandContext): String = string
         .withVariable(
             "ownerTag", context.jda.shardManager?.retrieveUserById(231459866630291459L)?.awaitOrNull()?.asTag
-                ?: "ToxicMushroom#0001"
+                ?: "ToxicMushroom"
         )
         .withVariable("invite", "https://discord.gg/tfQ9s7u")
         .withVariable("botInvite", "https://melijn.com/invite")

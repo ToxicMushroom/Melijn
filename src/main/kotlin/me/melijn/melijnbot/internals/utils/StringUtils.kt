@@ -4,6 +4,8 @@ import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import java.nio.ByteBuffer
 import java.util.*
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.math.pow
 
 val SPACE_PATTERN = Regex("\\s+")
@@ -128,6 +130,7 @@ object StringUtils {
         return index
     }
 
+    @OptIn(ExperimentalEncodingApi::class)
     fun Long.toBase64(): String {
         return Base64.getEncoder().encodeToString(
             ByteBuffer

@@ -9,6 +9,7 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.StringUtils.URL_PATTERN
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import net.dv8tion.jda.api.EmbedBuilder.URL_PATTERN
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.RestAction
@@ -314,7 +315,7 @@ suspend fun getImageUrlFromArgsNMessage(
         context.args.isNotEmpty() -> {
             val arg = context.args[index]
             when {
-                URL_PATTERN.matches(arg) -> {
+                URL_PATTERN.matcher(arg).matches() -> {
                     return Pair(true, arg)
                 }
                 EMOTE_MENTION.matches(arg) -> {

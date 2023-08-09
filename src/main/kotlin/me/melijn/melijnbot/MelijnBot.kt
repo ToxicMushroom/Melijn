@@ -86,6 +86,7 @@ object MelijnBot {
             .setAudioPool(Executors.newSingleThreadScheduledExecutor())
             .setBulkDeleteSplittingEnabled(false)
             .setChunkingFilter(ChunkingFilter.NONE)
+            .setMemberCachePolicy { it.isOwner }
             .setEventManagerProvider { eventManager }
             .setHttpClientBuilder(OkHttpClient.Builder().addInterceptor(KillerInterceptor()))
 

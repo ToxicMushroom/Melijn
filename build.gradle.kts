@@ -5,7 +5,7 @@ plugins {
     id("application")
     id("com.apollographql.apollo") version "2.5.11"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    kotlin("jvm") version "1.6.21"
+    kotlin("jvm") version "1.8.20"
 }
 
 application.mainClass.set("me.melijn.melijnbot.MelijnBotKt")
@@ -13,8 +13,8 @@ group = "me.melijn.melijnbot"
 version = "2.1.0"
 
 configure<JavaPluginExtension> {
-    sourceCompatibility = JavaVersion.VERSION_15
-    targetCompatibility = JavaVersion.VERSION_15
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 configure<ApolloExtension> {
@@ -38,18 +38,17 @@ repositories {
         name = "m2-dv8tion"
     }
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
-    maven("https://nexus.melijn.com/repository/maven-public/")
-    maven("https://nexus.melijn.com/repository/jcenter-mirror/")
+    maven("https://reposilite.melijn.com/releases/")
     mavenLocal()
-    maven("https://duncte123.jfrog.io/artifactory/maven")
-    maven("https://nexus.melijn.com/repository/jitpack/") // pooppack mirror
+    maven("https://m2.duncte123.dev/releases")
+    maven("https://reposilite.melijn.com/shitpack/") // pooppack mirror
 }
 
 val jackson = "2.13.2" // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
 val ktor = "1.6.8"   // https://mvnrepository.com/artifact/io.ktor/ktor-client-cio
 val apollo = "2.5.11" // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
 val kotlinX = "1.6.1" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-val kotlin = "1.6.21"
+val kotlin = "1.8.20"
 val scrimage = "4.0.31"
 
 dependencies {
@@ -74,13 +73,13 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin")
 
     // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fjagtag
-    implementation("me.melijn.jagtag:JagTag-Kotlin:2.2.1")
+    implementation("me.melijn.jagtag:JagTag-Kotlin:2.2.2")
 
     // https://search.maven.org/artifact/com.zaxxer/HikariCP
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.5.0")
+    implementation("org.postgresql:postgresql:42.6.0")
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinX")
@@ -89,7 +88,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinX")
 
     // https://duncte123.jfrog.io/ui/packages/gav:%2F%2Fme.duncte123:weebJava
-    implementation("me.duncte123:weebJava:3.0.1_4")
+    implementation("me.duncte123:weebJava:3.0.1_7")
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation("ch.qos.logback:logback-classic:1.2.11")
@@ -113,18 +112,15 @@ dependencies {
     implementation("com.sksamuel.scrimage:scrimage-webp:$scrimage")
     implementation("com.sksamuel.scrimage:scrimage-formats-extra:$scrimage")
 
-    // https://nexus.melijn.com/#browse/browse:maven-public:me%2Fmelijn%2Fjikankt
-    implementation("me.melijn.jikankt:JikanKt:1.3.2")
-
     // https://mvnrepository.com/artifact/org.mariuszgromada.math/MathParser.org-mXparser
-    implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.0.7")
+    implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.2.1")
 
     // https://mvnrepository.com/artifact/com.apollographql.apollo/apollo-runtime
     implementation("com.apollographql.apollo:apollo-runtime:$apollo")
     implementation("com.apollographql.apollo:apollo-coroutines-support:$apollo")
 
     // https://mvnrepository.com/artifact/io.lettuce/lettuce-core
-    implementation("io.lettuce:lettuce-core:6.2.0.RELEASE")
+    implementation("io.lettuce:lettuce-core:6.2.5.RELEASE")
 
     // https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.3.1")
@@ -136,7 +132,7 @@ tasks {
     }
     withType(KotlinCompile::class) {
         kotlinOptions {
-            jvmTarget = "15"
+            jvmTarget = "17"
         }
     }
 

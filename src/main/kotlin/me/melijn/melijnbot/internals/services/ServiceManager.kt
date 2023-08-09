@@ -17,7 +17,6 @@ import me.melijn.melijnbot.internals.services.reddit.RedditService
 import me.melijn.melijnbot.internals.services.reminders.ReminderService
 import me.melijn.melijnbot.internals.services.roles.RolesService
 import me.melijn.melijnbot.internals.services.statesync.EmoteCacheService
-import me.melijn.melijnbot.internals.services.twitter.TwitterService
 import me.melijn.melijnbot.internals.services.votes.VoteReminderService
 import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.sharding.ShardManager
@@ -48,16 +47,6 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
 
         services.add(MessageDeletionService(shardManager))
         services.add(RatelimitService(shardManager))
-        slowServices.add(
-            TwitterService(
-                webManager.proxiedHttpClient,
-                container.settings.api.twitter.bearerToken,
-                daoManager.twitterWrapper,
-                daoManager.supporterWrapper,
-                shardManager,
-                podInfo
-            )
-        )
 
         // Some conditional services
         if (podInfo.minShardId == 0) {

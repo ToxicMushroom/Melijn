@@ -43,16 +43,10 @@ data class Settings(
 
     data class Api(
         val jikan: Jikan,
-        val spotify: Spotify,
         val imgHoard: ImgHoard,
         val sauceNao: SauceNao,
         val twitter: Twitter
     ) {
-
-        data class Spotify(
-            var clientId: String,
-            var password: String
-        )
 
         data class Jikan(
             var ssl: Boolean,
@@ -166,10 +160,6 @@ data class Settings(
                         get("api.jikan.host"),
                         get("api.jikan.key"),
                         getInt("api.jikan.port")
-                    ),
-                    Api.Spotify(
-                        get("api.spotify.clientId"),
-                        get("api.spotify.password")
                     ),
                     Api.ImgHoard(
                         get("api.imghoard.token")

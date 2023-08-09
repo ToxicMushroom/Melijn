@@ -10,8 +10,6 @@ import me.melijn.melijnbot.database.birthday.BirthdayHistoryWrapper
 import me.melijn.melijnbot.database.birthday.BirthdayWrapper
 import me.melijn.melijnbot.database.channel.ChannelDao
 import me.melijn.melijnbot.database.channel.ChannelWrapper
-import me.melijn.melijnbot.database.channel.StreamUrlDao
-import me.melijn.melijnbot.database.channel.StreamUrlWrapper
 import me.melijn.melijnbot.database.command.*
 import me.melijn.melijnbot.database.cooldown.*
 import me.melijn.melijnbot.database.disabled.ChannelCommandStateDao
@@ -63,8 +61,6 @@ import me.melijn.melijnbot.database.scripts.ScriptCooldownWrapper
 import me.melijn.melijnbot.database.scripts.ScriptDao
 import me.melijn.melijnbot.database.scripts.ScriptWrapper
 import me.melijn.melijnbot.database.settings.*
-import me.melijn.melijnbot.database.socialmedia.TwitterDao
-import me.melijn.melijnbot.database.socialmedia.TwitterWrapper
 import me.melijn.melijnbot.database.starboard.StarboardMessageDao
 import me.melijn.melijnbot.database.starboard.StarboardMessageWrapper
 import me.melijn.melijnbot.database.starboard.StarboardSettingsDao
@@ -110,7 +106,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
 
     val bannedUsers: BannedUserCacheDao
     val emoteCache: EmoteCacheDao
-    val streamUrlWrapper: StreamUrlWrapper
     val commandWrapper: CommandWrapper
     val commandUsageWrapper: CommandUsageWrapper
     val customCommandWrapper: CustomCommandWrapper
@@ -211,7 +206,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
     val starboardSettingsWrapper: StarboardSettingsWrapper
     val starboardMessageWrapper: StarboardMessageWrapper
 
-    val twitterWrapper: TwitterWrapper
 
     val osuWrapper: OsuWrapper
 
@@ -234,9 +228,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
         bannedUsers = BannedUserCacheDao(driverManager)
 
         emoteCache = EmoteCacheDao(driverManager)
-
-
-        streamUrlWrapper = StreamUrlWrapper(StreamUrlDao(driverManager))
 
         commandWrapper = CommandWrapper(CommandDao(driverManager))
         commandUsageWrapper = CommandUsageWrapper(CommandUsageDao(driverManager))
@@ -336,7 +327,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
         starboardSettingsWrapper = StarboardSettingsWrapper(StarboardSettingsDao(driverManager))
         starboardMessageWrapper = StarboardMessageWrapper(StarboardMessageDao(driverManager))
 
-        twitterWrapper = TwitterWrapper(TwitterDao(driverManager))
 
         osuWrapper = OsuWrapper(OsuDao(driverManager))
 

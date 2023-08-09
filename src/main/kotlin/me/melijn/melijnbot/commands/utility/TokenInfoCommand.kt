@@ -10,7 +10,8 @@ import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import java.math.BigInteger
-import java.util.*
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 class TokenInfoCommand : AbstractCommand("command.tokeninfo") {
 
@@ -21,6 +22,7 @@ class TokenInfoCommand : AbstractCommand("command.tokeninfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
+    @OptIn(ExperimentalEncodingApi::class)
     override suspend fun execute(context: ICommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
@@ -32,11 +34,11 @@ class TokenInfoCommand : AbstractCommand("command.tokeninfo") {
             sendSyntax(context)
             return
         }
-        val userId = String(Base64.getDecoder().decode(split[0])).toLongOrNull() ?: return
+        val userId = String(Base64.decode(split[0])).toLongOrNull() ?: return
         val bot = context.shardManager.retrieveUserById(userId).awaitOrNull()
         val botCreated = (userId shr 22) + 1420070400000
         val tokenCreated = try {
-            BigInteger(Base64.getDecoder().decode(split[1])).toLong() * 1000 + 1_592_707_552_616
+            BigInteger(Base64.decode(split[1])).toLong() * 1000 + 1_592_707_552_616
         } catch (t: Throwable) {
             sendRsp(context, "your token was stinky or discord changed stuff")
             return
