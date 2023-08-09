@@ -16,7 +16,6 @@ import me.melijn.melijnbot.internals.services.reddit.RedditAboutService
 import me.melijn.melijnbot.internals.services.reddit.RedditService
 import me.melijn.melijnbot.internals.services.reminders.ReminderService
 import me.melijn.melijnbot.internals.services.roles.RolesService
-import me.melijn.melijnbot.internals.services.statesync.EmoteCacheService
 import me.melijn.melijnbot.internals.services.votes.VoteReminderService
 import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.sharding.ShardManager
@@ -43,7 +42,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
 
         slowServices.add(RolesService(daoManager.tempRoleWrapper, shardManager))
         slowServices.add(BotBanService(shardManager, daoManager))
-        slowServices.add(EmoteCacheService(daoManager.emoteCache, shardManager))
+//        slowServices.add(EmoteCacheService(daoManager.emoteCache, shardManager))
 
         services.add(MessageDeletionService(shardManager))
         services.add(RatelimitService(shardManager))
