@@ -1,4 +1,4 @@
-FROM toxicmushroom/openjdk:16-glibc as builder
+FROM bellsoft/liberica-runtime-container:jdk-17-glibc as builder
 WORKDIR /etc/melijn
 COPY ./ ./
 USER root
@@ -6,7 +6,7 @@ RUN chmod +x ./gradlew
 RUN ./gradlew shadowJar
 
 # Full jdk required for font rendering on ship ect
-FROM toxicmushroom/openjdk:16-glibc
+FROM bellsoft/liberica-runtime-container:jdk-17-glibc
 WORKDIR /opt/melijn
 ENV VERSION_HASH=%VERSION_HASH%
 COPY --from=builder ./etc/melijn/build/libs/ .
