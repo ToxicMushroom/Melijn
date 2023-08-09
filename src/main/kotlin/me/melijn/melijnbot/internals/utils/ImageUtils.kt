@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.internals.utils
 
+import com.intellij.util.io.URLUtil.URL_PATTERN
 import com.sksamuel.scrimage.pixels.Pixel
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -331,7 +332,7 @@ object ImageUtils {
     }
 
     private suspend fun isValidUrlMessage(context: ICommandContext, url: String): Boolean {
-        if (!url.matches(URL_PATTERN)) {
+        if (!URL_PATTERN.matcher(url).matches()) {
             val msg = context.getTranslation("message.notaurl")
                 .withSafeVariable("url", url)
             sendRsp(context, msg)

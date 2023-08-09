@@ -15,7 +15,6 @@ class VoiceJoinListener(container: Container) : AbstractListener(container) {
         if (event is GuildVoiceJoinEvent) {
             if (!event.member.user.isBot && !isBotBanned(EntityType.GUILD, event.guild.idLong)) {
                 TaskManager.async(event.member) {
-                    VoiceUtil.channelUpdate(container, event.channelJoined)
                     VoiceUtil.handleChannelRoleJoin(container.daoManager, event.member, event.channelJoined)
                 }
             }

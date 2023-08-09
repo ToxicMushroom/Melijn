@@ -260,6 +260,5 @@ class RestServer(container: Container) {
 
 class RequestContext(val call: ApplicationCall, val container: Container) {
     val daoManager = container.daoManager
-    val lavaManager = container.lavaManager
     val restToken = container.settings.restServer.token
 }

@@ -3,14 +3,12 @@ package me.melijn.melijnbot
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.eventlisteners.EventWaiter
 import me.melijn.melijnbot.internals.models.PodInfo
-import me.melijn.melijnbot.internals.music.LavaManager
 import me.melijn.melijnbot.internals.services.ServiceManager
 import me.melijn.melijnbot.internals.utils.FetchingPaginationInfo
 import me.melijn.melijnbot.internals.utils.ModularFetchingPaginationInfo
@@ -66,9 +64,9 @@ class Container {
     //enabled on event
     val serviceManager by lazy { ServiceManager(daoManager, webManager) }
 
-    var jdaLavaLink: JDALavalink? = null
-
-    lateinit var lavaManager: LavaManager
+//    var jdaLavaLink: JDALavalink? = null
+//
+//    lateinit var lavaManager: LavaManager
 
     var commandMap = emptyMap<Int, AbstractCommand>()
     var commandSet = emptySet<AbstractCommand>()
@@ -95,10 +93,10 @@ class Container {
         lateinit var instance: Container
     }
 
-    fun initLava(jdaLavaLink: JDALavalink?) {
-        this.jdaLavaLink = jdaLavaLink
-        this.lavaManager = LavaManager(settings.lavalink.enabled, daoManager, jdaLavaLink)
-    }
+//    fun initLava(jdaLavaLink: JDALavalink?) {
+//        this.jdaLavaLink = jdaLavaLink
+//        this.lavaManager = LavaManager(settings.lavalink.enabled, daoManager, jdaLavaLink)
+//    }
 
     val uptimeMillis: Long
         get() = System.currentTimeMillis() - startTime

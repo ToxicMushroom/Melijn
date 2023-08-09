@@ -66,9 +66,6 @@ class CommandContext(
     override val daoManager = container.daoManager
     override var rawArg: String = ""
     override val contextTime = System.currentTimeMillis()
-    override val lavaManager = container.lavaManager
-    override val musicPlayerManager = container.lavaManager.musicPlayerManager
-    override val audioLoader = container.lavaManager.musicPlayerManager.audioLoader
     override var fullArg: String = ""
     override val botDevIds: LongArray = container.settings.botInfo.developerIds
 
@@ -213,7 +210,6 @@ class CommandContext(
         return userTimezone ?: guildTimezone ?: ZoneId.of("GMT")
     }
 
-    override fun getGuildMusicPlayer() = musicPlayerManager.getGuildMusicPlayer(guild)
     override fun initCooldown(less: Long) {
         val idPath = commandOrder.first().id.toString() + commandOrder.drop(1).joinToString(".") { it.name }
         daoManager.globalCooldownWrapper.setLastExecuted(authorId, idPath, System.currentTimeMillis() - less)

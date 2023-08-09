@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.utils
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.utility.VOTE_URL
 import me.melijn.melijnbot.enums.Environment
@@ -39,9 +38,7 @@ object RunConditionUtil {
                 language
             )
 //            RunCondition.SAME_VC_BOT_ALONE_OR_USER_DJ -> checkSameVCBotAloneOrUserDJ(container, event, command, language)
-            RunCondition.VC_BOT_OR_USER_DJ -> checkVCBotOrUserDJ(container, message, command, language)
             RunCondition.BOT_ALONE_OR_USER_DJ -> checkBotAloneOrUserDJ(container, message, command, language)
-            RunCondition.PLAYING_TRACK_NOT_NULL -> checkPlayingTrackNotNullMessage(container, message, language)
             RunCondition.DEV_ONLY -> checkDevOnly(container, message, language)
             RunCondition.CHANNEL_NSFW -> checkChannelNSFW(container, message, language)
             RunCondition.VOTED -> checkVoted(container, message, language)
@@ -135,62 +132,6 @@ object RunConditionUtil {
             message.channel.sendMessage(msg).queue()
             false
         }
-    }
-
-    private suspend fun checkPlayingTrackNotNullMessage(
-        container: Container,
-        message: Message,
-        language: String
-    ): Boolean {
-        if (checkPlayingTrackNotNull(container, message)) {
-            return true
-        }
-
-        val noSongPlaying = i18n.getTranslation(language, "message.runcondition.failed.playingtracknotnull")
-        sendRspOrMsg(message.textChannel, container.daoManager, noSongPlaying)
-        return false
-    }
-
-    fun checkPlayingTrackNotNull(container: Container, message: Message): Boolean {
-        val trackManager = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(message.guild).guildTrackManager
-        val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
-        if (cTrack == null || message.guild.selfMember.voiceState?.inVoiceChannel() != true) {
-            return false
-        }
-        return true
-    }
-
-    private suspend fun checkVCBotOrUserDJ(
-        container: Container,
-        message: Message,
-        command: AbstractCommand,
-        language: String
-    ): Boolean {
-        val member = message.member ?: return false
-        val vc = member.voiceState?.channel
-        val botVc = container.lavaManager.getConnectedChannel(message.guild)
-
-        if (vc == null && botVc == null) {
-            val msg = i18n.getTranslation(language, "message.runcondition.failed.vc")
-            sendRspOrMsg(message.textChannel, container.daoManager, msg)
-            return false
-        }
-
-        if (vc?.id == botVc?.id) return true
-        else if (vc != null && botVc == null) return true
-        else if (hasPermission(
-                container,
-                message,
-                SpecialPermission.MUSIC_BYPASS_SAMEVC.node,
-                command.commandCategory,
-                false
-            )
-        ) return true
-
-        val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbot")
-        sendRspOrMsg(message.textChannel, container.daoManager, msg)
-        return false
-
     }
 
     // passes if the bot is in the same vc with one listener

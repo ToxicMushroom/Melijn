@@ -12,7 +12,6 @@ data class Settings(
     val api: Api,
     val proxy: Proxy,
     val environment: Environment,
-    val lavalink: Lavalink,
     val tokens: Token,
     val database: Database,
     val redis: Redis,
@@ -45,16 +44,10 @@ data class Settings(
 
     data class Api(
         val jikan: Jikan,
-        val spotify: Spotify,
         val imgHoard: ImgHoard,
         val sauceNao: SauceNao,
         val twitter: Twitter
     ) {
-
-        data class Spotify(
-            var clientId: String,
-            var password: String
-        )
 
         data class Jikan(
             var ssl: Boolean,
@@ -83,15 +76,6 @@ data class Settings(
         val host: String,
         val port: Int
     )
-
-    data class Lavalink(
-        var http_nodes: Array<LLNode>,
-        var verified_nodes: Array<LLNode>,
-        var enabled_http_nodes: Boolean,
-        var enabled: Boolean
-    ) {
-        data class LLNode(val groupId: String, val host: String, val pass: String)
-    }
 
     data class Token(
         var discord: String,
@@ -150,17 +134,6 @@ data class Settings(
 
         fun initSettings(): Settings {
 
-            val llNodes = mutableListOf<Lavalink.LLNode>()
-            val groupList = DataArray.fromJson(get("lavalink.nodes"))
-            for (i in 0 until groupList.length()) {
-                val groupEntry = groupList.getObject(i)
-                val group = groupEntry.getString("group")
-                val nodes = groupEntry.getArray("nodes")
-                for (j in 0 until nodes.length()) {
-                    val node = nodes.getObject(j)
-                    llNodes.add(Lavalink.LLNode(group, node.getString("host"), node.getString("pass")))
-                }
-            }
 
             return Settings(
                 BotInfo(
@@ -189,10 +162,6 @@ data class Settings(
                         get("api.jikan.key"),
                         getInt("api.jikan.port")
                     ),
-                    Api.Spotify(
-                        get("api.spotify.clientId"),
-                        get("api.spotify.password")
-                    ),
                     Api.ImgHoard(
                         get("api.imghoard.token")
                     ),
@@ -211,12 +180,6 @@ data class Settings(
                     getInt("proxy.port")
                 ),
                 Environment.valueOf(get("environment")),
-                Lavalink(
-                    llNodes.filter { it.groupId == "http" }.toTypedArray(),
-                    llNodes.filter { it.groupId == "normal" }.toTypedArray(),
-                    getBoolean("lavalink.enabled.http.nodes"),
-                    getBoolean("lavalink.enabled")
-                ),
                 Token(
                     get("token.discord"),
                     get("token.weebSh"),

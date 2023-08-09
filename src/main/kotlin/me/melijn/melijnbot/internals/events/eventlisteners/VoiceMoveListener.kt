@@ -15,8 +15,6 @@ class VoiceMoveListener(container: Container) : AbstractListener(container) {
         if (event is GuildVoiceMoveEvent) {
             if (!event.member.user.isBot && !isBotBanned(EntityType.GUILD, event.guild.idLong)) {
                 TaskManager.async(event.member) {
-                    VoiceUtil.channelUpdate(container, event.channelJoined)
-                    VoiceUtil.channelUpdate(container, event.channelLeft)
                     VoiceUtil.handleChannelRoleMove(
                         container.daoManager,
                         event.member,

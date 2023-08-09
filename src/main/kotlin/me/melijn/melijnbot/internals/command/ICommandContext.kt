@@ -2,10 +2,6 @@ package me.melijn.melijnbot.internals.command
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.music.AudioLoader
-import me.melijn.melijnbot.internals.music.GuildMusicPlayer
-import me.melijn.melijnbot.internals.music.LavaManager
-import me.melijn.melijnbot.internals.music.MusicPlayerManager
 import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.*
@@ -150,9 +146,6 @@ interface ICommandContext {
     val daoManager: DaoManager
     var rawArg: String
     val contextTime: Long
-    val lavaManager: LavaManager
-    val musicPlayerManager: MusicPlayerManager
-    val audioLoader: AudioLoader
     var fullArg: String
     val botDevIds: LongArray
 
@@ -165,7 +158,6 @@ interface ICommandContext {
     fun getRawArgPart(beginIndex: Int, endIndex: Int = -1): String
     suspend fun getTranslation(path: String): String
     suspend fun getTimeZoneId(): ZoneId
-    fun getGuildMusicPlayer(): GuildMusicPlayer
     fun initCooldown(less: Long = 0)
     fun initArgs()
 }

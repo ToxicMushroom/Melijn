@@ -15,11 +15,11 @@ import me.melijn.melijnbot.internals.utils.withSafeVariable
 import net.dv8tion.jda.api.Permission
 import org.w3c.dom.NamedNodeMap
 import org.w3c.dom.Node
-import se.michaelthelin.spotify.Base64
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
+import java.util.*
 import javax.imageio.IIOImage
 import javax.imageio.ImageIO
 import javax.imageio.ImageTypeSpecifier
@@ -54,7 +54,7 @@ class BonkCommand : AbstractCommand("command.bonk") {
             imageApi.downloadDiscordImgNMessage(context, user.effectiveAvatarUrl, discordSize, false) ?: return
         } else {
             redisCon.async().expire("avatar:${user.id}", 600)
-            ImageIO.read(ByteArrayInputStream(Base64.decode(cachedAvatar)))
+            ImageIO.read(ByteArrayInputStream(Base64.getDecoder().decode(cachedAvatar)))
         }
 
         val delay = getLongFromArgN(context, 1, 20, 655_350) ?: 200
@@ -85,7 +85,7 @@ class BonkCommand : AbstractCommand("command.bonk") {
         ByteArrayOutputStream().use { baos ->
             ImageIO.write(inputImg, "png", baos)
 
-            val encodedAvatar = Base64.encode(baos.toByteArray())
+            val encodedAvatar = Base64.getEncoder().encodeToString(baos.toByteArray())
             redisCon?.async()?.set("avatar:${user.id}", encodedAvatar, SetArgs().ex(600))
         }
     }

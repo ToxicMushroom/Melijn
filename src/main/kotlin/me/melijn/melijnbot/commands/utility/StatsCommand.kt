@@ -35,13 +35,6 @@ class StatsCommand : AbstractCommand("command.stats") {
         val voiceChannels = VoiceUtil.getConnectedChannelsAmount(shardManager)
         val voiceChannelsNotEmpty = VoiceUtil.getConnectedChannelsAmount(shardManager, true)
 
-        val players = context.lavaManager.musicPlayerManager.getPlayers()
-        var queuedTracks = 0
-        var musicPlayers = 0
-        for (player in players.values) {
-            if (player.guildTrackManager.iPlayer.playingTrack != null) musicPlayers++
-            queuedTracks += player.guildTrackManager.trackSize()
-        }
 
         val threadPoolExecutor = TaskManager.executorService as ForkJoinPool
         val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
@@ -60,8 +53,8 @@ class StatsCommand : AbstractCommand("command.stats") {
             voiceChannels,
             threadPoolExecutor.activeThreadCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size,
             getDurationString(ManagementFactory.getRuntimeMXBean().uptime),
-            queuedTracks,
-            musicPlayers
+            0,
+            0
         )
 
         val unReplaceField2 = context.getTranslation("$root.response.field2.value")

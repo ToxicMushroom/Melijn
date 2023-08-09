@@ -17,10 +17,6 @@ class RestartCommand : AbstractCommand("command.restart") {
     }
 
     override suspend fun execute(context: ICommandContext) {
-        val players = context.lavaManager.musicPlayerManager.getPlayers()
-        val wrapper = context.daoManager.tracksWrapper
-        wrapper.clear()
-
         sendRsp(context, "Are you sure you wanna restart ?")
 
         context.container.eventWaiter.waitFor(MessageReceivedEvent::class.java, {
@@ -30,19 +26,19 @@ class RestartCommand : AbstractCommand("command.restart") {
                 context.container.shuttingDown = true
                 context.container.restServer.stop()
 
-                for ((guildId, player) in HashMap(players)) {
-                    val guild = context.shardManager.getGuildById(guildId) ?: continue
-                    val channel = context.lavaManager.getConnectedChannel(guild) ?: continue
-                    val trackManager = player.guildTrackManager
-                    val pTrack = trackManager.playingTrack ?: continue
-
-                    pTrack.position = trackManager.iPlayer.trackPosition
-
-                    wrapper.put(guildId, context.selfUser.idLong, pTrack, trackManager.tracks)
-                    wrapper.addChannel(guildId, channel.idLong)
-
-                    trackManager.stopAndDestroy()
-                }
+//                for ((guildId, player) in HashMap(players)) {
+//                    val guild = context.shardManager.getGuildById(guildId) ?: continue
+//                    val channel = context.lavaManager.getConnectedChannel(guild) ?: continue
+//                    val trackManager = player.guildTrackManager
+//                    val pTrack = trackManager.playingTrack ?: continue
+//
+//                    pTrack.position = trackManager.iPlayer.trackPosition
+//
+//                    wrapper.put(guildId, context.selfUser.idLong, pTrack, trackManager.tracks)
+//                    wrapper.addChannel(guildId, channel.idLong)
+//
+//                    trackManager.stopAndDestroy()
+//                }
 
                 sendRsp(context, "Restarting")
                 context.shardManager.shutdown()

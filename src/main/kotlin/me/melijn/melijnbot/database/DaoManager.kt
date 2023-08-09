@@ -2,7 +2,6 @@ package me.melijn.melijnbot.database
 
 import me.melijn.melijnbot.database.alias.AliasDao
 import me.melijn.melijnbot.database.alias.AliasWrapper
-import me.melijn.melijnbot.database.audio.*
 import me.melijn.melijnbot.database.autopunishment.*
 import me.melijn.melijnbot.database.ban.*
 import me.melijn.melijnbot.database.birthday.BirthdayDao
@@ -46,8 +45,6 @@ import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.database.newyear.NewYearDao
 import me.melijn.melijnbot.database.newyear.NewYearWrapper
 import me.melijn.melijnbot.database.permission.*
-import me.melijn.melijnbot.database.playlist.PlaylistDao
-import me.melijn.melijnbot.database.playlist.PlaylistWrapper
 import me.melijn.melijnbot.database.prefix.GuildPrefixDao
 import me.melijn.melijnbot.database.prefix.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefix.UserPrefixDao
@@ -63,8 +60,6 @@ import me.melijn.melijnbot.database.scripts.ScriptCooldownWrapper
 import me.melijn.melijnbot.database.scripts.ScriptDao
 import me.melijn.melijnbot.database.scripts.ScriptWrapper
 import me.melijn.melijnbot.database.settings.*
-import me.melijn.melijnbot.database.socialmedia.TwitterDao
-import me.melijn.melijnbot.database.socialmedia.TwitterWrapper
 import me.melijn.melijnbot.database.starboard.StarboardMessageDao
 import me.melijn.melijnbot.database.starboard.StarboardMessageWrapper
 import me.melijn.melijnbot.database.starboard.StarboardSettingsDao
@@ -110,11 +105,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
 
     val bannedUsers: BannedUserCacheDao
     val emoteCache: EmoteCacheDao
-    val tracksWrapper: TracksWrapper
-    val playlistWrapper: PlaylistWrapper
-    val songCacheWrapper: SongCacheWrapper
-    val gainProfileWrapper: GainProfileWrapper
-    val music247Wrapper: Music247Wrapper
     val streamUrlWrapper: StreamUrlWrapper
     val musicChannelWrapper: MusicChannelWrapper
     val commandWrapper: CommandWrapper
@@ -217,7 +207,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
     val starboardSettingsWrapper: StarboardSettingsWrapper
     val starboardMessageWrapper: StarboardMessageWrapper
 
-    val twitterWrapper: TwitterWrapper
 
     val osuWrapper: OsuWrapper
 
@@ -230,7 +219,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
 
     val validEmojiWrapper: ValidEmojiWrapper
 
-    val spotifyKeyWrapper = SpotifyKeyWrapper(driverManager)
 
     init {
         TaskManager.async {
@@ -241,12 +229,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
         bannedUsers = BannedUserCacheDao(driverManager)
 
         emoteCache = EmoteCacheDao(driverManager)
-        tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
-        playlistWrapper = PlaylistWrapper(PlaylistDao(driverManager))
-        songCacheWrapper = SongCacheWrapper(SongCacheDao(driverManager))
-        gainProfileWrapper = GainProfileWrapper(GainProfileDao(driverManager))
-        music247Wrapper = Music247Wrapper(Music247Dao(driverManager))
-
         streamUrlWrapper = StreamUrlWrapper(StreamUrlDao(driverManager))
 
         commandWrapper = CommandWrapper(CommandDao(driverManager))
@@ -348,7 +330,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis, s
         starboardSettingsWrapper = StarboardSettingsWrapper(StarboardSettingsDao(driverManager))
         starboardMessageWrapper = StarboardMessageWrapper(StarboardMessageDao(driverManager))
 
-        twitterWrapper = TwitterWrapper(TwitterDao(driverManager))
 
         osuWrapper = OsuWrapper(OsuDao(driverManager))
 

@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.utility
 
-import com.sedmelluq.discord.lavaplayer.tools.PlayerLibrary
 import me.duncte123.weebJava.WeebInfo
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -44,7 +43,7 @@ class InfoCommand : AbstractCommand("command.info") {
             "${KotlinVersion.CURRENT.major}.${KotlinVersion.CURRENT.minor}.${KotlinVersion.CURRENT.patch}"
         )
         .withVariable("jdaVersion", JDAInfo.VERSION)
-        .withVariable("lavaplayerVersion", PlayerLibrary.VERSION)
+//        .withVariable("lavaplayerVersion", PlayerLibrary.VERSION)
         .withVariable("weebVersion", WeebInfo.VERSION)
         .withVariable("dbVersion", context.daoManager.dbVersion)
         .withVariable("dbConnectorVersion", context.daoManager.connectorVersion)
@@ -59,7 +58,7 @@ class InfoCommand : AbstractCommand("command.info") {
     private suspend fun replaceValueOneVars(string: String, context: ICommandContext): String = string
         .withVariable(
             "ownerTag", context.jda.shardManager?.retrieveUserById(231459866630291459L)?.awaitOrNull()?.asTag
-                ?: "ToxicMushroom#2610"
+                ?: "ToxicMushroom"
         )
         .withVariable("invite", "https://discord.gg/tfQ9s7u")
         .withVariable("botInvite", "https://melijn.com/invite")
