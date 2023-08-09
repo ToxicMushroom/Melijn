@@ -108,7 +108,6 @@ class CommandClientBuilder(private val container: Container) {
         FoxCommand(),
         PixelateCommand(),
         TickleCommand(),
-        SetStreamUrlCommand(),
         SharpenCommand(),
         ThinkingCommand(),
         HandholdingCommand(),

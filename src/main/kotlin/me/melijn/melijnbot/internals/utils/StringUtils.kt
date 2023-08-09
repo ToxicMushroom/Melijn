@@ -3,7 +3,6 @@ package me.melijn.melijnbot.internals.utils
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import java.nio.ByteBuffer
-import java.util.*
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.math.pow
@@ -132,7 +131,7 @@ object StringUtils {
 
     @OptIn(ExperimentalEncodingApi::class)
     fun Long.toBase64(): String {
-        return Base64.getEncoder().encodeToString(
+        return Base64.encode(
             ByteBuffer
                 .allocate(Long.SIZE_BYTES)
                 .putLong(this)

@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.utils
 
-import com.intellij.util.io.URLUtil.URL_PATTERN
 import com.sksamuel.scrimage.pixels.Pixel
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -12,11 +11,11 @@ import me.melijn.melijnbot.commands.image.StinkyException
 import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
-import me.melijn.melijnbot.internals.utils.StringUtils.URL_PATTERN
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.web.apis.BAD_TENOR_GIF
 import me.melijn.melijnbot.internals.web.apis.VERYBAD_TENOR_GIF
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import java.awt.Color
@@ -333,7 +332,7 @@ object ImageUtils {
     }
 
     private suspend fun isValidUrlMessage(context: ICommandContext, url: String): Boolean {
-        if (!URL_PATTERN.matcher(url).matches()) {
+        if (!EmbedBuilder.URL_PATTERN.matcher(url).matches()) {
             val msg = context.getTranslation("message.notaurl")
                 .withSafeVariable("url", url)
             sendRsp(context, msg)

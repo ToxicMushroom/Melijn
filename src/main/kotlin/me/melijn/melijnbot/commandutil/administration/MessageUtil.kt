@@ -13,13 +13,11 @@ import me.melijn.melijnbot.internals.models.UserFriendlyException
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.internals.utils.*
-import me.melijn.melijnbot.internals.utils.StringUtils.URL_PATTERN
 import me.melijn.melijnbot.internals.utils.message.sendAttachments
 import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendMsgWithAttachments
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.EmbedBuilder.URL_PATTERN
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.utils.data.DataObject
@@ -229,7 +227,7 @@ object MessageUtil {
         val newMap = modularMessage.attachments.toMutableMap()
         val url = context.args[0]
         val isVariable = DiscordMethods.imgUrlMethods.any { "{${it.name}}".equals(url, true) }
-        val msg = if (isVariable || URL_PATTERN.matcher(url).matches()) {
+        val msg = if (isVariable || EmbedBuilder.URL_PATTERN.matcher(url).matches()) {
             val fileName = context.args[1]
             newMap[url] = fileName
 
