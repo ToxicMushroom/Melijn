@@ -252,6 +252,7 @@ class CommandClientBuilder(private val container: Container) {
         KaleidoScopeCommand(),
         CalculateCommand(),
         ChannelFlagsCommand(),
+        CacheInfoCommand(),
         DiceCommand(),
         ManiaCommand(),
         TaikoCommand(),
