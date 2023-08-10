@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.requests.restaction.MessageAction
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.ChunkingFilter
+import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import okhttp3.OkHttpClient
 import org.slf4j.LoggerFactory
@@ -77,7 +78,7 @@ object MelijnBot {
             .setActivity(Activity.playing("Starting.."))
             .setStatus(OnlineStatus.IDLE)
             .setAutoReconnect(true)
-            .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY, CacheFlag.ONLINE_STATUS)
+            .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY, CacheFlag.ONLINE_STATUS, CacheFlag.ROLE_TAGS)
             .setSessionController(MelijnSessionController(container.daoManager.rateLimitWrapper))
             .setGatewayPoolProvider { TaskManager.gatewayExecutorPool }
             .setEventPoolProvider { TaskManager.eventExecutorPool }
@@ -86,7 +87,7 @@ object MelijnBot {
             .setAudioPool(Executors.newSingleThreadScheduledExecutor())
             .setBulkDeleteSplittingEnabled(false)
             .setChunkingFilter(ChunkingFilter.NONE)
-            .setMemberCachePolicy { it.isOwner }
+            .setMemberCachePolicy(MemberCachePolicy.VOICE)
             .setEventManagerProvider { eventManager }
             .setHttpClientBuilder(OkHttpClient.Builder().addInterceptor(KillerInterceptor()))
 
