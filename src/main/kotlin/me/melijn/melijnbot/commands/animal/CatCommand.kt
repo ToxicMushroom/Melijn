@@ -24,28 +24,15 @@ class CatCommand : AbstractCommand("command.cat") {
 
         val eb = Embedder(context)
             .setTitle(title)
-            .setImage(getRandomCatUrl(web, context.container.settings.tokens.randomCatApi))
+            .setImage(getRandomCatUrl(web, context.container.settings.api.imgHoard.token))
         sendEmbedRsp(context, eb.build())
     }
 
-    private suspend fun getRandomCatUrl(webManager: WebManager, apiKey: String): String {
-        val headers = mapOf(
-            "x-api-key" to apiKey
-        )
-
-        val params = mapOf(
-            "limit" to "1",
-            "format" to "json",
-            "order" to "RANDOM"
-        )
-
-        val reply = WebUtils.getJsonAFromUrl(
-            webManager.httpClient,
-            "https://api.thecatapi.com/v1/images/search",
-            params,
-            headers
+    private suspend fun getRandomCatUrl(webManager: WebManager, token: String): String {
+        val reply = WebUtils.getJsonFromUrl(
+            webManager.httpClient, "https://api.miki.bot/images/random?tags=cat",
+            headers = mapOf(Pair("Authorization", token))
         ) ?: return MISSING_IMAGE_URL
-
-        return reply.getObject(0).getString("url", MISSING_IMAGE_URL)
+        return reply.getString("url")
     }
 }
