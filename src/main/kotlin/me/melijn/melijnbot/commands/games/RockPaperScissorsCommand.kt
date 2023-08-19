@@ -19,6 +19,7 @@ import net.dv8tion.jda.internal.entities.UserImpl
 class RockPaperScissorsCommand : AbstractCommand("command.rockpaperscissors") {
 
     init {
+        id = 293
         name = "rockPaperScissors"
         aliases = arrayOf("rps")
         runConditions = arrayOf(RunCondition.GUILD)
