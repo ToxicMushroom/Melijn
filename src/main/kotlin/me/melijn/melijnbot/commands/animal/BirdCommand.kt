@@ -29,7 +29,7 @@ class BirdCommand : AbstractCommand("command.bird") {
     }
 
     private suspend fun getRandomBirdUrl(webManager: WebManager): String {
-        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://some-random-api.ml/img/birb")
+        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://some-random-api.com/img/birb")
             ?: return MISSING_IMAGE_URL
         return reply.getString("link")
     }
