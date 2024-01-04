@@ -37,7 +37,7 @@ class FishCommand : AbstractCommand("command.fish") {
         return try {
             reply.getString("url")
         }  catch (t: ParsingException) {
-            throw sun.security.pkcs.ParsingException("Couldn't parse: $reply")
+            throw IllegalArgumentException("Couldn't parse: $reply")
         }
     }
 
