@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.web.WebManager
 import me.melijn.melijnbot.internals.web.WebUtils
+import net.dv8tion.jda.api.exceptions.ParsingException
 
 class FishCommand : AbstractCommand("command.fish") {
 
@@ -33,7 +34,11 @@ class FishCommand : AbstractCommand("command.fish") {
             webManager.httpClient, "https://api.miki.bot/images/random?tags=fish",
             headers = mapOf(Pair("Authorization", token))
         ) ?: return MISSING_IMAGE_URL
-        return reply.getString("url")
+        return try {
+            reply.getString("url")
+        }  catch (t: ParsingException) {
+            throw sun.security.pkcs.ParsingException("Couldn't parse: $reply")
+        }
     }
 
 }

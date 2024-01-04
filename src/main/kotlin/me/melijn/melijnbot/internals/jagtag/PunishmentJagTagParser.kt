@@ -19,9 +19,13 @@ val PUNISH_PARSER_SUPPLIER: Supplier<Parser> = Supplier {
 object PunishmentJagTagParser {
 
     suspend fun parseJagTag(args: PunishJagTagParserArgs, input: String): String {
-        val parser = PUNISH_PARSER_SUPPLIER.get()
+        var parser = PUNISH_PARSER_SUPPLIER.get()
             .put("punishArgs", args)
             .put("guild", args.guild)
+        args.punished?.let {
+            parser = parser.put("user", it)
+        }
+
         val parsed = parser.parse(input)
         parser.clear()
         return parsed
