@@ -3,34 +3,25 @@ package me.melijn.melijnbot.internals.web.rest.stats
 import com.sun.management.OperatingSystemMXBean
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.JvmUsage
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.getSystemUptime
 import me.melijn.melijnbot.internals.web.RequestContext
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.lang.management.ManagementFactory
-import java.util.concurrent.ForkJoinPool
-import java.util.concurrent.ThreadPoolExecutor
 
 fun computeBaseObject(): DataObject {
     val bean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
     val (totalMem, usedMem, totalJVMMem, usedJVMMem) = JvmUsage.current(bean)
 
-    val threadPoolExecutor = TaskManager.executorService as ForkJoinPool
-    val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
-
     val dataObject = DataObject.empty()
     dataObject.put(
         "bot", DataObject.empty()
             .put("uptime", ManagementFactory.getRuntimeMXBean().uptime)
-            .put(
-                "melijnThreads",
-                threadPoolExecutor.activeThreadCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size
-            )
+            .put("melijnThreads", Thread.activeCount())
             .put("ramUsage", usedJVMMem)
             .put("ramTotal", totalJVMMem)
-            .put("jvmThreads", Thread.activeCount())
+            .put("jvmThreads", Thread.getAllStackTraces().size)
             .put("cpuUsage", bean.processCpuLoad * 100)
     )
 
