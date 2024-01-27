@@ -7,15 +7,12 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.models.PodInfo
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.getDurationString
 import me.melijn.melijnbot.internals.utils.getSystemUptime
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.withVariable
 import java.lang.management.ManagementFactory
 import java.text.DecimalFormat
-import java.util.concurrent.ForkJoinPool
-import java.util.concurrent.ThreadPoolExecutor
 
 class StatsCommand : AbstractCommand("command.stats") {
 
@@ -31,10 +28,6 @@ class StatsCommand : AbstractCommand("command.stats") {
         val (totalMem, usedMem, totalJVMMem, usedJVMMem) = JvmUsage.current(bean)
 
         val shardManager = context.shardManager
-
-        val threadPoolExecutor = TaskManager.executorService as ForkJoinPool
-        val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
-
         val title1 = context.getTranslation("$root.response.field1.title")
         val title2 = context.getTranslation("$root.response.field2.title")
         val title3 = context.getTranslation("$root.response.field3.title")
@@ -45,8 +38,7 @@ class StatsCommand : AbstractCommand("command.stats") {
             PodInfo.shardsPerPod,
             shardManager.userCache.size(),
             shardManager.guildCache.size(),
-            threadPoolExecutor.activeThreadCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size,
-            getDurationString(ManagementFactory.getRuntimeMXBean().uptime),
+            getDurationString(ManagementFactory.getRuntimeMXBean().uptime)
         )
 
         val unReplaceField2 = context.getTranslation("$root.response.field2.value")
@@ -62,7 +54,8 @@ class StatsCommand : AbstractCommand("command.stats") {
             unReplaceField3,
             DecimalFormat("###.###%").format(bean.processCpuLoad),
             "${usedJVMMem}MB/${totalJVMMem}MB",
-            "${Thread.activeCount()}/${Thread.getAllStackTraces().size}"
+            Thread.activeCount(),
+            Thread.getAllStackTraces().size
         )
 
         val embed = Embedder(context)
@@ -90,13 +83,11 @@ class StatsCommand : AbstractCommand("command.stats") {
         shardCount: Int,
         userCount: Long,
         guildCount: Long,
-        threadCount: Int,
         uptime: String,
     ): String = value
         .withVariable("shardCount", shardCount.toString())
         .withVariable("userCount", userCount.toString())
         .withVariable("serverCount", guildCount.toString())
-        .withVariable("botThreadCount", threadCount.toString())
         .withVariable("botUptime", uptime)
 
     private fun replaceValue2Vars(value: String, coreCount: Int, ramUsage: String, uptime: String): String = value
@@ -104,9 +95,10 @@ class StatsCommand : AbstractCommand("command.stats") {
         .withVariable("ramUsage", ramUsage)
         .withVariable("systemUptime", uptime)
 
-    private fun replaceValue3Vars(value: String, cpuUsage: String, ramUsage: String, threadCount: String): String =
+    private fun replaceValue3Vars(value: String, cpuUsage: String, ramUsage: String, activeThreads: Int, threadCount: Int): String =
         value
             .withVariable("jvmCPUUsage", cpuUsage)
             .withVariable("ramUsage", ramUsage)
+            .withVariable("activeThreads", activeThreads)
             .withVariable("threadCount", threadCount)
 }
