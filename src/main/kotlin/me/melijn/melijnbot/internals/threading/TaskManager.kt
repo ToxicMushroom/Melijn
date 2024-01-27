@@ -13,11 +13,11 @@ object TaskManager {
     private val threadFactory = { name: String ->
         var counter = 0
         { r: Runnable ->
-            Thread(r, "[$name-Pool-%d]".replace("%d", "${counter++}"))
+            Thread.ofVirtual().name("[$name-Pool-%d]".replace("%d", "${counter++}")).unstarted(r)
         }
     }
 
-    val executorService: ExecutorService = ForkJoinPool()
+    val executorService: ExecutorService = Executors.newVirtualThreadPerTaskExecutor()
     private val dispatcher = executorService.asCoroutineDispatcher()
     val scheduledExecutorService: ScheduledExecutorService =
         Executors.newScheduledThreadPool(15, threadFactory.invoke("Repeater"))
@@ -29,6 +29,8 @@ object TaskManager {
         Executors.newScheduledThreadPool(16, threadFactory.invoke("JDA-Ratelimit"))
     val callbackExecutorPool: ScheduledExecutorService =
         Executors.newScheduledThreadPool(16, threadFactory.invoke("JDA-Callback"))
+    val audioExecutorPool: ScheduledExecutorService =
+        Executors.newScheduledThreadPool(1, threadFactory.invoke("JDA-Audio"))
     val coroutineScope = CoroutineScope(dispatcher)
 
     fun async(block: suspend CoroutineScope.() -> Unit): Job {

@@ -38,11 +38,12 @@ class CalculateCommand : AbstractCommand("command.calculate") {
                 TaskManager.async { sendRsp(context, "Result: $exp") }
             }
         }
+        context.initCooldown()
         t.start()
         delay(2_000)
         val m: Method = Thread::class.java.getDeclaredMethod("stop0", Any::class.java)
         m.isAccessible = true
         m.invoke(t, ThreadDeath())
-        context.initCooldown()
+
     }
 }

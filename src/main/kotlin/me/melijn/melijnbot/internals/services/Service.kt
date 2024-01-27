@@ -18,7 +18,7 @@ abstract class Service(
     companion object {
         private val serviceThreadFactory = { name: String ->
             { r: Runnable ->
-                Thread(r, "[$name-Service]")
+                Thread.ofVirtual().name("[$name-Service]").unstarted(r)
             }
         }
     }
