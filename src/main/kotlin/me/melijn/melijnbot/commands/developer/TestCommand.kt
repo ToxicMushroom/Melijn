@@ -5,14 +5,16 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.message.sendRspAwaitEL
-import me.melijn.melijnbot.internals.utils.toEpochMilliseconds
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.lang.management.ManagementFactory
+import java.lang.management.ThreadInfo
+import java.lang.management.ThreadMXBean
+
 
 class TestCommand : AbstractCommand("command.test") {
 
@@ -25,11 +27,28 @@ class TestCommand : AbstractCommand("command.test") {
     val logger: Logger = LoggerFactory.getLogger(TestCommand::class.java)
 
     override suspend fun execute(context: ICommandContext) {
-        val message = sendRspAwaitEL(context, "blub").first()
-        println(message.timeEdited?.toEpochMilliseconds())
-        val msg2 = message.editMessage("blub blub").await()
-        println(message.timeEdited?.toEpochMilliseconds())
-        println(msg2.timeEdited?.toEpochMilliseconds())
+        val threadMXBean: ThreadMXBean = ManagementFactory.getThreadMXBean()
+
+
+        // Get all thread IDs
+        val threadIds: LongArray = threadMXBean.allThreadIds
+
+
+        // Iterate over each thread ID
+        for (threadId in threadIds) {
+            val threadInfo: ThreadInfo = threadMXBean.getThreadInfo(threadId)
+
+            // Print thread information, including the thread name and the ID of the thread that created it
+            println("Thread Name: " + threadInfo.threadName)
+            println("Thread ID: " + threadInfo.threadId)
+            println("Thread State: " + threadInfo.threadState)
+
+            val parentThreadId =
+                threadInfo.threadId // Assuming the parent thread ID is the same as the thread ID that created it
+            println("Created by Thread ID: $parentThreadId")
+
+            println("-------------")
+        }
     }
 
     private suspend fun sendSelection(context: ICommandContext) {
