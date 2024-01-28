@@ -8,7 +8,6 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import org.mariuszgromada.math.mxparser.Expression
-import java.lang.reflect.Method
 
 class CalculateCommand : AbstractCommand("command.calculate") {
 
@@ -25,11 +24,12 @@ class CalculateCommand : AbstractCommand("command.calculate") {
             sendSyntax(context)
             return
         }
+
         val t = object : Thread("calc ${context.contextTime}") {
             override fun run() {
                 var exp = try {
                     Expression(context.rawArg).calculate().toString()
-                } catch (t: ThreadDeath) {
+                } catch (t: InterruptedException) {
                     "Took too long"
                 } catch (t: Throwable) {
                     "error"
@@ -41,9 +41,6 @@ class CalculateCommand : AbstractCommand("command.calculate") {
         context.initCooldown()
         t.start()
         delay(2_000)
-        val m: Method = Thread::class.java.getDeclaredMethod("stop0", Any::class.java)
-        m.isAccessible = true
-        m.invoke(t, ThreadDeath())
-
+        t.interrupt()
     }
 }
