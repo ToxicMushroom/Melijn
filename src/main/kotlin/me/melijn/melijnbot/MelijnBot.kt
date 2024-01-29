@@ -1,5 +1,6 @@
 package me.melijn.melijnbot
 
+import com.neovisionaries.ws.client.WebSocketFactory
 import io.sentry.Sentry
 import me.melijn.melijnbot.enums.Environment
 import me.melijn.melijnbot.internals.events.EventManager
@@ -77,6 +78,7 @@ object MelijnBot {
             .setActivity(Activity.playing("Starting.."))
             .setStatus(OnlineStatus.IDLE)
             .setAutoReconnect(true)
+            .setWebsocketFactory(WebSocketFactory().setThreadFactory { r -> Thread.ofVirtual().unstarted(r) })
             .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY, CacheFlag.ONLINE_STATUS, CacheFlag.ROLE_TAGS)
             .setSessionController(MelijnSessionController(container.daoManager.rateLimitWrapper))
             .setGatewayPoolProvider { TaskManager.gatewayExecutorPool }

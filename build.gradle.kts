@@ -55,7 +55,10 @@ dependencies {
     // https://ci.dv8tion.net/job/JDA/
     implementation("net.dv8tion:JDA:4.4.0_352") {
         exclude("opus-java")
+        exclude("nv-websocket-client")
     }
+
+    implementation("com.github.MinnDevelopment:nv-websocket-client:3cbdf09c83")
 
     implementation("io.sentry:sentry:6.4.2")
 
