@@ -37,9 +37,10 @@ repositories {
         url = uri("https://m2.dv8tion.net/releases")
         name = "m2-dv8tion"
     }
+    mavenLocal()
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://reposilite.melijn.com/releases/")
-    mavenLocal()
+    maven("https://reposilite.melijn.com/snapshots/")
     maven("https://m2.duncte123.dev/releases")
     maven("https://reposilite.melijn.com/shitpack/") // pooppack mirror
 }
@@ -53,24 +54,29 @@ val scrimage = "4.0.31"
 
 dependencies {
     // https://ci.dv8tion.net/job/JDA/
-    implementation("net.dv8tion:JDA:4.4.0_352") {
+    implementation("net.dv8tion:JDA:4.4.1_353") {
         exclude("opus-java")
         exclude("nv-websocket-client")
     }
 
-    implementation("com.github.MinnDevelopment:nv-websocket-client:3cbdf09c83")
+    implementation("com.neovisionaries:nv-websocket-client:3.0.0-SNAPSHOT")
 
     implementation("io.sentry:sentry:6.4.2")
 
     // https://mvnrepository.com/artifact/club.minnced/discord-webhooks
-    implementation("club.minnced:discord-webhooks:0.8.2")
+    implementation("club.minnced:discord-webhooks:0.8.4")
 
     // https://github.com/freya022/JEmojis
     implementation("com.github.ToxicMushroom:JEmojis:a8c82848f166893f67251c741579c74c80fbb2dd")
 
-    api("org.jetbrains.kotlin:kotlin-script-util:$kotlin")
-    api("org.jetbrains.kotlin:kotlin-compiler:$kotlin")
-    api("org.jetbrains.kotlin:kotlin-scripting-compiler:$kotlin")
+    // required for scriptDef.kt
+    implementation(kotlin("scripting-common"))
+    implementation(kotlin("scripting-jvm"))
+    implementation(kotlin("scripting-dependencies"))
+    implementation(kotlin("scripting-dependencies-maven"))
+
+    // required for host.kt
+    implementation(kotlin("scripting-jvm-host"))
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin")
@@ -132,6 +138,7 @@ dependencies {
 tasks {
     withType(JavaCompile::class) {
         options.encoding = "UTF-8"
+        options.compilerArgs = listOf("--add-opens java.base/java.lang=ALL-UNNAMED")
     }
     withType(KotlinCompile::class) {
         kotlinOptions {
