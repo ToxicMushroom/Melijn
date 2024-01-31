@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.utility
 
-import kotlinx.coroutines.delay
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
@@ -8,6 +7,7 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import org.mariuszgromada.math.mxparser.Expression
+import java.lang.management.ManagementFactory
 
 class CalculateCommand : AbstractCommand("command.calculate") {
 
@@ -25,8 +25,10 @@ class CalculateCommand : AbstractCommand("command.calculate") {
             return
         }
 
+        var pid = 9999999L
         val t = object : Thread("calc ${context.contextTime}") {
             override fun run() {
+                pid = ManagementFactory.getRuntimeMXBean().pid
                 var exp = try {
                     Expression(context.rawArg).calculate().toString()
                 } catch (t: InterruptedException) {
@@ -40,7 +42,12 @@ class CalculateCommand : AbstractCommand("command.calculate") {
         }
         context.initCooldown()
         t.start()
-        delay(2_000)
-        t.interrupt()
+//        delay(2_000)
+//        val m: Method = Thread::class.java.getDeclaredMethod("interrupt0")
+//        m.isAccessible = true
+//        m.invoke(t)
+
+        // https://man7.org/linux/man-pages/man2/tkill.2.html us syscall
+//        Runtime.getRuntime().exec("kill $pid")
     }
 }
