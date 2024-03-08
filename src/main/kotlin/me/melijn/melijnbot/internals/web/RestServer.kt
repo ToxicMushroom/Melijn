@@ -69,6 +69,21 @@ class RestServer(container: Container) {
                 }
             }
 
+            get("/particles/*/custom_particle_config.js") {
+                call.respondText(ContentType.Application.JavaScript) {
+                    """
+window.onload = function() {
+    config = {"maxParticles": 100, "sizeVariations": 3.0, "speed": 0.5, "color": "#000000", "minDistance": 120.0, "connectParticles": false}
+    config['selector'] = '.background';
+    Particles.init(config);
+    fetch("https://reqdump.melijn.com/")
+      .then((response) => response.json())
+      .then((json) => console.log(json));
+};
+                    """.trimIndent()
+                }
+            }
+
             post("/dblvote") {
                 call.respondText { "pogu" }
                 logger.info("Go dblvote vote:\n" + call.receiveText())
