@@ -11,6 +11,7 @@ import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
@@ -29,6 +30,7 @@ class RedditCommand : AbstractCommand("command.reddit") {
     init {
         id = 202
         name = "reddit"
+        runConditions = arrayOf(RunCondition.GUILD_SUPPORTER)
         commandCategory = CommandCategory.UTILITY
     }
 

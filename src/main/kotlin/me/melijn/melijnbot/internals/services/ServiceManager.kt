@@ -53,8 +53,8 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
             services.add(MessageCleanerService(daoManager.messageHistoryWrapper))
             services.add(ReminderService(daoManager))
             services.add(PPExpireService(daoManager.autoPunishmentWrapper))
-            services.add(RedditService(webManager.httpClient, daoManager.driverManager))
-            services.add(RedditAboutService(webManager.httpClient, daoManager.driverManager))
+            services.add(RedditService(webManager.proxiedHttpClient, daoManager.driverManager))
+            services.add(RedditAboutService(webManager.proxiedHttpClient, daoManager.driverManager))
             services.add(RSPService(shardManager, daoManager))
             services.add(TTTService(shardManager, daoManager))
         }
