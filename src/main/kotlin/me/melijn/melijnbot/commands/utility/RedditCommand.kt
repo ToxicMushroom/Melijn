@@ -90,7 +90,7 @@ class RedditCommand : AbstractCommand("command.reddit") {
                 ?.await()
                 ?.let {
                     objectMapper.readValue<RedditAbout>(it)
-                } ?: requestAboutAndStore(context.webManager.httpClient, context.daoManager.driverManager, subreddit)
+                } ?: requestAboutAndStore(context.webManager.proxiedHttpClient, context.daoManager.driverManager, subreddit)
 
             if (about == null) {
                 val unknownReddit = context.getTranslation("command.reddit.down")
