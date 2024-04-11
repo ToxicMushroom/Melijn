@@ -30,6 +30,6 @@ class FoxCommand : AbstractCommand("command.fox") {
     private suspend fun getRandomFoxUrl(webManager: WebManager): String {
         val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://some-random-api.com/animal/fox")
             ?: return MISSING_IMAGE_URL
-        return reply.getString("link")
+        return reply.getString("image")
     }
 }

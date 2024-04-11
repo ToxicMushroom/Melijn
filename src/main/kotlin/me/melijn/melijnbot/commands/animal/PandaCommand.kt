@@ -30,6 +30,6 @@ class PandaCommand : AbstractCommand("command.panda") {
     private suspend fun getRandomPandaUrl(webManager: WebManager): String {
         val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://some-random-api.com/animal/panda")
             ?: return MISSING_IMAGE_URL
-        return reply.getString("link")
+        return reply.getString("image")
     }
 }
