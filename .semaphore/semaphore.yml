@@ -3,7 +3,7 @@ name: Main pipeline
 agent:
   machine:
     type: e1-standard-2
-    os_image: ubuntu2004
+    os_image: ubuntu2204
 blocks:
   - name: Build Docker Image
     task:
@@ -15,7 +15,7 @@ blocks:
             - checkout
             - docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
             - sed -i "s/%VERSION_HASH%/$SEMAPHORE_GIT_SHA/g" Dockerfile
-            - docker build -t ${DOCKER_USERNAME}/${DOCKER_IMAGE}:$SEMAPHORE_GIT_SHA -t ${DOCKER_USERNAME}/${DOCKER_IMAGE}:slash-migration-latest .
+            - docker buildx build -t ${DOCKER_USERNAME}/${DOCKER_IMAGE}:$SEMAPHORE_GIT_SHA -t ${DOCKER_USERNAME}/${DOCKER_IMAGE}:slash-migration-latest .
             - docker push ${DOCKER_USERNAME}/${DOCKER_IMAGE}:$SEMAPHORE_GIT_SHA
             - docker push ${DOCKER_USERNAME}/${DOCKER_IMAGE}:slash-migration-latest
 promotions:
