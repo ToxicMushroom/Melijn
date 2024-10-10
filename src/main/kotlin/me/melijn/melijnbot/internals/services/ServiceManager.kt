@@ -12,8 +12,6 @@ import me.melijn.melijnbot.internals.services.messagedeletion.MessageDeletionSer
 import me.melijn.melijnbot.internals.services.mutes.MuteService
 import me.melijn.melijnbot.internals.services.ppexpiry.PPExpireService
 import me.melijn.melijnbot.internals.services.ratelimits.RatelimitService
-import me.melijn.melijnbot.internals.services.reddit.RedditAboutService
-import me.melijn.melijnbot.internals.services.reddit.RedditService
 import me.melijn.melijnbot.internals.services.reminders.ReminderService
 import me.melijn.melijnbot.internals.services.roles.RolesService
 import me.melijn.melijnbot.internals.services.votes.VoteReminderService
@@ -53,8 +51,6 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
             services.add(MessageCleanerService(daoManager.messageHistoryWrapper))
             services.add(ReminderService(daoManager))
             services.add(PPExpireService(daoManager.autoPunishmentWrapper))
-            services.add(RedditService(webManager.httpClient, daoManager.driverManager))
-            services.add(RedditAboutService(webManager.httpClient, daoManager.driverManager))
             services.add(RSPService(shardManager, daoManager))
             services.add(TTTService(shardManager, daoManager))
         }

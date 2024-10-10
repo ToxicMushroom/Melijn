@@ -7,6 +7,7 @@ import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.objectMapper
 import net.dv8tion.jda.api.entities.MessageEmbed
 import kotlin.random.Random
@@ -25,6 +26,9 @@ class MemeCommand : AbstractCommand("command.meme") {
     }
 
     override suspend fun execute(context: ICommandContext) {
+        sendRsp(context, "Due to reddit closing down their api from free public use this command has been disabled.")
+        return
+
         val subreddit =
             if (context.commandParts[0] == "dankmeme") "dankmemes" else subreddits[Random.nextInt(subreddits.size)]
 

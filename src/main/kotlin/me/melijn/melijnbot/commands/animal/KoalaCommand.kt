@@ -28,8 +28,8 @@ class KoalaCommand : AbstractCommand("command.koala") {
     }
 
     private suspend fun getRandomKoalaUrl(webManager: WebManager): String {
-        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://some-random-api.com/img/koala")
+        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://some-random-api.com/animal/koala")
             ?: return MISSING_IMAGE_URL
-        return reply.getString("link")
+        return reply.getString("image")
     }
 }
