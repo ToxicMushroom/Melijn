@@ -22,7 +22,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             RemoveArg(root),
             RemoveAtArg(root)
         )
-        runConditions = arrayOf(RunCondition.VOTED)
+        runConditions = arrayOf()
         commandCategory = CommandCategory.UTILITY
     }
 

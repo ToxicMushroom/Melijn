@@ -5,7 +5,6 @@ import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
 import thirdparty.jhlabs.image.BoxBlurFilter
@@ -19,7 +18,7 @@ class BlurCommand : AbstractCommand("command.blur") {
         aliases = arrayOf("blurGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         cooldown = 5000
-        runConditions = arrayOf(RunCondition.VOTED)
+        runConditions = arrayOf()
         commandCategory = CommandCategory.IMAGE
     }
 

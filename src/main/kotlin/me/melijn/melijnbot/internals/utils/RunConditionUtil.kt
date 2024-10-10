@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.internals.utils
 
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.commands.utility.VOTE_URL
-import me.melijn.melijnbot.enums.Environment
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.translation.getLanguage
@@ -30,7 +28,6 @@ object RunConditionUtil {
             RunCondition.GUILD -> checkGuild(container, message, language)
             RunCondition.DEV_ONLY -> checkDevOnly(container, message, language)
             RunCondition.CHANNEL_NSFW -> checkChannelNSFW(container, message, language)
-            RunCondition.VOTED -> checkVoted(container, message, language)
             RunCondition.USER_SUPPORTER -> checkUserSupporter(container, message, language, prefix)
             RunCondition.GUILD_SUPPORTER -> checkGuildSupporter(container, message, language, prefix)
             RunCondition.EXPLICIT_MELIJN_PERMISSION -> true // this is checked in other places later
@@ -71,32 +68,6 @@ object RunConditionUtil {
                 .replacePrefix(prefix)
             message.channel.sendMessage(msg).queue()
             false
-        }
-    }
-
-    private suspend fun checkVoted(container: Container, message: Message, language: String): Boolean {
-        return if (
-            container.settings.botInfo.developerIds.contains(message.author.idLong) ||
-            container.daoManager.supporterWrapper.getUsers().contains(message.author.idLong) ||
-            container.settings.environment == Environment.TESTING ||
-            !container.voteReq
-        ) {
-            true
-        } else {
-            val vote = container.daoManager.voteWrapper.getUserVote(message.author.idLong)
-            val lastTime =
-                listOf(vote?.bfdLastTime, vote?.topggLastTime, vote?.dblLastTime, vote?.dboatsLastTime).maxByOrNull {
-                    it ?: 0
-                }
-
-            if (vote != null && lastTime != null && (System.currentTimeMillis() - lastTime) < 86_400_000) {
-                true
-            } else {
-                val msg = i18n.getTranslation(language, "message.runcondition.failed.voted")
-                    .withVariable("url", VOTE_URL)
-                message.channel.sendMessage(msg).queue()
-                false
-            }
         }
     }
 

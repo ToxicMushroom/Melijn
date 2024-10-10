@@ -3,7 +3,6 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.asLongLongGMTString
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -15,7 +14,7 @@ class BoostersCommand : AbstractCommand("command.boosters") {
         id = 215
         name = "boosters"
         cooldown = 10_000
-        runConditions = arrayOf(RunCondition.VOTED)
+        runConditions = arrayOf()
         aliases = arrayOf("listBoosters", "boosterList", "boostersList")
         commandCategory = CommandCategory.UTILITY
     }

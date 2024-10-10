@@ -11,9 +11,6 @@ import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.management.ManagementFactory
-import java.lang.management.ThreadInfo
-import java.lang.management.ThreadMXBean
 
 
 class TestCommand : AbstractCommand("command.test") {
@@ -27,27 +24,18 @@ class TestCommand : AbstractCommand("command.test") {
     val logger: Logger = LoggerFactory.getLogger(TestCommand::class.java)
 
     override suspend fun execute(context: ICommandContext) {
-        val threadMXBean: ThreadMXBean = ManagementFactory.getThreadMXBean()
-
-
-        // Get all thread IDs
-        val threadIds: LongArray = threadMXBean.allThreadIds
-
-
         // Iterate over each thread ID
-        for (threadId in threadIds) {
-            val threadInfo: ThreadInfo = threadMXBean.getThreadInfo(threadId)
+        for ((thread, bt) in Thread.getAllStackTraces()) {
 
-            // Print thread information, including the thread name and the ID of the thread that created it
-            println("Thread Name: " + threadInfo.threadName)
-            println("Thread ID: " + threadInfo.threadId)
-            println("Thread State: " + threadInfo.threadState)
+            if (thread.name.contains("ReadThread") || thread.name.contains("WriteThread")) {
+                // Print thread information, including the thread name and the ID of the thread that created it
+                println("Thread Name: " + thread.name)
+                println("Thread ID: " + thread.id)
+                println("Thread State: " + thread.state)
+                println("Thread BT: " + bt.take(20).joinToString("\n"))
 
-            val parentThreadId =
-                threadInfo.threadId // Assuming the parent thread ID is the same as the thread ID that created it
-            println("Created by Thread ID: $parentThreadId")
-
-            println("-------------")
+                println("-------------")
+            }
         }
     }
 

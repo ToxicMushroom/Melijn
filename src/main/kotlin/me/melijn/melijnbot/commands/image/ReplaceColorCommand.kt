@@ -6,7 +6,6 @@ import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
 import java.awt.Color
@@ -18,7 +17,7 @@ class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
         name = "replaceColor"
         aliases = arrayOf("replaceColorGif", "repc")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
-        runConditions = arrayOf(RunCondition.VOTED)
+        runConditions = arrayOf()
         commandCategory = CommandCategory.IMAGE
     }
 

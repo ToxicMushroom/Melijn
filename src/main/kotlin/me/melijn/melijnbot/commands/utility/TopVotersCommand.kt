@@ -84,7 +84,7 @@ class TopVotersCommand : AbstractCommand("command.topvoters") {
 
         val eb = Embedder(context)
         for (msg in msgs) {
-            eb.setDescription(msg)
+            eb.setDescription("$msg\n-# Voting has been turned off, list only serves historical purpose")
             eb.setFooter("Page ${page + 1}/$totalPageCount")
             sendEmbedRsp(context, eb.build())
         }

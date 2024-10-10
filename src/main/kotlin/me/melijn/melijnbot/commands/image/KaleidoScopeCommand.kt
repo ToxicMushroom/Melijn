@@ -7,7 +7,6 @@ import me.melijn.melijnbot.enums.DiscordSize
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.ICommandContext
-import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.Permission
 
@@ -17,7 +16,7 @@ class KaleidoScopeCommand : AbstractCommand("command.kaleidoscope") {
         name = "kaleidoScope"
         aliases = arrayOf("kaleido", "kScope")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
-        runConditions = arrayOf(RunCondition.VOTED)
+        runConditions = arrayOf()
         commandCategory = CommandCategory.IMAGE
     }
 
