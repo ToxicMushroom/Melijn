@@ -1,4 +1,4 @@
-FROM arm64v8/openjdk:21 as builder
+FROM toxicmushroom/melijn-base:jdk-21 as builder
 WORKDIR /etc/melijn
 COPY ./ ./
 USER root
@@ -6,7 +6,7 @@ RUN chmod +x ./gradlew
 RUN ./gradlew shadowJar
 
 # Full jdk required for font rendering on ship ect
-FROM arm64v8/openjdk:21
+FROM toxicmushroom/melijn-base:jdk-21
 WORKDIR /opt/melijn
 ENV VERSION_HASH=%VERSION_HASH%
 COPY --from=builder ./etc/melijn/build/libs/ .
